@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Satellite Visualization</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.111.0/Cesium.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+      style-src 'self' 'unsafe-inline' https://cesium.com;
+    ">
+</head>
+<body>
+    <div id="cesiumContainer" style="width: 100%; height: 100vh;"></div>
+    <script type="module">
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzIwODA4Ny00ODYzLTRiOWQtODFhMy0yMzFlZDg4NjgyNzciLCJpZCI6MTgwNzQyLCJpYXQiOjE3MDA5ODM4OTV9.Y25uee_xJYihkpeCI47TpdFmWCsTPRgSPH2mLFzbr68';
+        const viewer = new Cesium.Viewer('cesiumContainer');
+
+        // Load satellite positions from the JSON file
+        fetch('http://localhost:3000/satellite_positions.json')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(sat => {
+                    viewer.entities.add({
+                        position: Cesium.Cartesian3.fromDegrees(sat.longitude, sat.latitude, sat.altitude * 1000),
+                        point: { pixelSize: 5, color: Cesium.Color.RED },
+                        label: { text: sat.name }
+                    });
+                });
+            });
+    </script>
+
+</body>
+</html>
