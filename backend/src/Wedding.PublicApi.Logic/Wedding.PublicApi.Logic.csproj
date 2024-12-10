@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+	</PropertyGroup>
+
+  <!-- <PropertyGroup> -->
+  <!--   <TargetFramework>net8.0</TargetFramework> -->
+  <!--   <Nullable>enable</Nullable> -->
+  <!--   <ImplicitUsings>enable</ImplicitUsings> -->
+  <!--   <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS> -->
+  <!--   <DockerfileContext>..\Wedding</DockerfileContext> -->
+  <!-- </PropertyGroup> -->
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Wedding.Abstractions\Wedding.Abstractions.csproj" />
+    <ProjectReference Include="..\Wedding.Common.Web\Wedding.Common.Web.csproj" />
+    <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
+    <ProjectReference Include="..\Wedding.Infrastructure\Wedding.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Guest\Handlers\" />
+  </ItemGroup>
+
+</Project>
