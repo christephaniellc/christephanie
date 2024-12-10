@@ -1,5 +1,5 @@
 import {useLocation} from "react-router-dom";
-import {useEffect, useRef} from "react";
+import { useEffect, useMemo, useRef } from 'react';
 
 export const useRouteHistory = () => {
   const location = useLocation();
@@ -9,10 +9,10 @@ export const useRouteHistory = () => {
     history.current.push(location.pathname);
   }, [location]);
 
-  const getPreviousRoute = () => {
+  const previousRoute = useMemo(() => {
     if (history.current.length < 2) return null; // No previous route
     return history.current[history.current.length - 2];
-  };
+  }, [history.current]);
 
-  return { history: history.current, getPreviousRoute };
+  return { history, previousRoute };
 };

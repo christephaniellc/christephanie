@@ -1,4 +1,4 @@
-import {getConfig} from "../config";
+import {getConfig} from "../../config";
 import {AppState, Auth0ProviderOptions, User} from "@auth0/auth0-react";
 import {useNavigate} from "react-router-dom";
 

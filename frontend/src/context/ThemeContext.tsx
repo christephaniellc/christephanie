@@ -1,10 +1,11 @@
 import {createContext, ReactNode, useContext, useMemo, useState} from "react";
-import {createTheme, SxProps, ThemeProvider, useColorScheme, useMediaQuery} from "@mui/material";
+import { createTheme, SxProps, Theme, ThemeProvider, useColorScheme, useMediaQuery } from '@mui/material';
 
 interface ThemeContextProps {
   toggleTheme: () => void;
   mixedBackgroundSx: SxProps;
   mode?: "light" | "dark" | 'system';
+  theme: Theme;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -23,7 +24,7 @@ export const ChristephanieThemeProvider: React.FC<{ children: ReactNode }> = ({ 
         main: "#E9950C",
       },
       background: {
-        default: mode === "dark" ? "#150C16" : "#ffffff",
+        default: mode === "dark" ? "#09020E" : "#ffffff",
       },
     },
   });
@@ -39,7 +40,7 @@ export const ChristephanieThemeProvider: React.FC<{ children: ReactNode }> = ({ 
   }, [mode])
 
   return (
-    <ThemeContext.Provider value={{ toggleTheme, mode, mixedBackgroundSx }}>
+    <ThemeContext.Provider value={{ toggleTheme, mode, mixedBackgroundSx, theme }}>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );
