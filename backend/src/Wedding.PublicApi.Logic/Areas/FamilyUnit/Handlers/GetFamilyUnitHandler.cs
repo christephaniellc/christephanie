@@ -32,7 +32,7 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
         {
             query.Validate(nameof(query));
 
-            var primaryKey = $"{DynamoKeys.FamilyUnit}#{query.RsvpCode}";
+            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.RsvpCode);
 
             try
             {
@@ -40,14 +40,15 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
                 {
                     KeyExpression = new Expression
                     {
-                        ExpressionStatement = "RsvpCode = :pk",
+                        ExpressionStatement = "PartitionKey = :pk",
                         ExpressionAttributeValues =
                         {
-                            { ":pk", primaryKey },
+                            { ":pk", partitionKey },
                         }
                     }
-                }; 
+                };
 
+                //var result = await _repository.LoadAsync<WeddingEntity>(partitionKey, cancellationToken);
                 //var result = await _repository.QueryAsync<WeddingEntity>(primaryKey, dynamoQuery).GetRemainingAsync();
                 var result = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
 
@@ -66,7 +67,7 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
 
                 // var familyUnitInfo = result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
                 // var guestEntities = result.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest)).ToList();
-                
+
                 var familyUnit = _mapper.Map<FamilyUnitDto>(result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
                 var guests = result.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
                     .Select(x => _mapper.Map<GuestDto>(x))
@@ -79,28 +80,7 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
                 }
 
                 familyUnit.Guests = guests;
-
-                // var familyUnit = new FamilyUnitDto
-                // {
-                //     RsvpCode = familyUnitInfo?.RsvpCode,
-                //     UnitName = familyUnitInfo?.UnitName,
-                //     InvitationResponse = familyUnitInfo?.InvitationResponse ?? InvitationResponseEnum.Pending,
-                //     MailingAddress = familyUnitInfo?.MailingAddress,
-                //     InvitationResponseNotes = familyUnitInfo?.InvitationResponseNotes,
-                //     HeadCount = familyUnitInfo?.PotentialHeadCount ?? 0,
-                //     Guests = guestEntities.Select(guest => new GuestDto
-                //     {
-                //         GuestId = guest.GuestId,
-                //         FirstName = guest.FirstName,
-                //         LastName = guest.LastName,
-                //         Roles = guest.Roles,
-                //         Email = guest.Email,
-                //         Phone = guest.Phone,
-                //         AgeGroup = (AgeGroupEnum) guest.AgeGroup,
-                //         RsvpNotes = guest.RsvpNotes,
-                //         GuestLastLogin = guest.GuestLastLogin
-                //     }).ToList()
-                // };
+                familyUnit.Guests = familyUnit.OrderedGuests();
 
                 return familyUnit;
             }

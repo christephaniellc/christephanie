@@ -5,7 +5,7 @@ using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation;
 
-namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
+namespace Wedding.PublicApi.Logic.UnitTests.Areas.Admin.FamilyUnit.Validation
 {
     [TestFixture]
     [UnitTestsFor(typeof(CreateFamilyUnitCommandValidator))]
@@ -61,12 +61,40 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
         }
 
         [Test]
+        public void Should_Have_Error_When_Tier_Is_NotValid()
+        {
+            var command = new CreateFamilyUnitCommand(
+                new FamilyUnitDto
+                {
+                    RsvpCode = "ABCDE",
+                    Tier = "Animal"
+                }
+            );
+            var result = _validator.TestValidate(command);
+            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.Tier);
+        }
+
+        [Test]
+        public void Should_Have_Error_When_No_Guests()
+        {
+            var command = new CreateFamilyUnitCommand(
+                new FamilyUnitDto
+                {
+                    RsvpCode = "ABCDE"
+                }
+            );
+            var result = _validator.TestValidate(command);
+            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.Guests);
+        }
+
+        [Test]
         public void Should_Not_Have_Error_When_Command_Is_Valid()
         {
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     RsvpCode = "ABCDE",
+                    Tier = "B",
                     Guests = new List<GuestDto> { VALID_GUEST }
                 }
             );

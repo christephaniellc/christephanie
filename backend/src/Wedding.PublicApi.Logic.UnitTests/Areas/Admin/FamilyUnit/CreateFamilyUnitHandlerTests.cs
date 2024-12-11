@@ -12,8 +12,10 @@ using Wedding.Abstractions.Keys;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers;
+using AutoMapper;
+using Wedding.Abstractions.Mapping;
 
-namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
+namespace Wedding.PublicApi.Logic.UnitTests.Areas.Admin.FamilyUnit
 {
     [TestFixture]
     [UnitTestsFor(typeof(CreateFamilyUnitHandler))]
@@ -22,13 +24,18 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
         private Mock<ILogger<CreateFamilyUnitHandler>> _loggerMock;
         private Mock<IDynamoDBContext> _repositoryMock;
         private CreateFamilyUnitHandler _handler;
+        private IMapper _mapper;
 
         [SetUp]
         public void SetUp()
         {
+            var config = new MapperConfiguration(
+                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            _mapper = config.CreateMapper();
+
             _loggerMock = new Mock<ILogger<CreateFamilyUnitHandler>>();
             _repositoryMock = new Mock<IDynamoDBContext>();
-            _handler = new CreateFamilyUnitHandler(_loggerMock.Object, _repositoryMock.Object);
+            _handler = new CreateFamilyUnitHandler(_loggerMock.Object, _repositoryMock.Object, _mapper);
         }
 
         [Test]
@@ -44,7 +51,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
                     {
                         new GuestDto
                         {
-                            FirstName = "John", 
+                            FirstName = "John",
                             LastName = "Doe"
                         }
                     }
@@ -106,14 +113,14 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
             // Arrange
             var command = new CreateFamilyUnitCommand(
                  new FamilyUnitDto
-                {
-                    RsvpCode = "ABCDE",
-                    Tier = "A",
-                    Guests = new List<GuestDto>
+                 {
+                     RsvpCode = "ABCDE",
+                     Tier = "A",
+                     Guests = new List<GuestDto>
                     {
                         new GuestDto { FirstName = "John", LastName = "Doe", Roles = null }
                     }
-                }
+                 }
             );
 
             _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
@@ -125,7 +132,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
 
             // Assert
             Assert.AreEqual(1, result.Guests[0].Roles.Count);
-            Assert.AreEqual(RoleEnum.None, result.Guests[0].Roles[0]);
+            Assert.AreEqual(RoleEnum.Guest, result.Guests[0].Roles[0]);
         }
 
         [Test]
@@ -139,7 +146,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);
-            Assert.AreEqual(RoleEnum.None, guest.Roles[0]);
+            Assert.AreEqual(RoleEnum.Guest, guest.Roles[0]);
         }
 
         [Test]
@@ -153,7 +160,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);
-            Assert.AreEqual(RoleEnum.None, guest.Roles[0]);
+            Assert.AreEqual(RoleEnum.Guest, guest.Roles[0]);
         }
 
         [Test]

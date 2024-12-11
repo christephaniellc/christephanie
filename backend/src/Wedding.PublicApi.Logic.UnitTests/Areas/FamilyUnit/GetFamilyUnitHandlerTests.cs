@@ -12,9 +12,9 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit
         }
 
         [Test]
-        public void Test1()
+        public void ShouldWriteTests()
         {
-            Assert.Pass();
+            Assert.Fail();
         }
     }
 }

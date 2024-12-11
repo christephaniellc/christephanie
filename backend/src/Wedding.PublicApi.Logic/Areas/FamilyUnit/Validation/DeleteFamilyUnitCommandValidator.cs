@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Wedding.Abstractions.Validation.Common;
+using Wedding.Abstractions.Validation.Utility;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 
 namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation
@@ -16,7 +17,7 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation
         /// </summary>
         public DeleteFamilyUnitCommandValidator()
         {
-            RuleFor(cmd => cmd.Id).NotEmpty();
+            RuleFor(cmd => cmd.RsvpCode).SetValidator(new RsvpCodeValidator());
         }
 
         public void IsValid(DeleteFamilyUnitCommand obj, object? _ = null)

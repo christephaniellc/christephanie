@@ -10,10 +10,13 @@ namespace Wedding.Abstractions.Entities
     public class WeddingEntity
     {
         [DynamoDBHashKey]
-        public string RsvpCode { get; set; } = ""; // e.g., "FAMILY#RsvpCode"
+        public string PartitionKey { get; set; }
 
         [DynamoDBRangeKey]
         public string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
+
+        [DynamoDBProperty]
+        public string RsvpCode { get; set; } = ""; // e.g., "FAMILY#RsvpCode"
 
         #region Family-specific fields
         /// <summary>
@@ -45,6 +48,9 @@ namespace Wedding.Abstractions.Entities
         /// </summary>
         [DynamoDBProperty]
         public string GuestId { get; set; } = "";
+
+        [DynamoDBProperty]
+        public int? GuestNumber { get; set; }
 
         [DynamoDBProperty]
         public string? Auth0Id { get; set; }

@@ -26,7 +26,11 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation
                 .When(cmd => cmd.FamilyUnit.Guests != null 
                              && cmd.FamilyUnit.Guests.Any(guest => guest.Rsvp != null 
                                                           && guest.Rsvp.InvitationResponse == InvitationResponseEnum.Interested))
-                .SetValidator(new MailingAddressValidator());
+                .WithMessage("Mailing address cannot be empty when there are interested guests.")
+                ;
+            RuleFor(cmd => cmd.FamilyUnit.MailingAddress)
+                .SetValidator(new MailingAddressValidator())
+                .When(cmd => !string.IsNullOrEmpty(cmd.FamilyUnit.MailingAddress));
             RuleForEach(cmd => cmd.FamilyUnit.AdditionalAddresses)
                 .SetValidator(new MailingAddressValidator())
                 .When(cmd => cmd.FamilyUnit.AdditionalAddresses != null && cmd.FamilyUnit.AdditionalAddresses.Any())

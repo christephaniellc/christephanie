@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Wedding.Abstractions.Enums;
 
 namespace Wedding.Abstractions.Dtos
 {
@@ -22,5 +24,29 @@ namespace Wedding.Abstractions.Dtos
         public int PotentialHeadCount { get; set; }
 
         public DateTime? FamilyUnitLastLogin { get; set; }
+
+        public int CalculateHeadcount()
+        {
+            var headcount = 0;
+            foreach (var guest in Guests)
+            {
+                if (guest.Rsvp is null 
+                    || guest.Rsvp.InvitationResponse != InvitationResponseEnum.Declined)
+                {
+                    headcount++;
+                }
+            }
+            return headcount;
+        }
+
+        public List<GuestDto>? OrderedGuests()
+        {
+            if (Guests == null)
+            {
+                return null;
+            }
+
+            return Guests.OrderBy(g => g.GuestNumber!).ToList();
+        }
     }
 }

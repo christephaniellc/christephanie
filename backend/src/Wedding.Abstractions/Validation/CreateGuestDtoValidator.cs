@@ -16,6 +16,11 @@ namespace Wedding.Abstractions.Validation
             //     .WithMessage("Package URI cannot be null, empty or consist of only whitespace characters.")
             //     .Must(u => IsValidPackageUri(u))
             //     .WithMessage("The argument is not a valid Delinea Engine Pool Deployment package URI.")
+            //
+            //;
+            // RuleFor(g => g.GuestNumber)
+            //     .NotEmpty()
+            //     .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Guest number"))
             //     ;
             RuleFor(g => g.FirstName)
                 .NotEmpty()

@@ -6,7 +6,11 @@ namespace Wedding.Abstractions.Dtos
 {
     public class GuestDto
     {
+        public string RsvpCode { get; set; } = "";
+
         public string GuestId { get; set; } = "";
+
+        public int? GuestNumber { get; set; }
 
         public string? Auth0Id { get; set; }
 
@@ -29,11 +33,6 @@ namespace Wedding.Abstractions.Dtos
         /// </summary>
         public AgeGroupEnum AgeGroup { get; set; }
         //public bool BabySittingRequest { get; set; } = false;
-
-        /// <summary>
-        /// If declining, also other notes from guest
-        /// </summary>
-        public string? RsvpNotes { get; set; }
 
         /// <summary>
         /// Guest last login (using Auth0)

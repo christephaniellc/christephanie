@@ -12,5 +12,5 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands
     /// <seealso cref="IEquatable{DeleteSiteCommand}" />
     /// <param name="Id">The Id of the Site</param>
     public record DeleteFamilyUnitCommand(
-        Guid Id) : IWeddingCommand;
+        string RsvpCode) : IWeddingCommand;
 }

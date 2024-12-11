@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using Autofac;
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,7 +27,7 @@ namespace Wedding.Common.Web.Extensions
             // Initialize AutoMapper with the profiles
             var mapperConfig = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile<WeddingEntityMappingProfile>();
+                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
             });
 
             IMapper mapper = mapperConfig.CreateMapper();

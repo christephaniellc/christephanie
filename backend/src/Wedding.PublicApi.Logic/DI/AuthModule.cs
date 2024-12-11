@@ -1,37 +1,67 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Amazon.DynamoDBv2.DataModel;
 using Autofac;
-using Wedding.PublicApi.Logic.Services;
+using Wedding.Common.Configuration;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Logic.DI
 {
     [ExcludeFromCodeCoverage]
     public class AuthModule : Module
     {
+        private readonly SupportedAuthorizationProviders _authProvider;
         private readonly string _baseUrl;
 
-        public AuthModule(string baseUrl)
+        public AuthModule(SupportedAuthorizationProviders authProvider, string baseUrl)
         {
+            _authProvider = authProvider;
             _baseUrl = baseUrl;
         }
         
         /// <inheritdoc cref="Module"/>
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(_ =>
+            if (_authProvider == SupportedAuthorizationProviders.NoOpAdmin ||
+                _authProvider == SupportedAuthorizationProviders.NoOpUser)
             {
-                return new AuthorizationProvider(_baseUrl);
-            })
-            .AsImplementedInterfaces()
-            .AsSelf()
-            .SingleInstance();
+                var isAdmin = _authProvider == SupportedAuthorizationProviders.NoOpAdmin;
+                builder.Register(_ =>
+                    {
+                        return new NoOpAuthorizationProvider(isAdmin);
+                    })
+                    .AsImplementedInterfaces()
+                    .AsSelf()
+                    .SingleInstance();
+            }
+            else
+            {
+                builder.Register<IAuthorizationProvider>(context =>
+                    {
+                        var repository = context.Resolve<IDynamoDBContext>();
 
-            builder.Register(_ =>
-                {
-                    return new AuthenticationProvider();
-                })
-            .AsImplementedInterfaces()
-            .AsSelf()
-            .SingleInstance();
+                        if (_authProvider == SupportedAuthorizationProviders.Auth0)
+                        {
+                            return new Auth0AuthorizationProvider(_baseUrl);
+                        }
+
+                        return new InternalAuthorizationProvider(repository);
+                    })
+                    .AsImplementedInterfaces()
+                    .AsSelf()
+                    .SingleInstance();
+
+                builder.Register(context =>
+                    {
+                        var authorizationProvider = context.Resolve<IAuthorizationProvider>();
+                        // var services = new ServiceCollection();
+                        // var provider = services.BuildServiceProvider();
+                        // var authorizationProvider = provider.GetRequiredService<IAuthorizationProvider>();
+                        return new AuthenticationProvider(authorizationProvider, _baseUrl);
+                    })
+                    .AsImplementedInterfaces()
+                    .AsSelf()
+                    .SingleInstance();
+            }
 
             // builder.Register(_ =>
             //     {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
-using Wedding.PublicApi.Logic.Services;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -23,7 +23,7 @@ namespace Wedding.PublicApi.Controllers
         }
 
         //[Authorize]
-        [HttpGet("")]
+        [HttpGet("{rsvpCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string rsvpCode,
             //[FromBody] APIGatewayProxyRequest request //, 

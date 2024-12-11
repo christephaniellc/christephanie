@@ -6,11 +6,11 @@ namespace Wedding.PublicApi.Logic.DI
 {
     public class UspsModule : Module
     {
-        private readonly UspsOptions _uspsOptions;
+        private readonly UspsConfiguration _uspsConfiguration;
 
-        public UspsModule(UspsOptions uspsOptions)
+        public UspsModule(UspsConfiguration uspsConfiguration)
         {
-            _uspsOptions = uspsOptions;
+            _uspsConfiguration = uspsConfiguration;
         }
 
         /// <inheritdoc cref="Module"/>
@@ -18,7 +18,7 @@ namespace Wedding.PublicApi.Logic.DI
         {
             builder.Register(_ =>
                 {
-                    return new MailingAddressValidationProvider(_uspsOptions.UserId, _uspsOptions.ApiUrl);
+                    return new MailingAddressValidationProvider(_uspsConfiguration.UserId, _uspsConfiguration.ApiUrl);
                 })
                 .AsImplementedInterfaces()
                 .AsSelf()
