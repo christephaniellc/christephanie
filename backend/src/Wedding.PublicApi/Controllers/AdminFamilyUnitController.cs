@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.Lambda.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
+using Wedding.Common.Helpers;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
-using Wedding.PublicApi.Logic.Services;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -20,12 +21,12 @@ namespace Wedding.PublicApi.Controllers
     {
         private readonly ILogger<AdminFamilyUnitController> _logger;
         private readonly IControllerDispatcher _dispatcher;
-        private IAuthorizationProvider _authProvider;
+        private IAuthenticationProvider _authProvider;
 
         public AdminFamilyUnitController(
             ILogger<AdminFamilyUnitController> logger,
-            IControllerDispatcher dispatcher, 
-            IAuthorizationProvider authProvider)
+            IControllerDispatcher dispatcher,
+            IAuthenticationProvider authProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
@@ -35,24 +36,27 @@ namespace Wedding.PublicApi.Controllers
         //[Authorize]
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
-        public async Task<ActionResult<FamilyUnitDto>> CreateFamilyUnits([FromBody] List<FamilyUnitDto> familyUnits, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<FamilyUnitDto>> AdminCreateFamilyUnits([FromBody] List<FamilyUnitDto> familyUnits, CancellationToken cancellationToken = default)
         {
             try
-            { 
-                var headers = Request.Headers
-                    .ToDictionary(header => header.Key, header => header.Value.ToString()); ;
-
-                // TODO: Move check to internal middleware referencing database roles
-                // Parse and validate Auth0 token (from request headers) and admin role
-                var authCheck = _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-                if (!authCheck.Authorized)
-                {
-                    return Unauthorized(authCheck.Response);
-                }
-
+            {
                 if (familyUnits == null || !familyUnits.Any())
                 {
                     return BadRequest(new { message = "Invalid request body." });
+                }
+
+                // var headers = Request.Headers
+                //     .ToDictionary(header => header.Key, header => header.Value.ToString());
+
+                // var headers = HeaderHelper.GetHeaders(Request.Headers);
+                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
+
+                // TODO: Move check to internal middleware referencing database roles
+                // Parse and validate Auth0 token (from request headers) and admin role
+                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
+                if (!authCheck.Authorized)
+                {
+                    return Unauthorized(new { message = authCheck.ResponseMessage });
                 }
 
                 foreach (var unit in familyUnits)
@@ -70,20 +74,66 @@ namespace Wedding.PublicApi.Controllers
             }
         }
 
-        
-        //
-        // [FunctionName("UpdateFamilyUnit")]
-        // public static async Task<IActionResult> UpdateFamilyUnit(
-        //     [HttpTrigger(AuthorizationLevel.Function, "put", Route = "family-unit/{code}")] HttpRequest req, string code)
-        // {
-        //     string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-        //     var updateRequest = JsonSerializer.Deserialize<UpdateFamilyUnitCommand>(requestBody);
-        //
-        //     // Database update logic here (e.g., find the family unit by code and update)
-        //     // Example pseudo-code for database update:
-        //     // Database.UpdateFamilyUnit(code, updateRequest);
-        //
-        //     return new OkObjectResult(new { message = "Family unit updated successfully" });
-        // }
+        //[Authorize]
+        //[HttpPost("update")]
+        [HttpPut("{rsvpCode}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit(string rsvpCode, [FromBody] FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(rsvpCode))
+                {
+                    return BadRequest("RSVP Code is required.");
+                }
+
+                if (familyUnit == null)
+                {
+                    return BadRequest(new { message = "Invalid request body." });
+                }
+
+                // var headers = Request.Headers
+                //     .ToDictionary(header => header.Key, header => header.Value.ToString());
+
+                //var headers = HeaderHelper.GetHeaders(Request.Headers);
+                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
+
+                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
+                if (!authCheck.Authorized)
+                {
+                    return Unauthorized(new { message = authCheck.ResponseMessage });
+                }
+
+                var command = new UpdateFamilyUnitCommand(rsvpCode, familyUnit);
+                var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+
+                return Ok(familyUnit);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in AdminFamilyUnitController.");
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpDelete("{rsvpCode}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        public async Task<bool> AdminDeleteFamilyUnitAsync(string rsvpCode, CancellationToken cancellationToken = default)
+        {
+            // var headers = Request.Headers
+            //     .ToDictionary(header => header.Key, header => header.Value.ToString()); ;
+
+            //var headers = HeaderHelper.GetHeaders(Request.Headers);
+            var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
+            
+            var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
+            if (!authCheck.Authorized)
+            {
+                return false;
+            }
+
+            var command = new DeleteFamilyUnitCommand(rsvpCode);
+            return await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);
+        }
     }
 }

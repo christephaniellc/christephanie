@@ -6,9 +6,9 @@ namespace Wedding.Abstractions.Dtos
     {
         public string GuestId { get; set; } = "";
 
-        public MealPreferenceEnum Meal { get; set; }
+        public MealPreferenceEnum? Meal { get; set; }
 
-        public bool KidsPortion { get; set; }
+        public bool? KidsPortion { get; set; }
 
         public string? FoodAllergies { get; set; }
 

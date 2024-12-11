@@ -106,9 +106,15 @@ namespace Wedding.Abstractions.UnitTests.Validation
         {
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "valid_code",
-                Tier = "Tier1",
-                Guests = new List<GuestDto> { new GuestDto() }
+                RsvpCode = "ABCDE",
+                Tier = "C",
+                Guests = new List<GuestDto> { 
+                    new GuestDto
+                    {
+                        FirstName = "Bob",
+                        LastName = "Licker"
+                    }
+                }
             };
 
             var result = _validator.TestValidate(familyUnit);

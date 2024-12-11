@@ -1,6 +1,6 @@
 ﻿namespace Wedding.Common.Web.Options
 {
-    public class UspsOptions
+    public class UspsConfiguration
     {
         /// <summary>
         /// USPS Developer API user id

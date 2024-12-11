@@ -26,11 +26,15 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
             var command = new RsvpFamilyUnitCommand(
                 new FamilyUnitDto
                 {
+                    RsvpCode = "ABCDE",
+                    Tier = "B",
                     MailingAddress = string.Empty,
                     Guests = new List<GuestDto>
                     {
                         new GuestDto
                         {
+                            FirstName = "Johann",
+                            LastName = "Sebastian",
                             Rsvp = new RsvpDto
                             {
                                 InvitationResponse = InvitationResponseEnum.Interested
@@ -43,17 +47,22 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
             var result = _validator.TestValidate(command);
             result.ShouldHaveValidationErrorFor(cmd => cmd.FamilyUnit.MailingAddress);
         }
+
         [Test]
         public void Should_Have_Error_When_MailingAddress_Is_Empty_And_AtLeast_One_Guest_Is_Interested()
         {
             var command = new RsvpFamilyUnitCommand(
                 new FamilyUnitDto
                 {
+                    RsvpCode = "ABCDE",
+                    Tier = "B",
                     MailingAddress = string.Empty,
                     Guests = new List<GuestDto>
                     {
                         new GuestDto
                         {
+                            FirstName = "Johann",
+                            LastName = "Bach",
                             Rsvp = new RsvpDto
                             {
                                 InvitationResponse = InvitationResponseEnum.Declined
@@ -61,6 +70,8 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
                         },
                         new GuestDto
                         {
+                            FirstName = "Heinrich",
+                            LastName = "Knudson",
                             Rsvp = new RsvpDto
                             {
                                 InvitationResponse = InvitationResponseEnum.Interested
@@ -187,8 +198,10 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
         [Test]
         public void Should_Not_Have_Error_When_AdditionalAddresses_Is_Empty()
         {
-            var command = new RsvpFamilyUnitCommand(new FamilyUnitDto
+            var command = new RsvpFamilyUnitCommand(
+                new FamilyUnitDto
                 {
+                    MailingAddress = "213 Main St",
                     AdditionalAddresses = new List<string>()
                 }
             );

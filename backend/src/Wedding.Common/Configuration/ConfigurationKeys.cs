@@ -4,6 +4,11 @@
     {
         #region Auth0
         /// <summary>
+        /// Switch between Authorization providers
+        /// </summary>
+        public const string Authorization = "Authorization";
+        
+        /// <summary>
         /// The Auth0 config section
         /// </summary>
         public const string Auth0 = "Auth0";

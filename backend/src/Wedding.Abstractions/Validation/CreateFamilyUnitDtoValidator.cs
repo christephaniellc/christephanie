@@ -17,7 +17,7 @@ namespace Wedding.Abstractions.Validation
             RuleFor(f => f.Guests)
                 .NotNull()
                 .NotEmpty()
-                .Must(guests => guests.Count > 0)
+                .Must(guests => guests?.Count > 0)
                 .WithMessage("Must include at least one guest");
             RuleForEach(f => f.Guests).SetValidator(new CreateGuestDtoValidator());
         }

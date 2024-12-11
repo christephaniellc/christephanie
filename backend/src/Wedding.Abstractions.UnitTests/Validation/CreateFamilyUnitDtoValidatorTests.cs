@@ -53,7 +53,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.Guests[0].FirstName);
+            result.ShouldHaveValidationErrorFor("Guests[0].FirstName");
         }
 
         [TestCase("A", true)]
@@ -126,8 +126,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.Guests[1].FirstName);
-            result.ShouldHaveValidationErrorFor(f => f.Guests[1].LastName);
+            result.ShouldHaveValidationErrorFor("Guests[1].FirstName");
+            result.ShouldHaveValidationErrorFor("Guests[1].LastName");
         }
 
         [Test]

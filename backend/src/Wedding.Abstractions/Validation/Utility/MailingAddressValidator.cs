@@ -10,7 +10,6 @@ namespace Wedding.Abstractions.Validation.Utility
             RuleFor(rsvpCode => rsvpCode)
                 .NotEmpty()
                 .WithMessage("Mailing address is empty.")
-                //.Matches(@"^[A-HJ-NP-TV-Y]{5}$").WithMessage("Invalid code.")
                 ;
         }
 
