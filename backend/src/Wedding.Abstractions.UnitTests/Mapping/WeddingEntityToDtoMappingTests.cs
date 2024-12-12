@@ -241,7 +241,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 GuestNumber = 1,
                 FirstName = "John",
                 LastName = "Jingleheimer",
-                Email = "jingleheimersmith@gmai.com",
+                Email = "jingleheimersmith@gmail.com",
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Child,
                 Roles = new List<RoleEnum> { RoleEnum.Staff },

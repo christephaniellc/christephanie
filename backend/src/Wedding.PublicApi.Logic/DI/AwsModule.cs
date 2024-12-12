@@ -4,7 +4,6 @@ using Amazon.Extensions.NETCore.Setup;
 using Autofac;
 using System.Diagnostics.CodeAnalysis;
 using Amazon;
-using Microsoft.Extensions.Options;
 
 namespace Wedding.PublicApi.Logic.DI
 {

@@ -8,6 +8,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
+		<OutputType>Library</OutputType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,13 +17,5 @@
 	  <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.404" />
 	  <PackageReference Include="FluentValidation" Version="11.11.0" />
 	</ItemGroup>
-
-  <!-- <PropertyGroup> -->
-  <!--   <TargetFramework>net8.0</TargetFramework> -->
-  <!--   <Nullable>enable</Nullable> -->
-  <!--   <ImplicitUsings>enable</ImplicitUsings> -->
-  <!--   <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS> -->
-  <!--   <DockerfileContext>..\Wedding</DockerfileContext> -->
-  <!-- </PropertyGroup> -->
 
 </Project>

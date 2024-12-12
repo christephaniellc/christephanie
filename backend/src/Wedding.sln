@@ -19,12 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Common.Web", "Weddi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.PublicApi.Logic.UnitTests", "Wedding.PublicApi.Logic.UnitTests\Wedding.PublicApi.Logic.UnitTests.csproj", "{F72E8E13-BF46-4FCE-9778-276099AD1CE3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{57E4B3B1-C3CA-4123-8BB7-FD3A74FA181B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{BBF82D3D-FE27-4975-8A0D-B7F4E6D22E45}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Infrastructure", "Wedding.Infrastructure\Wedding.Infrastructure.csproj", "{36A74AF4-CFD9-436B-93F2-D95CD28AE500}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Abstractions.UnitTests", "Wedding.Abstractions.UnitTests\Wedding.Abstractions.UnitTests.csproj", "{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}"
 EndProject
 Global
@@ -61,10 +55,6 @@ Global
 		{F72E8E13-BF46-4FCE-9778-276099AD1CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F72E8E13-BF46-4FCE-9778-276099AD1CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F72E8E13-BF46-4FCE-9778-276099AD1CE3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36A74AF4-CFD9-436B-93F2-D95CD28AE500}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36A74AF4-CFD9-436B-93F2-D95CD28AE500}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36A74AF4-CFD9-436B-93F2-D95CD28AE500}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36A74AF4-CFD9-436B-93F2-D95CD28AE500}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -76,7 +66,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CB4DAF9C-9E6A-4C88-83F4-BC0CF6395576} = {9F8E0F09-12D0-4B24-80D3-84C87A6D3567}
 		{F72E8E13-BF46-4FCE-9778-276099AD1CE3} = {9F8E0F09-12D0-4B24-80D3-84C87A6D3567}
-		{36A74AF4-CFD9-436B-93F2-D95CD28AE500} = {57E4B3B1-C3CA-4123-8BB7-FD3A74FA181B}
 		{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07} = {9F8E0F09-12D0-4B24-80D3-84C87A6D3567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

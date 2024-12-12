@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ using Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation;
 
 namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
 {
-    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitDto>
+    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitDto>,
+                                        IAsyncQueryHandler<GetFamilyUnitsQuery, List<FamilyUnitDto>>
     {
         private readonly ILogger<GetFamilyUnitHandler> _logger;
         private readonly IDynamoDBContext _repository;
@@ -89,6 +91,11 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Handlers
                 _logger.LogError(ex, "An error occurred while getting the family unit.");
                 throw new ApplicationException("An error occurred while getting the family unit.", ex);
             }
+        }
+
+        public Task<List<FamilyUnitDto>> GetAsync(GetFamilyUnitsQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
         }
     }
 }

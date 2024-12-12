@@ -5,13 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using Autofac;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Wedding.Common.Configuration;
 using Wedding.Common.Web.Extensions;
 using Wedding.Common.Web.Options;
 using Wedding.PublicApi.Logic.DI;
 using Wedding.PublicApi.Swagger;
+using Autofac.Extensions.DependencyInjection;
 
 namespace Wedding.PublicApi
 {
@@ -42,17 +42,24 @@ namespace Wedding.PublicApi
                 });
             });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
+            services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Christephanie API", Version = "v1" });
                 options.OperationFilter<AddResponsesOperationFilter>();
                 options.DocInclusionPredicate((docName, apiDesc) =>
                 {
-        // Exclude endpoints with an empty path (e.g., "/")
+                    // Exclude endpoints with an empty path (e.g., "/")
                     return !string.IsNullOrWhiteSpace(apiDesc.RelativePath);
                 });
+
+                options.MapType<bool>(() => new OpenApiSchema { Type = "boolean", Nullable = true });
+#if LAMBDA
+                options.CustomSchemaIds(type => type.FullName); // Avoid name collisions
+#endif
             });
         }
 
@@ -63,7 +70,10 @@ namespace Wedding.PublicApi
             if (app.ApplicationServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API for Lambda v1");
+                });
             }
 
             app.UseRouting();

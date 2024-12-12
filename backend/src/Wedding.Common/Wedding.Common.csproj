@@ -6,14 +6,6 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 	</PropertyGroup>
 
-  <!-- <PropertyGroup> -->
-  <!--   <TargetFramework>net8.0</TargetFramework> -->
-  <!--   <Nullable>enable</Nullable> -->
-  <!--   <ImplicitUsings>enable</ImplicitUsings> -->
-  <!--   <UserSecretsId>a506a283-8820-4706-b23a-5be5d9543ee2</UserSecretsId> -->
-  <!--   <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS> -->
-  <!-- </PropertyGroup> -->
-
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
