@@ -1,4 +1,4 @@
-﻿namespace Wedding.Common.Web.Options
+﻿namespace Wedding.Common.Configuration
 {
     public class UspsConfiguration
     {

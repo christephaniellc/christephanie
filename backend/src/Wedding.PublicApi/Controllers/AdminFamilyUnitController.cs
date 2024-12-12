@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +35,8 @@ namespace Wedding.PublicApi.Controllers
         //[Authorize]
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<FamilyUnitDto>> AdminCreateFamilyUnits([FromBody] List<FamilyUnitDto> familyUnits, CancellationToken cancellationToken = default)
         {
             try
@@ -73,11 +74,38 @@ namespace Wedding.PublicApi.Controllers
                 return Problem(ex.Message);
             }
         }
+        
+        //[Authorize]
+        [HttpGet("{interested}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
+        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnits(bool? interested,
+            //[FromBody] APIGatewayProxyRequest request //, 
+            //  [FromServices] ILambdaContext context
+            CancellationToken cancellationToken = default
+        )
+        {
+            var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
+
+            // TODO: Move check to internal middleware referencing database roles
+            // Parse and validate Auth0 token (from request headers) and admin role
+            var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
+            if (!authCheck.Authorized)
+            {
+                return Unauthorized(new { message = authCheck.ResponseMessage });
+            }
+
+            var query = new GetFamilyUnitsQuery { Interested = interested };
+            var result = await _dispatcher.GetAsync<GetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
+
+            return Ok(result);
+        }
 
         //[Authorize]
         //[HttpPost("update")]
         [HttpPut("{rsvpCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit(string rsvpCode, [FromBody] FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             try
@@ -115,25 +143,28 @@ namespace Wedding.PublicApi.Controllers
                 return Problem(ex.Message);
             }
         }
+        public class DeleteResponse
+        {
+            public bool Success { get; set; }
+        }
 
         [HttpDelete("{rsvpCode}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        public async Task<bool> AdminDeleteFamilyUnitAsync(string rsvpCode, CancellationToken cancellationToken = default)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string rsvpCode, CancellationToken cancellationToken = default)
         {
-            // var headers = Request.Headers
-            //     .ToDictionary(header => header.Key, header => header.Value.ToString()); ;
-
-            //var headers = HeaderHelper.GetHeaders(Request.Headers);
             var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
             
             var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
             if (!authCheck.Authorized)
             {
-                return false;
+                return Unauthorized(new { message = authCheck.ResponseMessage }); ;
             }
 
             var command = new DeleteFamilyUnitCommand(rsvpCode);
-            return await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);
+            var result = await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);
+            
+            return Ok(new DeleteResponse { Success = result });
         }
     }
 }
