@@ -22,10 +22,10 @@ namespace Wedding.PublicApi.Logic.DI
         {
             var assemblies = new[] { typeof(RegistrationHook).Assembly };
 
-            LoadHandlers(builder, typeof(IAsyncQueryHandler<>), assemblies);
-            LoadHandlers(builder, typeof(IAsyncQueryHandler<,>), assemblies);
-            LoadHandlers(builder, typeof(IAsyncCommandHandler<>), assemblies);
-            LoadHandlers(builder, typeof(IAsyncCommandHandler<,>), assemblies);
+            // LoadHandlers(builder, typeof(IAsyncQueryHandler<>), assemblies);
+            // LoadHandlers(builder, typeof(IAsyncQueryHandler<,>), assemblies);
+            // LoadHandlers(builder, typeof(IAsyncCommandHandler<>), assemblies);
+            // LoadHandlers(builder, typeof(IAsyncCommandHandler<,>), assemblies);
 
             builder.RegisterType<ControllerDispatcher>().AsImplementedInterfaces().InstancePerDependency();
 

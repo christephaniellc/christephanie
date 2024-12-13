@@ -7,8 +7,6 @@ using NUnit.Framework;
 
 namespace Wedding.Common.Utility.Testing.TestChain
 {
-    // using Thycotic.Utility.Reflection;
-
     namespace Wedding.Common.TestChain
     {
         /// <summary>

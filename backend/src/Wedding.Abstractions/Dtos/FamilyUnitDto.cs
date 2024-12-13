@@ -28,14 +28,16 @@ namespace Wedding.Abstractions.Dtos
         public int CalculateHeadcount()
         {
             var headcount = 0;
-            foreach (var guest in Guests)
-            {
-                if (guest.Rsvp is null 
-                    || guest.Rsvp.InvitationResponse != InvitationResponseEnum.Declined)
+            if (Guests != null)
+                foreach (var guest in Guests)
                 {
-                    headcount++;
+                    if (guest.Rsvp is null
+                        || guest.Rsvp.InvitationResponse != InvitationResponseEnum.Declined)
+                    {
+                        headcount++;
+                    }
                 }
-            }
+
             return headcount;
         }
 

@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
 using Wedding.Common.Helpers;
+using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
+using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
+using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
 
@@ -62,8 +65,8 @@ namespace Wedding.PublicApi.Controllers
 
                 foreach (var unit in familyUnits)
                 {
-                    var command = new CreateFamilyUnitCommand(unit);
-                    var result = await _dispatcher.ExecuteAsync<CreateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+                    var command = new CreateFamilyUnitsCommand(familyUnits);
+                    var result = await _dispatcher.ExecuteAsync<CreateFamilyUnitsCommand, FamilyUnitDto>(command, cancellationToken);
                 }
 
                 return Ok(familyUnits);
@@ -102,15 +105,15 @@ namespace Wedding.PublicApi.Controllers
 
         //[Authorize]
         //[HttpPost("update")]
-        [HttpPut("{rsvpCode}")]
+        [HttpPut("")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit(string rsvpCode, [FromBody] FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit([FromBody] FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             try
             {
-                if (string.IsNullOrEmpty(rsvpCode))
+                if (string.IsNullOrEmpty(familyUnit.RsvpCode))
                 {
                     return BadRequest("RSVP Code is required.");
                 }
@@ -132,7 +135,7 @@ namespace Wedding.PublicApi.Controllers
                     return Unauthorized(new { message = authCheck.ResponseMessage });
                 }
 
-                var command = new UpdateFamilyUnitCommand(rsvpCode, familyUnit);
+                var command = new UpdateFamilyUnitCommand(familyUnit);
                 var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
                 return Ok(familyUnit);

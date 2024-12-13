@@ -22,19 +22,6 @@ namespace Wedding.Common.Web.Extensions
             return collection;
         }
 
-        public static IServiceCollection AddWeddingAutomapper(this IServiceCollection services)
-        {
-            // Initialize AutoMapper with the profiles
-            var mapperConfig = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-            });
-
-            IMapper mapper = mapperConfig.CreateMapper();
-            services.AddSingleton(mapper);
-            return services;
-        }
-
         /// <summary>
         /// Add Handlers
         /// </summary>

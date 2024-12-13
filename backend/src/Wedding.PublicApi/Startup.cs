@@ -12,6 +12,9 @@ using Wedding.Common.Web.Options;
 using Wedding.PublicApi.Logic.DI;
 using Wedding.PublicApi.Swagger;
 using Autofac.Extensions.DependencyInjection;
+using Wedding.Abstractions.Mapping;
+using Wedding.Common.DI;
+using FluentAssertions.Common;
 
 namespace Wedding.PublicApi
 {
@@ -45,6 +48,11 @@ namespace Wedding.PublicApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
+
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
 
             services.AddSwaggerGen(options =>
             {
@@ -96,6 +104,16 @@ namespace Wedding.PublicApi
 
             var authProviderConfig = Configuration.GetSection(ConfigurationKeys.Authorization).Get<AuthorizationConfiguration>();
             var auth0Config = Configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
+
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
+            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
+
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
 
             builder.RegisterModule(new LogicModule());
             builder.RegisterModule(new AwsModule(awsOptions));

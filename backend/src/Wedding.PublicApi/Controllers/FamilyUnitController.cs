@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
+using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
 

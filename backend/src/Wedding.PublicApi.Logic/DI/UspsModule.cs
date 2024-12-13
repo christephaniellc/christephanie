@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Wedding.Common.Configuration;
-using Wedding.Common.Web.Options;
 using Wedding.PublicApi.Logic.Services;
 
 namespace Wedding.PublicApi.Logic.DI

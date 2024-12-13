@@ -70,7 +70,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             {
                 GuestId = Guid.NewGuid().ToString(),
                 Auth0Id = "auth0|123456",
-                FirstName = "John",
+                FirstName = "Jon",
+                AdditionalFirstNames = new List<string> { "Jonathan", "Jojo"},
                 LastName = "Doe",
                 Roles = new List<RoleEnum> { RoleEnum.Admin },
                 Email = "john.doe@example.com",
@@ -85,6 +86,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             Assert.AreEqual(entity.GuestId, dto.GuestId);
             Assert.AreEqual(entity.Auth0Id, dto.Auth0Id);
             Assert.AreEqual(entity.FirstName, dto.FirstName);
+            Assert.AreEqual(entity.AdditionalFirstNames, dto.AdditionalFirstNames);
             Assert.AreEqual(entity.LastName, dto.LastName);
             Assert.AreEqual(entity.Roles, dto.Roles);
             Assert.AreEqual(entity.Email, dto.Email);
