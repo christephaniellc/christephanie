@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Wedding.Common.DI;
+using Wedding.Common.Web.DI;
 using Wedding.Common.Web.Options;
 
 namespace Wedding.Common.Web.Extensions
@@ -64,14 +64,14 @@ namespace Wedding.Common.Web.Extensions
                 .AddKeyPerFile("/var/publicapi-vault", true, true);
 
             //look for key-vault urls in the environment
-            if (_builder.Environment.IsDevelopment() &&
-                !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("KeyVaultUrls")))
-            {
-                _ = _builder.Configuration.AddAzureKeyVaultWithDefaultCredentials(
-                    System.Environment.GetEnvironmentVariable("KeyVaultUrls")!);
-
-                _ = _builder.Configuration.AddJsonFile($"appsettings.{System.Environment.UserName}.json", optional: true);
-            }
+            // if (_builder.Environment.IsDevelopment() &&
+            //     !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("KeyVaultUrls")))
+            // {
+            //     _ = _builder.Configuration.AddAzureKeyVaultWithDefaultCredentials(
+            //         System.Environment.GetEnvironmentVariable("KeyVaultUrls")!);
+            //
+            //     _ = _builder.Configuration.AddJsonFile($"appsettings.{System.Environment.UserName}.json", optional: true);
+            // }
 
             //add the environment
             _ = _builder.Configuration.AddEnvironmentVariables();

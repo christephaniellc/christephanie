@@ -59,6 +59,9 @@ namespace Wedding.Abstractions.Entities
         public string? FirstName { get; set; }
 
         [DynamoDBProperty]
+        public List<string>? AdditionalFirstNames { get; set; }
+
+        [DynamoDBProperty]
         public string? LastName { get; set; }
 
         [DynamoDBProperty]

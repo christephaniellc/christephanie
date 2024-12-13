@@ -4,6 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
+		<OutputType>Library</OutputType>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +16,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Wedding.Abstractions\Wedding.Abstractions.csproj" />
-    <ProjectReference Include="..\Wedding.Common.Web\Wedding.Common.Web.csproj" />
     <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
   </ItemGroup>
 
   <ItemGroup>

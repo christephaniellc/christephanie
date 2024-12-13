@@ -16,6 +16,8 @@ namespace Wedding.Abstractions.Dtos
 
         public string FirstName { get; set; } = "";
 
+        public List<string>? AdditionalFirstNames { get; set; }
+
         public string LastName { get; set; } = "";
 
         public List<RoleEnum> Roles { get; set; }
