@@ -67,10 +67,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<ApplicationException>(async () => await _handler.ExecuteAsync(command));
-            Assert.That(ex.Message, Is.EqualTo("An error occurred while saving the family unit."));
+            Assert.That(ex!.Message, Is.EqualTo("An error occurred while saving the family unit."));
             //Assert.That(ex.Message, Is.EqualTo("Family unit with RSVP code 'ABCDE' already exists."));
             // TODO
             //Assert.That(_loggerMock.);
+            Assert.Fail();
         }
 
         [Test]
@@ -92,7 +93,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 
             _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
                 It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((WeddingEntity)null);
+                .ReturnsAsync((WeddingEntity)null!);
 
             // Act
             var result = await _handler.ExecuteAsync(command);
@@ -101,7 +102,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             _repositoryMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
             Assert.AreEqual("ABCDE", result.RsvpCode);
             Assert.AreEqual("Doe_John Family", result.UnitName);
-            Assert.AreEqual(2, result.Guests.Count);
+            Assert.AreEqual(2, result.Guests!.Count);
         }
 
         [Test]
@@ -115,20 +116,20 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                      Tier = "A",
                      Guests = new List<GuestDto>
                     {
-                        new GuestDto { FirstName = "John", LastName = "Doe", Roles = null }
+                        new GuestDto { FirstName = "John", LastName = "Doe", Roles = null! }
                     }
                  }
             );
 
             _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((WeddingEntity)null);
+                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))!
+                .ReturnsAsync((WeddingEntity)null!);
 
             // Act
             var result = await _handler.ExecuteAsync(command);
 
             // Assert
-            Assert.AreEqual(1, result.Guests[0].Roles.Count);
+            Assert.AreEqual(1, result.Guests![0].Roles.Count);
             Assert.AreEqual(RoleEnum.Guest, result.Guests[0].Roles[0]);
         }
 
@@ -136,13 +137,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         public void AddDefaultRoles_Should_Add_None_Role_When_Roles_Are_Null()
         {
             // Arrange
-            var guest = new GuestDto { Roles = null };
+            var guest = new GuestDto { Roles = null! };
 
             // Act
             _handler.AddDefaultRoles(guest);
 
             // Assert
-            Assert.AreEqual(1, guest.Roles.Count);
+            Assert.AreEqual(1, guest.Roles!.Count);
             Assert.AreEqual(RoleEnum.Guest, guest.Roles[0]);
         }
 

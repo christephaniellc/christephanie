@@ -37,8 +37,8 @@ namespace Wedding.Abstractions.Dtos
         //public bool BabySittingRequest { get; set; } = false;
 
         /// <summary>
-        /// Guest last login (using Auth0)
+        /// Guest last login as first element
         /// </summary>
-        public DateTime? GuestLastLogin { get; set; }
+        public List<DateTime>? GuestLogins { get; set; }
     }
 }

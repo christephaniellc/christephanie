@@ -32,7 +32,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
         {
             query.Validate(nameof(query));
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.RsvpCode);
+            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode);
 
             try
             {
@@ -55,14 +55,14 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 if (result == null)
                 {
                     _logger.LogError("Family unit with RSVP code '{query.RsvpCode}' not found.");
-                    throw new InvalidOperationException($"Family unit with RSVP code '{query.RsvpCode}' not found.");
+                    throw new InvalidOperationException($"Family unit with RSVP code '{query.InvitationCode}' not found.");
                 }
 
                 var numFamilies = result.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
                 if (numFamilies.Count > 1)
                 {
                     _logger.LogError("Multiple family units with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Multiple family units with RSVP code '{query.RsvpCode}' found.");
+                    throw new ApplicationException($"Multiple family units with RSVP code '{query.InvitationCode}' found.");
                 }
 
                 // var familyUnitInfo = result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
@@ -76,7 +76,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 if (guests.Count == 0)
                 {
                     _logger.LogError("No guests with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Invalid RSVP code '{query.RsvpCode}', no guests found.");
+                    throw new ApplicationException($"Invalid RSVP code '{query.InvitationCode}', no guests found.");
                 }
 
                 familyUnit.Guests = guests;

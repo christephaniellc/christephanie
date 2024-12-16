@@ -2,11 +2,8 @@
 {
     public class UspsConfiguration
     {
-        /// <summary>
-        /// USPS Developer API user id
-        /// </summary>
-        public string? UserId { get; set; }
-
-        public string? ApiUrl { get; set; }
+        public required string ApiUrl { get; set; }
+        public required string ConsumerKey { get; set; }
+        public required string ConsumerSecret { get; set; }
     }
 }

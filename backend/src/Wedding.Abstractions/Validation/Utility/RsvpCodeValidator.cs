@@ -19,6 +19,6 @@ namespace Wedding.Abstractions.Validation.Utility
         /// <param name="obj">The object.</param>
         /// <param name="_">The .</param>
         public void IsValid(string? obj, object? _ = null)
-            => this.ValidateAndThrow(obj);
+            => this!.ValidateAndThrow(obj);
     }
 }

@@ -19,6 +19,12 @@
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.InvitationCode\Wedding.Lambdas.Validate.InvitationCode.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Validate\Post\" />
   </ItemGroup>
 </Project>

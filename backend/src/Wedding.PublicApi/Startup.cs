@@ -15,6 +15,10 @@ using Autofac.Extensions.DependencyInjection;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.DI;
 using FluentAssertions.Common;
+using System.Threading.Tasks;
+using System;
+using Wedding.Common.Helpers.AWS;
+using Wedding.Common.ThirdParty;
 
 namespace Wedding.PublicApi
 {
@@ -101,19 +105,16 @@ namespace Wedding.PublicApi
         {
             var awsOptions = Configuration.GetAWSOptions();
             var uspsConfig = Configuration.GetSection(ConfigurationKeys.USPS).Get<UspsConfiguration>()!;
-
             var authProviderConfig = Configuration.GetSection(ConfigurationKeys.Authorization).Get<AuthorizationConfiguration>();
             var auth0Config = Configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
 
-            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
-            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
-            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
-            // services.AddLambdaRegistrations(typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
+            //TODO: SKS, add new handlers here when testing!!!!
 
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Lambdas.Validate.Address.RegistrationHook));
 
             builder.RegisterModule(new LogicModule());
             builder.RegisterModule(new AwsModule(awsOptions));

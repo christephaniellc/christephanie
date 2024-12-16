@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Serialization;
 using AutoMapper;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
@@ -79,7 +78,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
-                    .ForMember(dest => dest.GuestLastLogin, opt => opt.MapFrom(src => src.GuestLastLogin))
+                    .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
                     .ForMember(dest => dest.Rsvp, opt => 
                         opt.MapFrom(src => new RsvpDto
                     {
@@ -118,20 +117,20 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
-                    .ForMember(dest => dest.GuestLastLogin, opt => opt.MapFrom(src => src.GuestLastLogin))
+                    .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
 
-                    .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.Rsvp.InvitationResponse))
-                    .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Rsvp.Wedding))
-                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.Rsvp.SleepPreference))
-                    .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.Rsvp.RehearsalDinner))
-                    .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.Rsvp.FourthOfJuly))
-                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.Rsvp.BuildWeek))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.Rsvp.ArrivalDate))
+                    .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.InvitationResponse : InvitationResponseEnum.Pending))
+                    .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.Wedding : null))
+                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.SleepPreference : null))
+                    .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.RehearsalDinner : null))
+                    .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.FourthOfJuly : null))
+                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.BuildWeek : null))
+                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.ArrivalDate : null))
                     
-                    .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Preferences.Meal))
-                    .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.Preferences.KidsPortion))
-                    .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.Preferences.FoodAllergies))
-                    .ForMember(dest => dest.PrefSpecialAlcoholRequests, opt => opt.MapFrom(src => src.Preferences.SpecialAlcoholRequests))
+                    .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.Meal : null))
+                    .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.KidsPortion : null))
+                    .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.FoodAllergies : null))
+                    .ForMember(dest => dest.PrefSpecialAlcoholRequests, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.SpecialAlcoholRequests : null))
                     ;
             }
         }

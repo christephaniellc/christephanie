@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
-using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
@@ -26,13 +25,13 @@ namespace Wedding.PublicApi.Controllers
         //[Authorize]
         [HttpGet("{rsvpCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
-        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string rsvpCode,
+        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string rsvpCode, string firstName,
             //[FromBody] APIGatewayProxyRequest request //, 
             //  [FromServices] ILambdaContext context
             CancellationToken cancellationToken = default
         )
         {
-            var query = new GetFamilyUnitQuery { RsvpCode = rsvpCode };
+            var query = new GetFamilyUnitQuery(rsvpCode, firstName);
             var result = await _dispatcher.GetAsync<GetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
             return Ok(result);

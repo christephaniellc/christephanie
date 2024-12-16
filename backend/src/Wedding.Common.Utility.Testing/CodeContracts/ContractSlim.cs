@@ -11,7 +11,7 @@ namespace Wedding.Common.Utility.Testing.CodeContracts
                 return;
             try
             {
-                throw (Exception)(object)(TException)Activator.CreateInstance(typeof(TException), (object)"Precondition failed");
+                throw ((Exception)((object)((TException)Activator.CreateInstance(typeof(TException), (object)"Precondition failed")!)!)!)!;
                 //throw (object)(TException)Activator.CreateInstance(typeof(TException), (object)"Precondition failed");
             }
             catch (Exception ex)
@@ -33,6 +33,6 @@ namespace Wedding.Common.Utility.Testing.CodeContracts
         {
         }
 
-        public static T Result<T>() => default(T);
+        public static T Result<T>() => default(T)!;
     }
 }
