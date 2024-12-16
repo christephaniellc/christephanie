@@ -38,9 +38,9 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             var success = !headers.TryGetValue("Authorization", out var authToken)
                           && !string.IsNullOrEmpty(authToken);
 
-            response.Claims = JwtHelper.ParseJwt(response.AuthToken);
-            var subClaim = response.Claims.ContainsKey("sub")
-                ? response.Claims["sub"].FirstOrDefault()
+            if (response.AuthToken != null) response.Claims = JwtHelper.ParseJwt(response.AuthToken);
+            var subClaim = response.Claims != null && response.Claims.TryGetValue("sub", out var claim)
+                ? claim.FirstOrDefault()
                 : null;
 
             if (subClaim is null)

@@ -29,7 +29,7 @@ namespace Wedding.PublicApi.Logic.Areas.FamilyUnit.Validation
                 .WithMessage("Mailing address cannot be empty when there are interested guests.")
                 ;
             RuleFor(cmd => cmd.FamilyUnit.MailingAddress)
-                .SetValidator(new MailingAddressValidator())
+                .SetValidator(new MailingAddressValidator()!)
                 .When(cmd => !string.IsNullOrEmpty(cmd.FamilyUnit.MailingAddress));
             RuleForEach(cmd => cmd.FamilyUnit.AdditionalAddresses)
                 .SetValidator(new MailingAddressValidator())

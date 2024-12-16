@@ -1,6 +1,9 @@
 ﻿using Autofac;
+using FluentAssertions.Common;
+using System.Threading.Tasks;
+using System;
 using Wedding.Common.Configuration;
-using Wedding.PublicApi.Logic.Services;
+using Wedding.Common.ThirdParty;
 
 namespace Wedding.PublicApi.Logic.DI
 {
@@ -18,7 +21,8 @@ namespace Wedding.PublicApi.Logic.DI
         {
             builder.Register(_ =>
                 {
-                    return new MailingAddressValidationProvider(_uspsConfiguration.UserId, _uspsConfiguration.ApiUrl);
+                    return new UspsMailingAddressValidationProvider(_uspsConfiguration.ApiUrl, 
+                        _uspsConfiguration.ConsumerKey, _uspsConfiguration.ConsumerSecret);
                 })
                 .AsImplementedInterfaces()
                 .AsSelf()

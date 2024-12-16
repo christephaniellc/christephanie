@@ -32,7 +32,8 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             try
             {
                 response.Claims = JwtHelper.ParseJwt(response.AuthToken);
-                if (!response.Claims.ContainsKey(string.Format("{0}/roles", _baseUrl)) ||
+                if (response.Claims == null || 
+                    !response.Claims.ContainsKey(string.Format("{0}/roles", _baseUrl)) ||
                     !response.Claims[string.Format("{0}/roles", _baseUrl)].Contains("admin"))
                 {
                     response = UNAUTHORIZED;

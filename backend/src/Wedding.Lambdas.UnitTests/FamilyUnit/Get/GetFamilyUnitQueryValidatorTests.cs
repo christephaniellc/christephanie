@@ -19,47 +19,47 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Null()
+        public void Should_Have_Error_When_RsvpCode_Is_Empty()
         {
             // Arrange
-            var query = new GetFamilyUnitQuery { RsvpCode = null };
+            var query = new GetFamilyUnitQuery("", "John");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.RsvpCode);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
         public void Should_Not_Have_Error_When_RsvpCode_Is_Invalid()
         {
             // Arrange
-            var query = new GetFamilyUnitQuery { RsvpCode = "ABCDEFGH" };
+            var query = new GetFamilyUnitQuery("ABCDEFGH", "John");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.RsvpCode);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
         public void Should_Not_Have_Error_When_RsvpCode_Has_Invalid_Chars()
         {
             // Arrange
-            var query = new GetFamilyUnitQuery { RsvpCode = "IIIII" };
+            var query = new GetFamilyUnitQuery("IIIII", "John");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.RsvpCode);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
         public void Should_Not_Have_Error_When_RsvpCode_Is_Valid()
         {
             // Arrange
-            var query = new GetFamilyUnitQuery { RsvpCode = "ABCDE" };
+            var query = new GetFamilyUnitQuery("ABCDE", "John");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldNotHaveValidationErrorFor(q => q.RsvpCode);
+            result.ShouldNotHaveValidationErrorFor(q => q.InvitationCode);
         }
     }
 }

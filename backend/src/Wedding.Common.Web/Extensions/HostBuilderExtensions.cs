@@ -15,7 +15,7 @@ namespace Wedding.Common.Web.Extensions
             IServiceCollection serviceCollection)
         {
             hostBuilder.ConfigureAutofacContainer(serviceCollection,
-                (Action<HostBuilderContext, IServiceCollection, ContainerBuilder>)null);
+                (Action<HostBuilderContext, IServiceCollection, ContainerBuilder>)null!);
             return hostBuilder;
         }
 
@@ -30,7 +30,7 @@ namespace Wedding.Common.Web.Extensions
                 .ConfigureContainer<ContainerBuilder>(
                     (Action<HostBuilderContext, ContainerBuilder>)((context, builder) =>
                     {
-                        Action<HostBuilderContext, IServiceCollection, ContainerBuilder> action1 = configureDelegate;
+                        Action<HostBuilderContext, IServiceCollection, ContainerBuilder> action1 = configureDelegate!;
                         if (action1 != null)
                             action1(context, serviceCollection, builder);
                         NoOpServiceProvider sp = new NoOpServiceProvider();
@@ -38,7 +38,7 @@ namespace Wedding.Common.Web.Extensions
                                      .Where<ServiceDescriptor>((Func<ServiceDescriptor, bool>)(sd =>
                                          sd.ServiceType == typeof(Action<ContainerBuilder>)))
                                      .Select<ServiceDescriptor, object>((Func<ServiceDescriptor, object>)(sd =>
-                                         sd.ImplementationFactory((IServiceProvider)sp)))
+                                         sd.ImplementationFactory!((IServiceProvider)sp)))
                                      .Cast<Action<ContainerBuilder>>().ToArray<Action<ContainerBuilder>>())
                             action2(builder);
                     }));

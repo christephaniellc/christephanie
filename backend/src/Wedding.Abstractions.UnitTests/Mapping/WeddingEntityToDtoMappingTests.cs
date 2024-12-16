@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentAssertions;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
@@ -31,8 +32,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<GuestDto>(entity);
 
-            Assert.NotNull(dto.Rsvp);
-            Assert.NotNull(dto.Preferences);
+            dto.Rsvp.Should().NotBeNull();
+            dto.Preferences.Should().NotBeNull();
         }
 
         [Test]
@@ -52,15 +53,15 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<FamilyUnitDto>(entity);
 
-            Assert.AreEqual(entity.RsvpCode, dto.RsvpCode);
-            Assert.AreEqual(entity.UnitName, dto.UnitName);
-            Assert.AreEqual(entity.Tier, dto.Tier);
-            Assert.AreEqual(entity.InvitationResponseNotes, dto.InvitationResponseNotes);
-            Assert.AreEqual(entity.MailingAddress, dto.MailingAddress);
-            Assert.AreEqual(entity.AdditionalAddresses, dto.AdditionalAddresses);
-            Assert.AreEqual(entity.PotentialHeadCount, dto.PotentialHeadCount);
-            Assert.AreEqual(entity.FamilyUnitLastLogin, dto.FamilyUnitLastLogin);
-            Assert.IsNull(dto.Guests);
+            dto.RsvpCode.Should().Be(entity.RsvpCode);
+            dto.UnitName.Should().Be(entity.UnitName);
+            dto.Tier.Should().Be(entity.Tier);
+            dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
+            dto.MailingAddress.Should().Be(entity.MailingAddress);
+            dto.AdditionalAddresses.Should().BeEquivalentTo(entity.AdditionalAddresses);
+            dto.PotentialHeadCount.Should().Be(entity.PotentialHeadCount);
+            dto.FamilyUnitLastLogin.Should().Be(entity.FamilyUnitLastLogin);
+            dto.Guests.Should().BeNull();
         }
 
         [Test]
@@ -78,23 +79,24 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
                 InvitationResponseNotes = "Can't wait!",
-                GuestLastLogin = DateTime.Now
+                GuestLogins = new List<DateTime> { System.DateTime.Now, System.DateTime.Now }
             };
 
             var dto = _mapper.Map<GuestDto>(entity);
 
-            Assert.AreEqual(entity.GuestId, dto.GuestId);
-            Assert.AreEqual(entity.Auth0Id, dto.Auth0Id);
-            Assert.AreEqual(entity.FirstName, dto.FirstName);
-            Assert.AreEqual(entity.AdditionalFirstNames, dto.AdditionalFirstNames);
-            Assert.AreEqual(entity.LastName, dto.LastName);
-            Assert.AreEqual(entity.Roles, dto.Roles);
-            Assert.AreEqual(entity.Email, dto.Email);
-            Assert.AreEqual(entity.Phone, dto.Phone);
-            Assert.AreEqual(entity.AgeGroup, dto.AgeGroup);
-            Assert.AreEqual(entity.GuestLastLogin, dto.GuestLastLogin);
-            Assert.AreEqual(entity.InvitationResponse, dto.Rsvp.InvitationResponse);
-            Assert.True(EmptyObjectHelper.ObjectPropertiesAreNullOrEmpty(dto.Preferences));
+            dto.GuestId.Should().Be(entity.GuestId);
+            dto.Auth0Id.Should().Be(entity.Auth0Id);
+            dto.FirstName.Should().Be(entity.FirstName);
+            dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
+            dto.LastName.Should().Be(entity.LastName);
+            dto.Roles.Should().BeEquivalentTo(entity.Roles);
+            dto.Email.Should().Be(entity.Email);
+            dto.Phone.Should().Be(entity.Phone);
+            dto.AgeGroup.Should().Be(entity.AgeGroup);
+            dto.GuestLogins.Should().BeEquivalentTo(entity.GuestLogins);
+            dto.Rsvp.Should().NotBeNull();
+            dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
+            EmptyObjectHelper.ObjectPropertiesAreNullOrEmpty(dto.Preferences!).Should().BeTrue();
         }
 
         [Test]
@@ -114,14 +116,14 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<RsvpDto>(entity);
 
-            Assert.AreEqual(entity.GuestId, dto.GuestId);
-            Assert.AreEqual(entity.InvitationResponse, dto.InvitationResponse);
-            Assert.AreEqual(entity.RsvpWedding, dto.Wedding);
-            Assert.AreEqual(entity.SleepPreference, dto.SleepPreference);
-            Assert.AreEqual(entity.RsvpRehearsalDinner, dto.RehearsalDinner);
-            Assert.AreEqual(entity.RsvpFourthOfJuly, dto.FourthOfJuly);
-            Assert.AreEqual(entity.RsvpBuildWeek, dto.BuildWeek);
-            Assert.AreEqual(entity.ArrivalDate, dto.ArrivalDate);
+            dto.GuestId.Should().Be(entity.GuestId);
+            dto.InvitationResponse.Should().Be(entity.InvitationResponse);
+            dto.Wedding.Should().Be(entity.RsvpWedding);
+            dto.SleepPreference.Should().Be(entity.SleepPreference);
+            dto.RehearsalDinner.Should().Be(entity.RsvpRehearsalDinner);
+            dto.FourthOfJuly.Should().Be(entity.RsvpFourthOfJuly);
+            dto.BuildWeek.Should().Be(entity.RsvpBuildWeek);
+            dto.ArrivalDate.Should().Be(entity.ArrivalDate);
         }
 
         [Test]
@@ -138,18 +140,18 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<PreferencesDto>(entity);
 
-            Assert.AreEqual(entity.GuestId, dto.GuestId);
-            Assert.AreEqual(entity.PrefMeal, dto.Meal);
-            Assert.AreEqual(entity.PrefKidsPortion, dto.KidsPortion);
-            Assert.AreEqual(entity.PrefFoodAllergies, dto.FoodAllergies);
-            Assert.AreEqual(entity.PrefSpecialAlcoholRequests, dto.SpecialAlcoholRequests);
+           dto.GuestId.Should().Be(entity.GuestId);
+           dto.Meal.Should().Be(entity.PrefMeal);
+           dto.KidsPortion.Should().Be(entity.PrefKidsPortion);
+           dto.FoodAllergies.Should().Be(entity.PrefFoodAllergies);
+           dto.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
         }
 
         [Test]
         public void Should_Map_FamilyUnitDto_To_WeddingEntity()
         {
             // Arrange
-            var familyUnitDto = new FamilyUnitDto
+            var dto = new FamilyUnitDto
             {
                 RsvpCode = "RSVP123",
                 UnitName = "Smith Family",
@@ -176,7 +178,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                             SleepPreference = SleepPreferenceEnum.Camping,
                             ArrivalDate = System.DateTime.Now
                         },
-                        GuestLastLogin = System.DateTime.Now,
+                        GuestLogins = new List<DateTime>{System.DateTime.Now},
                     },
                     new GuestDto { GuestId = Guid.NewGuid().ToString() }
                 },
@@ -184,17 +186,17 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             };
 
             // Act
-            var weddingEntity = _mapper.Map<WeddingEntity>(familyUnitDto);
+            var entity = _mapper.Map<WeddingEntity>(dto);
 
             // Assert
-            Assert.AreEqual(familyUnitDto.RsvpCode, weddingEntity.RsvpCode);
-            Assert.AreEqual(familyUnitDto.UnitName, weddingEntity.UnitName);
-            Assert.AreEqual(familyUnitDto.Tier, weddingEntity.Tier);
-            Assert.AreEqual(familyUnitDto.InvitationResponseNotes, weddingEntity.InvitationResponseNotes);
-            Assert.AreEqual(familyUnitDto.MailingAddress, weddingEntity.MailingAddress);
-            Assert.AreEqual(familyUnitDto.AdditionalAddresses, weddingEntity.AdditionalAddresses);
-            Assert.AreEqual(familyUnitDto.Guests.Count, weddingEntity.PotentialHeadCount);
-            Assert.AreEqual(familyUnitDto.FamilyUnitLastLogin, weddingEntity.FamilyUnitLastLogin);
+            entity.RsvpCode.Should().Be(dto.RsvpCode);
+            entity.UnitName.Should().Be(dto.UnitName);
+            entity.Tier.Should().Be(dto.Tier);
+            entity.InvitationResponseNotes.Should().Be(dto.InvitationResponseNotes);
+            entity.MailingAddress.Should().Be(dto.MailingAddress);
+            entity.AdditionalAddresses.Should().BeEquivalentTo(dto.AdditionalAddresses);
+            entity.PotentialHeadCount.Should().Be(dto.Guests.Count);
+            entity.FamilyUnitLastLogin.Should().Be(dto.FamilyUnitLastLogin);
         }
 
         [Test]
@@ -211,7 +213,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Email = "john.doe@example.com",
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
-                GuestLastLogin = DateTime.UtcNow,
+                GuestLogins = new List<DateTime> { System.DateTime.Now },
                 InvitationResponse = InvitationResponseEnum.Interested,
                 RsvpWedding = RsvpEnum.Attending,
                 PrefMeal = MealPreferenceEnum.Vegan,
@@ -220,17 +222,19 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<GuestDto>(entity);
 
-            Assert.AreEqual(entity.GuestId, dto.GuestId);
-            Assert.AreEqual(entity.GuestNumber, dto.GuestNumber);
-            Assert.AreEqual(entity.FirstName, dto.FirstName);
-            Assert.AreEqual(entity.LastName, dto.LastName);
-            Assert.AreEqual(entity.Email, dto.Email);
-            Assert.AreEqual(entity.Phone, dto.Phone);
-            Assert.AreEqual(entity.AgeGroup, dto.AgeGroup);
-            Assert.AreEqual(entity.InvitationResponse, dto.Rsvp.InvitationResponse);
-            Assert.AreEqual(entity.RsvpWedding, dto.Rsvp.Wedding);
-            Assert.AreEqual(entity.PrefMeal, dto.Preferences.Meal);
-            Assert.AreEqual(entity.PrefSpecialAlcoholRequests, dto.Preferences.SpecialAlcoholRequests);
+            dto.GuestId.Should().Be(entity.GuestId);
+            dto.GuestNumber.Should().Be(entity.GuestNumber);
+            dto.FirstName.Should().Be(entity.FirstName);
+            dto.LastName.Should().Be(entity.LastName);
+            dto.Email.Should().Be(entity.Email);
+            dto.Phone.Should().Be(entity.Phone);
+            dto.AgeGroup.Should().Be(entity.AgeGroup);
+            dto.Rsvp.Should().NotBeNull();
+            dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
+            dto.Rsvp.Wedding.Should().Be(entity.RsvpWedding);
+            dto.Preferences.Should().NotBeNull();
+            dto.Preferences!.Meal.Should().Be(entity.PrefMeal);
+            dto.Preferences.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
         }
 
         [Test]
@@ -261,36 +265,36 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                     FoodAllergies = "Peanuts",
                     SpecialAlcoholRequests = "Non-alcoholic beer"
                 },
-                GuestLastLogin = System.DateTime.Now,
+                GuestLogins = new List<DateTime> { System.DateTime.Now },
             };
 
             // Act
-            var weddingEntity = _mapper.Map<WeddingEntity>(guestDto);
+            var entity = _mapper.Map<WeddingEntity>(guestDto);
 
             // Assert
-            Assert.AreEqual(guestDto.GuestId, weddingEntity.GuestId);
-            Assert.AreEqual(guestDto.GuestNumber, weddingEntity.GuestNumber);
-            Assert.AreEqual(guestDto.Auth0Id, weddingEntity.Auth0Id);
-            Assert.AreEqual(guestDto.FirstName, weddingEntity.FirstName);
-            Assert.AreEqual(guestDto.LastName, weddingEntity.LastName);
-            Assert.AreEqual(guestDto.AgeGroup, weddingEntity.AgeGroup);
-            Assert.AreEqual(guestDto.Roles, weddingEntity.Roles);
-            Assert.AreEqual(guestDto.Email, weddingEntity.Email);
-            Assert.AreEqual(guestDto.Phone, weddingEntity.Phone);
-            Assert.AreEqual(guestDto.GuestLastLogin, weddingEntity.GuestLastLogin);
+            entity.GuestId.Should().Be(guestDto.GuestId);
+            entity.GuestNumber.Should().Be(guestDto.GuestNumber);
+            entity.Auth0Id.Should().Be(guestDto.Auth0Id);
+            entity.FirstName.Should().Be(guestDto.FirstName);
+            entity.LastName.Should().Be(guestDto.LastName);
+            entity.AgeGroup.Should().Be(guestDto.AgeGroup);
+            entity.Roles.Should().BeEquivalentTo(guestDto.Roles);
+            entity.Email.Should().Be(guestDto.Email);
+            entity.Phone.Should().Be(guestDto.Phone);
+            entity.GuestLogins.Should().BeEquivalentTo(guestDto.GuestLogins);
 
-            Assert.AreEqual(guestDto.Rsvp.InvitationResponse, weddingEntity.InvitationResponse);
-            Assert.AreEqual(guestDto.Rsvp.Wedding, weddingEntity.RsvpWedding);
-            Assert.AreEqual(guestDto.Rsvp.RehearsalDinner, weddingEntity.RsvpRehearsalDinner);
-            Assert.AreEqual(guestDto.Rsvp.FourthOfJuly, weddingEntity.RsvpFourthOfJuly);
-            Assert.AreEqual(guestDto.Rsvp.BuildWeek, weddingEntity.RsvpBuildWeek);
-            Assert.AreEqual(guestDto.Rsvp.SleepPreference, weddingEntity.SleepPreference);
-            Assert.AreEqual(guestDto.Rsvp.RsvpNotes, weddingEntity.RsvpNotes);
+            entity.InvitationResponse.Should().Be(guestDto.Rsvp.InvitationResponse);
+            entity.RsvpWedding.Should().Be(guestDto.Rsvp.Wedding);
+            entity.RsvpRehearsalDinner.Should().Be(guestDto.Rsvp.RehearsalDinner);
+            entity.RsvpFourthOfJuly.Should().Be(guestDto.Rsvp.FourthOfJuly);
+            entity.RsvpBuildWeek.Should().Be(guestDto.Rsvp.BuildWeek);
+            entity.SleepPreference.Should().Be(guestDto.Rsvp.SleepPreference);
+            entity.RsvpNotes.Should().Be(guestDto.Rsvp.RsvpNotes);
 
-            Assert.AreEqual(guestDto.Preferences.Meal, weddingEntity.PrefMeal);
-            Assert.AreEqual(guestDto.Preferences.KidsPortion, weddingEntity.PrefKidsPortion);
-            Assert.AreEqual(guestDto.Preferences.FoodAllergies, weddingEntity.PrefFoodAllergies);
-            Assert.AreEqual(guestDto.Preferences.SpecialAlcoholRequests, weddingEntity.PrefSpecialAlcoholRequests);
+            entity.PrefMeal.Should().Be(guestDto.Preferences.Meal);
+            entity.PrefKidsPortion.Should().Be(guestDto.Preferences.KidsPortion);
+            entity.PrefFoodAllergies.Should().Be(guestDto.Preferences.FoodAllergies);
+            entity.PrefSpecialAlcoholRequests.Should().Be(guestDto.Preferences.SpecialAlcoholRequests);
         }
     }
 }

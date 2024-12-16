@@ -80,7 +80,7 @@ namespace Wedding.Abstractions.Entities
         public AgeGroupEnum? AgeGroup { get; set; }
 
         [DynamoDBProperty]
-        public DateTime? GuestLastLogin { get; set; }
+        public List<DateTime>? GuestLogins { get; set; }
         #endregion
 
         #region RSVP-specific fields

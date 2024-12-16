@@ -48,7 +48,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             {
                 RsvpCode = "ABCDE",
                 Tier = "A",
-                Guests = new List<GuestDto> { new GuestDto { FirstName = null } }
+                Guests = new List<GuestDto> { new GuestDto { FirstName = null! } }
             };
 
             // Act & Assert
@@ -157,12 +157,12 @@ namespace Wedding.Abstractions.UnitTests.Validation
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
             result.ShouldNotHaveValidationErrorFor(f => f.RsvpCode);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[0].FirstName);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[0].LastName);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[0].AgeGroup);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[1].FirstName);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[1].LastName);
-            result.ShouldNotHaveValidationErrorFor(f => f.Guests[1].AgeGroup);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].FirstName);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].LastName);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].AgeGroup);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![1].FirstName);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![1].LastName);
+            result.ShouldNotHaveValidationErrorFor(f => f.Guests![1].AgeGroup);
         }
     }
 }

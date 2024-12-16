@@ -29,7 +29,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Have_Error_When_FamilyUnit_Is_Null()
         {
-            var command = new CreateFamilyUnitCommand(null);
+            var command = new CreateFamilyUnitCommand(null!);
             var result = _validator.TestValidate(command);
             result.ShouldHaveValidationErrorFor(x => x.FamilyUnit);
         }

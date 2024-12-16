@@ -3,10 +3,8 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using FluentAssertions;
 using NUnit.Framework;
-using Wedding.Abstractions.Dtos;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create;
-using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 
 namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get;
@@ -20,13 +18,15 @@ public class GetFunctionTests
     {
         var function = new Function();
         var context = new TestLambdaContext();
-        var command = new GetFamilyUnitQuery("ABCDE");
+        var command = new GetFamilyUnitQuery("ABCDE", "John");
         var request = new APIGatewayProxyRequest {
             Body = JsonSerializer.Serialize(command)
         };
 
         var result = await function.FunctionHandler(request, context);
 
-        result.Guests[0].FirstName.Should().Be("John");
+        result.Guests.Should().NotBeNull();
+        result.Guests!.Count.Should().BeGreaterThan(0);
+        result.Guests![0].FirstName.Should().Be("John");
     }
 }

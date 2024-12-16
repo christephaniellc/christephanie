@@ -51,7 +51,8 @@ public class Function
                 throw new Exception("Invalid RsvpCode in request.");
             }
 
-            var command = new GetFamilyUnitQuery(rsvpCode);
+            // TODO fix
+            var command = new GetFamilyUnitQuery(rsvpCode, "john");
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();

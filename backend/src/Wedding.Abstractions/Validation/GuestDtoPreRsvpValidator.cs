@@ -1,5 +1,7 @@
-﻿using FluentValidation;
+﻿using System;
+using FluentValidation;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Validation.Common;
 
 namespace Wedding.Abstractions.Validation
@@ -26,8 +28,14 @@ namespace Wedding.Abstractions.Validation
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Last name"))
                 ;
             RuleFor(e => e.AgeGroup).IsInEnum();
-            RuleFor(p => p.Rsvp.SleepPreference)
-                .IsInEnum();
+            RuleFor(p => p.Rsvp)
+                .Must(rsvp => rsvp == null 
+                              || Enum.IsDefined(typeof(SleepPreferenceEnum), rsvp.SleepPreference!))
+                ;
+            // RuleFor(p => p.Rsvp.SleepPreference)
+            //     .IsInEnum()
+            //     .When(p => p.Rsvp != null);
+                ;
             //RuleFor(p => p.Rsvp).SetValidator(new PreRsvpValidator());
         }
 

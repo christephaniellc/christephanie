@@ -41,6 +41,8 @@ public class CreateFunctionTests
 
         var result = await function.FunctionHandler(request, context);
 
-        result.Guests[0].FirstName.Should().Be("John");
+        result.Guests.Should().NotBeNull();
+        result.Guests!.Count.Should().BeGreaterThan(0);
+        result.Guests![0].FirstName.Should().Be("John");
     }
 }

@@ -40,6 +40,7 @@ namespace Wedding.Common.DI
             var mapperConfig = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
             });
 
             IMapper mapper = mapperConfig.CreateMapper();
