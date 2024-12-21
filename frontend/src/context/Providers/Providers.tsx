@@ -8,23 +8,26 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { RsvpProvider } from '../Rsvp/RsvpContext';
 import { AddressProvider } from '../Address/AddressContext';
 import { AppStateContextProvider } from '../AppStateContext';
+import { CommonContextProvider } from '../CommonContext';
 
 export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { providerConfig } = useAuth0Providers();
   const { queryClient } = useQueryProvider();
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppStateContextProvider>
-        <ChristephanieThemeProvider>
-          <RsvpProvider>
-            <AddressProvider>
-              <Auth0Provider{...providerConfig}>
-                {children}
-              </Auth0Provider>
-            </AddressProvider>
-          </RsvpProvider>
-        </ChristephanieThemeProvider>
-      </AppStateContextProvider>
-    </QueryClientProvider>
+    <CommonContextProvider>
+      <Auth0Provider{...providerConfig}>
+        <QueryClientProvider client={queryClient}>
+          <AppStateContextProvider>
+            <ChristephanieThemeProvider>
+              <RsvpProvider>
+                <AddressProvider>
+                  {children}
+                </AddressProvider>
+              </RsvpProvider>
+            </ChristephanieThemeProvider>
+          </AppStateContextProvider>
+        </QueryClientProvider>
+      </Auth0Provider>
+    </CommonContextProvider>
   );
 };

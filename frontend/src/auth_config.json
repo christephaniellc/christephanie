@@ -1,5 +1,6 @@
 {
   "domain": "christephanie.us.auth0.com",
-  "clientId": "mpaQ0Vc4dTXJ4TDGpafSdR2WhxjHor2d",
-  "audience": "https://api.christephanie.com"
+  "clientId": "sAJY1fIiPwOLa0z1SUzXZzD3Hp1vjuV5",
+  "audience": "https://api.christephanie.com",
+  "webservice": "https://fpo6t7lub7.execute-api.us-east-1.amazonaws.com/proto/api"
 }

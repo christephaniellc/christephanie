@@ -30,10 +30,11 @@ import { OverridableComponent } from '@mui/material/OverridableComponent';
 
 interface StickFigureIconProps {
   fontSize?: 'inherit' | 'small' | 'large' | 'medium' | undefined;
+  color?: 'inherit' | 'primary' | 'secondary' | 'action' | 'disabled' | 'error' | 'info' | 'success' | 'warning' | undefined;
   hidden?: boolean;
 }
 
-const StickFigureIcon = ({ fontSize = 'inherit', hidden = false }: StickFigureIconProps) => {
+const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
     DirectionsWalk,
@@ -62,7 +63,8 @@ const StickFigureIcon = ({ fontSize = 'inherit', hidden = false }: StickFigureIc
   const randomRotationTransformationAngle = Math.floor(Math.random() * 360);
   const RandomStickFigure = StickFigureAdults[Math.floor(Math.random() * StickFigureAdults.length)];
 
-  return <RandomStickFigure fontSize={fontSize} sx={{ width: hidden ? 0 : 'auto',
+  return <RandomStickFigure fontSize={fontSize}
+                            color={color} sx={{ width: hidden ? 0 : 'auto',
     transform: `rotate(${randomRotationTransformationAngle}deg)`,
     transition: 'all 1s ease-in-out',
     opacity: hidden ? 0 : 1,

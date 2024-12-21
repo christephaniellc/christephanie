@@ -5,5 +5,6 @@ export function getConfig() {
     domain: configJson.domain,
     clientId: configJson.clientId,
     audience: configJson.audience,
+    webserviceUrl: configJson.webservice,
   };
 }

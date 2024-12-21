@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {useChristephanieTheme} from "../ThemeContext";
 import { SxProps, useTheme } from '@mui/material';
 
 export const useAppLayout = () => {
-  const theme = useTheme();
-  const [navValue, setNavValue] = useState(0);
   const [screenWidth, setScreenWidth] = useState(0)
+  const bottomNavHeight = 56;
+  const [contentHeight, setContentHeight] = React.useState(0);
+
 
   useEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
+      setContentHeight(window.innerHeight - bottomNavHeight);
     };
 
     window.addEventListener('resize', handleResize);
@@ -19,5 +21,5 @@ export const useAppLayout = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-  return {navValue, setNavValue, screenWidth};
+  return {screenWidth, contentHeight};
 }

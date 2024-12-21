@@ -22,9 +22,9 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["FamilyUnitDto"][];
-                    "text/json": components["schemas"]["FamilyUnitDto"][];
-                    "application/*+json": components["schemas"]["FamilyUnitDto"][];
+                    "application/json": FamilyUnitDto[];
+                    "text/json": FamilyUnitDto[];
+                    "application/*+json": FamilyUnitDto[];
                 };
             };
             responses: {
@@ -34,9 +34,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FamilyUnitDto"];
-                        "application/json": components["schemas"]["FamilyUnitDto"];
-                        "text/json": components["schemas"]["FamilyUnitDto"];
+                        "text/plain": FamilyUnitDto;
+                        "application/json": FamilyUnitDto;
+                        "text/json": FamilyUnitDto;
                     };
                 };
                 /** @description Unauthorized */
@@ -78,9 +78,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FamilyUnitDto"];
-                        "application/json": components["schemas"]["FamilyUnitDto"];
-                        "text/json": components["schemas"]["FamilyUnitDto"];
+                        "text/plain": FamilyUnitDto;
+                        "application/json": FamilyUnitDto;
+                        "text/json": FamilyUnitDto;
                     };
                 };
                 /** @description Unauthorized */
@@ -206,7 +206,7 @@ export interface components {
             rsvpCode?: string | null;
             unitName?: string | null;
             tier?: string | null;
-            guests?: components["schemas"]["GuestDto"][] | null;
+            guests?: GuestDto[] | null;
             invitationResponse?: components["schemas"]["InvitationResponseEnum"];
             mailingAddress?: string | null;
             invitationResponseNotes?: string | null;
@@ -223,7 +223,7 @@ export interface components {
             roles?: components["schemas"]["RoleEnum"][] | null;
             email?: string | null;
             phone?: string | null;
-            rsvp?: components["schemas"]["RsvpDto"];
+            rsvp: components["schemas"]["RsvpDto"];
             preferences?: components["schemas"]["PreferencesDto"];
             ageGroup?: components["schemas"]["AgeGroupEnum"];
             rsvpNotes?: string | null;
@@ -245,6 +245,7 @@ export interface components {
         RoleEnum: "None" | "Party" | "Rehearsal" | "Builder" | "Staff" | "Admin";
         RsvpDto: {
             guestId?: string | null;
+            invitation: components["schemas"]["InvitationResponseEnum"];
             wedding?: components["schemas"]["RsvpEnum"];
             sleepPreference?: components["schemas"]["SleepPreferenceEnum"];
             rehearsalDinner?: components["schemas"]["RsvpEnum"];

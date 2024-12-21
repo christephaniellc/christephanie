@@ -6,7 +6,7 @@ import FormControlLabel, {
 } from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import { useRsvpContext } from '../context/Rsvp/RsvpContext';
-import { InvitationResponse } from '../types/types';
+import { InvitationResponseEnum } from '../types/types';
 import { Box, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import StickFigureIcon from './StickFigureIcon';
@@ -43,7 +43,7 @@ function MyFormControlLabel(props: FormControlLabelProps) {
 }
 
 interface WeddingAttendanceRadiosProps {
-  interested: InvitationResponse;
+  interested: InvitationResponseEnum;
 }
 
 const WeddingAttendanceRadios = ({ interested }: WeddingAttendanceRadiosProps) => {

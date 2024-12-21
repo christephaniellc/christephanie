@@ -1,41 +1,25 @@
 import { Box, ButtonBase, Typography, useTheme } from '@mui/material';
 import StickFigureIcon from './StickFigureIcon';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import { useRsvpContext } from '../context/Rsvp/RsvpContext';
-import { InvitationResponse } from '../types/types';
+import { FamilyUnitDto, InvitationResponseEnum } from '../types/types';
 import WeddingAttendanceRadios from './WeddingAttendanceRadios';
 import { DaysUntil } from './DaysUntil';
-import AddressAutocomplete from './AddressAutocomplete';
 
 interface AttendanceButtonProps {
   guestId: string;
 }
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
-  const { matchingUsers, setFamilyInterested, familyInterested } = useRsvpContext();
+  const { matchingUsers, addressValidated, setUserIsAttending  } = useRsvpContext();
   const theme = useTheme();
   const guest = matchingUsers?.find((user) => user.guestId === guestId);
-  const [interested, setInterested] = React.useState<InvitationResponse>('Pending');
+  const [interested, setInterested] = React.useState<InvitationResponseEnum>('Pending');
 
   useEffect(() => {
-    // setFamilyInterested(matchingUsers?.some((user) => user.rsvp?.wedding === 'Attending') || false);
-    setFamilyInterested(interested === "Interested");
-  }, [interested]);
-
-  useEffect(() => {
-    if (guest && guest.rsvp) {
-      switch (guest.rsvp.wedding) {
-        case 'Attending':
-          setInterested('Interested');
-          break;
-        case 'Declined':
-          setInterested('Declined');
-          break;
-        default:
-          setInterested('Pending');
-          break;
-      }
+    if (guest && guest.rsvp && guest.rsvp.invitationResponse) {
+      setInterested(guest.rsvp.invitationResponse);
     }
   }, [guest]);
 
@@ -53,11 +37,11 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     <ImageButton
       onClick={() => {
         if (interested === 'Interested') {
-          setInterested('Declined');
+          setUserIsAttending(guest, 'Declined');
         } else if (interested === 'Declined') {
-          setInterested('Pending');
+          setUserIsAttending(guest, 'Pending');
         } else {
-          setInterested('Interested');
+          setUserIsAttending(guest,'Interested');
         }
       }}
       sx={{
@@ -71,7 +55,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         },
         position: 'relative',
         marginBottom: theme.spacing(2),
-        marginRight: theme.spacing(2),
+        mx: theme.spacing(1),
       }}
 
     >
@@ -86,8 +70,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
       <CountdownMessage>
-        {interested === "Pending" && <DaysUntil event="Invitation" />}
-        {interested === "Interested" && <AddressAutocomplete />}
+        <DaysUntil event="Invitation" interested={interested} />
       </CountdownMessage>
       <Typography variant="h6" sx={{ mx: 'auto' }}>{guest?.firstName}</Typography>
     </ImageButton>

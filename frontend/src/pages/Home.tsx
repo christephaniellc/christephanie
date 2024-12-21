@@ -1,27 +1,20 @@
 import {
-  Box, ButtonBase, IconButton,
-  Typography,
+  Box, Button, Typography,
 
 } from '@mui/material';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { useChristephanieTheme } from '../context/ThemeContext';
-import ElPulpoHead from '../assets/el_pulpo_cabeza.jpg';
-import ElPulpoWide from '../assets/el_pulpo_andy.jpg';
-import { DaysUntil } from '../components/DaysUntil';
 import React, { useMemo } from 'react';
-import { RsvpCodeTextInput } from '../components/RsvpCodeTextInput';
 import { useRsvpContext } from '../context/Rsvp/RsvpContext';
-import WeddingAttendanceRadios from '../components/WeddingAttendanceRadios';
-import AddressAutocomplete from '../components/AddressAutocomplete';
 import { useAppStateContext } from '../context/AppStateContext';
 import StickFigureIcon from '../components/StickFigureIcon';
 import { styled } from '@mui/material/styles';
-import { components } from '../types/api';
-import { AttendanceButton } from '../components/AttendanceButton';
+import { useNavigate } from 'react-router-dom';
+import { RsvpCodeTextInput } from '../components/RsvpCodeTextInput';
 
-export const Home = () => {
-  const { theme } = useChristephanieTheme();
-  const { matchingUsers, matchingUsersQuery, familyInterested } = useRsvpContext();
-  const { screenWidth } = useAppStateContext();
+export const useHome = () => {
+  const { matchingUsers, familyUnit, actionNeededMessage, getFamilyQuery } = useRsvpContext();
+
   useMemo(() => {
     if (matchingUsers) {
       return matchingUsers.length === 1 ? 'I' : 'We';
@@ -29,33 +22,104 @@ export const Home = () => {
     return undefined;
   }, [matchingUsers]);
 
+  const snarkyDoItSoonMessages = [
+    'Sooner would be better than later',
+    'We\'re waiting',
+    'We\'re not getting any younger',
+    'You\'re not getting any younger',
+    'You\'re not going to want to do it later, either',
+    'You promised you\'d do it soon',
+    'Steph is kind of a planner 😐',
+  ];
+
+  const welcomeMessage = useMemo(() => {
+    return familyUnit ? 'Welcome to our Wedding!' : 'Are getting married!';
+  }, [familyUnit]);
+
+  const betweenOneAndThreeStickFigures = Math.floor(Math.random() * 10) + 1;
+  Array.from({ length: betweenOneAndThreeStickFigures }, (_, i) => (
+    <Box key={i} width={Math.floor(Math.random() * 100)} />
+  ));
+  const randomFontSizes = ['small', 'medium', 'large'];
+  const randomStickFigures = Array.from({ length: betweenOneAndThreeStickFigures }, (_, i) => (
+    <>
+      <StickFigureIcon fontSize={randomFontSizes[i % 2] as 'small' | 'medium' | 'large'} key={i} color={
+        ['primary', 'secondary', 'error', 'info', 'success', 'warning'][i % 6] as 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+      } />
+      <Box key={i} width={Math.floor(Math.random() * 100)} />
+    </>
+  ));
+
+  const randomSnarkyMessage = snarkyDoItSoonMessages[Math.floor(Math.random() * snarkyDoItSoonMessages.length)];
+  return {
+    welcomeMessage,
+    randomStickFigures,
+    actionNeededMessage,
+    randomSnarkyMessage,
+    getFamilyQuery
+  };
+}
+export const Home = () => {
+  const { welcomeMessage, randomStickFigures, getFamilyQuery, actionNeededMessage, randomSnarkyMessage } = useHome();
+  const navigate = useNavigate();
   return (
-    <Box display="flex" flexDirection="column" height="100%" justifyContent="space-between">
-      <Box textAlign="center" border="0px solid green" flexGrow={2} display="flex" flexDirection="column">
-        <Typography variant="h4" color="text.primary" gutterBottom my={4}>
-          Steph & Topher
-        </Typography>
-        <DaysUntil event="Wedding" />
-      </Box>
-      {!matchingUsersQuery.data && <Box maxWidth={300} mx="auto" mb={2}>
-        <RsvpCodeTextInput />
-      </Box>}
-      {matchingUsers && matchingUsers.length && (
-          <ButtonsContainer>
-            {matchingUsers.map((guest: components['schemas']['GuestDto']) => (
-              <AttendanceButton guestId={guest.guestId!} />
-            ))}
-          </ButtonsContainer>
+    <Box display="flex" flexDirection="column" height="100%" justifyContent="flex-start" alignItems="flex-center"
+         textAlign="center">
+      <Typography variant="h2" color="text.primary" gutterBottom mt={4}>
+        {welcomeMessage}
+      </Typography>
+      {!getFamilyQuery.data && (
+        <>
+          <Typography variant="h4" color="text.primary" gutterBottom mt={4}>
+            Please enter your invitation code to get started.
+          </Typography>
+          <Box maxWidth={300} mx="auto" mb={2}>
+            <RsvpCodeTextInput />
+          </Box>
+        </>
       )}
-      <Box sx={{ width: '100%', alignItems: 'flex-end', display: 'flex' }}>
-        <img src={screenWidth < theme.breakpoints.values.md && ElPulpoHead || ElPulpoWide} alt="El Pulpo"
-             style={{ width: '100%', height: 'auto' }} />
-      </Box>
+      {getFamilyQuery.data &&
+        <>
+          <Button
+            onClick={() => navigate('/invitation')}
+            sx={{
+              border: '4px solid white',
+              padding: 4,
+              margin: 4,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box display={'flex'} flexDirection={'row'} justifyContent={'center'} alignItems={'center'} flexWrap="wrap">
+              {randomStickFigures.map((stickFigure, i) => (
+                <React.Fragment key={i}>
+                  {stickFigure}
+                </React.Fragment>
+              ))}
+            </Box>
+            <Box>
+              <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%">
+                {actionNeededMessage}
+              </Typography>
+              <Typography variant="h5" color="text.primary" gutterBottom mt={4} width="100%">
+                {randomSnarkyMessage}
+              </Typography>
+              <Box display="flex" alignItems="center" justifyContent='center'>
+                <Typography variant="caption" color="text.primary">
+                  (Click to get it done).
+                </Typography>
+
+                <KeyboardDoubleArrowRightIcon fontSize={'large'} />
+              </Box>
+            </Box>
+          </Button>
+        </>
+      }
     </Box>
   );
 };
 
-const ButtonsContainer = styled(Box)(({ theme }) => ({
+styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -63,13 +127,13 @@ const ButtonsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   mx: 'auto',
   [theme.breakpoints.up('sm')]: {
-    mx:'auto',
+    mx: 'auto',
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     alignSelf: 'center',
     flexGrow: 1,
     maxWidth: 800,
-    mb: 4
+    mb: 4,
   },
 }));

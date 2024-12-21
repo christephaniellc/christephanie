@@ -1,5 +1,5 @@
-import {createContext, ReactNode, useContext, useMemo, useState} from "react";
-import { createTheme, SxProps, Theme, ThemeProvider, useColorScheme, useMediaQuery } from '@mui/material';
+import React, {createContext, ReactNode, useContext, useMemo, useState} from "react";
+import { createTheme, GlobalStyles, SxProps, Theme, ThemeProvider, useColorScheme, useMediaQuery } from '@mui/material';
 
 interface ThemeContextProps {
   toggleTheme: () => void;
@@ -41,6 +41,15 @@ export const ChristephanieThemeProvider: React.FC<{ children: ReactNode }> = ({ 
 
   return (
     <ThemeContext.Provider value={{ toggleTheme, mode, mixedBackgroundSx, theme }}>
+      <GlobalStyles
+        styles={{
+          "input:-webkit-autofill": {
+            WebkitBoxShadow: `0 0 0px 1000px ${theme.palette.background.default} inset`,
+            WebkitTextFillColor: theme.palette.text.primary,
+            transition: "background-color 5000s ease-in-out 0s",
+          },
+        }}
+      />
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );
