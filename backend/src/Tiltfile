@@ -1,0 +1,392 @@
+# No telemetry to Tilt service/makers
+analytics_settings(enable = False)
+
+# Min version of tilt check, notify if updates available
+version_settings(check_updates = True, constraint = '>=0.30.7')
+
+# Every 2 docker builds, prune to latest image, clean anything > 15 minutes old (and not in use)
+docker_prune_settings(num_builds = 1, keep_recent = 0, max_age_mins=15)
+
+# Pull down ui button extensions
+load('ext://uibutton', 'cmd_button', 'location', 'text_input')
+
+# Define what can be configured via cli/tilt_config.json, then parse into configuration[] dict.
+config.define_string('PAT')
+# config.define_string('key-vault-urls')
+# config.define_string('azure-subscription-id')
+# config.define_string('azure-tenant-id')
+# config.define_string('k8s-cluster-name')
+# config.define_string('k8s-resource-group')
+# config.define_string('engine-pool-forward-port')
+# config.define_string('shell-ui-relative-path')
+# config.define_string('shell-ui-serve-dir')
+# config.define_string('dapr-port')
+# config.define_string('dev-tenant-name')
+# config.define_string('dev-tenant-id')
+# config.define_string('devname')
+# config.define_string('database-debug')
+# config.define_string('databoundary')
+# config.define_string('service-name')
+# config.define_bool('run-services')
+
+configuration = config.parse()
+
+configured_pat_token = os.getenv("DELINEA_PAT", configuration.get('PAT', ''))
+
+if configured_pat_token == '':
+    fail('Missing PAT - You must set DELINEA_PAT or create a tilt_config.json and populate it, see tilt_config.json.example for a start...')
+
+if configuration.get('devname') == '':
+    fail('Missing devname - You must create a tilt_config.json and populate it, see tilt_config.json.example for a start...')
+
+
+# Tilt env defaults to our platform subscription + sp.io, then dev iteration vault
+default_key_vault_urls = 'https://p-common-vlt-dev.vault.azure.net/,https://platform-engpool-dev.vault.azure.net/'
+default_azure_subscription_id = 'e5b68219-d8aa-4349-bf70-bf6d9b7a5c1a'
+default_azure_tenant_id = '00fb18e9-208a-491f-afb0-7f4d831987fd'
+default_databoundary = 'us'
+default_dapr_port = '3500'
+default_service_name = 'engine-pool'
+default_local_port = '5000'
+default_mt_forward_port = '7001'
+default_permission_forward_port = '7002'
+default_identity_forward_port = '7003'
+default_private_forward_port = '7004'
+default_featureflag_forward_port = '7005'
+default_registration_forward_port = '7006'
+default_dev_tenant_name = 'greentrack2'
+default_dev_tenant_id = '0af5a613-d517-4827-92c8-942ea8401d96'
+default_shell_ui_relative_path = '../Delinea.ShellUi/'
+default_run_services = True
+
+# Clusters available by databoundary
+available_k8s_clusters = [
+    { 'cluster_name': 'platformusk8s01dev', 'resource_group': 'platform-us-k8s-aks-01-dev', 'databoundary': 'us' },
+    #{ 'cluster_name': 'platformukk8s01dev', 'resource_group': 'platform-uk-k8s-aks-01-dev', 'databoundary': 'uk' },
+]
+
+dev_tenant_id = configuration.get('dev-tenant-id', default_dev_tenant_id)
+dev_tenant_name = configuration.get('dev-tenant-name', default_dev_tenant_name)
+
+# Some variables we construct once for use later in environment or links etc
+local_link_host = 'http://' + configuration.get('dev-tenant-name', default_dev_tenant_name) + '.dev.local'
+
+date_cmd = 'date'
+python_name = 'python3'
+if os.name == 'nt':
+    date_cmd = 'date /T'
+    python_name = 'python'
+
+################################
+# Azure CLI
+#  - You must sign-in and have your subscription ID set correctly
+local_resource(
+    'Azure CLI',
+    deps=['.tilt/scripts/az-cli-login-and-setup.ps1'],
+    cmd='pwsh -command .tilt/scripts/az-cli-login-and-setup.ps1 ' + configuration.get('azure-subscription-id', default_azure_subscription_id),
+    labels=['Tooling']
+)
+
+# We then can use Azure CLI to get and set kubectl context up for dev
+for cluster in available_k8s_clusters:
+    local_resource(
+        'Kubectl Context (' + cluster.get('databoundary') + ')',
+        deps=['.tilt/scripts/az-add-k8s-to-kubectl.ps1'],
+        cmd='pwsh -command .tilt/scripts/az-add-k8s-to-kubectl.ps1 ' + cluster.get('cluster_name') + ' ' + cluster.get('resource_group'),
+        labels=['Tooling'],
+        resource_deps=['Azure CLI']
+    )
+
+# We cant do it for you, as we have to sudo - but we can verify that you have /etc/hosts setup correctly
+local_resource(
+    'Development Hostfile Entry',
+    deps=['.tilt/scripts/verify-hosts-entry.ps1'],
+    cmd='pwsh -command .tilt/scripts/verify-hosts-entry.ps1 ' + configuration.get('dev-tenant-name', default_dev_tenant_name) + '.dev.local',
+    labels=['Tooling']
+)
+
+################################
+# Port forwards to things here, based on requested databoundary
+chosen_databoundary = configuration.get('databoundary', default_databoundary)
+port_forward_cluster_name = ''
+for cluster_info in available_k8s_clusters:
+    if cluster_info.get('databoundary') == chosen_databoundary:
+        port_forward_cluster_name = cluster_info.get('cluster_name')
+
+if port_forward_cluster_name == '':
+    fail('No cluster name found for chosen databoundary, maybe you need to update available_k8s_clusters?')
+
+port_forwards = [    
+    { 'name': 'Jaeger (UI)', 'cluster': 'docker-desktop', 'namespace': 'default', 'service': 'jaeger', 'port': '16686', 'remote_port': '16686', 'ready': '/', 'link': '/' },
+    { 'name': 'Jaeger (Collection)', 'cluster': 'docker-desktop', 'namespace': 'default', 'service': 'jaeger', 'port': '14268', 'remote_port': '14268', 'ready': '', 'link': '/' },
+    { 'name': 'Service Dapr Instance (sp.io)', 'cluster': port_forward_cluster_name, 'namespace': configuration.get('service-name', default_service_name).lower(), 'service': 'publicapi', 'port': configuration.get('dapr-forward-port', default_dapr_port), 'remote_port': '3500', 'ready': '', 'link': '/v1.0/invoke/opa.policy-services/method/' }
+]
+
+for forward in port_forwards:
+    # If they specify a ready endpoint, use HTTP GET
+    if forward.get('ready') != '':
+        p = probe(
+            initial_delay_secs = 5,
+            period_secs = 15,
+            http_get=http_get_action(port=int(forward.get('port')), host='127.0.0.1', path=forward.get('ready'))
+        )
+    # Otherwise we stick with "can i tcp connect to you?"
+    else:
+        p = probe(            
+            initial_delay_secs = 5,
+            period_secs = 15,            
+            tcp_socket=tcp_socket_action(port=int(forward.get('port')), host='127.0.0.1'),
+        )
+
+    local_resource(
+        forward.get('name'),
+        deps=['.tilt/scripts/k8s-port-forward.ps1'],
+        serve_cmd='pwsh -command .tilt/scripts/k8s-port-forward.ps1 ' + forward.get('cluster') + ' ' + forward.get('namespace') + ' ' + forward.get('port') + ' ' + forward.get('remote_port') + ' ' + forward.get('service'),
+        labels=['Port.Forwards'],
+        resource_deps=['Kubectl Context (' + cluster.get('databoundary') + ')'],
+        links=[ link('http://localhost:' + forward.get('port') + forward.get('link') , 'View Service')],
+        readiness_probe = p
+    )
+
+################################
+#  Jaeger
+local_resource(
+    'Jaeger',
+    cmd='pwsh -command .tilt/deployments/jaeger/install.ps1 .tilt/deployments/jaeger/values.in-memory.yaml',
+    allow_parallel=True,
+    labels=['Jaeger'],
+    links=[ link('http://127.0.0.1:16686', 'Jaeger')]
+)
+
+################################
+#  Npm and Nuget configuration
+#   - Uses PAT from config to setup private repos
+local_resource(
+    'NuGet',
+    cmd='pwsh -command .tilt/scripts/nuget.ps1 ' + configured_pat_token,
+    allow_parallel=True,
+    labels=['Tooling']
+)
+
+local_resource(
+    'NPM',
+    cmd='pwsh -command .tilt/scripts/npm-creds.ps1 ' + configured_pat_token,
+    allow_parallel=True,
+    labels=['Tooling']
+)
+
+
+################################
+#  Services
+#    - Services array contains a dictionary for each service we want to build and run
+#    - Properties things like:
+#       - tiltname:     name as shown in the left nav of Tilt ui
+#       - repo:         subdirectory of src/ which contains this services main code
+#       - port:         the port to listen on (if an api service)
+#       - labels:       grouping name(s) for Tilt UI left nav
+#       - links:        additional links to show in the service menu bar in Tilt UI
+#
+# We maintain three collections:
+#   'UI' services - which are run using a local_resource and an node ng dev server
+#   'dotnet' services - which are dotnet API and Worker services of bifrost lineage
+
+ui_service = { 'tiltname': 'UI', 'repo': 'Delinea.EnginePool.Spa', 'port': 6003, 'path': 'engine-pool', 'labels': ['Frontend'], 'links': [ link(local_link_host + ':6003', 'Frontend UI')] }
+
+dotnet_services = [
+    { 'tiltname': 'Public', 'repo': "Delinea.EnginePool.Public.Api", 'port': 5001, 'labels': ['API'] },
+    { 'tiltname': 'Private', 'repo': "Delinea.EnginePool.Private.Api", 'port': 5006, 'labels': ['API'] },
+#    { 'tiltname': 'Platform', 'repo': "Delinea.EnginePool.Platform.Worker", 'port': 5008, 'labels': ['Workers'] },    
+#    { 'tiltname': 'Internal', 'repo': "Delinea.EnginePool.Internal.Worker", 'port': 5009, 'labels': ['Workers'] }, 
+#    { 'tiltname': 'Mqtt', 'repo': "Delinea.EnginePool.EngineWorker.Mqtt", 'port': 5011, 'labels': ['Workers'] }, 
+#    { 'tiltname': 'Amqp', 'repo': "Delinea.EnginePool.EngineWorker.Amqp", 'port': 5012, 'labels': ['Workers'] },
+#    { 'tiltname': 'Scheduler', 'repo': "Delinea.EnginePool.Scheduler", 'port': 5013, 'labels': ['Workers'] }, 
+]
+
+# Some folks want to just use Tilt to manage their tooling and port forwards, they can opt out of
+#   service build+run with run-services: false in tilt_config.json
+if configuration.get('run-services', default_run_services):
+    # Dotnet services need to ignore the whole repo for UI resources
+    dotnet_ignore_list = ['src/**/bin', 'src/**/obj', 'src/**/.angular', 'src/**/npm_modules', 'src/**/node_modules', 'src/.coveragereport', 'src/**/coverage.cobertura.xml', 'src/**/TestResults', 'src/**/.vs']
+    dotnet_ignore_list.append('src/' + ui_service.get('repo'))
+    dotnet_ignore_list.append('**/swagger.json')
+
+    # All dotnet stuff gets built by virtue of a build on the solution which contains them
+    local_resource(
+        '.Net Solution (Build)',
+        dir='src/',
+        cmd='pwsh -command ../.tilt/scripts/build.ps1',
+        resource_deps=['NuGet'],
+        deps=['src/', '.buildneeded'],
+        ignore=dotnet_ignore_list,
+        labels=['Build'],
+        allow_parallel=False
+    )
+
+    shell_ui_relative_path = configuration.get('shell-ui-relative-path', default_shell_ui_relative_path)
+    shell_ui_relative_spa_path = shell_ui_relative_path + 'src/Delinea.ShellUi.App/shell/'
+    shell_ui_service_path = shell_ui_relative_spa_path + 'src/app/models/mfe/mfe-local-override-definitions.ts'
+    shell_ui_token_file = shell_ui_relative_spa_path + 'src/app/modules/local/interceptors/auth-noop.interceptor.ts'
+
+    shell_ui_resource_dependency = ''
+    if(shell_ui_resource_dependency != ''):
+        shell_ui_resource_dependency = shell_ui_resource_dependency + ','
+    shell_ui_resource_dependency = shell_ui_resource_dependency + 'ShellUI-Config-' + ui_service.get('tiltname')
+
+    # cmd ensures package is up to date, serve_cmd is how we run service, our only 'dep'
+    #   for file watching is package.json, so we'll do an npm install.  Dev server does its
+    #   own file watching for us.
+    # Need to rebuild when the token changes so the updated token is used for http intercept
+    ui_service_dir = 'src/' + ui_service.get('repo')
+    ui_token_file = ui_service_dir + '/src/app/services/http-interceptors/token.ts'
+    local_resource(
+        ui_service.get('tiltname'),
+        dir=ui_service_dir,
+        cmd='npm install',
+        serve_dir=ui_service_dir,
+        serve_cmd='npm run start-tilt -- --public-host ' + local_link_host + ':' + str(ui_service.get('port')) + ' --disable-host-check --host 127.0.0.1 --port ' + str(ui_service.get('port')),
+        resource_deps=['NPM', 'Service Dapr Instance (sp.io)'],
+        deps=[ui_service.get('repo') + '/package.json', ui_token_file],
+        ignore=['**/bin', '**/obj', '**/.angular', '**/npm_modules', '**/node_modules', '.coveragereport'],
+        labels=ui_service.get('labels'),
+        links=ui_service.get('links'),
+        allow_parallel=True
+    )
+
+    local_resource(
+        'Lint: ' + ui_service.get('tiltname'),
+        dir=ui_service_dir,
+        cmd='npm run lint',
+        resource_deps=[ui_service.get('tiltname')],
+        deps=['src/' + ui_service.get('repo') + '/src'],
+        labels=["Linting"]
+    )
+    
+    if os.path.exists(shell_ui_service_path):
+        print('.tilt/scripts/shellui-setup.ps1 ' + ' ' + shell_ui_relative_path + ' ' + shell_ui_service_path + ' ' + local_link_host + ':' + str(ui_service.get('port')) + '/remoteEntry.js ' + ui_service.get('path'))
+        local_resource(
+            'ShellUI-Config-' + ui_service.get('tiltname'),
+            cmd='pwsh -command .tilt/scripts/shellui-setup.ps1 ' + ' ' + shell_ui_relative_path + ' ' + shell_ui_service_path + ' ' + local_link_host + ':' + str(ui_service.get('port')) + '/remoteEntry.js ' + ui_service.get('path'),
+            labels=ui_service.get('labels')
+        )
+
+    if os.path.exists(shell_ui_service_path):
+        local_resource(
+            'ShellUI',
+            dir=shell_ui_relative_spa_path,
+            cmd='npm install -f',
+            serve_dir=shell_ui_relative_spa_path,
+            serve_cmd='ng serve --public-host ' + local_link_host + ':' + default_local_port + ' --host 127.0.0.1 --port ' + default_local_port,
+            resource_deps=[shell_ui_resource_dependency],
+            deps=[shell_ui_relative_spa_path + 'package.json', shell_ui_token_file],
+            ignore=['**/bin', '**/obj', '**/.angular', '**/npm_modules', '**/node_modules', '.coveragereport'],
+            labels=['Frontend'],
+            links=[ link(local_link_host + ':' + default_local_port + '/view/engine-pool', 'Shell UI')],
+            allow_parallel=True
+        )
+
+    for service in dotnet_services:
+        service_dir = 'src/' + service.get('repo')
+        local_resource(
+            service.get('tiltname'),
+            serve_dir=service_dir,
+            serve_cmd='pwsh -command ../../.tilt/scripts/run.ps1',
+            deps=['src/' + service.get('repo') + '/bin/', '../.buildrunning', '../.buildcomplete'],
+            ignore=['src/**/bin', 'src/**/obj'],
+            labels=service.get('labels'),
+            serve_env={
+                'ASPNETCORE_ENVIRONMENT': 'Development',
+                'DOTNET_ENVIRONMENT': 'Development',
+                'KeyVaultUrls': configuration.get('key-vault-urls', default_key_vault_urls),
+                'AZURE_TENANT_ID': configuration.get('azure-tenant-id', default_azure_tenant_id),
+                'DEV_LISTEN_PORT': str(service.get('port')),
+                'PlatformBus__ExchangeName__us': 'dev-xchg-' + configuration.get('devname', 'no-devname'),
+                'InternalBus__ExchangeName__us': 'dev-xchg-' + configuration.get('devname', 'no-devname'),
+                'DevEfDiagnostics': configuration.get('database-debug', 'False'),
+#'DevDatabaseOverride': configuration.get('service-name', default_service_name).lower() + '-' + configuration.get('devname', 'no-devname'),
+                'DatabaseConnectionMode': 'Gateway',
+				'DataBoundary': configuration.get('databoundary'),
+				'RUNTIMECLUSTERINFORMATION__DATABOUNDARY': configuration.get('databoundary', default_databoundary)
+            },
+            readiness_probe=probe(
+                initial_delay_secs = 2,
+                period_secs = 2,
+                http_get=http_get_action(port=service.get('port'), host='127.0.0.1', path="/ready")
+            ),
+            links=[
+                link('%s:%d/help/' %(local_link_host, service.get('port')), 'OpenAPI'),
+                link('http://127.0.0.1:%d/health' %(service.get('port')), 'Health'),
+                link('http://127.0.0.1:%d/ready' %(service.get('port')), 'Ready'),
+            ] + service.get('links', []),
+            resource_deps=['.Net Solution (Build)', 'Azure CLI', 'Kubectl Context (' + cluster.get('databoundary') + ')'],
+            # Parallel service builds can clobber each other when they build common bits, but also go faster after the 1st cuz they share
+            allow_parallel=False
+        )
+    
+
+################################
+#  Unit Tests
+################################
+
+## Make sure the report generator tool is installed
+local_resource(
+    '.Net Report Generator',
+    cmd='pwsh -command .tilt/scripts/dotnet-reportgenerator.ps1',
+    allow_parallel=True,
+    #resource_deps=['Nuget'],
+    labels=['Tooling']
+)
+
+## Run a basic python web server to host the coverage report
+local_resource(
+    'HTTP server',
+    serve_cmd=python_name + ' -m http.server --bind 127.0.0.1 --directory .coveragereport 8000',
+    allow_parallel=True,
+    labels=['Tooling']
+)
+
+## Runs unit tests only (no system or integration tests)
+local_resource(
+    '.NET Unit Tests',
+    cmd='pwsh -command .tilt/scripts/dotnet-test-coverage.ps1 .coveragereport/UnitTests UnitTests',
+    auto_init=False, # Unit tests are faster, but still take time. Dev may instead run all tests manually.
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    deps=['../.buildcomplete'],
+    ignore=dotnet_ignore_list,
+    resource_deps=['.Net Report Generator'],
+    labels=["Tests", 'Manual'],
+    links=[
+        link('http://127.0.0.1:8000/UnitTests/', 'Coverage Report'),
+        link('http://127.0.0.1:8000/UnitTests/results.xml', 'Test Results'),
+    ]
+)
+
+## Runs all *Tests.csproj
+local_resource(
+    '.NET All Tests',
+    cmd='pwsh -command .tilt/scripts/dotnet-test-coverage.ps1 .coveragereport/all Tests',
+    auto_init=False,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    resource_deps=['.Net Report Generator'],
+    labels=["Tests", 'Manual'],
+    links=[
+        link('http://127.0.0.1:8000/all/', 'Coverage Report'),
+        link('http://127.0.0.1:8000/all/results.xml', 'Test Results'),
+    ]
+)
+
+########################################################
+# Get Me A Token So I Can Call Things That Take A Token
+########################################################
+cmd_button(name='UPLoginAndGetServiceToken',
+           text='Login and Get Token',
+           icon_name='login',
+           inputs=[
+            text_input(name='USERNAME', default='cloudadmin', label='Username', placeholder=''),
+            text_input(name='PASSWORD', default='', label='Password', placeholder=''),
+            text_input(name='SERVICE', default='engine-pool', label='Service Name', placeholder='')
+           ],
+           location=location.NAV,
+           # If you need env var expansion *within the command itself*
+           # you'll need to run it via a shell.           
+           argv=['pwsh', '-command', 'cd .tilt/scripts ; ./login-and-get-token.ps1 https://' + dev_tenant_name + '.secureplatform.io ' + ui_token_file + ' ' + shell_ui_token_file]
+   )

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
+    <PackageReference Include="Amazon.Lambda.TestUtilities" Version="2.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wedding.Common.Utility.Testing\Wedding.Common.Utility.Testing.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Authorize\Wedding.Lambdas.Authorize.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.InvitationCode\Wedding.Lambdas.Validate.InvitationCode.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Validate\Post\" />
+  </ItemGroup>
+</Project>

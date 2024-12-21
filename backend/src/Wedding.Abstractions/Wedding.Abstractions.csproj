@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- <PropertyGroup> -->
+	<!-- 	<NoWarn>NU1608</NoWarn> -->
+	<!-- </PropertyGroup> -->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<OutputType>Library</OutputType>
+		<NoWarn>CA2017</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+	  <PackageReference Include="AutoMapper" Version="13.0.1" />
+	  <PackageReference Include="AWSSDK.Core" Version="3.7.400.59" />
+	  <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.404" />
+	  <PackageReference Include="FluentValidation" Version="11.11.0" />
+	</ItemGroup>
+
+</Project>
