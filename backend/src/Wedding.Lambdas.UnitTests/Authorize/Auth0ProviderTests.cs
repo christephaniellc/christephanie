@@ -23,7 +23,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         private IMapper _mapper;
         private Auth0Provider _auth0Provider;
 
-        private const string BaseApiUrl = "api.wedding.christephanie.com";
+        private const string Authority = "api.wedding.christephanie.com";
+        private const string Audience = "test";
+        private const string ClientId = "clientid";
+        private const string ClientSecret = "clientsecret";
         private const string DynamoTableName = "TestTable";
         private const string DynamoTableIdentityCol = "IdentityId";
         private const string DynamoTableIdentityIndex = "IdentityIndex";
@@ -36,7 +39,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             _mapper = config.CreateMapper();
 
             _auth0Provider = new Auth0Provider(
-                BaseApiUrl,
+                Authority,
+                Audience,
+                ClientId,
+                ClientSecret,
                 _mapper,
                 DynamoTableName,
                 DynamoTableIdentityCol,

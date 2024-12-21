@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Helpers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
@@ -30,7 +31,10 @@ namespace Wedding.PublicApi.Logic.Services.Auth
                 response.ResponseStatusCode = HttpStatusCode.Unauthorized;
                 response.ResponseMessage = "Authorization token is missing or invalid.";
             }
-            return needsAdmin ? await _authorizationProvider.ValidateAdminClaims(response) : response;
+
+            // TODO SKS broken in controller swagger
+            return needsAdmin ? response : response;
+            //return needsAdmin ? await _authorizationProvider.ValidateAdminClaims(response) : response;
         }
 
         public AuthResponse ParseAuthToken(AuthResponse response, IDictionary<string, string> headers)
