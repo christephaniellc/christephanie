@@ -1,0 +1,403 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Christephanie API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/admin/familyunit/createfamilyunits": {
+      "post": {
+        "tags": [
+          "AdminFamilyUnit"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/FamilyUnit": {
+      "get": {
+        "tags": [
+          "FamilyUnit"
+        ],
+        "parameters": [
+          {
+            "name": "rsvpCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyUnitDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/HelloWorld": {
+      "get": {
+        "tags": [
+          "HelloWorld"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/debug": {
+      "get": {
+        "tags": [
+          "HelloWorld"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "APIGatewayProxyResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "multiValueHeaders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "isBase64Encoded": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AgeGroupEnum": {
+        "enum": [
+          "Adult",
+          "Teenager",
+          "Child",
+          "Toddler",
+          "Baby"
+        ],
+        "type": "string"
+      },
+      "FamilyUnitDto": {
+        "type": "object",
+        "properties": {
+          "rsvpCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tier": {
+            "type": "string",
+            "nullable": true
+          },
+          "guests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuestDto"
+            },
+            "nullable": true
+          },
+          "invitationResponse": {
+            "$ref": "#/components/schemas/InvitationResponseEnum"
+          },
+          "mailingAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitationResponseNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "headCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "familyUnitLastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GuestDto": {
+        "type": "object",
+        "properties": {
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "auth0Id": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleEnum"
+            },
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "rsvp": {
+            "$ref": "#/components/schemas/RsvpDto"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesDto"
+          },
+          "ageGroup": {
+            "$ref": "#/components/schemas/AgeGroupEnum"
+          },
+          "rsvpNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestLastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvitationResponseEnum": {
+        "enum": [
+          "Pending",
+          "Interested",
+          "Declined"
+        ],
+        "type": "string"
+      },
+      "MealPreferenceEnum": {
+        "enum": [
+          "Omnivore",
+          "Vegetarian",
+          "Vegan"
+        ],
+        "type": "string"
+      },
+      "PreferencesDto": {
+        "type": "object",
+        "properties": {
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "meal": {
+            "$ref": "#/components/schemas/MealPreferenceEnum"
+          },
+          "kidsPortion": {
+            "type": "boolean"
+          },
+          "foodAllergies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialAlcoholRequests": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoleEnum": {
+        "enum": [
+          "None",
+          "Party",
+          "Rehearsal",
+          "Builder",
+          "Staff",
+          "Admin"
+        ],
+        "type": "string"
+      },
+      "RsvpDto": {
+        "type": "object",
+        "properties": {
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wedding": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "sleepPreference": {
+            "$ref": "#/components/schemas/SleepPreferenceEnum"
+          },
+          "rehearsalDinner": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "fourthOfJuly": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "buildWeek": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "arrivalDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RsvpEnum": {
+        "enum": [
+          "Pending",
+          "Attending",
+          "Declined"
+        ],
+        "type": "string"
+      },
+      "SleepPreferenceEnum": {
+        "enum": [
+          "Unknown",
+          "Camping",
+          "Hotel"
+        ],
+        "type": "string"
+      }
+    }
+  }
+}
