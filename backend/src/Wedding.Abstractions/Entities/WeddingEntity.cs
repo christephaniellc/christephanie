@@ -54,7 +54,7 @@ namespace Wedding.Abstractions.Entities
 
         [DynamoDBProperty]
         public string? Auth0Id { get; set; }
-
+        
         [DynamoDBProperty]
         public string? FirstName { get; set; }
 

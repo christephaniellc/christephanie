@@ -13,5 +13,5 @@
   "function-memory-size": 512,
   "function-timeout": 30,
   "function-handler": "Wedding.Lambdas.Validate.Address::Wedding.Lambdas.Validate.Address.Function::FunctionHandler",
-  "function-name": "christephanie-api-dev-validation"
+  "function-name": "christephanie-api-dev-validate-address"
 }

@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration;
@@ -52,7 +56,7 @@ public class Function
     /// <param name="request">The event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
     /// <returns></returns>
-    public async Task<AddressDto> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
     {
         try
         {
@@ -66,12 +70,50 @@ public class Function
 
             var query = new ValidateUspsAddressQuery(dto);
 
-            return await handler.GetAsync(query);
+            var result = await handler.GetAsync(query);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(result)
+            };
+        }
+        catch (ValidationException ex)
+        {
+            var error = $"Validation exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Error occurred: {ex.Message}");
-            throw;
+            var error = $"Error occurred: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.InternalServerError,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
     }
 }

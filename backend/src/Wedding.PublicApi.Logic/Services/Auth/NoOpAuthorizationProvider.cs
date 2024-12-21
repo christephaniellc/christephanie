@@ -26,7 +26,9 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             return needsAdmin ? await ValidateAdminClaims(response) : response;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<AuthResponse> ValidateAdminClaims(AuthResponse response)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             return new AuthResponse
             {

@@ -4,6 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using Wedding.Common.DI;
 using Wedding.Lambdas.HelloWorld.Handlers;
+using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
+using Amazon.Lambda.APIGatewayEvents;
 
 namespace Wedding.Lambdas.HelloWorld;
 
@@ -24,21 +28,42 @@ public class Function
     /// <summary>
     /// Returns hello world
     /// </summary>
-    /// <param name="name">The event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
     /// <returns></returns>
-    public async Task<string> FunctionHandler(ILambdaContext context)
+    public async Task<APIGatewayProxyResponse> FunctionHandler(ILambdaContext context)
     {
         try
         {
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<HelloWorldHandler>();
-            return await handler.GetAsync();
+            var result = await handler.GetAsync();
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(result)
+            };
         }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Error occurred: {ex.Message}");
-            throw;
+            var error = $"Error occurred: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.InternalServerError,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
     }
 }

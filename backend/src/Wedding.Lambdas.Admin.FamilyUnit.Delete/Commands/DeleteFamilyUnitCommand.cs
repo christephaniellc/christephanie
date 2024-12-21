@@ -12,5 +12,5 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands
     /// <seealso cref="IEquatable{DeleteSiteCommand}" />
     /// <param name="Id">The Id of the Site</param>
     public record DeleteFamilyUnitCommand(
-        string RsvpCode) : IWeddingCommand;
+        string InvitationCode) : IWeddingCommand;
 }

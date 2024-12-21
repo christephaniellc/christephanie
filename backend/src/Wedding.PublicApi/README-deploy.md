@@ -112,7 +112,7 @@ Publish:
 	dotnet publish -c Release -o ./publish
 
 Zip:
-	zip -r ../lambda-deployment.zip .
+	zip -r ../lambda-deployment.zip publish/.
 
 		zips to: D:\dev\github\christephanie\backend\src\Wedding.PublicApi\lambda-deployment.zip
 	

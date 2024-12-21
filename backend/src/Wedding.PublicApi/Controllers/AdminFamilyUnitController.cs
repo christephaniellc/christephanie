@@ -151,10 +151,10 @@ namespace Wedding.PublicApi.Controllers
             public bool Success { get; set; }
         }
 
-        [HttpDelete("{rsvpCode}")]
+        [HttpDelete("{invitationCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string rsvpCode, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default)
         {
             var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
             
@@ -164,7 +164,7 @@ namespace Wedding.PublicApi.Controllers
                 return Unauthorized(new { message = authCheck.ResponseMessage }); ;
             }
 
-            var command = new DeleteFamilyUnitCommand(rsvpCode);
+            var command = new DeleteFamilyUnitCommand(invitationCode);
             var result = await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);
             
             return Ok(new DeleteResponse { Success = result });

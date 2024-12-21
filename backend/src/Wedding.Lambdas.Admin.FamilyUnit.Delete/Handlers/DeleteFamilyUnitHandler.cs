@@ -31,7 +31,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers
 
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.RsvpCode);
+                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.InvitationCode);
 
                 var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
 

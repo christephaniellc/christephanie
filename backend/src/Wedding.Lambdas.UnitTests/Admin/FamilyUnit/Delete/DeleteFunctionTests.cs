@@ -5,7 +5,6 @@ using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Admin.FamilyUnit.Delete;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
@@ -17,7 +16,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         [Test]
         public async Task ShouldDeleteFamily()
         {
-            var function = new Function();
+            var function = new Wedding.Lambdas.Admin.FamilyUnit.Delete.Function();
             var context = new TestLambdaContext();
             var command = new DeleteFamilyUnitCommand("ABCDE");
             var request = new APIGatewayProxyRequest
