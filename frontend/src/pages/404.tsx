@@ -1,11 +1,11 @@
 import {Link} from "react-router-dom";
-import {useRouteHistory} from "../hooks/useRouteHistory";
+import {useRouteHistory} from "../context/AppState/useRouteHistory";
 import React from "react";
 import {Box, Typography} from "@mui/material";
+import { useAppStateContext } from '../context/AppStateContext';
 
 export const Four04Page = () => {
-  const { getPreviousRoute } = useRouteHistory();
-  const previousRoute = getPreviousRoute();
+  const { previousRoute } = useAppStateContext();
 
   return (
     <Box>

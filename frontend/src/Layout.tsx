@@ -1,19 +1,10 @@
 import {
-  BottomNavigation,
-  BottomNavigationAction,
-  Box,
-  Container,
   CssBaseline,
-  Stack,
-  useColorScheme
+  Stack
 } from "@mui/material";
 import {Outlet} from "react-router-dom";
-import React, {useState} from "react";
-import HomeIcon from '@mui/icons-material/Home';
-import ContrastIcon from '@mui/icons-material/Contrast';
-import {useChristephanieTheme} from "./context/ThemeContext";
-import {BottomNav} from "./components/BottomNavigation";
-import ElPulpoDark from "./assets/el_pulpo_andy.jpg"
+import React from "react";
+import {BottomNav} from "./components/BottomNav";
 
 export const Layout = () => {
   return (
