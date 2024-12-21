@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<OutputType>Exe</OutputType>
+		<UserSecretsId>0d907149-4e74-4852-9bbe-fc894c73f717</UserSecretsId>
+		<AWSProjectType>Lambda</AWSProjectType>
+		<!--   <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS> -->
+		<!--   <DockerfileContext>.</DockerfileContext> -->
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PublishDir>./publish</PublishDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="appsettings.Development.json" />
+	  <None Remove="appsettings.json" />
+	  <None Remove="Properties\launchSettings.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="appsettings.Development.json" />
+	  <Content Include="appsettings.json" />
+	  <Content Include="Properties\launchSettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+  
+  <ItemGroup>
+	  <Content Update="appsettings.Development.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="appsettings.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="appsettings.$(USERNAME).json" Condition="Exists('appsettings.$(USERNAME).json')">
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" /> -->
+    <!-- <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" /> -->
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="9.0.3" />
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.3" />
+    <PackageReference Include="Autofac" Version="8.1.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Wedding.Abstractions\Wedding.Abstractions.csproj" />
+    <ProjectReference Include="..\Wedding.Common.Web\Wedding.Common.Web.csproj" />
+    <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
+    <ProjectReference Include="..\Wedding.PublicApi.Logic\Wedding.PublicApi.Logic.csproj" />
+  </ItemGroup>
+
+</Project>
