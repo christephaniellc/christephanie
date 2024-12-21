@@ -122,7 +122,7 @@ namespace Wedding.PublicApi
             builder.RegisterModule(new AwsModule(awsOptions));
             builder.RegisterModule(new UspsModule(uspsConfig));
             builder.RegisterModule(new AuthModule(authProviderConfig?.AuthProvider
-                                                  ?? SupportedAuthorizationProvidersEnum.Internal, auth0Config.ApiBaseUrl!));
+                                                  ?? SupportedAuthorizationProvidersEnum.Internal, auth0Config!));
 
             // var app = builder.Build(options =>
             //     {
