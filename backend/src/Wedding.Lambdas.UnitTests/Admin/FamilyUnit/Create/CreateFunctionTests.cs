@@ -5,9 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Admin.FamilyUnit.Create;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
-using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create;
 
@@ -18,7 +16,7 @@ public class CreateFunctionTests
     [Test]
     public async void ShouldCreateFamilyUnitHandler()
     {
-        var function = new Function();
+        var function = new Wedding.Lambdas.Admin.FamilyUnit.Create.Function();
         var context = new TestLambdaContext();
         var command = new CreateFamilyUnitCommand(
             new FamilyUnitDto
@@ -39,7 +37,8 @@ public class CreateFunctionTests
             Body = JsonSerializer.Serialize(command)
         };
 
-        var result = await function.FunctionHandler(request, context);
+        var response = await function.FunctionHandler(request, context);
+        var result = APIGatewayProxyResponseHelper.GetResponseBody<FamilyUnitDto>(response);
 
         result.Guests.Should().NotBeNull();
         result.Guests!.Count.Should().BeGreaterThan(0);

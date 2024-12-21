@@ -17,8 +17,10 @@ using Wedding.Common.DI;
 using FluentAssertions.Common;
 using System.Threading.Tasks;
 using System;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
+using Wedding.Common.Configuration.Identity;
 
 namespace Wedding.PublicApi
 {
@@ -105,7 +107,7 @@ namespace Wedding.PublicApi
         {
             var awsOptions = Configuration.GetAWSOptions();
             var uspsConfig = Configuration.GetSection(ConfigurationKeys.USPS).Get<UspsConfiguration>()!;
-            var authProviderConfig = Configuration.GetSection(ConfigurationKeys.Authorization).Get<AuthorizationConfiguration>();
+            var authProviderConfig = Configuration.GetSection(ConfigurationKeys.Authorization).Get<IdentityConfiguration>();
             var auth0Config = Configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
 
             //TODO: SKS, add new handlers here when testing!!!!
@@ -120,7 +122,7 @@ namespace Wedding.PublicApi
             builder.RegisterModule(new AwsModule(awsOptions));
             builder.RegisterModule(new UspsModule(uspsConfig));
             builder.RegisterModule(new AuthModule(authProviderConfig?.AuthProvider
-                                                  ?? SupportedAuthorizationProviders.Internal, auth0Config.ApiBaseUrl!));
+                                                  ?? SupportedAuthorizationProvidersEnum.Internal, auth0Config.ApiBaseUrl!));
 
             // var app = builder.Build(options =>
             //     {

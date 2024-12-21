@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Wedding.Abstractions.Dtos;
 using Wedding.Common.DI;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
@@ -28,45 +30,81 @@ public class Function
     /// <summary>
     /// Admin function that creates a family unit
     /// </summary>
-    /// <param name="command">The event for the Lambda function handler to process.</param>
+    /// <param name="request">The request event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
     /// <returns></returns>
-    public async Task<FamilyUnitDto> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
     {
         try
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            if (!request.PathParameters.TryGetValue("rsvpCode", out var rsvpCode) || string.IsNullOrEmpty(rsvpCode))
+            if (!request.PathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
             {
-                context.Logger.LogError("RsvpCode is missing or invalid in PathParameters.");
-                throw new Exception("Invalid or missing RsvpCode in request.");
+                var error = "InvitationCode is missing or invalid in PathParameters.";
+                context.Logger.LogError(error);
+
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    IsBase64Encoded = false,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    },
+                    Body = JsonSerializer.Serialize(error)
+                };
             }
 
-            context.Logger.LogInformation($"rsvpCode: {rsvpCode}");
-
-            if (string.IsNullOrEmpty(rsvpCode))
-            {
-                context.Logger.LogError("RsvpCode is null.");
-                throw new Exception("Invalid RsvpCode in request.");
-            }
-
-            // TODO fix
-            var command = new GetFamilyUnitQuery(rsvpCode, "john");
+            //TODO: SKS fix
+            var command = new GetFamilyUnitQuery(invitationCode, "john");
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();
-            return await handler.GetAsync(command);
+            var result = await handler.GetAsync(command);
+            
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int) HttpStatusCode.OK,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(result)
+            };
         }
         catch (ValidationException ex)
         {
-            context.Logger.LogError($"Validation exception: {ex.Message}");
-            throw;
+            var error = $"Validation exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Error occurred: {ex.Message}");
-            throw;
+            var error = $"Error occurred: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.InternalServerError,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
     }
 }

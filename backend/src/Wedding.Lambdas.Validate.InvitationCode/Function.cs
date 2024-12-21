@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Wedding.Abstractions.Dtos;
 using Wedding.Common.DI;
 using Wedding.Lambdas.FamilyUnit.Get;
 using Wedding.Lambdas.Validate.InvitationCode.Commands;
@@ -29,44 +31,102 @@ public class Function
     /// <summary>
     /// Validates invitation code and first name
     /// </summary>
-    /// <param name="command">The event for the Lambda function handler to process.</param>
+    /// <param name="request">The request event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
     /// <returns></returns>
-    public async Task<GuestDto?> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            context.Logger.LogInformation($"Raw Query Params: {JsonSerializer.Serialize(request.QueryStringParameters)}");
+            context.Logger.LogInformation($"Raw Input: {JsonSerializer.Serialize(request.Body)}");
 
-            if (!request.PathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
+            if (!request.QueryStringParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
             {
-                context.Logger.LogError("InvitationCode is missing or invalid in PathParameters.");
-                throw new Exception("Invalid or missing InvitationCode in request.");
+                var error = "Invalid or missing InvitationCode in request.";
+                context.Logger.LogError(error);
+
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    IsBase64Encoded = false,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    },
+                    Body = JsonSerializer.Serialize(error)
+                };
             }
 
-            context.Logger.LogInformation($"rsvpCode: {invitationCode}");
+            context.Logger.LogInformation($"invitationCode: {invitationCode}");
 
-            if (!request.PathParameters.TryGetValue("firstName", out var firstName) || string.IsNullOrEmpty(firstName))
+            if (!request.QueryStringParameters.TryGetValue("firstName", out var firstName) || string.IsNullOrEmpty(firstName))
             {
-                context.Logger.LogError("FirstName is missing or invalid in PathParameters.");
-                throw new Exception("Invalid or missing FirstName in request.");
+                var error = "Invalid or missing FirstName in request.";
+                context.Logger.LogError(error);
+
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    IsBase64Encoded = false,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    },
+                    Body = JsonSerializer.Serialize(error)
+                };
             }
+
+            context.Logger.LogInformation($"firstName: {firstName}");
 
             var command = new GetGuestByInvitationCodeQuery(invitationCode, firstName);
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetGuestByInvitationCodeHandler>();
-            return await handler.GetAsync(command);
+            var result = await handler.GetAsync(command);
+            
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(result)
+            };
         }
         catch (ValidationException ex)
         {
-            context.Logger.LogError($"Validation exception: {ex.Message}");
-            throw;
+            var error = $"Validation exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Error occurred: {ex.Message}");
-            throw;
+            var error = $"Error occurred: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.InternalServerError,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
+            };
         }
     }
 }
