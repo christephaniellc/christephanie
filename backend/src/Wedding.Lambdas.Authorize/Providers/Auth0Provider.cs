@@ -1,8 +1,6 @@
 ﻿using Amazon.DynamoDBv2;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,8 +12,6 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Lambdas.Authorize.Enums;
 using System.Text.RegularExpressions;
-using Amazon.APIGateway.Model;
-using Amazon.SimpleSystemsManagement;
 using System.Text.Json;
 using System.Text;
 using Wedding.Abstractions.Dtos.Auth0;

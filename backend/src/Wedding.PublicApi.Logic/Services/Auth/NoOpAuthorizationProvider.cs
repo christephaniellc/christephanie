@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Amazon.Lambda.APIGatewayEvents;
+using Wedding.Abstractions.Enums;
+using Wedding.Lambdas.Authorize.Enums;
+using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
 {
@@ -38,6 +42,17 @@ namespace Wedding.PublicApi.Logic.Services.Auth
                 ResponseMessage = "NoOpAuthorizationProvider: " + (_isAdmin ? "authorized" : "unauthorized"),
                 Authorized = _isAdmin
             };
+        }
+
+        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect, string methodArn, string? userId = null,
+            List<RoleEnum>? roles = null)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

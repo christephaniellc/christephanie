@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Amazon.Lambda.APIGatewayEvents;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Lambdas.Authorize.Commands;
+using Wedding.Lambdas.Authorize.Enums;
+using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
@@ -78,6 +81,17 @@ namespace Wedding.PublicApi.Logic.Services.Auth
                 return null;
             }
             return entity.Roles;
+        }
+
+        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn)
+        {
+            throw new NotImplementedException();
+        }
+
+        public APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect, string methodArn, string? userId = null,
+            List<RoleEnum>? roles = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

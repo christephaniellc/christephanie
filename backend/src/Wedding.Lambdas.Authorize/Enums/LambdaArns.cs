@@ -1,4 +1,4 @@
-﻿namespace Wedding.Lambdas.Authorize
+﻿namespace Wedding.Lambdas.Authorize.Enums
 {
     public static class LambdaArns
     {

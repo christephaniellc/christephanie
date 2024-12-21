@@ -1,9 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Amazon.DynamoDBv2.DataModel;
 using Autofac;
+using AutoMapper;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
+using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Services.Auth;
+using IAuthorizationProvider = Wedding.Lambdas.Authorize.Providers.IAuthorizationProvider;
 
 namespace Wedding.PublicApi.Logic.DI
 {
@@ -11,12 +14,12 @@ namespace Wedding.PublicApi.Logic.DI
     public class AuthModule : Module
     {
         private readonly SupportedAuthorizationProvidersEnum _authProvider;
-        private readonly string _baseUrl;
+        private readonly Auth0Configuration _config;
 
-        public AuthModule(SupportedAuthorizationProvidersEnum authProvider, string baseUrl)
+        public AuthModule(SupportedAuthorizationProvidersEnum authProvider, Auth0Configuration auth0Configuration)
         {
             _authProvider = authProvider;
-            _baseUrl = baseUrl;
+            _config = auth0Configuration;
         }
         
         /// <inheritdoc cref="Module"/>
@@ -40,7 +43,11 @@ namespace Wedding.PublicApi.Logic.DI
                     {
                         if (_authProvider == SupportedAuthorizationProvidersEnum.Auth0)
                         {
-                            return new Auth0AuthorizationProvider(_baseUrl);
+                            var mapper = context.Resolve<IMapper>();
+                            return new Auth0Provider(_config.Authority, _config.Audience, _config.ClientId,
+                                _config.ClientSecret, mapper, _config.DynamoUserTableName, _config.DynamoIdentityCol,
+                                _config.DynamoIdentityIndex);
+                            //return new Auth0AuthorizationProvider(_baseUrl);
                         }
 
                         var repository = context.Resolve<IDynamoDBContext>();
@@ -56,7 +63,8 @@ namespace Wedding.PublicApi.Logic.DI
                         // var services = new ServiceCollection();
                         // var provider = services.BuildServiceProvider();
                         // var authorizationProvider = provider.GetRequiredService<IAuthorizationProvider>();
-                        return new AuthenticationProvider(authorizationProvider, _baseUrl);
+                        // TODO SKS broken
+                        return new AuthenticationProvider(authorizationProvider, "");
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
