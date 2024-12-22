@@ -17,9 +17,9 @@ namespace Wedding.Lambdas.Authorize.Validation
         public AuthorizationQueryValidator()
         {
             RuleFor(cmd => cmd.Token)
-                .NotEmpty();
-                //.SetValidator(new JwtTokenValidator());
-                //TODO SKS validate
+                .SetValidator(cmd => new JwtTokenValidator(cmd.JwtAuthority, cmd.JwtAudience));
+            RuleFor(cmd => cmd.MethodArn)
+                .SetValidator(new ArnValidator());
         }
 
         public void IsValid(ValidateAuthorizationQuery obj, object? _ = null)

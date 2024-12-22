@@ -14,9 +14,14 @@
         public const string Auth0 = "Auth0";
 
         /// <summary>
-        /// The Auth0 API base URL
+        /// The Auth0 authority / issuer URL
         /// </summary>
-        public const string Auth0ApiBaseUrl = Auth0 + ":ApiBaseUrl";
+        public const string AuthenticationAuthority = Auth0 + ":Authority";
+
+        /// <summary>
+        /// The Auth0 audience URL
+        /// </summary>
+        public const string AuthenticationAudience = Auth0 + ":Audience";
         #endregion
 
         #region USPS

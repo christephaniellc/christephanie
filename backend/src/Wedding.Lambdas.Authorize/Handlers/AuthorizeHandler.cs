@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.APIGatewayEvents;
+using Amazon.Runtime.Internal;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Common.Abstractions;
@@ -35,7 +36,8 @@ namespace Wedding.Lambdas.Authorize.Handlers
 
             try
             {
-                return await _authProvider.IsAuthorized(query.Token, query.MethodArn);
+                var token = query.Token.Replace("Bearer ", "");
+                return await _authProvider.IsAuthorized(token, query.MethodArn, query.InvitationCode);
             }
             catch (UnauthorizedAccessException ex)
             {

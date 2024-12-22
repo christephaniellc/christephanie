@@ -83,7 +83,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             return entity.Roles;
         }
 
-        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn)
+        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn, string authority)
         {
             throw new NotImplementedException();
         }

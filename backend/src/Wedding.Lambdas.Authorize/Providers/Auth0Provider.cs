@@ -1,6 +1,7 @@
 ﻿using Amazon.DynamoDBv2;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,9 +14,8 @@ using Wedding.Abstractions.Entities;
 using Wedding.Lambdas.Authorize.Enums;
 using System.Text.RegularExpressions;
 using System.Text.Json;
-using System.Text;
 using Wedding.Abstractions.Dtos.Auth0;
-using Wedding.Common.ThirdParty;
+using Wedding.Lambdas.Authorize.Helpers;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
@@ -29,7 +29,7 @@ namespace Wedding.Lambdas.Authorize.Providers
         private readonly string _dynamoTableName;
         private readonly string _dynamoTableIdentityCol;
         private readonly string _dynamoTableIdentityIndex;
-        
+
         public Auth0Provider(string authority, 
             string audience, 
             string clientId, 
@@ -49,49 +49,109 @@ namespace Wedding.Lambdas.Authorize.Providers
             _dynamoTableIdentityIndex = dynamoTableIdentityIndex;
         }
 
-        private async Task<string?> GetAccessToken()
+        // private async Task<string?> GetAccessToken()
+        // {
+        //     var tokenEndpoint = $"{_authority}/oauth/token";
+        //     var tokenRequest = new Auth0TokenRequest
+        //     {
+        //         client_id = _clientId,
+        //         client_secret = _clientSecret,
+        //         audience = _audience,
+        //         grant_type = "client_credentials"
+        //     };
+        //
+        //     var content = new StringContent(JsonSerializer.Serialize(tokenRequest), Encoding.UTF8, "application/json");
+        //
+        //     try
+        //     {
+        //         using (var client = new HttpClient())
+        //         {
+        //             var response = await client.PostAsync(tokenEndpoint, content);
+        //             response.EnsureSuccessStatusCode();
+        //             var jsonResponse = await response.Content.ReadAsStringAsync();
+        //             var jsonDoc = JsonDocument.Parse(jsonResponse);
+        //
+        //             if (jsonDoc.RootElement.TryGetProperty("access_token", out var accessToken))
+        //             {
+        //                 return accessToken.GetString();
+        //             }
+        //
+        //             throw new Exception("Access token not found in the response.");
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new Exception(ex.Message);
+        //     }
+        // }
+
+        public async Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn, string invitationCode)
         {
-            var tokenEndpoint = $"https://{_authority}/oauth/token";
-            var tokenRequest = new Auth0TokenRequest
-            {
-                client_id = _clientId,
-                client_secret = _clientSecret,
-                audience = _audience,
-                grant_type = "client_credentials"
-            };
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            var content = new StringContent(JsonSerializer.Serialize(tokenRequest), Encoding.UTF8, "application/json");
+            var jwtToken = jwtTokenHandler.ReadJwtToken(token);
 
-            using (var client = new HttpClient())
-            {
-                var response = await client.PostAsync(tokenEndpoint, content);
-                response.EnsureSuccessStatusCode();
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var jsonDoc = JsonDocument.Parse(jsonResponse);
+            // // TODO REMOVE SECTION
+            // var validationParameters = new TokenValidationParameters
+            // {
+            //     ValidateIssuer = true,
+            //     ValidIssuer = $"{_authority}/",
+            //     ValidateAudience = true,
+            //     ValidAudience = _audience,
+            //     ValidateLifetime = true,
+            //     IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+            //     {
+            //         var client = new HttpClient();
+            //         var keys = client.GetStringAsync($"{_authority}/.well-known/jwks.json").Result;
+            //         var jsonWebKeySet = new JsonWebKeySet(keys);
+            //         return jsonWebKeySet.GetSigningKeys();
+            //     }
+            // };
+            //
+            // var claimsPrincipal = jwtTokenHandler.ValidateToken(token, validationParameters, out _);
+            //
+            // foreach (var claim in claimsPrincipal.Claims)
+            // {
+            //     Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            // }
+            // TODO END REMOVE
 
-                if (jsonDoc.RootElement.TryGetProperty("access_token", out var accessToken))
-                {
-                    return accessToken.GetString();
-                }
 
-                throw new Exception("Access token not found in the response.");
-            }
-        }
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtClaimUris.sub || c.Type == "sub")?.Value;
+            //string userId = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == JwtClaimUris.sub)?.Value;
+            
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("Invalid token");
 
-        public async Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string userId, string methodArn)
-        {
-            // var client = new HttpClient("https://christephanie.us.auth0.com/oauth/token");
-            // var request = new RestRequest(Method.POST);
-            // request.AddHeader("content-type", "application/json");
-            // request.AddParameter("application/json", "{\"client_id\":\"BKIXT1TXuFmwP3HzIxzit48afofBufZG\",\"client_secret\":\"4__H6ZweOd42OUhP3od8ANVejged8H9jFZ9Ak7RYMnN3AMijYKS5jtpiCWyqEWuz\",\"audience\":\"https://api.wedding.christephanie.com\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
-            // IRestResponse response = client.Execute(request);
             Auth0User auth0User = null;
 
-            var auth0Token = await GetAccessToken(); 
-            if (string.IsNullOrEmpty(auth0Token))
+
+            var userInfoEndpoint = $"{_authority}/userinfo";
+            using (var authClient = new HttpClient())
             {
-                throw new UnauthorizedAccessException("Failed to retrieve Auth0 Management API access token.");
+                authClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                var infoResponse = await authClient.GetAsync(userInfoEndpoint);
+                if (!infoResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Failed to retrieve userinfo from Auth0. Status code: {infoResponse.StatusCode}");
+                }
+
+                var jsonResponse = await infoResponse.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                auth0User = JsonSerializer.Deserialize<Auth0User>(jsonResponse, options);
             }
+
+            //-------------------------------------------------------------------------------------------
+            // var auth0Token = await GetAccessToken(); 
+            // if (string.IsNullOrEmpty(auth0Token))
+            // {
+            //     throw new UnauthorizedAccessException("Failed to retrieve Auth0 Management API access token.");
+            // }
 
             // TODO SKS after token
             // services.AddAuthentication("Bearer")
@@ -101,49 +161,27 @@ namespace Wedding.Lambdas.Authorize.Providers
             //         options.Audience = "https://api.christephanie.com";
             //     });
 
-            var authEndpoint = $"https://{_authority}/api/v2/users/{userId}";
-            using (var authClient = new HttpClient())
-            {
-                authClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth0Token);
-
-                var authResponse = await authClient.GetAsync(authEndpoint);
-                if (!authResponse.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Failed to retrieve user from Auth0. Status code: {authResponse.StatusCode}");
-                }
-
-                var jsonResponse = await authResponse.Content.ReadAsStringAsync();
-                auth0User = JsonSerializer.Deserialize<Auth0User>(jsonResponse);
-            }
-
-            if (auth0User == null)
-            {
-                throw new UnauthorizedAccessException("Failed to retrieve Auth0 user.");
-            }
-
-            // var jwtTokenHandler = new JwtSecurityTokenHandler();
-            // var validationParameters = new TokenValidationParameters
+            // var authEndpoint = $"{_authority}/api/v2/users/{userId}";
+            // using (var authClient = new HttpClient())
             // {
-            //     ValidateIssuer = true,
-            //     ValidIssuer = $"{_audience}/",
-            //     ValidateAudience = true,
-            //     ValidAudience = _audience,
-            //     ValidateLifetime = true,
-            //     IssuerSigningKeyResolver = (auth0Token, securityToken, kid, parameters) =>
+            //     authClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth0Token);
+            //
+            //     var authResponse = await authClient.GetAsync(authEndpoint);
+            //     if (!authResponse.IsSuccessStatusCode)
             //     {
-            //         var client = new HttpClient();
-            //         var keys = client.GetStringAsync($"{_audience}/.well-known/jwks.json").Result;
-            //         var jsonWebKeySet = new JsonWebKeySet(keys);
-            //         return jsonWebKeySet.GetSigningKeys();
+            //         throw new Exception($"Failed to retrieve user from Auth0. Status code: {authResponse.StatusCode}");
             //     }
-            // };
             //
-            // var claimsPrincipal = jwtTokenHandler.ValidateToken(token, validationParameters, out _);
-            // string userId = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            //     var jsonResponse = await authResponse.Content.ReadAsStringAsync();
+            //     auth0User = JsonSerializer.Deserialize<Auth0User>(jsonResponse);
+            // }
             //
-            // if (string.IsNullOrEmpty(userId))
-            //     throw new UnauthorizedAccessException("Invalid token");
+            // if (auth0User == null)
+            // {
+            //     throw new UnauthorizedAccessException("Failed to retrieve Auth0 user.");
+            // }
 
+            // Check if is admin
             var queryRequest = new QueryRequest
             {
                 TableName = _dynamoTableName,
@@ -155,20 +193,38 @@ namespace Wedding.Lambdas.Authorize.Providers
                 }
             };
 
-            var client = new AmazonDynamoDBClient();
-            var response = await client.QueryAsync(queryRequest);
-            var weddingEntity = _mapper.Map<WeddingEntity>(response);
-            var user = _mapper.Map<GuestDto>(weddingEntity);
+            try
+            {
+                using (var dbClient = new AmazonDynamoDBClient())
+                {
+                    var response = await dbClient.QueryAsync(queryRequest);
+                    var weddingEntity = _mapper.Map<WeddingEntity>(response);
+                    var user = _mapper.Map<GuestDto>(weddingEntity);
 
-            if (user == null)
-                throw new UnauthorizedAccessException("User not found");
+                    if (user == null)
+                        throw new UnauthorizedAccessException("User not found");
 
-            var permissions = user.Roles.Select(r => r.ToString().ToUpper());
-            //var permissions = user["Roles"].AsListOfString();
+                    var permissions = user.Roles.Select(r => r.ToString().ToUpper());
+                    //var permissions = user["Roles"].AsListOfString();
 
-            var requestedPermission = GetRequiredPermissionByEndpoint(methodArn);
-            if (!permissions.Contains(requestedPermission))
-                throw new UnauthorizedAccessException("Access denied");
+                    var requestedPermission = GetRequiredPermissionByEndpoint(methodArn);
+                    if (!permissions.Contains(requestedPermission))
+                        throw new UnauthorizedAccessException("Access denied");
+
+                    // If not admin make sure they are part of the family unit
+                    if (!permissions.Contains(RoleEnum.Admin.ToString().ToUpper()))
+                    {
+                        if (user.RsvpCode.ToUpper() != invitationCode.ToUpper())
+                        {
+                            throw new UnauthorizedAccessException("Access denied to this invitation code.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new UnauthorizedAccessException($"User not found. {ex.Message}");
+            }
 
             return GeneratePolicy(PolicyEffectEnum.Allow, methodArn, userId);
         }

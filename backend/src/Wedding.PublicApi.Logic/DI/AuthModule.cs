@@ -44,6 +44,7 @@ namespace Wedding.PublicApi.Logic.DI
                         if (_authProvider == SupportedAuthorizationProvidersEnum.Auth0)
                         {
                             var mapper = context.Resolve<IMapper>();
+
                             return new Auth0Provider(_config.Authority, _config.Audience, _config.ClientId,
                                 _config.ClientSecret, mapper, _config.DynamoUserTableName, _config.DynamoIdentityCol,
                                 _config.DynamoIdentityIndex);
@@ -57,18 +58,18 @@ namespace Wedding.PublicApi.Logic.DI
                     .AsSelf()
                     .SingleInstance();
 
-                builder.Register(context =>
-                    {
-                        var authorizationProvider = context.Resolve<IAuthorizationProvider>();
-                        // var services = new ServiceCollection();
-                        // var provider = services.BuildServiceProvider();
-                        // var authorizationProvider = provider.GetRequiredService<IAuthorizationProvider>();
-                        // TODO SKS broken
-                        return new AuthenticationProvider(authorizationProvider, "");
-                    })
-                    .AsImplementedInterfaces()
-                    .AsSelf()
-                    .SingleInstance();
+                // builder.Register(context =>
+                //     {
+                //         var authorizationProvider = context.Resolve<IAuthorizationProvider>();
+                //         // var services = new ServiceCollection();
+                //         // var provider = services.BuildServiceProvider();
+                //         // var authorizationProvider = provider.GetRequiredService<IAuthorizationProvider>();
+                //         // TODO SKS broken
+                //         return new AuthenticationProvider(authorizationProvider, "");
+                //     })
+                //     .AsImplementedInterfaces()
+                //     .AsSelf()
+                //     .SingleInstance();
             }
 
             // builder.Register(_ =>

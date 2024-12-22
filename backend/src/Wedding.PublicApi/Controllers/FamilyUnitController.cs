@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
@@ -23,15 +24,12 @@ namespace Wedding.PublicApi.Controllers
         }
 
         //[Authorize]
-        [HttpGet("{rsvpCode}")]
+        [AllowAnonymous]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
-        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string rsvpCode, string firstName,
-            //[FromBody] APIGatewayProxyRequest request //, 
-            //  [FromServices] ILambdaContext context
-            CancellationToken cancellationToken = default
-        )
+        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string invitationCode, string firstName, CancellationToken cancellationToken = default)
         {
-            var query = new GetFamilyUnitQuery(rsvpCode, firstName);
+            var query = new GetFamilyUnitQuery(invitationCode, firstName);
             var result = await _dispatcher.GetAsync<GetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
             return Ok(result);

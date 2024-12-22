@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.Runtime.Internal;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
@@ -37,11 +38,33 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            GetFamilyUnitQuery query;
+            context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
 
-            if (!request.PathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
+            try
             {
-                var error = "InvitationCode is missing or invalid in PathParameters.";
+                query = ConvertToGetFamilyUnitQuery(request.QueryStringParameters);
+            }
+            catch (NullReferenceException ex)
+            {
+                var error = $"QueryStringParameters are missing or invalid.";
+                context.Logger.LogError(error);
+
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    IsBase64Encoded = false,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    },
+                    Body = JsonSerializer.Serialize(error)
+                };
+
+            }
+            catch (ArgumentNullException ex) 
+            {
+                var error = $"{ex.ParamName} is missing or invalid in QueryStringParameters.";
                 context.Logger.LogError(error);
 
                 return new APIGatewayProxyResponse
@@ -55,13 +78,10 @@ public class Function
                     Body = JsonSerializer.Serialize(error)
                 };
             }
-
-            //TODO: SKS fix
-            var command = new GetFamilyUnitQuery(invitationCode, "john");
-
+            
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();
-            var result = await handler.GetAsync(command);
+            var result = await handler.GetAsync(query);
             
             return new APIGatewayProxyResponse
             {
@@ -106,5 +126,28 @@ public class Function
                 Body = JsonSerializer.Serialize(error)
             };
         }
+    }
+
+    public static GetFamilyUnitQuery ConvertToGetFamilyUnitQuery(IDictionary<string, string> queryParameters)
+    {
+        if (queryParameters == null)
+        {
+            throw new NullReferenceException(nameof(queryParameters));
+        }
+
+        var caseInsensitivePathParameters = new Dictionary<string, string>(queryParameters, StringComparer.OrdinalIgnoreCase);
+
+        if (!caseInsensitivePathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
+        {
+            throw new ArgumentNullException(nameof(invitationCode));
+        }
+
+        if (!caseInsensitivePathParameters.TryGetValue("firstName", out var firstName) ||
+            string.IsNullOrEmpty(firstName))
+        {
+            throw new ArgumentNullException(nameof(firstName));
+        }
+
+        return new GetFamilyUnitQuery(invitationCode, firstName);
     }
 }

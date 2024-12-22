@@ -52,7 +52,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 //var result = await _repository.QueryAsync<WeddingEntity>(primaryKey, dynamoQuery).GetRemainingAsync();
                 var result = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
 
-                if (result == null)
+                if (result == null || result.Count == 0)
                 {
                     _logger.LogError("Family unit with RSVP code '{query.RsvpCode}' not found.");
                     throw new InvalidOperationException($"Family unit with RSVP code '{query.InvitationCode}' not found.");
