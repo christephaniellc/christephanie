@@ -14,13 +14,13 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get;
 public class GetFunctionTests
 {
     [Test]
-    public async void TestGetFunction()
+    public async Task TestGetFunction()
     {
         var function = new Wedding.Lambdas.FamilyUnit.Get.Function();
         var context = new TestLambdaContext();
         var command = new GetFamilyUnitQuery("ABCDE", "John");
         var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command)
+            QueryStringParameters = QueryStringHelper.ConvertToQueryStringParameters(command)
         };
 
         var response = await function.FunctionHandler(request, context);

@@ -8,7 +8,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 {
     public interface IAuthorizationProvider
     {
-        Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn);
+        Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn, string invitationCode);
         APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect, string methodArn, string? userId = null, List<RoleEnum>? roles = null);
     }
 }

@@ -85,6 +85,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             var token = GenerateTestJwtToken(RoleEnum.Admin);
             var methodArn = "arn:aws:execute-api:region:account-id:api-id/stage/method/resource";
             var userId = "Auth0|12345";
+            var invitationCode = "ABCDE";
 
             var dynamoResponse = new QueryResponse
             {
@@ -105,7 +106,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             // _mapper.Setup(m => m.Map<GuestDto>(weddingEntity)).Returns(guestDto);
 
             // Act
-            var response = await _auth0Provider.IsAuthorized(token, methodArn);
+            var response = await _auth0Provider.IsAuthorized(token, methodArn ,invitationCode);
 
             // Assert
             response.PrincipalID.Should().Be(userId);
@@ -118,10 +119,11 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             // Arrange
             var token = "invalid.jwt.token";
             var methodArn = "arn:aws:execute-api:region:account-id:api-id/stage/method/resource";
+            var invitationCode = "ABCDE";
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-                await _auth0Provider.IsAuthorized(token, methodArn));
+                await _auth0Provider.IsAuthorized(token, methodArn, invitationCode));
         }
 
         [Test]

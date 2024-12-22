@@ -4,5 +4,8 @@ namespace Wedding.Lambdas.Authorize.Commands
 {
     public record ValidateAuthorizationQuery(
         string Token, 
-        string MethodArn) : IWeddingQuery;
+        string MethodArn,
+        string InvitationCode,
+        string JwtAuthority,
+        string JwtAudience) : IWeddingQuery;
 }

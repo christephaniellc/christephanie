@@ -1,4 +1,4 @@
-﻿namespace Wedding.Lambdas.Authorize.Enums
+﻿namespace Wedding.Lambdas.Authorize.Helpers
 {
     public static class AuthFormatHelper
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -36,6 +37,7 @@ namespace Wedding.PublicApi.Controllers
         }
 
         //[Authorize]
+        [AllowAnonymous]
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -77,8 +79,9 @@ namespace Wedding.PublicApi.Controllers
                 return Problem(ex.Message);
             }
         }
-        
+
         //[Authorize]
+        [AllowAnonymous]
         [HttpGet("{interested}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnits(bool? interested,
@@ -104,7 +107,7 @@ namespace Wedding.PublicApi.Controllers
         }
 
         //[Authorize]
-        //[HttpPost("update")]
+        [AllowAnonymous]
         [HttpPut("")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -151,6 +154,8 @@ namespace Wedding.PublicApi.Controllers
             public bool Success { get; set; }
         }
 
+        //[Authorize]
+        [AllowAnonymous]
         [HttpDelete("{invitationCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

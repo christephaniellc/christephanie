@@ -15,6 +15,7 @@ using System.Threading;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -38,6 +39,7 @@ namespace Wedding.PublicApi.Controllers
             _authProvider = authProvider;
         }
 
+        [AllowAnonymous]
         [HttpGet("helloworld")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<APIGatewayProxyResponse> HelloWorld()
@@ -52,6 +54,7 @@ namespace Wedding.PublicApi.Controllers
             return await Task.FromResult(response);
         }
 
+        [AllowAnonymous]
         [HttpPost("address-validate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -86,6 +89,7 @@ namespace Wedding.PublicApi.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("debugdb")]
         public IActionResult DebugDependencies()
         {

@@ -58,7 +58,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             return response;
         }
 
-        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn)
+        public Task<APIGatewayCustomAuthorizerResponse> IsAuthorized(string token, string methodArn, string authority)
         {
             throw new System.NotImplementedException();
         }
