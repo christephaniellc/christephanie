@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -70,9 +72,10 @@ namespace Wedding.PublicApi.Controllers
         [Authorize]
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
-        public async Task<ActionResult<GuestDto>> GetUser(string? auth0Id = null, CancellationToken cancellationToken = default)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
-            auth0Id = auth0Id ?? "google-oauth2|107168580436857475897";
 
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
@@ -82,8 +85,8 @@ namespace Wedding.PublicApi.Controllers
                 return Unauthorized(new { message = "Authentication error." });
             }
 #endif
-
-            var query = new GetUserQuery(auth0Id);
+            
+            var query = new GetUserQuery(authenticatedUser.UserId, authenticatedUser.InvitationCode, authenticatedUser.Roles);
             var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
 
             return Ok(result);

@@ -12,7 +12,6 @@ using Wedding.Lambdas.Authorize.Providers;
 using AutoMapper;
 using Wedding.Lambdas.Authorize;
 using Wedding.Common.Configuration.Identity;
-using Wedding.Lambdas.Authorize.Helpers;
 using Wedding.Abstractions.Enums;
 
 public class Function
@@ -81,7 +80,7 @@ public class Function
         }
         catch (Exception ex)
         {
-            return APIGatewayCustomAuthorizerResponseHelper.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: $"Auth exception: {ex.Message}");
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: $"Auth exception: {ex.Message}");
         }
     }
 }

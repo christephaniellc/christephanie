@@ -13,5 +13,5 @@
     "function-memory-size": 512,
     "function-timeout": 30,
     "function-handler": "Wedding.Lambdas.User.Get::Wedding.Lambdas.User.Get.Function::FunctionHandler",
-    "function-name": "christephanie-api-dev-familyunit-get"
+    "function-name": "christephanie-api-dev-user-get"
 }

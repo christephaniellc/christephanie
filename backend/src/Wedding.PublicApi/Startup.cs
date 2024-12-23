@@ -195,9 +195,9 @@ namespace Wedding.PublicApi
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Delete.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.FamilyUnit.Update.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Validate.Address.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Authorize.RegistrationHook));
-            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Create.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Get.RegistrationHook));
 
             builder.RegisterModule(new LogicModule());

@@ -1,8 +1,10 @@
-﻿using Amazon.Lambda.APIGatewayEvents;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Amazon.Lambda.APIGatewayEvents;
+using Wedding.Abstractions.Enums;
 
-namespace Wedding.Lambdas.Authorize.Helpers
+namespace Wedding.Common.Helpers.AWS
 {
     public static class APIGatewayCustomAuthorizerRequestExtensions
     {
@@ -43,6 +45,21 @@ namespace Wedding.Lambdas.Authorize.Helpers
         public static string GetRequestSourceIp(this APIGatewayCustomAuthorizerRequest request)
         {
             return request.RequestContext.Identity.SourceIp;
+        }
+        public static string? GetUserId(this APIGatewayCustomAuthorizerRequest request)
+        {
+            return request.RequestContext.Authorizer["principalId"]?.ToString();
+        }
+
+        public static string? GetToken(this APIGatewayCustomAuthorizerRequest request)
+        {
+            return request.RequestContext.Authorizer["token"]?.ToString();
+        }
+
+        public static List<RoleEnum>? GetRoles(this APIGatewayCustomAuthorizerRequest request)
+        {
+            return request.RequestContext.Authorizer["roles"]?.ToString()
+                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
         }
     }
 }

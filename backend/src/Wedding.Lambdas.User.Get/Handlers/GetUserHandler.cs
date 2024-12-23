@@ -29,7 +29,6 @@ namespace Wedding.Lambdas.User.Get.Handlers
         {
             query.Validate(nameof(query));
 
-
             var queryRequest = new DynamoDBOperationConfig
             {
                 IndexName = "Auth0IdIndex" // Specify the GSI name

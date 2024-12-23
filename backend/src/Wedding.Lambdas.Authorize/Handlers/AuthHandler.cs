@@ -50,18 +50,18 @@ namespace Wedding.Lambdas.Authorize.Handlers
                 var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
 
-                return APIGatewayCustomAuthorizerResponseHelper.GeneratePolicy(isAuthenticated & isAuthorized
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(isAuthenticated & isAuthorized
                         ? PolicyEffectEnum.Allow 
                         : PolicyEffectEnum.Deny, 
                     query.MethodArn, token, authenticatedUser);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return APIGatewayCustomAuthorizerResponseHelper.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
             }
             catch (Exception ex)
             {
-                return APIGatewayCustomAuthorizerResponseHelper.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
             }
         }
     }

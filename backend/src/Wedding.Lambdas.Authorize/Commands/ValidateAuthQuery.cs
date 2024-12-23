@@ -7,6 +7,6 @@ namespace Wedding.Lambdas.Authorize.Commands
         string JwtAuthority,
         string JwtAudience,
         string MethodArn,
-        string InvitationCode,
-        string FirstName) : IWeddingQuery;
+        string? InvitationCode = null,
+        string? FirstName = null) : IWeddingQuery;
 }
