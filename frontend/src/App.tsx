@@ -1,24 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import {Route, Routes} from "react-router-dom";
-import {Four04Page} from "./pages/404";
-import {Layout} from "./Layout";
-import {Home} from "./pages/Home";
-import { Invitation } from './pages/Invitation';
-import { Profile } from './pages/Profile';
+import { Fragment } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+
+import CssBaseline from '@mui/material/CssBaseline';
+
+import { withErrorHandler } from '@/error-handling';
+import AppErrorBoundaryFallback from '@/error-handling/fallbacks/App';
+import Pages from '@/routes/Pages';
+import Header from '@/sections/Header';
+import HotKeys from '@/sections/HotKeys';
+import Notifications from '@/sections/Notifications';
+import SW from '@/sections/SW';
+import Sidebar from '@/sections/Sidebar';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path='/invitation' element={<Invitation />} />;
-        <Route path='/profile' element={<Profile />} />;
-        <Route path="*" element={<Four04Page />} />
-      </Route>
-    </Routes>
+    <Fragment>
+      <CssBaseline />
+      <Notifications />
+      <HotKeys />
+      <SW />
+      <BrowserRouter>
+        <Header />
+        <Sidebar />
+        <Pages />
+      </BrowserRouter>
+    </Fragment>
   );
 }
 
-export default App;
+export default withErrorHandler(App, AppErrorBoundaryFallback);
