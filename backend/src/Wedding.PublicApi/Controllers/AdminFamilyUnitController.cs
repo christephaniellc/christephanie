@@ -1,4 +1,4 @@
-﻿#define DEBUG_ANONYMOUS
+﻿//#define DEBUG_ANONYMOUS
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
+using Wedding.Common.Helpers;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
@@ -139,7 +140,10 @@ namespace Wedding.PublicApi.Controllers
                 }
 #endif
 
-                var command = new UpdateFamilyUnitCommand(familyUnit);
+                var command = new UpdateFamilyUnitCommand(familyUnit,
+                    authenticatedUser.UserId, 
+                    authenticatedUser.InvitationCode, 
+                    authenticatedUser.Roles);
                 var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
                 return Ok(familyUnit);

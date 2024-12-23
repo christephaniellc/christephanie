@@ -7,7 +7,7 @@ using Wedding.Abstractions.Enums;
 
 namespace Wedding.Common.Helpers.AWS
 {
-    public static class APIGatewayCustomAuthorizerResponseHelper
+    public static class APIGatewayCustomAuthorizerResponseExtensions
     {
         public static APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect,
             string methodArn,
@@ -44,6 +44,27 @@ namespace Wedding.Common.Helpers.AWS
                 },
                 Context = context
             };
+        }
+
+        public static string? GetUserId(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["principalId"]?.ToString();
+        }
+
+        public static string? GetInvitationCode(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["invitationCode"]?.ToString();
+        }
+
+        public static string? GetToken(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["token"]?.ToString();
+        }
+
+        public static List<RoleEnum>? GetRoles(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["roles"]?.ToString()
+                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
         }
     }
 }

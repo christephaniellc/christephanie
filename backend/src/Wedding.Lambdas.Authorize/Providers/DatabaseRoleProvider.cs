@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
+using NUnit.Framework.Interfaces;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Abstractions.Entities;
@@ -73,6 +74,8 @@ namespace Wedding.Lambdas.Authorize.Providers
                 else
                 {
                     entity = results.FirstOrDefault();
+                    authenticatedUser.InvitationCode = entity.RsvpCode;
+                    await TryUpdateFamilyUnit(authenticatedUser);
                 }
 
                 user = _mapper.Map<GuestDto>(entity);
@@ -126,10 +129,6 @@ namespace Wedding.Lambdas.Authorize.Providers
             {
                 throw new UnauthorizedAccessException($"Could not find invitation {invitationCode} with first name {firstName}");
             }
-            
-            var familyItem = items.FirstOrDefault(item => item.SortKey == DynamoKeys.GetFamilyInfoSortKey());
-            familyItem.FamilyUnitLastLogin = DateTime.UtcNow;
-            _repository.SaveAsync(familyItem);
 
             if (matchingGuest.AdditionalFirstNames == null)
             {
@@ -142,6 +141,24 @@ namespace Wedding.Lambdas.Authorize.Providers
             matchingGuest.EmailVerified = user.EmailVerified;
 
             return matchingGuest;
+        }
+
+        public async Task TryUpdateFamilyUnit(Auth0User user)
+        {
+            try
+            {
+                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(user.InvitationCode);
+                var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
+                var item = await _repository.LoadAsync<WeddingEntity>(familyUnitPartitionKey, familyUnitSortKey);
+
+                item.FamilyUnitLastLogin = DateTime.UtcNow;
+                _repository.SaveAsync(item);
+            }
+            catch (Exception ex)
+            {
+                // nothing
+                var test = ex.Message;
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
@@ -32,6 +33,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
         {
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
+            var permittedToUpdateFamilyUnit = (command.InvitationCode == familyUnit.RsvpCode) ||
+                                      command.Roles.Contains(RoleEnum.Admin);
+
+            if (!permittedToUpdateFamilyUnit)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to update this family.");
+            }
 
             try
             {
