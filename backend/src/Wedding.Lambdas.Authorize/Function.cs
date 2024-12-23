@@ -1,6 +1,7 @@
 using Amazon.Lambda.APIGatewayEvents;
 using System.Threading.Tasks;
 using System;
+using Amazon.DynamoDBv2.DataModel;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Amazon.Lambda.Core;
@@ -12,6 +13,7 @@ using AutoMapper;
 using Wedding.Lambdas.Authorize;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Lambdas.Authorize.Helpers;
+using Wedding.Abstractions.Enums;
 
 public class Function
 {
@@ -25,10 +27,17 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
 
-        serviceCollection.AddScoped<AuthorizeHandler>();
+        serviceCollection.AddScoped<AuthHandler>();
         serviceCollection.AddScoped<Auth0Provider>();
-        
-        serviceCollection.AddSingleton<Lazy<Task<Auth0Provider>>>(sp =>
+        serviceCollection.AddScoped<DatabaseRoleProvider>(sc =>
+        {
+            var mapper = sc.GetRequiredService<IMapper>();
+            var dynamoDbContext = sc.GetRequiredService<IDynamoDBContext>();
+
+            return new DatabaseRoleProvider(mapper, dynamoDbContext);
+        });
+
+        serviceCollection.AddSingleton<Lazy<Task<Auth0Provider>>>(sc =>
         {
             return new Lazy<Task<Auth0Provider>>(async () =>
             {
@@ -37,19 +46,11 @@ public class Function
                 _authority = authConfig.Authority ?? throw new InvalidOperationException();
                 _audience = authConfig.Audience ?? throw new InvalidOperationException();
 
-                //var dynamoDbContext = sp.GetRequiredService<IDynamoDBContext>();
-                var mapper = sp.GetRequiredService<IMapper>();
+                var mapper = sc.GetRequiredService<IMapper>();
 
-                return new Auth0Provider(
+                return new Auth0Provider(mapper,
                     authConfig.Authority ?? throw new InvalidOperationException(),
-                    authConfig.Audience ?? throw new InvalidOperationException(),
-                    authConfig.ClientId ?? throw new InvalidOperationException(),
-                    authConfig.ClientSecret ?? throw new InvalidOperationException(),
-                    mapper,
-                    authConfig.DynamoUserTableName ?? throw new InvalidOperationException(),
-                    authConfig.DynamoIdentityCol ?? throw new InvalidOperationException(),
-                    authConfig.DynamoIdentityIndex ?? throw new InvalidOperationException()
-                );
+                    authConfig.Audience ?? throw new InvalidOperationException());
             });
         });
 
@@ -60,26 +61,27 @@ public class Function
     {
         context.Logger.LogInformation($"Raw Auth Bearer Input: { request.AuthorizationToken }");
         var invitationCode = request.GetInvitationCode();
+        var firstName = request.GetFirstName();
 
-        var query = new ValidateAuthorizationQuery(
-            request.AuthorizationToken, 
-            request.MethodArn,
-            invitationCode,
+        var query = new ValidateAuthQuery(
+            request.AuthorizationToken,
             _authority,
-            _audience);
+            _audience,
+            request.MethodArn,
+            invitationCode, 
+            firstName);
 
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var handler = scope.ServiceProvider.GetRequiredService<AuthorizeHandler>();
+            var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
             var result = await handler.GetAsync(query);
 
             return result;
         }
         catch (Exception ex)
-        { 
-            //TODO SKS
-            return new APIGatewayCustomAuthorizerResponse();
+        {
+            return APIGatewayCustomAuthorizerResponseHelper.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: $"Auth exception: {ex.Message}");
         }
     }
 }

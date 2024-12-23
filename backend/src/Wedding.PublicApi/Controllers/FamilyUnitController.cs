@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿#define DEBUG_ANONYMOUS
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,16 +16,19 @@ namespace Wedding.PublicApi.Controllers
     public class FamilyUnitController : ControllerBase
     {
         private readonly IControllerDispatcher _dispatcher;
-        private IAuthorizationProvider _authProvider;
+        private IAuthenticationProvider _authProvider;
 
-        public FamilyUnitController(IControllerDispatcher dispatcher, IAuthorizationProvider authProvider)
+        public FamilyUnitController(IControllerDispatcher dispatcher, IAuthenticationProvider authProvider)
         {
             _dispatcher = dispatcher;
             _authProvider = authProvider;
         }
 
-        //[Authorize]
+#if DEBUG_ANONYMOUS
         [AllowAnonymous]
+#else
+        [Authorize]
+#endif
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string invitationCode, string firstName, CancellationToken cancellationToken = default)

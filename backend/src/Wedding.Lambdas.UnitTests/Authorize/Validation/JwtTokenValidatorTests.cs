@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
+using Wedding.Abstractions.Validation.Utility;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Authorize.Validation;
 
 namespace Wedding.Lambdas.UnitTests.Authorize.Validation
 {

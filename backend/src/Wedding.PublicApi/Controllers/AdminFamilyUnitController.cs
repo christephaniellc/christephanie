@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DEBUG_ANONYMOUS
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,12 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Dispatchers;
-using Wedding.Common.Helpers;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
+using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
-using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -36,8 +37,11 @@ namespace Wedding.PublicApi.Controllers
             _authProvider = authProvider;
         }
 
-        //[Authorize]
+#if DEBUG_ANONYMOUS
         [AllowAnonymous]
+#else
+        [Authorize]
+#endif
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -51,19 +55,14 @@ namespace Wedding.PublicApi.Controllers
                     return BadRequest(new { message = "Invalid request body." });
                 }
 
-                // var headers = Request.Headers
-                //     .ToDictionary(header => header.Key, header => header.Value.ToString());
-
-                // var headers = HeaderHelper.GetHeaders(Request.Headers);
-                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
-
-                // TODO: Move check to internal middleware referencing database roles
-                // Parse and validate Auth0 token (from request headers) and admin role
-                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-                if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+                var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+                var authenticatedUser = await _authProvider.Authenticate(token);
+                if (authenticatedUser == null)
                 {
-                    return Unauthorized(new { message = authCheck.ResponseMessage });
+                    return Unauthorized(new { message = "Authentication error." });
                 }
+#endif
 
                 foreach (var unit in familyUnits)
                 {
@@ -80,8 +79,11 @@ namespace Wedding.PublicApi.Controllers
             }
         }
 
-        //[Authorize]
+#if DEBUG_ANONYMOUS
         [AllowAnonymous]
+#else
+        [Authorize]
+#endif
         [HttpGet("{interested}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnits(bool? interested,
@@ -90,15 +92,14 @@ namespace Wedding.PublicApi.Controllers
             CancellationToken cancellationToken = default
         )
         {
-            var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
-
-            // TODO: Move check to internal middleware referencing database roles
-            // Parse and validate Auth0 token (from request headers) and admin role
-            var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-            if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authenticatedUser = await _authProvider.Authenticate(token);
+            if (authenticatedUser == null)
             {
-                return Unauthorized(new { message = authCheck.ResponseMessage });
+                return Unauthorized(new { message = "Authentication error." });
             }
+#endif
 
             var query = new GetFamilyUnitsQuery { Interested = interested };
             var result = await _dispatcher.GetAsync<GetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
@@ -106,8 +107,11 @@ namespace Wedding.PublicApi.Controllers
             return Ok(result);
         }
 
-        //[Authorize]
+#if DEBUG_ANONYMOUS
         [AllowAnonymous]
+#else
+        [Authorize]
+#endif
         [HttpPut("")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -126,17 +130,14 @@ namespace Wedding.PublicApi.Controllers
                     return BadRequest(new { message = "Invalid request body." });
                 }
 
-                // var headers = Request.Headers
-                //     .ToDictionary(header => header.Key, header => header.Value.ToString());
-
-                //var headers = HeaderHelper.GetHeaders(Request.Headers);
-                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
-
-                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-                if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+                var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+                var authenticatedUser = await _authProvider.Authenticate(token);
+                if (authenticatedUser == null)
                 {
-                    return Unauthorized(new { message = authCheck.ResponseMessage });
+                    return Unauthorized(new { message = "Authentication error." });
                 }
+#endif
 
                 var command = new UpdateFamilyUnitCommand(familyUnit);
                 var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
@@ -154,20 +155,24 @@ namespace Wedding.PublicApi.Controllers
             public bool Success { get; set; }
         }
 
-        //[Authorize]
+#if DEBUG_ANONYMOUS
         [AllowAnonymous]
+#else
+        [Authorize]
+#endif
         [HttpDelete("{invitationCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default)
         {
-            var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
-            
-            var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-            if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authenticatedUser = await _authProvider.Authenticate(token);
+            if (authenticatedUser == null)
             {
-                return Unauthorized(new { message = authCheck.ResponseMessage }); ;
+                return Unauthorized(new { message = "Authentication error" }); ;
             }
+#endif
 
             var command = new DeleteFamilyUnitCommand(invitationCode);
             var result = await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);

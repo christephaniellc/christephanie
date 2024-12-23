@@ -22,6 +22,8 @@
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.User.Create\Wedding.Lambdas.User.Create.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.InvitationCode\Wedding.Lambdas.Validate.InvitationCode.csproj" />
   </ItemGroup>
