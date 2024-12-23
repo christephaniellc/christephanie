@@ -14,8 +14,8 @@ using Wedding.Abstractions.Dtos;
 using System.Threading;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
-using Wedding.PublicApi.Logic.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -67,15 +67,15 @@ namespace Wedding.PublicApi.Controllers
                 {
                     return BadRequest(new { message = "Invalid request body." });
                 }
-                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
 
-                // TODO: Move check to internal middleware referencing database roles
-                // Parse and validate Auth0 token (from request headers) and admin role
-                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-                if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+                var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+                var authenticatedUser = await _authProvider.Authenticate(token);
+                if (authenticatedUser == null)
                 {
-                    return Unauthorized(new { message = authCheck.ResponseMessage });
+                    return Unauthorized(new { message = "Authentication error." });
                 }
+#endif
 
                 var command = new ValidateUspsAddressQuery(address);
                 var result = await _dispatcher.GetAsync<ValidateUspsAddressQuery, AddressDto>(command, cancellationToken);

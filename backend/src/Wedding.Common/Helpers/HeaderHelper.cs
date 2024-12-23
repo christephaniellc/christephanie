@@ -11,5 +11,11 @@ namespace Wedding.Common.Helpers
             return headerDictionary
                 .ToDictionary(header => header.Key, header => header.Value.ToString());
         }
+
+        public static string GetToken(IHeaderDictionary headerDictionary)
+        {
+            var headers = GetHeaders(headerDictionary);
+            return headers["Authorization"].Replace("Bearer ", "");
+        }
     }
 }

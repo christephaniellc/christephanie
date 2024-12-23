@@ -25,6 +25,7 @@ namespace Wedding.Abstractions.Dtos
         public List<RoleEnum> Roles { get; set; }
 
         public string? Email { get; set; }
+        public bool EmailVerified { get; set; }
 
         public string? Phone { get; set; }
 
@@ -42,5 +43,10 @@ namespace Wedding.Abstractions.Dtos
         /// Guest last login as first element
         /// </summary>
         public List<DateTime>? GuestLogins { get; set; }
+
+        public bool IsAdmin()
+        {
+            return Roles.Contains(RoleEnum.Admin);
+        }
     }
 }

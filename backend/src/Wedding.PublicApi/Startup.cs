@@ -187,8 +187,9 @@ namespace Wedding.PublicApi
             var authProviderConfig = Configuration.GetSection(ConfigurationKeys.Authorization).Get<IdentityConfiguration>();
             var auth0Config = Configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
 
-
-            //TODO: SKS, add new handlers here when testing!!!!
+            //--------------------------------------------
+            // SKS, add new handlers here when testing!!!!
+            //--------------------------------------------
 
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Create.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Admin.FamilyUnit.Update.RegistrationHook));
@@ -196,6 +197,8 @@ namespace Wedding.PublicApi
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.FamilyUnit.Get.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Validate.Address.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Authorize.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Create.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Get.RegistrationHook));
 
             builder.RegisterModule(new LogicModule());
             builder.RegisterModule(new AwsModule(awsOptions));

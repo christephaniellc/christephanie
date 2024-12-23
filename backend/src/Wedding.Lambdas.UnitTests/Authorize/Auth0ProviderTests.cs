@@ -13,6 +13,7 @@ using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Abstractions.Mapping;
+using Wedding.Common.ThirdParty;
 
 namespace Wedding.Lambdas.UnitTests.Authorize
 {
@@ -39,14 +40,9 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             _mapper = config.CreateMapper();
 
             _auth0Provider = new Auth0Provider(
-                Authority,
-                Audience,
-                ClientId,
-                ClientSecret,
                 _mapper,
-                DynamoTableName,
-                DynamoTableIdentityCol,
-                DynamoTableIdentityIndex);
+                Authority,
+                Audience);
         }
 
         private void MockAmazonDynamoDB(QueryResponse response)
@@ -79,7 +75,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         }
 
         [Test]
-        public async Task IsAuthorized_ValidTokenAndPermission_ReturnsAllowPolicy()
+        public async Task IsAuthorized_AuthenticateToken()
         {
             // Arrange
             var token = GenerateTestJwtToken(RoleEnum.Admin);
@@ -106,11 +102,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             // _mapper.Setup(m => m.Map<GuestDto>(weddingEntity)).Returns(guestDto);
 
             // Act
-            var response = await _auth0Provider.IsAuthorized(token, methodArn ,invitationCode);
+            var response = await _auth0Provider.Authenticate(token);
 
             // Assert
-            response.PrincipalID.Should().Be(userId);
-            response.PolicyDocument.Statement.First().Effect.Should().Be("Allow");
+            response.UserId.Should().Be(userId);
         }
 
         [Test]
@@ -123,104 +118,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-                await _auth0Provider.IsAuthorized(token, methodArn, invitationCode));
-        }
-
-        [Test]
-        public void GetIdentity_ValidAuth0Id_ReturnsId()
-        {
-            // Arrange
-            var weddingEntity = new WeddingEntity { Auth0Id = "Auth0|12345" };
-
-            // Act
-            var result = _auth0Provider.GetIdentity(weddingEntity);
-
-            // Assert
-            result.Should().Be("12345");
-        }
-
-        [Test]
-        public void SetIdentity_ValidId_SetsAuth0Id()
-        {
-            // Arrange
-            var weddingEntity = new WeddingEntity();
-            var id = "12345";
-
-            // Act
-            _auth0Provider.SetIdentity(weddingEntity, id);
-
-            // Assert
-            weddingEntity.Auth0Id.Should().Be("Auth0|12345");
-        }
-
-        [Test]
-        public void ShouldGetIdentity()
-        {
-            var entity = new WeddingEntity
-            {
-                FirstName = "John",
-                LastName = "Hancock",
-                Auth0Id = SupportedAuthorizationProvidersEnum.Auth0 + "|298374sjofisf;" 
-                        + SupportedAuthorizationProvidersEnum.Internal + "|90wjf9jsfsief;"
-                        + SupportedAuthorizationProvidersEnum.NoOpAdmin + "|randomValue;"
-                        + SupportedAuthorizationProvidersEnum.NoOpUser + "|oiwefoiwejfo;"
-            };
-
-            var result = _auth0Provider.GetIdentity(entity);
-
-            result.Should().Be("298374sjofisf");
-        }
-
-        [Test]
-        public void ShouldNotGetIdentity()
-        {
-            var entity = new WeddingEntity
-            {
-                FirstName = "John",
-                LastName = "Hancock",
-                Auth0Id = SupportedAuthorizationProvidersEnum.Internal + "|90wjf9jsfsief;"
-                        + SupportedAuthorizationProvidersEnum.NoOpAdmin + "|randomValue;"
-                        + SupportedAuthorizationProvidersEnum.NoOpUser + "|oiwefoiwejfo;"
-            };
-
-            var result = _auth0Provider.GetIdentity(entity);
-
-            result.Should().BeNull();
-        }
-
-
-        [Test]
-        public void ShouldSetIdentity()
-        {
-            var entity = new WeddingEntity
-            {
-                FirstName = "John",
-                LastName = "Hancock",
-            };
-
-            _auth0Provider.SetIdentity(entity, "23456");
-            var result = _auth0Provider.GetIdentity(entity);
-
-            result.Should().Be("23456");
-        }
-
-        [Test]
-        public void ShouldUpdateIdentity()
-        {
-            var entity = new WeddingEntity
-            {
-                FirstName = "John",
-                LastName = "Hancock",
-                Auth0Id = SupportedAuthorizationProvidersEnum.Auth0 + "|298374sjofisf;"
-                        + SupportedAuthorizationProvidersEnum.Internal + "|90wjf9jsfsief;"
-                        + SupportedAuthorizationProvidersEnum.NoOpAdmin + "|randomValue;"
-                        + SupportedAuthorizationProvidersEnum.NoOpUser + "|oiwefoiwejfo;"
-            };
-
-            _auth0Provider.SetIdentity(entity, "23456");
-            var result = _auth0Provider.GetIdentity(entity);
-
-            result.Should().Be("23456");
+                await _auth0Provider.Authenticate(token));
         }
     }
 }

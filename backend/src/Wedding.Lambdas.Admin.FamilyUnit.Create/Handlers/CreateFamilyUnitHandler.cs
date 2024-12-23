@@ -78,7 +78,6 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                         {
                             PartitionKey = guestPartitionKey,
                             SortKey = guestSortKey,
-                            Auth0Id = guest.GuestId,
                             RsvpCode = familyUnit.RsvpCode,
                             GuestId = guest.GuestId,
                             GuestNumber = guest.GuestNumber,

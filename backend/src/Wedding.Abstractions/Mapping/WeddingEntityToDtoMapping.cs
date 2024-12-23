@@ -10,6 +10,7 @@ namespace Wedding.Abstractions.Mapping
     public class WeddingEntityToDtoMapping
     {
         /// <summary>
+        /// 
         /// Profiles required for mothership/shell communication with serializable messages over the bus
         /// </summary>
         /// <returns></returns>
@@ -76,6 +77,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => src.EmailVerified))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
                     .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
@@ -115,6 +117,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => src.EmailVerified))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
                     .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
