@@ -32,7 +32,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             });
         }
 
-        public Task<Auth0User> Authorize(Auth0User authenticatedUser, string methodArn, string methodInvitationCode, string firstName)
+        public Task<Auth0User> Authorize(Auth0User authenticatedUser, string methodArn)
         {
             if (_isAdmin)
             {

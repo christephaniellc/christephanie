@@ -5,15 +5,15 @@ using Wedding.Common.Utility.Testing.TestChain;
 namespace Wedding.Abstractions.UnitTests.Validation
 {
     [TestFixture]
-    [UnitTestsFor(typeof(RsvpCodeValidator))]
-    public class RsvpCodeValidatorTests
+    [UnitTestsFor(typeof(InvitationCodeValidator))]
+    public class InvitationCodeValidatorTests
     {
-        private RsvpCodeValidator _validator;
+        private InvitationCodeValidator _validator;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new RsvpCodeValidator();
+            _validator = new InvitationCodeValidator();
         }
 
         // [Test]

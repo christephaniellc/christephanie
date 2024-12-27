@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
+using FluentValidation;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration;
@@ -15,6 +16,7 @@ using Wedding.Common.Dispatchers;
 using Wedding.Lambdas.User.Get.Commands;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Authorize.Providers;
+using Wedding.Lambdas.User.Find.Commands;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -69,6 +71,27 @@ namespace Wedding.PublicApi.Controllers
         //     return Ok(result);
         // }
 
+        [AllowAnonymous]
+        [HttpGet("find")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<string>> FindGuest(string invitationCode, string firstName, CancellationToken cancellationToken = default)
+        {
+            // try
+            // {
+                var query = new FindUserQuery(invitationCode, firstName);
+            // }
+            // catch (ValidationException ex)
+            // {
+            //
+            // }
+
+            var result = await _dispatcher.GetAsync<FindUserQuery, string>(query, cancellationToken);
+
+            return Ok(result);
+        }
+
         [Authorize]
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
@@ -76,15 +99,12 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
-
-#if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
             var authenticatedUser = await _authenticationProvider.Authenticate(token);
             if (authenticatedUser == null)
             {
                 return Unauthorized(new { message = "Authentication error." });
             }
-#endif
             
             var query = new GetUserQuery(authenticatedUser.UserId, authenticatedUser.InvitationCode, authenticatedUser.Roles);
             var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);

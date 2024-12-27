@@ -1,5 +1,5 @@
 ﻿#define DEBUG_ANONYMOUS
-using System.Collections.Generic;
+
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Common.Helpers;
@@ -49,12 +48,8 @@ namespace Wedding.PublicApi.Controllers
             return Ok(result);
         }
 
-#if DEBUG_ANONYMOUS
-        [AllowAnonymous]
-#else
         [Authorize]
-#endif
-        [HttpGet]
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<FamilyUnitDto>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
@@ -67,11 +62,11 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitUpdate);
 
             var authUserResult = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(authQuery);
-            var auth0Id = authUserResult.GetUserId();
+            var guestId = authUserResult.GetGuestId();
             var invitationCode = authUserResult.GetInvitationCode();
             var roles = authUserResult.GetRoles();
 
-            var command = new UpdateFamilyUnitCommand(familyUnit, auth0Id, invitationCode, roles);
+            var command = new UpdateFamilyUnitCommand(familyUnit, guestId, invitationCode, roles);
             var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
             return Ok(result);

@@ -18,6 +18,7 @@ namespace Wedding.Common.Helpers.AWS
             var context = new APIGatewayCustomAuthorizerContextOutput();
 
             context["token"] = token;
+            context["guestId"] = authenticatedUser?.GuestId ?? null;
             context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
             context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
 
@@ -28,7 +29,7 @@ namespace Wedding.Common.Helpers.AWS
 
             return new APIGatewayCustomAuthorizerResponse
             {
-                PrincipalID = authenticatedUser.UserId ?? "unknown",
+                PrincipalID = authenticatedUser?.GuestId ?? "unknown",
                 PolicyDocument = new APIGatewayCustomAuthorizerPolicy
                 {
                     Version = "2012-10-17",
@@ -46,7 +47,7 @@ namespace Wedding.Common.Helpers.AWS
             };
         }
 
-        public static string? GetUserId(this APIGatewayCustomAuthorizerResponse response)
+        public static string? GetGuestId(this APIGatewayCustomAuthorizerResponse response)
         {
             return response.Context["principalId"]?.ToString();
         }

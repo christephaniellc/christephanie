@@ -6,6 +6,11 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Validate\Post\**" />
+    <EmbeddedResource Remove="Validate\Post\**" />
+    <None Remove="Validate\Post\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
     <PackageReference Include="Amazon.Lambda.TestUtilities" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
@@ -22,11 +27,11 @@
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
-    <ProjectReference Include="..\Wedding.Lambdas.Validate.InvitationCode\Wedding.Lambdas.Validate.InvitationCode.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Validate\Post\" />
+    <Folder Include="FamilyUnit\Update\" />
   </ItemGroup>
 </Project>

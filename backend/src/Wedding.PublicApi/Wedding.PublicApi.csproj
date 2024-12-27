@@ -65,7 +65,6 @@
     <ProjectReference Include="..\Wedding.Abstractions\Wedding.Abstractions.csproj" />
     <ProjectReference Include="..\Wedding.Common.Web\Wedding.Common.Web.csproj" />
     <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
-    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.PublicApi.Logic\Wedding.PublicApi.Logic.csproj" />
   </ItemGroup>
 

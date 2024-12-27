@@ -17,7 +17,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation
         /// </summary>
         public DeleteFamilyUnitCommandValidator()
         {
-            RuleFor(cmd => cmd.InvitationCode).SetValidator(new RsvpCodeValidator());
+            RuleFor(cmd => cmd.InvitationCode).SetValidator(new InvitationCodeValidator());
         }
 
         public void IsValid(DeleteFamilyUnitCommand obj, object? _ = null)

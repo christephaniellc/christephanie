@@ -1,29 +1,31 @@
 ﻿using FluentValidation;
 using Wedding.Abstractions.Validation.Common;
 using Wedding.Abstractions.Validation.Utility;
-using Wedding.Lambdas.FamilyUnit.Get.Commands;
+using Wedding.Lambdas.User.Find.Commands;
 
-namespace Wedding.Lambdas.FamilyUnit.Get.Validation
+namespace Wedding.Lambdas.User.Find.Validation
 {
     /// <summary>
     /// Validator for GetFamilyUnitQuery.
     /// Implements the <see cref="AbstractValidator{ GetFamilyUnitQuery }" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class GetFamilyUnitQueryValidator : AbstractValidator<GetFamilyUnitQuery>, IValidate<GetFamilyUnitQuery>
+    internal class FindUserQueryValidator : AbstractValidator<FindUserQuery>, IValidate<FindUserQuery>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GetFamilyUnitQueryValidator" /> class.
+        /// Initializes a new instance of the <see cref="FindUserQueryValidator" /> class.
         /// </summary>
-        public GetFamilyUnitQueryValidator()
+        public FindUserQueryValidator()
         {
             RuleFor(query => query.InvitationCode)
+                .SetValidator(new InvitationCodeValidator());
+            RuleFor(query => query.FirstName)
                 .NotNull()
                 .NotEmpty()
-                .SetValidator(new InvitationCodeValidator());
+                .WithMessage("FirstName cannot be null.");
         }
 
-        public void IsValid(GetFamilyUnitQuery obj, object? _ = null)
+        public void IsValid(FindUserQuery obj, object? _ = null)
             => this.ValidateAndThrow(obj);
     }
 }

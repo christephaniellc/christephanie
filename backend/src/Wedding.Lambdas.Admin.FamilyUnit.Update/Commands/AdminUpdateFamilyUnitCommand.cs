@@ -7,7 +7,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Commands
 {
     public record UpdateFamilyUnitCommand(
         FamilyUnitDto FamilyUnit,
-        string Auth0Id,
+        string GuestId,
         string InvitationCode,
         List<RoleEnum> Roles) : IWeddingCommand;
 }

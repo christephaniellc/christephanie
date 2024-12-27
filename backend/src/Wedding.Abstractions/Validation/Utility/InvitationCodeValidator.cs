@@ -3,9 +3,9 @@ using Wedding.Abstractions.Validation.Common;
 
 namespace Wedding.Abstractions.Validation.Utility
 {
-    public class RsvpCodeValidator : AbstractValidator<string>, IValidate<string>
+    public class InvitationCodeValidator : AbstractValidator<string>, IValidate<string>
     {
-        public RsvpCodeValidator()
+        public InvitationCodeValidator()
         {
             RuleFor(rsvpCode => rsvpCode)
                 .NotEmpty()
