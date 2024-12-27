@@ -8,11 +8,11 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
-using Wedding.Lambdas.FamilyUnit.Get;
-using Wedding.Lambdas.Validate.InvitationCode.Commands;
-using Wedding.Lambdas.Validate.InvitationCode.Handlers;
+using Wedding.Common.Helpers.AWS;
+using Wedding.Lambdas.User.Find.Commands;
+using Wedding.Lambdas.User.Find.Handlers;
 
-namespace Wedding.Lambdas.Validate.InvitationCode;
+namespace Wedding.Lambdas.User.Find;
 
 public class Function
 {
@@ -23,13 +23,13 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
-        serviceCollection.AddScoped<GetGuestByInvitationCodeHandler>();
+        serviceCollection.AddScoped<FindUserHandler>();
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
-    /// Validates invitation code and first name
+    /// Admin function that creates a family unit
     /// </summary>
     /// <param name="request">The request event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
@@ -38,62 +38,46 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Query Params: {JsonSerializer.Serialize(request.QueryStringParameters)}");
-            context.Logger.LogInformation($"Raw Input: {JsonSerializer.Serialize(request.Body)}");
+            FindUserQuery query;
+            context.Logger.LogInformation($"Raw Query Input (should be empty): {request.QueryStringParameters}");
 
-            if (!request.QueryStringParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
-            {
-                var error = "Invalid or missing InvitationCode in request.";
-                context.Logger.LogError(error);
+            //var userId = request.GetGuestId();
+            var invitationCode = request.GetInvitationCode();
+            var firstName = request.GetFirstName();
 
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    IsBase64Encoded = false,
-                    Headers = new Dictionary<string, string>
-                    {
-                        { "Content-Type", "application/json" }
-                    },
-                    Body = JsonSerializer.Serialize(error)
-                };
-            }
+            context.Logger.LogInformation($"Raw Auth Input: {invitationCode} {firstName}");
 
-            context.Logger.LogInformation($"invitationCode: {invitationCode}");
-
-            if (!request.QueryStringParameters.TryGetValue("firstName", out var firstName) || string.IsNullOrEmpty(firstName))
-            {
-                var error = "Invalid or missing FirstName in request.";
-                context.Logger.LogError(error);
-
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    IsBase64Encoded = false,
-                    Headers = new Dictionary<string, string>
-                    {
-                        { "Content-Type", "application/json" }
-                    },
-                    Body = JsonSerializer.Serialize(error)
-                };
-            }
-
-            context.Logger.LogInformation($"firstName: {firstName}");
-
-            var command = new GetGuestByInvitationCodeQuery(invitationCode, firstName);
-
+            query = new FindUserQuery(invitationCode, firstName);
+            
             using var scope = _serviceProvider.CreateScope();
-            var handler = scope.ServiceProvider.GetRequiredService<GetGuestByInvitationCodeHandler>();
-            var result = await handler.GetAsync(command);
+            var handler = scope.ServiceProvider.GetRequiredService<FindUserHandler>();
+            var result = await handler.GetAsync(query);
             
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.OK,
+                StatusCode = (int) HttpStatusCode.OK,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
                 Body = JsonSerializer.Serialize(result)
+            };
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            var error = $"Authorization exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.Unauthorized,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(error)
             };
         }
         catch (ValidationException ex)

@@ -39,13 +39,13 @@ namespace Wedding.Lambdas.Authorize.Handlers
         public async Task<APIGatewayCustomAuthorizerResponse> GetAsync(ValidateAuthQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             query.Validate(nameof(query));
-
+            
             try
             {
                 var token = query.Token.Replace("Bearer ", "");
 
                 var authenticatedUser = await _authProvider.Authenticate(token);
-                var authorizedUser = await _databaseRoleProvider.Authorize(authenticatedUser, query.MethodArn, query.InvitationCode, query.FirstName);
+                var authorizedUser = await _databaseRoleProvider.Authorize(authenticatedUser, query.MethodArn);
 
                 var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;

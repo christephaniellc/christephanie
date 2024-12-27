@@ -10,10 +10,10 @@ using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Handlers;
 using Wedding.Lambdas.Authorize.Providers;
 using AutoMapper;
-using Wedding.Lambdas.Authorize;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Abstractions.Enums;
 
+namespace Wedding.Lambdas.Authorize;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
@@ -66,9 +66,7 @@ public class Function
             request.AuthorizationToken,
             _authority,
             _audience,
-            request.MethodArn,
-            invitationCode, 
-            firstName);
+            request.MethodArn);
 
         try
         {

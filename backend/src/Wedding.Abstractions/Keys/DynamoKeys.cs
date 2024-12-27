@@ -12,6 +12,7 @@ namespace Wedding.Abstractions.Keys
         public const string Preferences = "PREFS";
         public const string IdentityColumn = "Auth0Id";
         public const string IdentityIndex = "Auth0IdIndex";
+        public const string GuestIdIndex = "GuestIdIndex";
 
         public static string GetFamilyUnitPartitionKey(string rsvpCode)
         {
@@ -37,10 +38,11 @@ namespace Wedding.Abstractions.Keys
         {
             return $"{DynamoKeys.Guest}#{guestId}";
         }
-        public static string GetIdentityColumn()
-        {
-            return DynamoKeys.IdentityColumn;
-        }
+
+        // public static string GetIdentityColumn()
+        // {
+        //     return DynamoKeys.IdentityColumn;
+        // }
 
         public static string GetIdentityIndex()
         {

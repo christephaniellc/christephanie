@@ -1,7 +1,7 @@
 ﻿using Wedding.Common.Helpers;
-using Wedding.Lambdas.Validate.InvitationCode.Commands;
+using Wedding.Lambdas.User.Find.Commands;
 
-namespace Wedding.Lambdas.Validate.InvitationCode.Validation
+namespace Wedding.Lambdas.User.Find.Validation
 {
     public static class ValidateExtensions
     {
@@ -11,8 +11,8 @@ namespace Wedding.Lambdas.Validate.InvitationCode.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this GetGuestByInvitationCodeQuery obj,
+            this FindUserQuery obj,
             object? context = default)
-            => ValidateHelpers.Validate<GetGuestByInvitationCodeQuery, GetGuestByInvitationCodeQueryValidator>(obj, context);
+            => ValidateHelpers.Validate<FindUserQuery, FindUserQueryValidator>(obj, context);
     }
 }

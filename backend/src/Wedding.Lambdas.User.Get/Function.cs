@@ -43,7 +43,7 @@ public class Function
             GetUserQuery query;
             context.Logger.LogInformation($"Raw Query Input (should be empty): {request.QueryStringParameters}");
 
-            var userId = request.GetUserId();
+            var userId = request.GetGuestId();
             var invitationCode = request.GetInvitationCode();
             var roles = request.GetRoles();
 

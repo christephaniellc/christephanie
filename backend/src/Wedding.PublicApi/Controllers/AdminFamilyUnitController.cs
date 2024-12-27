@@ -1,4 +1,4 @@
-﻿//#define DEBUG_ANONYMOUS
+﻿#define DEBUG_ANONYMOUS
 
 using System;
 using System.Collections.Generic;
@@ -131,14 +131,14 @@ namespace Wedding.PublicApi.Controllers
                     return BadRequest(new { message = "Invalid request body." });
                 }
 
-#if !DEBUG_ANONYMOUS
+//#if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
                 var authenticatedUser = await _authProvider.Authenticate(token);
                 if (authenticatedUser == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });
                 }
-#endif
+//#endif
 
                 var command = new UpdateFamilyUnitCommand(familyUnit,
                     authenticatedUser.UserId, 

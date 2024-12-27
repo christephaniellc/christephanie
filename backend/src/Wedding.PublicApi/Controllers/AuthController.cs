@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -46,7 +47,7 @@ namespace Wedding.PublicApi.Controllers
             firstName = firstName ?? "Steph";
 
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var query = new ValidateAuthQuery(token, _authConfiguration.Authority, _authConfiguration.Audience, arn, invitationCode, firstName);
+            var query = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, arn, token);
             var result = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(query, cancellationToken);
         
             return Ok(result);

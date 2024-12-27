@@ -21,6 +21,17 @@
         {
             return value?.ToString();
         }
+
+        public object? FromString(string entry)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry))
+                return null;
+
+            if (Enum.TryParse(entry, true, out TEnum enumValue))
+                return enumValue;
+
+            return null;
+        }
     }
 
 }

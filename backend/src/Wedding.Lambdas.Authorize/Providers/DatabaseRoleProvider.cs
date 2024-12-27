@@ -48,7 +48,18 @@ namespace Wedding.Lambdas.Authorize.Providers
             return requiresFamilyBelonging ? authenticatedUser.RsvpCode.ToUpper() == methodInvitationCode.ToUpper() : true;
         }
 
-        public async Task<Auth0User> Authorize(Auth0User authenticatedUser, string methodArn, string methodInvitationCode, string firstName)
+        /// <summary>
+        /// Auth0User has UserId (auth0) and GuestId (lives on AppData obj)
+        ///
+        /// If coming through auth layer, can be scenarios:
+        /// 1. 
+        /// 2. Has Auth0Id saved to guest entity
+        /// </summary>
+        /// <param name="authenticatedUser"></param>
+        /// <param name="methodArn"></param>
+        /// <returns></returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        public async Task<Auth0User> Authorize(Auth0User authenticatedUser, string methodArn)
         {
             try
             {
@@ -65,7 +76,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 if (results == null || results.Count == 0)
                 {
-                    var updateResult = await TryUpdateUser(authenticatedUser, methodInvitationCode, firstName);
+                    var updateResult = await TryUpdateUser(authenticatedUser);
                     if (updateResult != null)
                     {
                         entity = updateResult;
@@ -108,26 +119,30 @@ namespace Wedding.Lambdas.Authorize.Providers
             }
         }
 
-        public async Task<WeddingEntity> TryUpdateUser(Auth0User user, string invitationCode, string firstName)
+        public async Task<WeddingEntity> TryUpdateUser(Auth0User user)
         {
-            if (string.IsNullOrEmpty(invitationCode) || string.IsNullOrEmpty(firstName))
+            if (string.IsNullOrEmpty(user.UserId) || string.IsNullOrEmpty(user.GuestId))
             {
-                throw new UnauthorizedAccessException($"Could not find invitation {invitationCode} with first name {firstName}");
+                throw new UnauthorizedAccessException($"Could not find user.");
             }
 
-            var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
-            var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
-
-            var matchingGuest = items.FirstOrDefault(item =>
-                item.FirstName?.ToUpper() == firstName.ToUpper() ||
-                (
-                    item.AdditionalFirstNames != null
-                    && item.AdditionalFirstNames.Select(firstName => firstName.ToUpper()).Contains(firstName.ToUpper()))
-                );
-
-            if (matchingGuest == null)
+            var queryConfig = new DynamoDBOperationConfig
             {
-                throw new UnauthorizedAccessException($"Could not find invitation {invitationCode} with first name {firstName}");
+                IndexName = DynamoKeys.GuestIdIndex
+            };
+
+            var items = await _repository.QueryAsync<WeddingEntity>(user.GuestId, queryConfig)
+                .GetRemainingAsync();
+
+
+            // var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
+            // var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
+            
+            var matchingGuest = items.FirstOrDefault();
+
+            if (matchingGuest == null || string.IsNullOrEmpty(matchingGuest.RsvpCode))
+            {
+                throw new UnauthorizedAccessException($"Guest not found.");
             }
 
             if (matchingGuest.AdditionalFirstNames == null)
