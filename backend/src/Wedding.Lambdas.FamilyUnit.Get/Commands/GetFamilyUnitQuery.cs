@@ -7,7 +7,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="InvitationCode">The RsvpCode of the FamilyUnit</param>
+    /// <param name="GuestId">The user's guest id</param>
     public record GetFamilyUnitQuery(
-        string InvitationCode, string FirstName) : IWeddingQuery;
+        string GuestId) : IWeddingQuery;
 }

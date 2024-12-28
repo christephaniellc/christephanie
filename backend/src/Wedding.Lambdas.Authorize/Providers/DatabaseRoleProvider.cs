@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
-using NUnit.Framework.Interfaces;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
+using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Providers
@@ -18,11 +18,13 @@ namespace Wedding.Lambdas.Authorize.Providers
     {
         private readonly IMapper _mapper;
         private readonly IDynamoDBContext _repository;
+        private readonly IAuthenticationProvider _authProvider;
 
-        public DatabaseRoleProvider(IMapper mapper, IDynamoDBContext repository)
+        public DatabaseRoleProvider(IMapper mapper, IDynamoDBContext repository, IAuthenticationProvider authProvider)
         {
             _mapper = mapper;
             _repository = repository;
+            _authProvider = authProvider;
         }
 
         private string GetRequiredPermissionByEndpoint(string methodArn)
@@ -59,35 +61,37 @@ namespace Wedding.Lambdas.Authorize.Providers
         /// <param name="methodArn"></param>
         /// <returns></returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<Auth0User> Authorize(Auth0User authenticatedUser, string methodArn)
+        public async Task<GuestDto?> Authorize(string token, string methodArn)
         {
             try
             {
                 GuestDto? user = null;
                 WeddingEntity? entity = null;
 
+                var guestId = JwtClaimHelper.GetGuestIdFromToken(token, _authProvider.GetAudience());
+
                 var queryConfig = new DynamoDBOperationConfig
                 {
-                    IndexName = DynamoKeys.IdentityIndex
+                    IndexName = DynamoKeys.GuestIdIndex
                 };
 
-                var results = await _repository.QueryAsync<WeddingEntity>(authenticatedUser.UserId, queryConfig)
-                    .GetRemainingAsync();
+                var result = await _repository.LoadAsync<WeddingEntity>(guestId, queryConfig);
 
-                if (results == null || results.Count == 0)
+                if (result == null)
                 {
-                    var updateResult = await TryUpdateUser(authenticatedUser);
-                    if (updateResult != null)
-                    {
-                        entity = updateResult;
-                    }
+                    throw new UnauthorizedAccessException("Access denied");
                 }
-                else
+
+                entity = result;
+
+                if (string.IsNullOrEmpty(entity.Auth0Id))
                 {
-                    entity = results.FirstOrDefault();
+                    var authenticatedUser = await _authProvider.GetUserInfo(token);
                     authenticatedUser.InvitationCode = entity.RsvpCode;
-                    await TryUpdateFamilyUnit(authenticatedUser);
+                    await TryUpdateUser(entity, authenticatedUser);
                 }
+
+                await TryUpdateFamilyUnit(entity.RsvpCode);
 
                 user = _mapper.Map<GuestDto>(entity);
                 entity.GuestLogins.Add(DateTime.UtcNow);
@@ -104,10 +108,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 _repository.SaveAsync(entity);
 
-                authenticatedUser.InvitationCode = user.RsvpCode;
-                authenticatedUser.Roles = _mapper.Map<List<RoleEnum>>(permissions);
-
-                return authenticatedUser;
+                return user;
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -119,27 +120,8 @@ namespace Wedding.Lambdas.Authorize.Providers
             }
         }
 
-        public async Task<WeddingEntity> TryUpdateUser(Auth0User user)
+        public async Task TryUpdateUser(WeddingEntity matchingGuest, Auth0User user)
         {
-            if (string.IsNullOrEmpty(user.UserId) || string.IsNullOrEmpty(user.GuestId))
-            {
-                throw new UnauthorizedAccessException($"Could not find user.");
-            }
-
-            var queryConfig = new DynamoDBOperationConfig
-            {
-                IndexName = DynamoKeys.GuestIdIndex
-            };
-
-            var items = await _repository.QueryAsync<WeddingEntity>(user.GuestId, queryConfig)
-                .GetRemainingAsync();
-
-
-            // var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
-            // var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
-            
-            var matchingGuest = items.FirstOrDefault();
-
             if (matchingGuest == null || string.IsNullOrEmpty(matchingGuest.RsvpCode))
             {
                 throw new UnauthorizedAccessException($"Guest not found.");
@@ -149,20 +131,22 @@ namespace Wedding.Lambdas.Authorize.Providers
             {
                 matchingGuest.AdditionalFirstNames = new List<string>();
             }
+
+            if (!string.IsNullOrEmpty(user.Nickname))
+            {
+                matchingGuest.AdditionalFirstNames.Add(user.Nickname);
+            }
             
             matchingGuest.Auth0Id = user.UserId;
-            matchingGuest.AdditionalFirstNames.Add(user.Nickname);
             matchingGuest.Email = user.Email;
             matchingGuest.EmailVerified = user.EmailVerified;
-
-            return matchingGuest;
         }
 
-        public async Task TryUpdateFamilyUnit(Auth0User user)
+        public async Task TryUpdateFamilyUnit(string invitationCode)
         {
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(user.InvitationCode);
+                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
                 var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 var item = await _repository.LoadAsync<WeddingEntity>(familyUnitPartitionKey, familyUnitSortKey);
 

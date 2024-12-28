@@ -33,23 +33,20 @@ namespace Wedding.PublicApi.Controllers
             _authConfiguration = authConfiguration;
         }
 
-#if DEBUG_ANONYMOUS
-        [AllowAnonymous]
-#else
         [Authorize]
-#endif
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
-        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string invitationCode, string firstName, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
-            var query = new GetFamilyUnitQuery(invitationCode, firstName);
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var query = new GetFamilyUnitQuery(token);
             var result = await _dispatcher.GetAsync<GetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
             return Ok(result);
         }
 
         [Authorize]
-        [HttpPut]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<FamilyUnitDto>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)

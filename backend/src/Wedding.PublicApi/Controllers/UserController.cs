@@ -15,6 +15,7 @@ using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Lambdas.User.Get.Commands;
 using Wedding.Common.Helpers;
+using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Lambdas.User.Find.Commands;
 
@@ -28,68 +29,43 @@ namespace Wedding.PublicApi.Controllers
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
         private readonly Auth0Configuration _authConfiguration;
-        private readonly IAuthenticationProvider _authenticationProvider;
         private readonly IAuthorizationProvider _authorizationProvider;
 
         public UserController(ILogger<UserController> logger, 
             IControllerDispatcher dispatcher, 
             IServiceProvider serviceProvider, 
             IConfiguration configuration,
-            IAuthenticationProvider authenticationProvider,
             IAuthorizationProvider authorizationProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
             _serviceProvider = serviceProvider;
-            _authenticationProvider = authenticationProvider;
             _authorizationProvider = authorizationProvider;
             _authConfiguration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
         }
 
-        // [Authorize]
-        // [HttpPost("create")]
-        // [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
-        // public async Task<ActionResult<FamilyUnitDto>> CreateUser(string? auth0Id = null, string? invitationCode = null, string? firstName = null, 
-        //     CancellationToken cancellationToken = default)
-        // {
-        //     auth0Id = auth0Id ?? "google-oauth2|107168580436857475897";
-        //     invitationCode = invitationCode?.ToUpper() ?? "RVMBL";
-        //     firstName = firstName ?? "Steph";
-        //     var arn = LambdaArns.AdminFamilyUnitCreate;
-        //
-        //
-        //     // var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
-        //     // var token = headers["Authorization"].Replace("Bearer ", "");
-        //     // var query = new ValidateAuthQuery(token, arn, invitationCode, _authConfiguration.Authority, _authConfiguration.Audience);
-        //     // var authResult = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(query, cancellationToken);
-        //     //
-        //     // var auth0Id = authResult.PrincipalID;
-        //
-        //     var command = new CreateUserCommand(auth0Id, invitationCode, firstName);
-        //     var result = await _dispatcher.ExecuteAsync<CreateUserCommand, FamilyUnitDto>(command, cancellationToken);
-        //
-        //     return Ok(result);
-        // }
-
         [AllowAnonymous]
         [HttpGet("find")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<string>> FindGuest(string invitationCode, string firstName, CancellationToken cancellationToken = default)
         {
-            // try
-            // {
+            try
+            {
                 var query = new FindUserQuery(invitationCode, firstName);
-            // }
-            // catch (ValidationException ex)
-            // {
-            //
-            // }
+                var result = await _dispatcher.GetAsync<FindUserQuery, string>(query, cancellationToken);
+                if (string.IsNullOrEmpty(result))
+                {
+                    return Unauthorized(new { message = "Invitation not found." });
+                }
 
-            var result = await _dispatcher.GetAsync<FindUserQuery, string>(query, cancellationToken);
-
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [Authorize]
@@ -100,16 +76,24 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authenticatedUser = await _authenticationProvider.Authenticate(token);
+            var authenticatedUser = await _authorizationProvider.Authorize(token, LambdaArns.UserGet);
             if (authenticatedUser == null)
             {
                 return Unauthorized(new { message = "Authentication error." });
             }
-            
-            var query = new GetUserQuery(authenticatedUser.UserId, authenticatedUser.InvitationCode, authenticatedUser.Roles);
-            var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
 
-            return Ok(result);
+            try
+            {
+                var query = new GetUserQuery(authenticatedUser.GuestId, authenticatedUser.RsvpCode,
+                    authenticatedUser.Roles);
+                var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

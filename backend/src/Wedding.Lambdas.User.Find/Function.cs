@@ -18,14 +18,23 @@ public class Function
 {
     private readonly ServiceProvider _serviceProvider;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<FindUserHandler>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
@@ -39,13 +48,13 @@ public class Function
         try
         {
             FindUserQuery query;
-            context.Logger.LogInformation($"Raw Query Input (should be empty): {request.QueryStringParameters}");
+            context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
 
             //var userId = request.GetGuestId();
-            var invitationCode = request.GetInvitationCode();
-            var firstName = request.GetFirstName();
+            var invitationCode = request.GetInvitationCodeFromParams();
+            var firstName = request.GetFirstNameFromParams();
 
-            context.Logger.LogInformation($"Raw Auth Input: {invitationCode} {firstName}");
+            context.Logger.LogInformation($"Query Input: {invitationCode} {firstName}");
 
             query = new FindUserQuery(invitationCode, firstName);
             

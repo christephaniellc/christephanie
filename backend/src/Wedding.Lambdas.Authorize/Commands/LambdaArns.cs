@@ -12,5 +12,7 @@
         public const string UserGet = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-user-get";
 
         public const string Auth = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-authorize";
+
+        public const string AddressValidate = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-validate-address";
     }
 }

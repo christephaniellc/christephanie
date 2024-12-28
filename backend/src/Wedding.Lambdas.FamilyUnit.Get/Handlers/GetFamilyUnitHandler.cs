@@ -32,10 +32,34 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
         {
             query.Validate(nameof(query));
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode);
+            string invitationCode;
 
             try
             {
+                query.Validate(nameof(query));
+
+                var queryRequest = new DynamoDBOperationConfig
+                {
+                    IndexName = DynamoKeys.GuestIdIndex // Specify the GSI name
+                };
+
+                try
+                {
+                    var guestResult = await _repository.QueryAsync<WeddingEntity>(query.GuestId, queryRequest).GetRemainingAsync();
+                    if (guestResult == null || guestResult.Count == 0)
+                    {
+                        throw new UnauthorizedAccessException("User not found.");
+                    }
+
+                    invitationCode = guestResult.FirstOrDefault().RsvpCode;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while getting the user.");
+                    throw new UnauthorizedAccessException($"User not found. {ex.Message}");
+                }
+
+                var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
                 var dynamoQuery = new QueryOperationConfig()
                 {
                     KeyExpression = new Expression
@@ -47,22 +71,20 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                         }
                     }
                 };
-
-                //var result = await _repository.LoadAsync<WeddingEntity>(partitionKey, cancellationToken);
-                //var result = await _repository.QueryAsync<WeddingEntity>(primaryKey, dynamoQuery).GetRemainingAsync();
+                
                 var result = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
-
+                
                 if (result == null || result.Count == 0)
                 {
                     _logger.LogError("Family unit with RSVP code '{query.RsvpCode}' not found.");
-                    throw new InvalidOperationException($"Family unit with RSVP code '{query.InvitationCode}' not found.");
+                    throw new InvalidOperationException($"Family unit with RSVP code '{invitationCode}' not found.");
                 }
 
                 var numFamilies = result.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
                 if (numFamilies.Count > 1)
                 {
                     _logger.LogError("Multiple family units with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Multiple family units with RSVP code '{query.InvitationCode}' found.");
+                    throw new ApplicationException($"Multiple family units with RSVP code '{invitationCode}' found.");
                 }
 
                 // var familyUnitInfo = result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
@@ -76,7 +98,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 if (guests.Count == 0)
                 {
                     _logger.LogError("No guests with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Invalid RSVP code '{query.InvitationCode}', no guests found.");
+                    throw new ApplicationException($"Invalid RSVP code '{invitationCode}', no guests found.");
                 }
 
                 familyUnit.Guests = guests;

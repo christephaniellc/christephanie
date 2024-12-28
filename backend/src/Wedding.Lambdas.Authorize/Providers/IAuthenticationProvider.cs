@@ -5,6 +5,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 {
     public interface IAuthenticationProvider
     {
-        Task<Auth0User> Authenticate(string token);
+        string GetAudience();
+        Task<Auth0User> GetUserInfo(string token);
     }
 }
