@@ -15,6 +15,7 @@ using System.Threading;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
 using Microsoft.AspNetCore.Authorization;
+using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Controllers
@@ -26,12 +27,12 @@ namespace Wedding.PublicApi.Controllers
         private readonly ILogger<HelloWorldController> _logger;
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
-        private IAuthenticationProvider _authProvider;
+        private IAuthorizationProvider _authProvider;
 
         public HelloWorldController(ILogger<HelloWorldController> logger, 
             IControllerDispatcher dispatcher, 
-            IServiceProvider serviceProvider, 
-            IAuthenticationProvider authProvider)
+            IServiceProvider serviceProvider,
+            IAuthorizationProvider authProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
@@ -70,7 +71,7 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var authenticatedUser = await _authProvider.Authenticate(token);
+                var authenticatedUser = await _authProvider.Authorize(token, LambdaArns.AddressValidate);
                 if (authenticatedUser == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });

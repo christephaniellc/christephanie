@@ -20,19 +20,16 @@ namespace Wedding.Lambdas.Authorize.Handlers
         private readonly ILogger<AuthHandler> _logger;
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authProvider;
         private readonly IAuthorizationProvider _databaseRoleProvider;
 
         public AuthHandler(ILogger<AuthHandler> logger, 
             IDynamoDBContext repository, 
             IMapper mapper, 
-            IAuthenticationProvider authProvider, 
             IAuthorizationProvider databaseRoleProvider)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
-            _authProvider = authProvider;
             _databaseRoleProvider = databaseRoleProvider;
         }
 
@@ -44,24 +41,25 @@ namespace Wedding.Lambdas.Authorize.Handlers
             {
                 var token = query.Token.Replace("Bearer ", "");
 
-                var authenticatedUser = await _authProvider.Authenticate(token);
-                var authorizedUser = await _databaseRoleProvider.Authorize(authenticatedUser, query.MethodArn);
+                //var isAuthenticated = await _authProvider.GetGuestIdFromToken(token);
+                var authorizedUser = await _databaseRoleProvider.Authorize(token, query.MethodArn);
 
-                var isAuthenticated = authenticatedUser != null;
+                //var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
 
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(isAuthenticated & isAuthorized
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(//isAuthenticated & 
+                    isAuthorized
                         ? PolicyEffectEnum.Allow 
                         : PolicyEffectEnum.Deny, 
-                    query.MethodArn, token, authenticatedUser);
+                    query.MethodArn, token, authorizedUser);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: ex.Message);
             }
             catch (Exception ex)
             {
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: ex.Message);
             }
         }
     }

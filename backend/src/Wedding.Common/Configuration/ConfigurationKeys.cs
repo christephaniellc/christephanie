@@ -22,6 +22,16 @@
         /// The Auth0 audience URL
         /// </summary>
         public const string AuthenticationAudience = Auth0 + ":Audience";
+
+        /// <summary>
+        /// The Auth0 client id
+        /// </summary>
+        public const string AuthenticationClientId = Auth0 + ":ClientId";
+
+        /// <summary>
+        /// The Auth0 client secret
+        /// </summary>
+        public const string AuthenticationClientSecret = Auth0 + ":ClientSecret";
         #endregion
 
         #region USPS

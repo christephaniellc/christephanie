@@ -46,6 +46,7 @@ namespace Wedding.Common.Helpers.AWS
         {
             return request.RequestContext.Identity.SourceIp;
         }
+
         public static string? GetUserId(this APIGatewayCustomAuthorizerRequest request)
         {
             return request.RequestContext.Authorizer["principalId"]?.ToString();

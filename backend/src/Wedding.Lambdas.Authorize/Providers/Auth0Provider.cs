@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using System.Text.Json;
 using Wedding.Abstractions.Dtos.Auth0;
-using Wedding.Common.Helpers.JwtClaim;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
@@ -24,18 +23,14 @@ namespace Wedding.Lambdas.Authorize.Providers
             _authority = authority;
             _audience = audience;
         }
-        
-        public async Task<Auth0User> Authenticate(string token)
-        {
-            var jwtTokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            var jwtToken = jwtTokenHandler.ReadJwtToken(token);
-            var userId = jwtToken.GetUserId();
-            
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("Invalid token");
-            
+        public string GetAudience()
+        {
+            return _audience;
+        }
+
+        public async Task<Auth0User> GetUserInfo(string token)
+        {
             try
             {
                 var userInfoEndpoint = $"{_authority}/userinfo";

@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
 using Wedding.Lambdas.User.Get.Commands;
 using Wedding.Lambdas.User.Get.Validation;
@@ -31,12 +32,12 @@ namespace Wedding.Lambdas.User.Get.Handlers
 
             var queryRequest = new DynamoDBOperationConfig
             {
-                IndexName = "Auth0IdIndex" // Specify the GSI name
+                IndexName = DynamoKeys.GuestIdIndex // Specify the GSI name
             };
 
             try
             {
-                var result = await _repository.QueryAsync<WeddingEntity>(query.Auth0Id, queryRequest).GetRemainingAsync();
+                var result = await _repository.QueryAsync<WeddingEntity>(query.GuestId, queryRequest).GetRemainingAsync();
 
                 if (result == null || result.Count == 0)
                 {

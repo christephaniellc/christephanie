@@ -13,9 +13,7 @@ namespace Wedding.Abstractions.Dtos
         public int? GuestNumber { get; set; }
 
         public string? Auth0Id { get; set; }
-
-        public Dictionary<SupportedAuthorizationProvidersEnum, string>? AuthIdentities { get; set; }
-
+        
         public string FirstName { get; set; } = "";
 
         public List<string>? AdditionalFirstNames { get; set; }

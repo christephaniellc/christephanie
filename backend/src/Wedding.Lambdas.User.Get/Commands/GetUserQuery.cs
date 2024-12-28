@@ -9,7 +9,7 @@ namespace Wedding.Lambdas.User.Get.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="Auth0Id">Auth0 id</param>
+    /// <param name="GuestId">Auth0 id</param>
     public record GetUserQuery(
-        string Auth0Id, string invitationCode, List<RoleEnum> roles) : IWeddingQuery;
+        string GuestId, string InvitationCode, List<RoleEnum> Roles) : IWeddingQuery;
 }

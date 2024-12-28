@@ -15,6 +15,7 @@ using Wedding.Common.Helpers;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
+using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 
@@ -26,12 +27,12 @@ namespace Wedding.PublicApi.Controllers
     {
         private readonly ILogger<AdminFamilyUnitController> _logger;
         private readonly IControllerDispatcher _dispatcher;
-        private IAuthenticationProvider _authProvider;
+        private IAuthorizationProvider _authProvider;
 
         public AdminFamilyUnitController(
             ILogger<AdminFamilyUnitController> logger,
             IControllerDispatcher dispatcher,
-            IAuthenticationProvider authProvider)
+            IAuthorizationProvider authProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
@@ -43,7 +44,7 @@ namespace Wedding.PublicApi.Controllers
 #else
         [Authorize]
 #endif
-        [HttpPost("create")]
+        [HttpPut("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -58,7 +59,7 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var authenticatedUser = await _authProvider.Authenticate(token);
+                var authenticatedUser = await _authProvider.GetGuestIdFromToken(token);
                 if (authenticatedUser == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });
@@ -95,7 +96,7 @@ namespace Wedding.PublicApi.Controllers
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authenticatedUser = await _authProvider.Authenticate(token);
+            var authenticatedUser = await _authProvider.GetGuestIdFromToken(token);
             if (authenticatedUser == null)
             {
                 return Unauthorized(new { message = "Authentication error." });
@@ -113,7 +114,7 @@ namespace Wedding.PublicApi.Controllers
 #else
         [Authorize]
 #endif
-        [HttpPut("")]
+        [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -133,17 +134,17 @@ namespace Wedding.PublicApi.Controllers
 
 //#if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var authenticatedUser = await _authProvider.Authenticate(token);
-                if (authenticatedUser == null)
+                var authenticatedGuest = await _authProvider.Authorize(token, LambdaArns.AdminFamilyUnitUpdate);
+                if (authenticatedGuest == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });
                 }
 //#endif
 
                 var command = new UpdateFamilyUnitCommand(familyUnit,
-                    authenticatedUser.UserId, 
-                    authenticatedUser.InvitationCode, 
-                    authenticatedUser.Roles);
+                    authenticatedGuest.GuestId, 
+                    authenticatedGuest.RsvpCode, 
+                    authenticatedGuest.Roles);
                 var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
                 return Ok(familyUnit);
@@ -164,14 +165,14 @@ namespace Wedding.PublicApi.Controllers
 #else
         [Authorize]
 #endif
-        [HttpDelete("{invitationCode}")]
+        [HttpDelete("{InvitationCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default)
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authenticatedUser = await _authProvider.Authenticate(token);
+            var authenticatedUser = await _authProvider.GetGuestIdFromToken(token);
             if (authenticatedUser == null)
             {
                 return Unauthorized(new { message = "Authentication error" }); ;

@@ -16,7 +16,7 @@ namespace Wedding.Lambdas.User.Get.Validation
         /// </summary>
         public GetUserQueryValidator()
         {
-            RuleFor(query => query.Auth0Id)
+            RuleFor(query => query.GuestId)
                 .NotNull()
                 .NotEmpty()
                 .WithMessage("UserId cannot be null.");

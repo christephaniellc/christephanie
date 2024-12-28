@@ -8,6 +8,7 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 
@@ -42,7 +43,8 @@ public class Function
 
             try
             {
-                query = ConvertToGetFamilyUnitQuery(request.QueryStringParameters);
+                var guestId = request.GetGuestId();
+                query = new GetFamilyUnitQuery(guestId);
             }
             catch (NullReferenceException ex)
             {
@@ -125,28 +127,5 @@ public class Function
                 Body = JsonSerializer.Serialize(error)
             };
         }
-    }
-
-    public static GetFamilyUnitQuery ConvertToGetFamilyUnitQuery(IDictionary<string, string> queryParameters)
-    {
-        if (queryParameters == null)
-        {
-            throw new NullReferenceException(nameof(queryParameters));
-        }
-
-        var caseInsensitivePathParameters = new Dictionary<string, string>(queryParameters, StringComparer.OrdinalIgnoreCase);
-
-        if (!caseInsensitivePathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
-        {
-            throw new ArgumentNullException(nameof(invitationCode));
-        }
-
-        if (!caseInsensitivePathParameters.TryGetValue("firstName", out var firstName) ||
-            string.IsNullOrEmpty(firstName))
-        {
-            throw new ArgumentNullException(nameof(firstName));
-        }
-
-        return new GetFamilyUnitQuery(invitationCode, firstName);
     }
 }

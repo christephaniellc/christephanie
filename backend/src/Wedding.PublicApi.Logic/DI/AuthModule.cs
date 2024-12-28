@@ -58,7 +58,8 @@ namespace Wedding.PublicApi.Logic.DI
                     {
                         var mapper = context.Resolve<IMapper>();
                         var repository = context.Resolve<IDynamoDBContext>();
-                        return new DatabaseRoleProvider(mapper, repository);
+                        var authenticationProvider = context.Resolve<IAuthenticationProvider>();
+                        return new DatabaseRoleProvider(mapper, repository, authenticationProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()

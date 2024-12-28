@@ -14,6 +14,7 @@ using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.ThirdParty;
+using Wedding.Common.Helpers.JwtClaim;
 
 namespace Wedding.Lambdas.UnitTests.Authorize
 {
@@ -67,7 +68,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             {
                 { "sub", "Auth0|12345" },
                 { "name", "John Doe" },
-                { "roles", new[] { role.ToString() } }
+                { "Roles", new[] { role.ToString() } }
             };
 
             var token = new JwtSecurityToken(header, payload);
@@ -102,10 +103,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             // _mapper.Setup(m => m.Map<GuestDto>(weddingEntity)).Returns(guestDto);
 
             // Act
-            var response = await _auth0Provider.Authenticate(token);
+            var response = JwtClaimHelper.GetGuestIdFromToken(token, Audience);
 
             // Assert
-            response.UserId.Should().Be(userId);
+            response.Should().Be(userId);
         }
 
         [Test]
@@ -118,7 +119,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-                await _auth0Provider.Authenticate(token));
+                JwtClaimHelper.GetGuestIdFromToken(token, Audience));
         }
     }
 }

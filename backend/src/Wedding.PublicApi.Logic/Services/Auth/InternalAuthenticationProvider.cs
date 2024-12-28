@@ -15,7 +15,12 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             _repository = repository;
         }
 
-        public async Task<Auth0User> Authenticate(string token)
+        public string GetAudience()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Auth0User> GetUserInfo(string token)
         {
             throw new NotImplementedException();
         }

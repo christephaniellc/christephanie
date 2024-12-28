@@ -14,13 +14,33 @@ using Wedding.Common.Configuration.Identity;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Lambdas.Authorize;
+
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private string _authority;
-    private string _audience;
+    private static string _authority;
+    private static string _audience;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider, string? authority = null, string? audience = null)
+    {
+        _serviceProvider = serviceProvider;
+
+        if (!string.IsNullOrEmpty(authority))
+        {
+            _authority = authority;
+        }
+
+        if (!string.IsNullOrEmpty(audience))
+        {
+            _audience = audience;
+        }
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
@@ -32,8 +52,9 @@ public class Function
         {
             var mapper = sc.GetRequiredService<IMapper>();
             var dynamoDbContext = sc.GetRequiredService<IDynamoDBContext>();
+            var authenticationProvider = sc.GetRequiredService<IAuthenticationProvider>();
 
-            return new DatabaseRoleProvider(mapper, dynamoDbContext);
+            return new DatabaseRoleProvider(mapper, dynamoDbContext, authenticationProvider);
         });
 
         serviceCollection.AddSingleton<Lazy<Task<Auth0Provider>>>(sc =>
@@ -52,21 +73,18 @@ public class Function
                     authConfig.Audience ?? throw new InvalidOperationException());
             });
         });
-
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     public async Task<APIGatewayCustomAuthorizerResponse> FunctionHandler(APIGatewayCustomAuthorizerRequest request, ILambdaContext context)
     {
         context.Logger.LogInformation($"Raw Auth Bearer Input: { request.AuthorizationToken }");
-        var invitationCode = request.GetInvitationCode();
-        var firstName = request.GetFirstName();
 
         var query = new ValidateAuthQuery(
-            request.AuthorizationToken,
             _authority,
             _audience,
-            request.MethodArn);
+            request.MethodArn,
+            request.AuthorizationToken);
 
         try
         {
