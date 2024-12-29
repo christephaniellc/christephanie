@@ -1,6 +1,6 @@
-import { FamilyUnitDto, GuestDto } from '../types/types';
+import { FamilyUnitDto, GuestDto } from '@/types/types';
 import { History } from 'history';
-import { getConfig } from '../config';
+import { getConfig } from '/config';
 
 export type ApiError = {
   status: number,

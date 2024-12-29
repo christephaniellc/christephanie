@@ -1,5 +1,3 @@
-import { title } from '@/config';
-
 // this utility is used to welcome users in the console
 function getRandomRGBNumber() {
   return Math.floor(Math.random() * 256);
@@ -25,7 +23,7 @@ function welcome() {
     'padding: 10px',
   ].join(';');
 
-  console.log(`%c=== ${title} ===`, styles);
+  console.log(`%c=== ${"Christephanie"} ===`, styles);
 }
 
 export default welcome;

@@ -3,15 +3,15 @@ import Typography from '@mui/material/Typography';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 
-function Page1() {
+function SaveTheDatePage() {
   return (
     <>
-      <Meta title="page 1" />
+      <Meta title="Save the Date!" />
       <FullSizeCenteredFlexBox>
-        <Typography variant="h3">Page 1</Typography>
+        <Typography variant="h3">Save the Date!</Typography>
       </FullSizeCenteredFlexBox>
     </>
   );
 }
 
-export default Page1;
+export default SaveTheDatePage;
