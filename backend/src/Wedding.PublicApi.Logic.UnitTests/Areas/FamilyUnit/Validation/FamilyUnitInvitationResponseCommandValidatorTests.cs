@@ -26,7 +26,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
             var command = new RsvpFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "B",
                     MailingAddress = string.Empty,
                     Guests = new List<GuestDto>
@@ -54,7 +54,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Areas.FamilyUnit.Validation
             var command = new RsvpFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "B",
                     MailingAddress = string.Empty,
                     Guests = new List<GuestDto>

@@ -14,7 +14,9 @@ using Wedding.Abstractions.Dtos;
 using System.Threading;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
-using Wedding.PublicApi.Logic.Services.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Wedding.Lambdas.Authorize.Commands;
+using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -25,12 +27,12 @@ namespace Wedding.PublicApi.Controllers
         private readonly ILogger<HelloWorldController> _logger;
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
-        private IAuthenticationProvider _authProvider;
+        private IAuthorizationProvider _authProvider;
 
         public HelloWorldController(ILogger<HelloWorldController> logger, 
             IControllerDispatcher dispatcher, 
-            IServiceProvider serviceProvider, 
-            IAuthenticationProvider authProvider)
+            IServiceProvider serviceProvider,
+            IAuthorizationProvider authProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
@@ -38,6 +40,7 @@ namespace Wedding.PublicApi.Controllers
             _authProvider = authProvider;
         }
 
+        [AllowAnonymous]
         [HttpGet("helloworld")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<APIGatewayProxyResponse> HelloWorld()
@@ -52,6 +55,7 @@ namespace Wedding.PublicApi.Controllers
             return await Task.FromResult(response);
         }
 
+        [AllowAnonymous]
         [HttpPost("address-validate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -64,15 +68,15 @@ namespace Wedding.PublicApi.Controllers
                 {
                     return BadRequest(new { message = "Invalid request body." });
                 }
-                var headers = HeaderHelper.GetHeaders(HttpContext.Request.Headers);
 
-                // TODO: Move check to internal middleware referencing database roles
-                // Parse and validate Auth0 token (from request headers) and admin role
-                var authCheck = await _authProvider.ValidateAuthToken(headers, needsAdmin: true);
-                if (!authCheck.Authorized)
+#if !DEBUG_ANONYMOUS
+                var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+                var authenticatedUser = await _authProvider.Authorize(token, LambdaArns.AddressValidate);
+                if (authenticatedUser == null)
                 {
-                    return Unauthorized(new { message = authCheck.ResponseMessage });
+                    return Unauthorized(new { message = "Authentication error." });
                 }
+#endif
 
                 var command = new ValidateUspsAddressQuery(address);
                 var result = await _dispatcher.GetAsync<ValidateUspsAddressQuery, AddressDto>(command, cancellationToken);
@@ -86,6 +90,7 @@ namespace Wedding.PublicApi.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("debugdb")]
         public IActionResult DebugDependencies()
         {

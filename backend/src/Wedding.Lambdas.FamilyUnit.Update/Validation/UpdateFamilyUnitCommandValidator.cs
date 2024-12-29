@@ -17,10 +17,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
         /// </summary>
         public UpdateFamilyUnitCommandValidator()
         {
-            RuleFor(query => query.FamilyUnit.RsvpCode)
+            RuleFor(query => query.FamilyUnit.InvitationCode)
                 .NotNull()
                 .NotEmpty()
-                .SetValidator(new RsvpCodeValidator());
+                .SetValidator(new InvitationCodeValidator());
         }
 
         public void IsValid(UpdateFamilyUnitCommand obj, object? _ = null)

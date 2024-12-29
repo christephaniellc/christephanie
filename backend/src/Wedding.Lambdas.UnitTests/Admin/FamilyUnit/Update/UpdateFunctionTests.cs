@@ -23,7 +23,7 @@ public class GetFunctionTests
         var command = new CreateFamilyUnitCommand(
             new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto>
                 {

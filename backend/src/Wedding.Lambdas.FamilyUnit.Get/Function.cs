@@ -8,6 +8,7 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 
@@ -17,14 +18,23 @@ public class Function
 {
     private readonly ServiceProvider _serviceProvider;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<GetFamilyUnitHandler>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
@@ -37,11 +47,37 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            GetFamilyUnitQuery query;
+            context.Logger.LogInformation($"Raw Request Context: {request.RequestContext}");
 
-            if (!request.PathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
+            try
             {
-                var error = "InvitationCode is missing or invalid in PathParameters.";
+                var invitationCode = request.GetInvitationCode();
+                var guestId = request.GetGuestId();
+                var roles = request.GetRoles();
+
+                query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
+            }
+            catch (NullReferenceException ex)
+            {
+                var error = $"QueryStringParameters are missing or invalid.";
+                context.Logger.LogError(error);
+
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    IsBase64Encoded = false,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    },
+                    Body = JsonSerializer.Serialize(error)
+                };
+
+            }
+            catch (ArgumentNullException ex) 
+            {
+                var error = $"{ex.ParamName} is missing or invalid in QueryStringParameters.";
                 context.Logger.LogError(error);
 
                 return new APIGatewayProxyResponse
@@ -55,13 +91,10 @@ public class Function
                     Body = JsonSerializer.Serialize(error)
                 };
             }
-
-            //TODO: SKS fix
-            var command = new GetFamilyUnitQuery(invitationCode, "john");
-
+            
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();
-            var result = await handler.GetAsync(command);
+            var result = await handler.GetAsync(query);
             
             return new APIGatewayProxyResponse
             {
