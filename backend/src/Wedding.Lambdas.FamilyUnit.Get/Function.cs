@@ -18,14 +18,23 @@ public class Function
 {
     private readonly ServiceProvider _serviceProvider;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<GetFamilyUnitHandler>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
@@ -39,12 +48,15 @@ public class Function
         try
         {
             GetFamilyUnitQuery query;
-            context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
+            context.Logger.LogInformation($"Raw Request Context: {request.RequestContext}");
 
             try
             {
+                var invitationCode = request.GetInvitationCode();
                 var guestId = request.GetGuestId();
-                query = new GetFamilyUnitQuery(guestId);
+                var roles = request.GetRoles();
+
+                query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
             }
             catch (NullReferenceException ex)
             {
