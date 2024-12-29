@@ -28,7 +28,7 @@ namespace Wedding.Common.Helpers.AWS
                 context["token"] = token;
                 context["guestId"] = authenticatedUser?.GuestId ?? null;
                 context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
-                context["invitationCode"] = authenticatedUser?.RsvpCode ?? null;
+                context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
             }
 
             return new APIGatewayCustomAuthorizerResponse

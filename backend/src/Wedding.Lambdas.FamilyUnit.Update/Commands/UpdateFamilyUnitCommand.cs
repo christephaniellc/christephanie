@@ -8,7 +8,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Commands
     /// Implements the <see cref="IWeddingCommand" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="RsvpCode">The RsvpCode of the FamilyUnit</param>
+    /// <param name="FamilyUnit">The FamilyUnit</param>
     public record UpdateFamilyUnitCommand(
         FamilyUnitDto FamilyUnit, bool AddressesConfirmed = false) : IWeddingCommand;
 }

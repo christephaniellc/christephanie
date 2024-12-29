@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Validation.Utility
     {
         public InvitationCodeValidator()
         {
-            RuleFor(rsvpCode => rsvpCode)
+            RuleFor(invitationCode => invitationCode)
                 .NotEmpty()
                 .Length(5).WithMessage("Invalid code.")
                 .Matches(@"^[A-HJ-NP-TV-Y]{5}$").WithMessage("Invalid code.");

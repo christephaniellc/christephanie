@@ -17,57 +17,57 @@ namespace Wedding.Abstractions.UnitTests.Validation
         }
 
         // [Test]
-        // public void Should_Have_Error_When_RsvpCode_Is_Null()
+        // public void Should_Have_Error_When_InvitationCode_Is_Null()
         // {
         //     // Arrange
-        //     string rsvpCode = null;
+        //     string invitationCode = null;
         //
         //     // Act & Assert
-        //     var result = _validator.TestValidate(rsvpCode);
+        //     var result = _validator.TestValidate(invitationCode);
         //     result.ShouldHaveValidationErrorFor(rsvp => rsvp);
         // }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Empty()
+        public void Should_Have_Error_When_InvitationCode_Is_Empty()
         {
             // Arrange
-            string rsvpCode = string.Empty;
+            string invitationCode = string.Empty;
 
             // Act & Assert
-            var result = _validator.TestValidate(rsvpCode);
+            var result = _validator.TestValidate(invitationCode);
             result.ShouldHaveValidationErrorFor(rsvp => rsvp);
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Invalid_Length()
+        public void Should_Have_Error_When_InvitationCode_Is_Invalid_Length()
         {
             // Arrange
-            string rsvpCode = "ABCD";
+            string invitationCode = "ABCD";
 
             // Act & Assert
-            var result = _validator.TestValidate(rsvpCode);
+            var result = _validator.TestValidate(invitationCode);
             result.ShouldHaveValidationErrorFor(rsvp => rsvp);
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Has_Invalid_Characters()
+        public void Should_Have_Error_When_InvitationCode_Has_Invalid_Characters()
         {
             // Arrange
-            string rsvpCode = "ABCDE1";
+            string invitationCode = "ABCDE1";
 
             // Act & Assert
-            var result = _validator.TestValidate(rsvpCode);
+            var result = _validator.TestValidate(invitationCode);
             result.ShouldHaveValidationErrorFor(rsvp => rsvp);
         }
 
         [Test]
-        public void Should_Not_Have_Error_When_RsvpCode_Is_Valid()
+        public void Should_Not_Have_Error_When_InvitationCode_Is_Valid()
         {
             // Arrange
-            string rsvpCode = "ABCDE";
+            string invitationCode = "ABCDE";
 
             // Act & Assert
-            var result = _validator.TestValidate(rsvpCode);
+            var result = _validator.TestValidate(invitationCode);
             result.ShouldNotHaveValidationErrorFor(rsvp => rsvp);
         }
     }

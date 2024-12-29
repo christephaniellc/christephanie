@@ -16,7 +16,7 @@ namespace Wedding.Abstractions.Validation
         public UpdateFamilyUnitDtoValidator()
         {
             //RuleFor(s => s.Id).NotEmpty();
-            RuleFor(s => s.RsvpCode).SetValidator(new InvitationCodeValidator());
+            RuleFor(s => s.InvitationCode).SetValidator(new InvitationCodeValidator());
             RuleFor(f => f.Tier).SetValidator(new TierValidator());
             RuleFor(f => f.Guests)
                 .NotNull()

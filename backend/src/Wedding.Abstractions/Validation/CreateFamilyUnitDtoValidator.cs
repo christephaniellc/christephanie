@@ -12,7 +12,7 @@ namespace Wedding.Abstractions.Validation
         /// </summary>
         public CreateFamilyUnitDtoValidator()
         {
-            RuleFor(f => f.RsvpCode).SetValidator(new InvitationCodeValidator());
+            RuleFor(f => f.InvitationCode).SetValidator(new InvitationCodeValidator());
             RuleFor(f => f.Tier).SetValidator(new TierValidator());
             RuleFor(f => f.Guests)
                 .NotNull()

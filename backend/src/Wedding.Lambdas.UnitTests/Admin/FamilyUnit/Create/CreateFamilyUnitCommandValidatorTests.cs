@@ -35,29 +35,29 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         }
 
         [Test]
-        public void Should_Have_Error_When_FamilyUnit_RsvpCode_Is_Empty()
+        public void Should_Have_Error_When_FamilyUnit_InvitationCode_Is_Empty()
         {
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = string.Empty
+                    InvitationCode = string.Empty
                 }
             );
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.RsvpCode);
+            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.InvitationCode);
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_NotValid()
+        public void Should_Have_Error_When_InvitationCode_Is_NotValid()
         {
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "sldkfsdfsdfj"
+                    InvitationCode = "sldkfsdfsdfj"
                 }
             );
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.RsvpCode);
+            result.ShouldHaveValidationErrorFor(x => x.FamilyUnit.InvitationCode);
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "Animal"
                 }
             );
@@ -80,7 +80,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE"
+                    InvitationCode = "ABCDE"
                 }
             );
             var result = _validator.TestValidate(command);
@@ -93,7 +93,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "B",
                     Guests = new List<GuestDto> { VALID_GUEST }
                 }

@@ -84,7 +84,7 @@ namespace Wedding.PublicApi.Controllers
 
             try
             {
-                var query = new GetUserQuery(authenticatedUser.GuestId, authenticatedUser.RsvpCode,
+                var query = new GetUserQuery(authenticatedUser.GuestId, authenticatedUser.InvitationCode,
                     authenticatedUser.Roles);
                 var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
 

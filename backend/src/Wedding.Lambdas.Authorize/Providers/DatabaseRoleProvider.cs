@@ -47,7 +47,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 return true;
             }
 
-            return requiresFamilyBelonging ? authenticatedUser.RsvpCode.ToUpper() == methodInvitationCode.ToUpper() : true;
+            return requiresFamilyBelonging ? authenticatedUser.InvitationCode.ToUpper() == methodInvitationCode.ToUpper() : true;
         }
 
         /// <summary>
@@ -87,11 +87,11 @@ namespace Wedding.Lambdas.Authorize.Providers
                 if (string.IsNullOrEmpty(entity.Auth0Id))
                 {
                     var authenticatedUser = await _authProvider.GetUserInfo(token);
-                    authenticatedUser.InvitationCode = entity.RsvpCode;
+                    authenticatedUser.InvitationCode = entity.InvitationCode;
                     await TryUpdateUser(entity, authenticatedUser);
                 }
 
-                await TryUpdateFamilyUnit(entity.RsvpCode);
+                await TryUpdateFamilyUnit(entity.InvitationCode);
 
                 user = _mapper.Map<GuestDto>(entity);
                 entity.GuestLogins.Add(DateTime.UtcNow);
@@ -122,7 +122,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
         public async Task TryUpdateUser(WeddingEntity matchingGuest, Auth0User user)
         {
-            if (matchingGuest == null || string.IsNullOrEmpty(matchingGuest.RsvpCode))
+            if (matchingGuest == null || string.IsNullOrEmpty(matchingGuest.InvitationCode))
             {
                 throw new UnauthorizedAccessException($"Guest not found.");
             }
