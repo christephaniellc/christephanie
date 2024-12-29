@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {History} from "history";
-import Api from '../api/Api';
+import Api from '../lib/Api';
 import { browserHistory } from '../lib/browserHistory';
 
 interface Props {

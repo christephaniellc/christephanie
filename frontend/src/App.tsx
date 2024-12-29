@@ -1,5 +1,4 @@
 import { Fragment } from 'react';
-import { BrowserRouter } from 'react-router-dom';
 
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -19,11 +18,11 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
-      <BrowserRouter>
-        <Header />
-        <Sidebar />
-        <Pages />
-      </BrowserRouter>
+
+      <Header />
+      <Sidebar />
+      <Pages />
+
     </Fragment>
   );
 }

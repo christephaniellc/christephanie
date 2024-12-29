@@ -1,17 +1,8 @@
 {
-  "name": "react-pwa",
+  "name": "christephanie-pwa",
   "version": "2.3.0",
   "type": "module",
-  "description": "Starter kit for modern web applications",
-  "homepage": "https://react-pwa.surenatoyan.com/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/suren-atoyan/react-pwa.git"
-  },
-  "bugs": {
-    "url": "https://github.com/suren-atoyan/react-pwa/issues",
-    "email": "contact@surenatoyan.com"
-  },
+  "description": "Nuptials!",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -24,9 +15,13 @@
     "ts:check": "tsc --noEmit",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "generate:api": "node ./scripts/buildApi.js",
+    "generate:types": "openapi-typescript ./swagger.json --output ./src/types/api.ts",
+    "generate:all": "npm run generate:types && npm run generate:api"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.2.4",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.0",
@@ -34,6 +29,11 @@
     "@mui/material": "^5.15.0",
     "@mui/system": "^5.15.0",
     "@mui/utils": "^5.15.0",
+    "@tanstack/react-query": "^5.62.9",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
     "is-mobile": "^4.0.0",
     "notistack": "^3.0.1",
     "react": "^18.2.0",
@@ -45,6 +45,7 @@
     "recoil": "^0.7.7"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.15.3",
     "@playwright/test": "^1.40.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^20.10.4",
@@ -53,12 +54,14 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^9.1.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "https-localhost": "^4.7.1",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
+    "openapi-typescript": "^7.4.4",
     "prettier": "3.1.1",
     "typescript": "^5.3.3",
     "vite": "^5.0.9",
@@ -74,14 +77,8 @@
     ]
   },
   "author": {
-    "name": "Suren Atoyan",
-    "email": "contact@surenatoyan.com",
-    "url": "http://surenatoyan.com/"
-  },
-  "keywords": [
-    "react",
-    "pwa",
-    "starter-kit",
-    "vite"
-  ]
+    "name": "Topher Sikorra",
+    "email": "dev@bungalowfortress.com",
+    "url": "https://christephanie.com"
+  }
 }
