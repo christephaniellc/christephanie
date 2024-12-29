@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
@@ -48,6 +49,23 @@ namespace Wedding.Common.Helpers.AWS
                 },
                 Context = context
             };
+        }
+
+        public static APIGatewayCustomAuthorizerContext ConvertToCustomAuthorizerContext(this 
+            APIGatewayCustomAuthorizerContextOutput output)
+        {
+            if (output == null) 
+                throw new ArgumentNullException(nameof(output));
+
+            var serializedContext = JsonSerializer.Serialize(output);
+            var context = JsonSerializer.Deserialize<APIGatewayCustomAuthorizerContext>(serializedContext);
+
+            if (context == null)
+            {
+                throw new InvalidOperationException("Failed to convert context.");
+            }
+
+            return context;
         }
 
         public static string? GetGuestId(this APIGatewayCustomAuthorizerResponse response)

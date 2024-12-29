@@ -8,6 +8,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
@@ -32,34 +33,9 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
         {
             query.Validate(nameof(query));
 
-            string invitationCode;
-
             try
             {
-                query.Validate(nameof(query));
-
-                var queryRequest = new DynamoDBOperationConfig
-                {
-                    IndexName = DynamoKeys.GuestIdIndex // Specify the GSI name
-                };
-
-                try
-                {
-                    var guestResult = await _repository.QueryAsync<WeddingEntity>(query.GuestId, queryRequest).GetRemainingAsync();
-                    if (guestResult == null || guestResult.Count == 0)
-                    {
-                        throw new UnauthorizedAccessException("User not found.");
-                    }
-
-                    invitationCode = guestResult.FirstOrDefault().RsvpCode;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while getting the user.");
-                    throw new UnauthorizedAccessException($"User not found. {ex.Message}");
-                }
-
-                var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
+                var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode);
                 var dynamoQuery = new QueryOperationConfig()
                 {
                     KeyExpression = new Expression
@@ -72,33 +48,35 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                     }
                 };
                 
-                var result = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
+                var results = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
                 
-                if (result == null || result.Count == 0)
+                if (results == null || results.Count == 0)
                 {
                     _logger.LogError("Family unit with RSVP code '{query.RsvpCode}' not found.");
-                    throw new InvalidOperationException($"Family unit with RSVP code '{invitationCode}' not found.");
+                    throw new InvalidOperationException($"Family unit with RSVP code '{query.InvitationCode}' not found.");
                 }
 
-                var numFamilies = result.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
+                if (results.FirstOrDefault(result => result.GuestId == query.GuestId) == null && !query.Roles.Contains(RoleEnum.Admin))
+                {
+                    throw new UnauthorizedAccessException("Access denied");
+                }
+
+                var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
                 if (numFamilies.Count > 1)
                 {
                     _logger.LogError("Multiple family units with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Multiple family units with RSVP code '{invitationCode}' found.");
+                    throw new ApplicationException($"Multiple family units with RSVP code '{query.InvitationCode}' found.");
                 }
 
-                // var familyUnitInfo = result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
-                // var guestEntities = result.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest)).ToList();
-
-                var familyUnit = _mapper.Map<FamilyUnitDto>(result.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
-                var guests = result.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
+                var familyUnit = _mapper.Map<FamilyUnitDto>(results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
+                var guests = results.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
                     .Select(x => _mapper.Map<GuestDto>(x))
                     .ToList();
 
                 if (guests.Count == 0)
                 {
                     _logger.LogError("No guests with RSVP code '{query.RsvpCode}' found.");
-                    throw new ApplicationException($"Invalid RSVP code '{invitationCode}', no guests found.");
+                    throw new ApplicationException($"Invalid RSVP code '{query.InvitationCode}', no guests found.");
                 }
 
                 familyUnit.Guests = guests;
