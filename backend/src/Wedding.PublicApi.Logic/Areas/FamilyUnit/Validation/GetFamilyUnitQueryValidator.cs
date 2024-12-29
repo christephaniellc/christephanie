@@ -17,10 +17,10 @@
 //         /// </summary>
 //         public GetFamilyUnitQueryValidator()
 //         {
-//             RuleFor(query => query.RsvpCode)
+//             RuleFor(query => query.InvitationCode)
 //                 .NotNull()
 //                 .NotEmpty()
-//                 .SetValidator(new RsvpCodeValidator());
+//                 .SetValidator(new InvitationCodeValidator());
 //         }
 //
 //         public void IsValid(GetFamilyUnitQuery obj, object? _ = null)
