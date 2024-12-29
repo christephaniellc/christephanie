@@ -18,50 +18,50 @@ namespace Wedding.Abstractions.UnitTests.Validation
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Invalid()
+        public void Should_Have_Error_When_InvitationCode_Is_Invalid()
         {
             // Arrange
-            var familyUnit = new FamilyUnitDto { RsvpCode = "123" };
+            var familyUnit = new FamilyUnitDto { InvitationCode = "123" };
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.RsvpCode)
+            result.ShouldHaveValidationErrorFor(f => f.InvitationCode)
                 .WithErrorMessage("Invalid code.");
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Empty()
+        public void Should_Have_Error_When_InvitationCode_Is_Empty()
         {
             // Arrange
-            var familyUnit = new FamilyUnitDto { RsvpCode = string.Empty };
+            var familyUnit = new FamilyUnitDto { InvitationCode = string.Empty };
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.RsvpCode)
+            result.ShouldHaveValidationErrorFor(f => f.InvitationCode)
                 .WithErrorMessage("Invalid code.");
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Has_Invalid_Characters()
+        public void Should_Have_Error_When_InvitationCode_Has_Invalid_Characters()
         {
             // Arrange
-            var familyUnit = new FamilyUnitDto { RsvpCode = "ABCDE1" };
+            var familyUnit = new FamilyUnitDto { InvitationCode = "ABCDE1" };
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.RsvpCode)
+            result.ShouldHaveValidationErrorFor(f => f.InvitationCode)
                 .WithErrorMessage("Invalid code.");
         }
 
         [Test]
-        public void Should_Not_Have_Error_When_RsvpCode_Is_Valid()
+        public void Should_Not_Have_Error_When_InvitationCode_Is_Valid()
         {
             // Arrange
-            var familyUnit = new FamilyUnitDto { RsvpCode = "ABCDE" };
+            var familyUnit = new FamilyUnitDto { InvitationCode = "ABCDE" };
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldNotHaveValidationErrorFor(f => f.RsvpCode);
+            result.ShouldNotHaveValidationErrorFor(f => f.InvitationCode);
         }
     }
 }

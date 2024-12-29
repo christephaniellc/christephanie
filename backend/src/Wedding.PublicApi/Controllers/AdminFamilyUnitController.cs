@@ -122,7 +122,7 @@ namespace Wedding.PublicApi.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(familyUnit.RsvpCode))
+                if (string.IsNullOrEmpty(familyUnit.InvitationCode))
                 {
                     return BadRequest("RSVP Code is required.");
                 }
@@ -143,7 +143,7 @@ namespace Wedding.PublicApi.Controllers
 
                 var command = new UpdateFamilyUnitCommand(familyUnit,
                     authenticatedGuest.GuestId, 
-                    authenticatedGuest.RsvpCode, 
+                    authenticatedGuest.InvitationCode, 
                     authenticatedGuest.Roles);
                 var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 

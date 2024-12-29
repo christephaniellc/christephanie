@@ -64,7 +64,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
         }
 
         [Test]
-        public void Should_Not_Have_Error_When_RsvpCode_Has_Invalid_Chars()
+        public void Should_Not_Have_Error_When_InvitationCode_Has_Invalid_Chars()
         {
             // Arrange
             var query = new GetFamilyUnitQuery("#324oijsoifj#3", Guid.NewGuid().ToString(), new List<RoleEnum> { RoleEnum.Admin });
@@ -75,7 +75,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
         }
 
         [Test]
-        public void Should_Not_Have_Error_When_RsvpCode_Is_Valid()
+        public void Should_Not_Have_Error_When_InvitationCode_Is_Valid()
         {
             // Arrange
             var query = new GetFamilyUnitQuery("ABCDE", Guid.NewGuid().ToString(), new List<RoleEnum> { RoleEnum.Admin });

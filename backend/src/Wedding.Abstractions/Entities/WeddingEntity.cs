@@ -16,7 +16,7 @@ namespace Wedding.Abstractions.Entities
         public string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
 
         [DynamoDBProperty]
-        public string RsvpCode { get; set; } = ""; // e.g., "FAMILY#RsvpCode"
+        public string InvitationCode { get; set; } = ""; // e.g., "FAMILY#InvitationCode"
 
         #region Family-specific fields
         /// <summary>

@@ -160,7 +160,7 @@ namespace Wedding.Lambdas.UnitTests
                         Name = _john.FirstName,
                         Email = "johndoe@example.com",
                         EmailVerified = true,
-                        InvitationCode = _john.RsvpCode
+                        InvitationCode = _john.InvitationCode
                     };
                     // }
                     // else
@@ -186,7 +186,7 @@ namespace Wedding.Lambdas.UnitTests
         {
             _john = new GuestDto
             {
-                RsvpCode = _invitationCode,
+                InvitationCode = _invitationCode,
                 GuestId = new Guid("73340000-0000-0000-0000-000000000001").ToString(),
                 GuestNumber = 1,
                 FirstName = "John",
@@ -198,7 +198,7 @@ namespace Wedding.Lambdas.UnitTests
 
             _jane = new GuestDto
             {
-                RsvpCode = _invitationCode,
+                InvitationCode = _invitationCode,
                 GuestId = new Guid("73340000-0000-0000-0000-000000000002").ToString(),
                 GuestNumber = 2,
                 FirstName = "Jane",
@@ -208,7 +208,7 @@ namespace Wedding.Lambdas.UnitTests
             };
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = _invitationCode,
+                InvitationCode = _invitationCode,
                 UnitName = "Smiths",
                 Guests = new List<GuestDto>
                 {
@@ -351,7 +351,7 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value == token);
                 authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value == _john.GuestId);
                 authResponse.Context.Should().Contain(x => x.Key == "roles" && x.Value == RoleEnum.Guest.ToString());
-                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value == _john.RsvpCode);
+                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value == _john.InvitationCode);
 
                 // Step 3. Get family unit DTO using auth context
                 var familyUnitRequest = new APIGatewayProxyRequest
@@ -366,7 +366,7 @@ namespace Wedding.Lambdas.UnitTests
 
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests.Count.Should().Be(2);
-                familyUnit.RsvpCode.Should().Be(_invitationCode);
+                familyUnit.InvitationCode.Should().Be(_invitationCode);
             }
         }
 

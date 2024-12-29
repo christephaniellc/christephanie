@@ -6,7 +6,7 @@ namespace Wedding.Abstractions.ViewModels
     public class FamilyUnitViewModel
     {
 
-        public string RsvpCode { get; set; } = "";
+        public string InvitationCode { get; set; } = "";
 
         public string UnitName { get; set; } = "";
 

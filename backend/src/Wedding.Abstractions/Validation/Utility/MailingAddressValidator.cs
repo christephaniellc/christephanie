@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Validation.Utility
     {
         public MailingAddressValidator()
         {
-            RuleFor(rsvpCode => rsvpCode)
+            RuleFor(address => address)
                 .NotEmpty()
                 .WithMessage("Mailing address is empty.")
                 ;

@@ -19,12 +19,12 @@ namespace Wedding.Abstractions.UnitTests.Validation
         }
 
         [Test]
-        public void Should_Have_Error_When_RsvpCode_Is_Invalid()
+        public void Should_Have_Error_When_InvitationCode_Is_Invalid()
         {
             // Arrange
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "123",
+                InvitationCode = "123",
                 Guests = new List<GuestDto>
                 {
                     new GuestDto
@@ -37,7 +37,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.RsvpCode);
+            result.ShouldHaveValidationErrorFor(f => f.InvitationCode);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             // Arrange
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto> { new GuestDto { FirstName = null! } }
             };
@@ -78,7 +78,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             // Arrange
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = tier,
                 Guests = new List<GuestDto> {
                     new GuestDto
@@ -108,7 +108,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             // Arrange
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto> { 
                     new GuestDto
@@ -136,7 +136,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             // Arrange
             var familyUnit = new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto> {
                     new GuestDto
@@ -156,7 +156,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
 
             // Act & Assert
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldNotHaveValidationErrorFor(f => f.RsvpCode);
+            result.ShouldNotHaveValidationErrorFor(f => f.InvitationCode);
             result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].FirstName);
             result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].LastName);
             result.ShouldNotHaveValidationErrorFor(f => f.Guests![0].AgeGroup);

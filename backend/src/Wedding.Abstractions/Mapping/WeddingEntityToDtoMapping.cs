@@ -30,7 +30,7 @@ namespace Wedding.Abstractions.Mapping
                 /// Pulls family unit from database record
                 /// </summary>
                 CreateMap<WeddingEntity, FamilyUnitDto>()
-                    .ForMember(dest => dest.RsvpCode, opt => opt.MapFrom(src => src.RsvpCode))
+                    .ForMember(dest => dest.InvitationCode, opt => opt.MapFrom(src => src.InvitationCode))
                     .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.UnitName))
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
@@ -46,9 +46,9 @@ namespace Wedding.Abstractions.Mapping
                 /// Creates database record from family
                 /// </summary>
                 CreateMap<FamilyUnitDto, WeddingEntity>()
-                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetFamilyUnitPartitionKey(src.RsvpCode)))
+                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetFamilyUnitPartitionKey(src.InvitationCode)))
                     .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => DynamoKeys.GetFamilyInfoSortKey()))
-                    .ForMember(dest => dest.RsvpCode, opt => opt.MapFrom(src => src.RsvpCode))
+                    .ForMember(dest => dest.InvitationCode, opt => opt.MapFrom(src => src.InvitationCode))
                     .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.UnitName))
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
@@ -107,7 +107,7 @@ namespace Wedding.Abstractions.Mapping
                 /// Creates database record from family
                 /// </summary>
                 CreateMap<GuestDto, WeddingEntity>()
-                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetGuestPartitionKey(src.RsvpCode)))
+                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetGuestPartitionKey(src.InvitationCode)))
                     .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => DynamoKeys.GetGuestSortKey(src.GuestId)))
                     .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.GuestNumber, opt => opt.MapFrom(src => src.GuestNumber))
