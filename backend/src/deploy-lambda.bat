@@ -23,7 +23,7 @@ if errorlevel 1 (
 )
 
 REM Step 2: Create a zip package
-powershell Compress-Archive -Path publish\* -DestinationPath publish\lambda-deployment.zip -Exclude *.pdb -Force
+powershell Compress-Archive -Path publish\* -DestinationPath publish\lambda-deployment.zip -Force
 if errorlevel 1 (
     echo Error: Failed to create the zip package.
 	pause
