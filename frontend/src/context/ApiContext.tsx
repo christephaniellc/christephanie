@@ -1,17 +1,19 @@
-import { UserApi } from '@/services/apiService';
 import React, { useContext } from 'react';
+import Api from '@/api/Api';
+import { useNavigate } from 'react-router-dom';
 
 interface ApiContextProps {
-  userApi: UserApi;
+  api: Api;
 }
 
 export const ApiContext = React.createContext({} as ApiContextProps);
 
 export const ApiContextProvider = (props: { children: JSX.Element }) => {
-  const userApi = new UserApi();
+  const navigate = useNavigate();
+  const api = new Api(navigate)
 
   return (
-    <ApiContext.Provider value={{ userApi }}>
+    <ApiContext.Provider value={{ api }}>
       {props.children}
     </ApiContext.Provider>
   );

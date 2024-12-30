@@ -16,9 +16,7 @@
     "test:unit": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "generate:api": "node ./scripts/buildApi.js",
-    "generate:types": "openapi-typescript ./swagger.json --output ./src/types/api.ts",
-    "generate:all": "npm run generate:types && npm run generate:api"
+    "generate:types": "swagger-typescript-api -p ./swagger.json -o ./src/types -n api.ts"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",
@@ -61,8 +59,8 @@
     "https-localhost": "^4.7.1",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
-    "openapi-typescript": "^7.4.4",
     "prettier": "3.1.1",
+    "swagger-typescript-api": "^13.0.23",
     "typescript": "^5.3.3",
     "vite": "^5.0.9",
     "vite-plugin-pwa": "^0.17.4",
