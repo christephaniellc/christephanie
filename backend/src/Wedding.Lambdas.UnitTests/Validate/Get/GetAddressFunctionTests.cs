@@ -7,5 +7,10 @@ namespace Wedding.Lambdas.UnitTests.Validate.Get
     [UnitTestsFor(typeof(Wedding.Lambdas.Validate.Address.Function))]
     public class GetAddressFunctionTests
     {
+        [Test]
+        public void ShouldWriteTests()
+        {
+            Assert.Fail();
+        }
     }
 }

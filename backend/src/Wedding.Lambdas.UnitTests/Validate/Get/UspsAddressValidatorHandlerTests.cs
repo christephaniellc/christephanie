@@ -8,5 +8,10 @@ namespace Wedding.Lambdas.UnitTests.Validate.Get
     [UnitTestsFor(typeof(UspsAddressValidationHandler))]
     public class UspsAddressValidatorHandlerTests
     {
+        [Test]
+        public void ShouldWriteTests()
+        {
+            Assert.Fail();
+        }
     }
 }

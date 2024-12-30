@@ -112,7 +112,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     new GuestDto
                     {
                         FirstName = "Bob",
-                        LastName = "Licker"
+                        LastName = "Licker",
+                        GuestNumber = 1
                     }
                 }
             };
