@@ -1,27 +1,11 @@
 import { createContext, useContext, useMemo } from 'react';
-import { useRSVP } from './useRSVP';
+import { useInvitation } from './useInvitation';
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { FamilyUnitDto, GuestDto } from '../../../../../types/types';
 
 
 interface RsvpContextProps {
-  invitationCode: string;
-  firstName: string;
-  handleChange: (event: React.ChangeEvent<HTMLInputElement>, field: 'rsvpCode' | 'firstName') => void;
-  error: string;
-  matchingUsers: GuestDto[] | undefined | null;
-  getFamilyQuery: UseMutationResult<FamilyUnitDto, unknown, { inviteCode: string, firstName: string }, unknown>;
-  hasAddress: boolean;
-  nobodyComing: boolean;
-  lastNames: string;
-  allLastNames: string;
-  setUserIsAttending: (guest: GuestDto, guestInterested: 'Pending' | 'Interested' | 'Declined') => void;
-  setFamilyUnitAddress: (addressPortion: 'street' | 'apt' | 'lastLine', value: string) => void;
-  familyUnit: FamilyUnitDto | null;
-  addressValidated: boolean;
-  handleClick: () => void;
-  allUsersPending: boolean;
-  actionNeededMessage: string;
+
 }
 
 const RsvpContext = createContext<RsvpContextProps | undefined>(undefined);
@@ -37,12 +21,11 @@ export const RsvpProvider: React.FC<{ children: React.ReactNode }> = ({ children
     error,
     matchingUsers,
     getFamilyQuery,
-    setMatchingUsers,
     setUserIsAttending,
     setFamilyUnitAddress,
     allUsersPending,
     actionNeededMessage
-  } = useRSVP();
+  } = useInvitation();
 
   const hasAddress = useMemo(() => {
     return familyUnit?.mailingAddress !== null;

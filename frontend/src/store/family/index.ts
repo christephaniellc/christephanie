@@ -1,6 +1,7 @@
 import { atom, useRecoilState } from 'recoil';
-import { useCallback, useMemo } from 'react';
-import { FamilyUnitDto } from '@/services/apiService';
+import { useCallback, useEffect, useMemo } from 'react';
+import { FamilyUnitDto } from '@/types/api';
+import { userState } from '@/store/user';
 
 const familyState = atom<Partial<FamilyUnitDto> | null>({
   key: 'familyUnit',
@@ -14,8 +15,8 @@ function useFamilyUnit() {
     setFamilyUnit(familyUnit);
   }, [setFamilyUnit]);
 
-
   const memoizedActions = useMemo(() => ({ updateFamilyUnit: updateFamily }), [updateFamily]);
+
   return [familyUnit, memoizedActions];
 }
 

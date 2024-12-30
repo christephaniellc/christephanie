@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button, TextField } from '@mui/material';
 import { useRecoilState } from 'recoil';
 import { firstNameState, invitationCodeState } from '@/store/invitationInputs';
@@ -8,12 +8,20 @@ export const InvitationCodeInputs = () => {
   const [invitationCode, setInvitationCode] = useRecoilState(invitationCodeState);
   const [firstName, setFirstName] = useRecoilState(firstNameState);
 
-  const [_user, findUserMutation] = useUser();
+  const [_user, actions] = useUser();
+  const { findUserMutation} = actions;
 
   const handleFindUser = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     findUserMutation.mutate();
   }
+
+  const createAcctButtonText = useMemo(() => {
+    if (findUserMutation.status === "pending") return "Checking guest list"
+    if (findUserMutation.status === "idle") return "Create Account"
+    if (findUserMutation.data) return "Account Created"
+    return "Create Account."
+  }, [findUserMutation])
 
   return (
     <form>
@@ -47,7 +55,7 @@ export const InvitationCodeInputs = () => {
         }}
       />
       <Button type="submit" disabled={!firstName || !invitationCode} fullWidth variant="contained"
-              onClick={handleFindUser}>Create Account</Button>
+              onClick={handleFindUser}>{createAcctButtonText}</Button>
     </form>
   );
 };

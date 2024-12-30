@@ -12,15 +12,14 @@ const root = createRoot(container);
 function render(App: ComponentType) {
   root.render(
     <StrictMode>
-      <ApiContextProvider>
-        <RecoilRoot>
-          <BrowserRouter>
+      <BrowserRouter>
+
+          <RecoilRoot>
             <Providers>
               <App />
             </Providers>
-          </BrowserRouter>
-        </RecoilRoot>
-      </ApiContextProvider>
+          </RecoilRoot>
+      </BrowserRouter>
     </StrictMode>,
   );
 }
