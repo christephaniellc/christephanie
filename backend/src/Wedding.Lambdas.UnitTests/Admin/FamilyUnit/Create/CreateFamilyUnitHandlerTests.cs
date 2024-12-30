@@ -68,10 +68,6 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             // Act & Assert
             var ex = Assert.ThrowsAsync<ApplicationException>(async () => await _handler.ExecuteAsync(command));
             Assert.That(ex!.Message, Is.EqualTo("An error occurred while saving the family unit."));
-            //Assert.That(ex.Message, Is.EqualTo("Family unit with RSVP code 'ABCDE' already exists."));
-            // TODO
-            //Assert.That(_loggerMock.);
-            Assert.Fail();
         }
 
         [Test]

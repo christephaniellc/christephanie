@@ -12,13 +12,6 @@ namespace Wedding.Abstractions.Validation
         /// </summary>
         public GuestDtoValidator()
         {
-            // RuleFor(d => d.PackageUri)
-            //     .NotEmpty()
-            //     .WithMessage("Package URI cannot be null, empty or consist of only whitespace characters.")
-            //     .Must(u => IsValidPackageUri(u))
-            //     .WithMessage("The argument is not a valid Delinea Engine Pool Deployment package URI.")
-            //     ;
-
             RuleFor(g => g.FirstName)
                 .NotEmpty()
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("First name"))
@@ -28,16 +21,11 @@ namespace Wedding.Abstractions.Validation
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Last name"))
                 ;
             RuleFor(e => e.AgeGroup).IsInEnum();
-            // RuleFor(g => g.Rsvp).SetValidator(new RsvpDtoValidator());
-            // RuleFor(g => g.Preferences).SetValidator(new PreferencesDtoValidator());
-
-            // // TODO: SKS can I get email from Auth0?
-            // if (!create && isPrimaryGuest)
-            // {
-            //     RuleFor(g => g.Email).NotEmpty()   
-            //         .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Email"))
-            //         ;
-            // }
+            RuleFor(e => e.GuestNumber)
+                .NotEmpty()
+                .NotNull()
+                .WithMessage("Guest number should be set")
+                ;
         }
 
         /// <summary>

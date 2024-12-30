@@ -32,15 +32,13 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests
 {
     [TestFixture]
     public class LoginIntegrationTests
     {
-        private IConfiguration _configuration;
-
         private Wedding.Lambdas.User.Find.Function _userFindFunction;
         private Wedding.Lambdas.Authorize.Function _authFunction;
         private Wedding.Lambdas.FamilyUnit.Get.Function _familyUnitGetFunction;
@@ -51,10 +49,7 @@ namespace Wedding.Lambdas.UnitTests
         private AuthHandler _authHandler;
         private GetFamilyUnitHandler _getFamilyUnitHandler;
 
-        private string _invitationCode = "ABAAB";
         private string _johnAuth0Id = "auth0|12345";
-        private GuestDto _john;
-        private GuestDto _jane;
 
         private string _jwtAuthority;
         private string _jwtAudience;
@@ -157,10 +152,10 @@ namespace Wedding.Lambdas.UnitTests
                     return new Auth0User
                     {
                         UserId = _johnAuth0Id,
-                        Name = _john.FirstName,
+                        Name = TestDataHelper.GUEST_JOHN.FirstName,
                         Email = "johndoe@example.com",
                         EmailVerified = true,
-                        InvitationCode = _john.InvitationCode
+                        InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode
                     };
                     // }
                     // else
@@ -184,59 +179,26 @@ namespace Wedding.Lambdas.UnitTests
         
         public void SetUpRepository(Mock<IDynamoDBContext> repository)
         {
-            _john = new GuestDto
-            {
-                InvitationCode = _invitationCode,
-                GuestId = new Guid("73340000-0000-0000-0000-000000000001").ToString(),
-                GuestNumber = 1,
-                FirstName = "John",
-                AdditionalFirstNames = new List<string> { "Jacob" },
-                LastName = "Smith",
-                Roles = new List<RoleEnum> { RoleEnum.Guest },
-                EmailVerified = false
-            };
-
-            _jane = new GuestDto
-            {
-                InvitationCode = _invitationCode,
-                GuestId = new Guid("73340000-0000-0000-0000-000000000002").ToString(),
-                GuestNumber = 2,
-                FirstName = "Jane",
-                LastName = "Smith",
-                Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Party },
-                EmailVerified = false
-            };
-            var familyUnit = new FamilyUnitDto
-            {
-                InvitationCode = _invitationCode,
-                UnitName = "Smiths",
-                Guests = new List<GuestDto>
-                {
-                    _john,
-                    _jane
-                }
-            };
-
             var familySearchResult = new List<WeddingEntity>
             {
-                _mapper.Map<WeddingEntity>(familyUnit),
-                _mapper.Map<WeddingEntity>(_john),
-                _mapper.Map<WeddingEntity>(_jane)
+                _mapper.Map<WeddingEntity>(TestDataHelper.TEST_INVITATION_CODE),
+                _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN),
+                _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE)
             };
 
             var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
             mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
                 .ReturnsAsync(familySearchResult);
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(_invitationCode);
+            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
             repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
                 .Returns(mockAsyncSearch.Object);
 
             var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
             repository.Setup(x => x.LoadAsync<WeddingEntity>(partitionKey, familyUnitSortKey, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(familyUnit));
-            repository.Setup(x => x.LoadAsync<WeddingEntity>(_john.GuestId, It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(_john));
+                .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
+            repository.Setup(x => x.LoadAsync<WeddingEntity>(TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
 
             // var mockFamilyAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
             // repository.Setup(x => x.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
@@ -311,7 +273,7 @@ namespace Wedding.Lambdas.UnitTests
         {
             // Step 1. Find user first by invitation code and first name
             var context = new TestLambdaContext();
-            var command = new FindUserQuery(_invitationCode, "John");
+            var command = new FindUserQuery(TestDataHelper.TEST_INVITATION_CODE, "John");
             var request = new APIGatewayProxyRequest
             {
                 QueryStringParameters = QueryStringHelper.ConvertToQueryStringParameters(command)
@@ -322,10 +284,10 @@ namespace Wedding.Lambdas.UnitTests
             response.Headers["Content-Type"].Should().Be("application/json");
 
             var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(_john.GuestId);
+            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
 
             // Step 2. Authorize user by token and guest ID 
-            var token = await GenerateAuth0Token(tokenWithGuestId ? _john.GuestId : null);
+            var token = await GenerateAuth0Token(tokenWithGuestId ? TestDataHelper.GUEST_JOHN.GuestId : null);
 
             var authRequest = new APIGatewayCustomAuthorizerRequest
             {
@@ -349,9 +311,9 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be(LambdaArns.Auth);
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Action.FirstOrDefault().Should().Be("execute-api:Invoke");
                 authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value == token);
-                authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value == _john.GuestId);
+                authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value == TestDataHelper.GUEST_JOHN.GuestId);
                 authResponse.Context.Should().Contain(x => x.Key == "roles" && x.Value == RoleEnum.Guest.ToString());
-                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value == _john.InvitationCode);
+                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value == TestDataHelper.GUEST_JOHN.InvitationCode);
 
                 // Step 3. Get family unit DTO using auth context
                 var familyUnitRequest = new APIGatewayProxyRequest
@@ -366,7 +328,7 @@ namespace Wedding.Lambdas.UnitTests
 
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests.Count.Should().Be(2);
-                familyUnit.InvitationCode.Should().Be(_invitationCode);
+                familyUnit.InvitationCode.Should().Be(TestDataHelper.TEST_INVITATION_CODE);
             }
         }
 
@@ -391,7 +353,7 @@ namespace Wedding.Lambdas.UnitTests
             response.Headers["Content-Type"].Should().Be("application/json");
 
             var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(_john.GuestId);
+            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
         [Test]
@@ -402,7 +364,7 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
-                    { "InvitationCode", _invitationCode },
+                    { "InvitationCode", TestDataHelper.TEST_INVITATION_CODE },
                     { "firstName", "Jane" }
                 }
             };
@@ -415,7 +377,7 @@ namespace Wedding.Lambdas.UnitTests
             response.Headers["Content-Type"].Should().Be("application/json");
 
             var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(_jane.GuestId);
+            actualResult.Should().Be(TestDataHelper.GUEST_JANE.GuestId);
         }
 
         // [Test]

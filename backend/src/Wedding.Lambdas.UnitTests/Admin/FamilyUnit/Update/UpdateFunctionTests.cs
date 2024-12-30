@@ -5,9 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Admin.FamilyUnit.Create;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
-using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 
@@ -16,7 +14,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 public class GetFunctionTests
 {
     [Test]
-    public async void TestUpdateFunction()
+    public async Task TestUpdateFunction()
     {
         var function = new Wedding.Lambdas.Admin.FamilyUnit.Create.Function();
         var context = new TestLambdaContext();

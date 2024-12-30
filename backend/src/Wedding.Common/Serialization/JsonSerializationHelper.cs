@@ -6,7 +6,7 @@ namespace Wedding.Common.Serialization
 {
     public static class JsonSerializationHelper
     {
-        private static readonly JsonSerializerOptions Options;
+        public static readonly JsonSerializerOptions Options;
 
         static JsonSerializationHelper()
         {

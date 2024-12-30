@@ -13,7 +13,6 @@ using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Abstractions.Mapping;
-using Wedding.Common.ThirdParty;
 using Wedding.Common.Helpers.JwtClaim;
 
 namespace Wedding.Lambdas.UnitTests.Authorize
