@@ -4,6 +4,7 @@ using Amazon.Lambda.TestUtilities;
 using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 
@@ -34,7 +35,7 @@ public class GetFunctionTests
             }
         );
         var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command)
+            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.Options)
         };
 
         var response = await function.FunctionHandler(request, context);

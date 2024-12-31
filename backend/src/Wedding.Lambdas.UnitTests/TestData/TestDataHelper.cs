@@ -49,6 +49,23 @@ namespace Wedding.Lambdas.UnitTests.TestData
             }
         }
 
+        public static GuestDto GUEST_ADMIN
+        {
+            get
+            {
+                return new GuestDto
+                {
+                    InvitationCode = "NMBCD",
+                    GuestId = new Guid("73340000-0000-0000-0000-000000000003").ToString(),
+                    GuestNumber = 2,
+                    FirstName = "Admin",
+                    LastName = "Dude",
+                    Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Admin },
+                    EmailVerified = true
+                };
+            }
+        }
+
         public static FamilyUnitDto FAMILY_DOE
         {
             get
@@ -57,6 +74,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 {
                     InvitationCode = TEST_INVITATION_CODE,
                     UnitName = "Smiths",
+                    Tier = "A",
                     Guests = new List<GuestDto>
                     {
                         GUEST_JOHN,
