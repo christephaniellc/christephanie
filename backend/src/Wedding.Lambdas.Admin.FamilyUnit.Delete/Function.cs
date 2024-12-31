@@ -17,14 +17,23 @@ public class Function
 {
     private readonly ServiceProvider _serviceProvider;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<DeleteFamilyUnitHandler>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>

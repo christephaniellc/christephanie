@@ -1,4 +1,5 @@
 ﻿using FluentValidation.TestHelper;
+using NSubstitute;
 using NUnit.Framework;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
@@ -27,7 +28,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.GuestId);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
@@ -38,7 +39,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.GuestId);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
@@ -71,7 +72,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
 
             // Act & Assert
             var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.GuestId);
+            result.ShouldHaveValidationErrorFor(q => q.InvitationCode);
         }
 
         [Test]
@@ -82,7 +83,9 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
 
             // Act & Assert
             var result = _validator.TestValidate(query);
+            result.ShouldNotHaveValidationErrorFor(q => q.InvitationCode);
             result.ShouldNotHaveValidationErrorFor(q => q.GuestId);
+            result.ShouldNotHaveValidationErrorFor(q => q.Roles);
         }
     }
 }

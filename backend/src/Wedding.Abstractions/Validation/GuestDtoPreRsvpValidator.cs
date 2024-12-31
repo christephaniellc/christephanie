@@ -13,12 +13,6 @@ namespace Wedding.Abstractions.Validation
         /// </summary>
         public GuestDtoPreRsvpValidator()
         {
-            // RuleFor(d => d.PackageUri)
-            //     .NotEmpty()
-            //     .WithMessage("Package URI cannot be null, empty or consist of only whitespace characters.")
-            //     .Must(u => IsValidPackageUri(u))
-            //     .WithMessage("The argument is not a valid Delinea Engine Pool Deployment package URI.")
-            //     ;
             RuleFor(g => g.FirstName)
                 .NotEmpty()
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("First name"))
@@ -32,11 +26,6 @@ namespace Wedding.Abstractions.Validation
                 .Must(rsvp => rsvp == null 
                               || Enum.IsDefined(typeof(SleepPreferenceEnum), rsvp.SleepPreference!))
                 ;
-            // RuleFor(p => p.Rsvp.SleepPreference)
-            //     .IsInEnum()
-            //     .When(p => p.Rsvp != null);
-                ;
-            //RuleFor(p => p.Rsvp).SetValidator(new PreRsvpValidator());
         }
 
         /// <summary>
