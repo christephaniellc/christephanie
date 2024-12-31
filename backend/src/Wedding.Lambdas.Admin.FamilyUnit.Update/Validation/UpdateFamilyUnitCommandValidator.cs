@@ -17,7 +17,10 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Validation
         /// </summary>
         public UpdateFamilyUnitCommandValidator()
         {
-            RuleFor(cmd => cmd.FamilyUnit).SetValidator(new UpdateFamilyUnitDtoValidator());
+            RuleFor(cmd => cmd.FamilyUnit)
+                .NotNull()
+                .NotEmpty()
+                .SetValidator(new UpdateFamilyUnitDtoValidator());
         }
 
         public void IsValid(UpdateFamilyUnitCommand obj, object? _ = null)

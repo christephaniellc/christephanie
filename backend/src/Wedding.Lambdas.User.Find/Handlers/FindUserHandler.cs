@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;

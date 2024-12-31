@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -9,6 +8,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Find.Handlers;
 
@@ -70,29 +70,44 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(result)
+                Body = new FrontendApiResponse
+                {
+                    Data = result
+                }.ToBody()
             };
         }
         catch (UnauthorizedAccessException ex)
         {
+            var statusCode = (int) HttpStatusCode.Unauthorized;
             var error = $"Authorization exception: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.Unauthorized,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = error,
+                        Meta = new Dictionary<string, string>()
+                    }
+                }.ToBody()
             };
         }
         catch (ValidationException ex)
         {
-            var error = $"Validation exception: {ex.Message}";
-            context.Logger.LogError(error);
+            var statusCode = (int)HttpStatusCode.BadRequest;
+            var viewError = $"Invitation not found. Please contact your hosts to resolve.";
+            var logError = $"Validation exception: {ex.Message}";
+            context.Logger.LogError(logError);
 
             return new APIGatewayProxyResponse
             {
@@ -102,13 +117,24 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = viewError,
+                        Meta = new Dictionary<string, string>()
+                    }
+                }.ToBody(),
             };
         }
         catch (Exception ex)
         {
-            var error = $"Error occurred: {ex.Message}";
-            context.Logger.LogError(error);
+            var statusCode = (int)HttpStatusCode.InternalServerError;
+            var viewError = $"Application exception. Please contact your hosts to resolve.";
+            var logError = $"Error occurred: {ex.Message}";
+            context.Logger.LogError(logError);
 
             return new APIGatewayProxyResponse
             {
@@ -118,7 +144,16 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = viewError,
+                        Meta = new Dictionary<string, string>()
+                    }
+                }.ToBody(),
             };
         }
     }

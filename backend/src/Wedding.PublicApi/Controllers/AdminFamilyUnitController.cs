@@ -17,7 +17,6 @@ using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
-using Wedding.PublicApi.Logic.Areas.FamilyUnit.Commands;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -81,33 +80,33 @@ namespace Wedding.PublicApi.Controllers
             }
         }
 
-#if DEBUG_ANONYMOUS
-        [AllowAnonymous]
-#else
-        [Authorize]
-#endif
-        [HttpGet("{interested}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
-        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnits(bool? interested,
-            //[FromBody] APIGatewayProxyRequest request //, 
-            //  [FromServices] ILambdaContext context
-            CancellationToken cancellationToken = default
-        )
-        {
-#if !DEBUG_ANONYMOUS
-            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authenticatedUser = await _authProvider.GetGuestIdFromToken(token);
-            if (authenticatedUser == null)
-            {
-                return Unauthorized(new { message = "Authentication error." });
-            }
-#endif
-
-            var query = new GetFamilyUnitsQuery { Interested = interested };
-            var result = await _dispatcher.GetAsync<GetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
-
-            return Ok(result);
-        }
+// #if DEBUG_ANONYMOUS
+//         [AllowAnonymous]
+// #else
+//         [Authorize]
+// #endif
+//         [HttpGet("{interested}")]
+//         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
+//         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnits(bool? interested,
+//             //[FromBody] APIGatewayProxyRequest request //, 
+//             //  [FromServices] ILambdaContext context
+//             CancellationToken cancellationToken = default
+//         )
+//         {
+// #if !DEBUG_ANONYMOUS
+//             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+//             var authenticatedUser = await _authProvider.GetGuestIdFromToken(token);
+//             if (authenticatedUser == null)
+//             {
+//                 return Unauthorized(new { message = "Authentication error." });
+//             }
+// #endif
+//
+//             var query = new GetFamilyUnitsQuery { Interested = interested };
+//             var result = await _dispatcher.GetAsync<GetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
+//
+//             return Ok(result);
+//         }
 
 #if DEBUG_ANONYMOUS
         [AllowAnonymous]
