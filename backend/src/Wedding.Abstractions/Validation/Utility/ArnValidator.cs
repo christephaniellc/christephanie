@@ -13,6 +13,9 @@ namespace Wedding.Abstractions.Validation.Utility
         public ArnValidator()
         {
             RuleFor(arn => arn)
+                .NotNull()
+                .WithMessage("Arn cannot be null.");
+            RuleFor(arn => arn)
                 .NotEmpty()
                 .WithMessage("Arn cannot be empty.")
                 .Must(BeAValidArn)

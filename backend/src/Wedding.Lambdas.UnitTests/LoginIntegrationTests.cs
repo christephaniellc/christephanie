@@ -1,12 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using Amazon.Lambda.APIGatewayEvents;
+﻿using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using System.Net;
-using System.Security.Claims;
 using System.Text.Json;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
@@ -26,11 +24,11 @@ using Wedding.Lambdas.Authorize.Providers;
 using Microsoft.Extensions.Configuration;
 using Wedding.Common.Configuration;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2.DocumentModel;
 using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 
@@ -113,32 +111,6 @@ namespace Wedding.Lambdas.UnitTests
             public string token_type { get; set; }
         }
 
-        public string GenerateTestToken(string? guestId = null)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("awwefdvxdae4tw3trdegdrhsefawrq4terdhdrt4tetrdtftyjdrtawerqrsrghcghmghweaasrdkhjknklg"));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, "auth0|user-id"),
-                new Claim(JwtRegisteredClaimNames.Email, "john.doe@example.com"),
-                new Claim("permissions", "read:guests"),
-                new Claim("permissions", "write:guests")
-            };
-            if (!string.IsNullOrEmpty(guestId))
-            {
-                claims.Add(new Claim(_jwtAudience + "/guest_id", guestId));
-            }
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtAuthority,
-                audience: _jwtAudience,
-                claims: claims.ToArray(),
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
 
         public void SetUpHandlers(Mock<IDynamoDBContext> repository, ServiceCollection serviceCollection)
         {
@@ -181,7 +153,7 @@ namespace Wedding.Lambdas.UnitTests
         {
             var familySearchResult = new List<WeddingEntity>
             {
-                _mapper.Map<WeddingEntity>(TestDataHelper.TEST_INVITATION_CODE),
+                _mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE),
                 _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN),
                 _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE)
             };
@@ -283,8 +255,8 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
 
             // Step 2. Authorize user by token and guest ID 
             var token = await GenerateAuth0Token(tokenWithGuestId ? TestDataHelper.GUEST_JOHN.GuestId : null);
@@ -311,9 +283,9 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be(LambdaArns.Auth);
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Action.FirstOrDefault().Should().Be("execute-api:Invoke");
                 authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value == token);
-                authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value == TestDataHelper.GUEST_JOHN.GuestId);
-                authResponse.Context.Should().Contain(x => x.Key == "roles" && x.Value == RoleEnum.Guest.ToString());
-                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value == TestDataHelper.GUEST_JOHN.InvitationCode);
+                authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value.Equals(TestDataHelper.GUEST_JOHN.GuestId));
+                authResponse.Context.Should().Contain(x => x.Key == "roles" && x.Value.Equals(RoleEnum.Guest.ToString()));
+                authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value.Equals(TestDataHelper.GUEST_JOHN.InvitationCode));
 
                 // Step 3. Get family unit DTO using auth context
                 var familyUnitRequest = new APIGatewayProxyRequest
@@ -352,8 +324,8 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
         [Test]
@@ -376,8 +348,8 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<string>(response.Body);
-            actualResult.Should().Be(TestDataHelper.GUEST_JANE.GuestId);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JANE.GuestId);
         }
 
         // [Test]
