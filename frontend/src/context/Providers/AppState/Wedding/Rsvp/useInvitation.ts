@@ -1,8 +1,15 @@
 import { useMemo } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import useUser from '@/store/user';
+import useFamilyUnit from '@/store/family';
+import { GuestDto } from '@/types/api';
 
 export const useInvitation = () => {
-  const { user } = useAuth0();
+  const { user: auth0User } = useAuth0();
+  const [_user] = useUser();
+  const [familyUnit] = useFamilyUnit();
+
+  const matchingUsers = familyUnit?.guests || [] as GuestDto[];
 
   const actionNeededMessage: string = useMemo(() => {
     const actionsNeeded = {
@@ -19,13 +26,15 @@ export const useInvitation = () => {
     const allUsersPending = matchingUsers.every((user) => user.rsvp?.invitationResponse === 'Pending');
     const allUsersDeclined = matchingUsers.every((user) => user.rsvp?.invitationResponse === 'Declined');
 
-    if (!user) return actionsNeeded.createAnAccount as string;
+    if (!auth0User) return actionsNeeded.createAnAccount as string;
     if (allUsersPending) return actionsNeeded.respondToInvitation as string;
     if (allUsersDeclined) return actionsNeeded.noOneIsComing as string;
     return actionsNeeded.noActionsNeeded as string;
-  }, [user]);
+  }, [auth0User, matchingUsers]);
 
   return {
     actionNeededMessage,
+    matchingUsers,
+
   };
 };

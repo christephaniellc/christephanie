@@ -15,14 +15,14 @@ const routes: Routes = {
   },
   [Pages.SaveTheDate]: {
     component: asyncComponentLoader(() => import('@/pages/SaveTheDate')),
-    path: '/page-1',
-    title: 'Page 1',
+    path: '/save-the-date',
+    title: 'Save the Date',
     icon: GitHubIcon,
   },
   [Pages.Profile]: {
-    component: asyncComponentLoader(() => import('@/pages/Page2')),
-    path: '/page-2',
-    title: 'Page 2',
+    component: asyncComponentLoader(() => import('@/pages/Profile')),
+    path: '/profile',
+    title: 'Profile',
     icon: AddTaskIcon,
   },
   [Pages.NotFound]: {
