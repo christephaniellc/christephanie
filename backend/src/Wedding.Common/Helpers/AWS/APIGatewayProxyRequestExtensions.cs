@@ -2,7 +2,9 @@
 using Amazon.Lambda.APIGatewayEvents;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Dtos.Auth;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -32,19 +34,70 @@ namespace Wedding.Common.Helpers.AWS
             return paramValue;
         }
 
-        public static string? GetUserId(this APIGatewayProxyRequest request)
+        // public static string? GetUserId(this APIGatewayProxyRequest request)
+        // {
+        //     return request.RequestContext.Authorizer["principalId"]?.ToString();
+        // }
+
+        public static AuthContext? Parse(string json)
         {
-            return request.RequestContext.Authorizer["principalId"]?.ToString();
+            try
+            {
+                return JsonSerializer.Deserialize<AuthContext>(json);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Failed to deserialize AuthContext: {ex.Message}");
+                return null;
+            }
+        }
+
+        public static string? RequestLambdaData(this APIGatewayProxyRequest request, string key)
+        {
+            var authorizerContext = request.RequestContext.Authorizer;
+            Console.WriteLine($"authorizerContext: {JsonSerializer.Serialize(authorizerContext)}");
+            if (authorizerContext != null && authorizerContext.TryGetValue("lambda", out var lambdaContext))
+            {
+                Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");
+
+                var context = Parse(lambdaContext.ToString());
+
+                return key switch
+                {
+                    "guestId" => context.GuestId,
+                    "invitationCode" => context.InvitationCode,
+                    "roles" => context.Roles,
+                    "token" => context.Token,
+                    _ => null // Return null if key does not match any property
+                };
+            }
+
+            return null;
         }
 
         public static string? GetGuestId(this APIGatewayProxyRequest request)
         {
-            return request.RequestContext.Authorizer["guestId"]?.ToString();
+            return request.RequestLambdaData("guestId");
         }
 
         public static string? GetInvitationCode(this APIGatewayProxyRequest request)
         {
-            return request.RequestContext.Authorizer["invitationCode"]?.ToString();
+            return request.RequestLambdaData("invitationCode");
+        }
+
+        // public static string? GetToken(this APIGatewayProxyRequest request)
+        // {
+        //     return request.RequestContext.Authorizer["lambda:token"]?.ToString();
+        // }
+
+        public static List<RoleEnum>? GetRoles(this APIGatewayProxyRequest request)
+        {
+            var roles = request.RequestLambdaData("roles");
+            return roles?
+                .ToString()
+                .Split(',')
+                .Select(roles => Enum.Parse<RoleEnum>(roles))
+                .ToList(); // comma delimited string of roles
         }
 
         public static string? GetInvitationCodeFromParams(this APIGatewayProxyRequest request)
@@ -55,20 +108,6 @@ namespace Wedding.Common.Helpers.AWS
         public static string? GetFirstNameFromParams(this APIGatewayProxyRequest request)
         {
             return GetCaseInsensitiveParam(request, "firstName");
-        }
-
-        public static string? GetToken(this APIGatewayProxyRequest request)
-        {
-            return request.RequestContext.Authorizer["token"]?.ToString();
-        }
-
-        public static List<RoleEnum>? GetRoles(this APIGatewayProxyRequest request)
-        {
-            return request.RequestContext.Authorizer["roles"]?
-                .ToString()
-                .Split(',')
-                .Select(roles => Enum.Parse<RoleEnum>(roles))
-                .ToList(); // comma delimited string of roles
         }
     }
 }

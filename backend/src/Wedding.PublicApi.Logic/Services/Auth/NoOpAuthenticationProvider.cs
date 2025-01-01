@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
@@ -44,7 +43,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
         //     return Task.FromResult(authenticatedUser);
         //}
 
-        public string GetAudience()
+        public Task<string> GetAudience()
         {
             throw new System.NotImplementedException();
         }

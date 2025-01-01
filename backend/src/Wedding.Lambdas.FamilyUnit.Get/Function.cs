@@ -49,11 +49,16 @@ public class Function
         try
         {
             GetFamilyUnitQuery query;
-            context.Logger.LogInformation($"Raw Request Context: {request.RequestContext}");
+            context.Logger.LogInformation($"Raw Request Context: {JsonSerializer.Serialize(request)}");
+            context.Logger.LogInformation($"Raw Lambda Context: {JsonSerializer.Serialize(context)}");
 
             var invitationCode = request.GetInvitationCode();
             var guestId = request.GetGuestId();
             var roles = request.GetRoles();
+
+            context.Logger.LogInformation($"invitationCode: {invitationCode}");
+            context.Logger.LogInformation($"guestId: {guestId}");
+            context.Logger.LogInformation($"roles: {roles}");
 
             query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
             

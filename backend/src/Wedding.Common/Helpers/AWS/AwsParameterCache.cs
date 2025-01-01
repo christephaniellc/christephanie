@@ -49,5 +49,11 @@ namespace Wedding.Common.Helpers.AWS
                 throw new InvalidOperationException($"Error fetching parameter '{parameterName}': {ex.Message}", ex);
             }
         }
+
+        public static void ClearCache()
+        {
+            _cachedAuthConfig = null;
+            _cacheExpirationTime = DateTime.MinValue;
+        }
     }
 }
