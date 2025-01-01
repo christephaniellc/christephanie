@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -72,7 +73,7 @@ public class Function
                 },
                 Body = new FrontendApiResponse
                 {
-                    Data = result
+                    Data = JsonSerializer.SerializeToElement(result)
                 }.ToBody()
             };
         }
@@ -96,8 +97,7 @@ public class Function
                     {
                         Status = statusCode,
                         Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error,
-                        Meta = new Dictionary<string, string>()
+                        Description = error
                     }
                 }.ToBody()
             };
@@ -111,7 +111,7 @@ public class Function
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.BadRequest,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
@@ -122,11 +122,10 @@ public class Function
                     Error = new FrontendApiError
                     {
                         Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = viewError,
-                        Meta = new Dictionary<string, string>()
+                        Error = typeof(ValidationException).ToString(),
+                        Description = viewError
                     }
-                }.ToBody(),
+                }.ToBody()
             };
         }
         catch (Exception ex)
@@ -138,7 +137,7 @@ public class Function
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
@@ -149,11 +148,10 @@ public class Function
                     Error = new FrontendApiError
                     {
                         Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = viewError,
-                        Meta = new Dictionary<string, string>()
+                        Error = typeof(Exception).ToString(),
+                        Description = viewError
                     }
-                }.ToBody(),
+                }.ToBody()
             };
         }
     }

@@ -31,6 +31,8 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
+using Amazon.Runtime.Internal.Transform;
+using FluentAssertions.Execution;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -41,6 +43,7 @@ namespace Wedding.Lambdas.UnitTests
         private Wedding.Lambdas.Authorize.Function _authFunction;
         private Wedding.Lambdas.FamilyUnit.Get.Function _familyUnitGetFunction;
 
+        private Mock<ILambdaLogger> _logger;
         private Mock<ILambdaContext> _mockLambdaContext;
         private IMapper _mapper;
         private FindUserHandler _findUserHandler;
@@ -114,6 +117,7 @@ namespace Wedding.Lambdas.UnitTests
 
         public void SetUpHandlers(Mock<IDynamoDBContext> repository, ServiceCollection serviceCollection)
         {
+            var mockLogger = new Mock<ILogger<AuthHandler>>();
             var mockAuthenticationProvider = new Mock<IAuthenticationProvider>();
             mockAuthenticationProvider
                 .Setup(provider => provider.GetUserInfo(It.IsAny<string>()))
@@ -138,10 +142,10 @@ namespace Wedding.Lambdas.UnitTests
             mockAuthenticationProvider
                 .Setup(provider => provider.GetAudience())
                 .Returns(_jwtAudience);
-            var authProvider = new DatabaseRoleProvider(_mapper, repository.Object, mockAuthenticationProvider.Object);
+            var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, repository.Object, mockAuthenticationProvider.Object);
 
             _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), repository.Object, _mapper);
-            _authHandler = new AuthHandler(Mock.Of<ILogger<AuthHandler>>(), repository.Object, _mapper, authProvider);
+            _authHandler = new AuthHandler(mockLogger.Object, authProvider);
             _getFamilyUnitHandler = new GetFamilyUnitHandler(Mock.Of<ILogger<GetFamilyUnitHandler>>(), repository.Object, _mapper);
 
             serviceCollection.AddScoped(_ => _findUserHandler);
@@ -216,7 +220,7 @@ namespace Wedding.Lambdas.UnitTests
         {
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
-                .Build();
+            .Build();
 
             _jwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority];
             _jwtAudience = configuration[ConfigurationKeys.AuthenticationAudience];
@@ -264,8 +268,17 @@ namespace Wedding.Lambdas.UnitTests
             var authRequest = new APIGatewayCustomAuthorizerRequest
             {
                 AuthorizationToken = token,
-                MethodArn = LambdaArns.Auth
+                MethodArn = LambdaArns.Auth,
+                Headers = new Dictionary<string, string>
+                {
+                    { "authorization", "Bearer " + token }
+                },
+                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+                {
+                    RouteKey = "GET /api/familyunit"
+                }
             };
+
             var authResponse = await _authFunction.FunctionHandler(authRequest, context);
 
             if (!tokenWithGuestId)
@@ -280,9 +293,9 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.Should().NotBeNull();
                 authResponse.PrincipalID.Should().Be(_johnAuth0Id);
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Effect.Should().Be(PolicyEffectEnum.Allow.ToString());
-                authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be(LambdaArns.Auth);
+                authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be("GET /api/familyunit");
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Action.FirstOrDefault().Should().Be("execute-api:Invoke");
-                authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value == token);
+                authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value.Equals(token));
                 authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value.Equals(TestDataHelper.GUEST_JOHN.GuestId));
                 authResponse.Context.Should().Contain(x => x.Key == "roles" && x.Value.Equals(RoleEnum.Guest.ToString()));
                 authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value.Equals(TestDataHelper.GUEST_JOHN.InvitationCode));
@@ -296,7 +309,7 @@ namespace Wedding.Lambdas.UnitTests
                     }
                 };
                 var familyUnitGetResponse = await _familyUnitGetFunction.FunctionHandler(familyUnitRequest, context);
-                var familyUnit = APIGatewayProxyResponseHelper.GetResponseBody<FamilyUnitDto>(familyUnitGetResponse);
+                var familyUnit = familyUnitGetResponse.GetResponseBody<FamilyUnitDto>();
 
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests.Count.Should().Be(2);

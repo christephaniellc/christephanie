@@ -1,27 +1,19 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoMapper;
 using System.Text.Json;
 using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Common.Helpers.AWS;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
     public class Auth0Provider : IAuthenticationProvider
     {
-        private readonly IMapper _mapper;
-        private readonly string _authority;
-        private readonly string _audience;
+        private string _authority;
+        private string _audience;
 
-        public Auth0Provider(
-            IMapper mapper,
-            string authority, 
-            string audience)
+        public Auth0Provider()
         {
-            _mapper = mapper;
-            _authority = authority;
-            _audience = audience;
         }
 
         public string GetAudience()
@@ -33,6 +25,12 @@ namespace Wedding.Lambdas.Authorize.Providers
         {
             try
             {
+                var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
+                var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
+
+                _authority = authConfig.Authority ?? throw new InvalidOperationException();
+                _audience = authConfig.Audience ?? throw new InvalidOperationException();
+
                 var userInfoEndpoint = $"{_authority}/userinfo";
                 using (var authClient = new HttpClient())
                 {

@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
@@ -37,12 +38,14 @@ namespace Wedding.Abstractions.Validation.Utility
         /// <returns></returns>
         private bool BeAValidJwt(string token, string authority, string audience)
         {
+            Console.WriteLine($"BeAValidJwt: {token}");
             if (string.IsNullOrWhiteSpace(token))
                 return false;
 
             var tokenHandler = new JwtSecurityTokenHandler();
             if (!tokenHandler.CanReadToken(token))
                 return false;
+            Console.WriteLine($"Can read token.");
 
             try
             {
@@ -56,7 +59,9 @@ namespace Wedding.Abstractions.Validation.Utility
                     IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
                     {
                         var client = new HttpClient();
+                        Console.WriteLine($"JwtTokenValidator authority: {authority}");
                         var keys = client.GetStringAsync($"{authority}/.well-known/jwks.json").Result;
+                        Console.WriteLine($"JwtTokenValidator keys: {keys}");
                         var jsonWebKeySet = new JsonWebKeySet(keys);
                         return jsonWebKeySet.GetSigningKeys();
                     }
