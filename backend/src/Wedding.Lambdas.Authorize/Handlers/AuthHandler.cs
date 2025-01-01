@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.APIGatewayEvents;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Abstractions;
@@ -18,23 +16,29 @@ namespace Wedding.Lambdas.Authorize.Handlers
         IAsyncQueryHandler<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>
     {
         private readonly ILogger<AuthHandler> _logger;
-        private readonly IDynamoDBContext _repository;
-        private readonly IMapper _mapper;
         private readonly IAuthorizationProvider _databaseRoleProvider;
 
-        public AuthHandler(ILogger<AuthHandler> logger, 
-            IDynamoDBContext repository, 
-            IMapper mapper, 
+        public AuthHandler(ILogger<AuthHandler> logger,
             IAuthorizationProvider databaseRoleProvider)
         {
-            _logger = logger;
-            _repository = repository;
-            _mapper = mapper;
-            _databaseRoleProvider = databaseRoleProvider;
+            try
+            {
+                Console.WriteLine("AuthHandler constructor invoked");
+                _logger = logger;
+                _databaseRoleProvider = databaseRoleProvider;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in AuthHandler constructor: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<APIGatewayCustomAuthorizerResponse> GetAsync(ValidateAuthQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _logger.LogInformation("Entering AuthHandler.GetAsync");
+            Console.WriteLine($"CONSOLE: AuthHandler token: {query.Token}");
+
             query.Validate(nameof(query));
             
             try

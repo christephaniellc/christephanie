@@ -9,6 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 
@@ -50,93 +51,80 @@ public class Function
             GetFamilyUnitQuery query;
             context.Logger.LogInformation($"Raw Request Context: {request.RequestContext}");
 
-            try
-            {
-                var invitationCode = request.GetInvitationCode();
-                var guestId = request.GetGuestId();
-                var roles = request.GetRoles();
+            var invitationCode = request.GetInvitationCode();
+            var guestId = request.GetGuestId();
+            var roles = request.GetRoles();
 
-                query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
-            }
-            catch (NullReferenceException ex)
-            {
-                var error = $"QueryStringParameters are missing or invalid.";
-                context.Logger.LogError(error);
-
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    IsBase64Encoded = false,
-                    Headers = new Dictionary<string, string>
-                    {
-                        { "Content-Type", "application/json" }
-                    },
-                    Body = JsonSerializer.Serialize(error)
-                };
-
-            }
-            catch (ArgumentNullException ex) 
-            {
-                var error = $"{ex.ParamName} is missing or invalid in QueryStringParameters.";
-                context.Logger.LogError(error);
-
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    IsBase64Encoded = false,
-                    Headers = new Dictionary<string, string>
-                    {
-                        { "Content-Type", "application/json" }
-                    },
-                    Body = JsonSerializer.Serialize(error)
-                };
-            }
+            query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
             
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();
             var result = await handler.GetAsync(query);
-            
+
+            var statusCode = (int)HttpStatusCode.OK;
+
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int) HttpStatusCode.OK,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(result)
+                Body = new FrontendApiResponse
+                {
+                    Data = JsonSerializer.SerializeToElement(result)
+                }.ToBody()
             };
         }
         catch (ValidationException ex)
         {
+            var statusCode = (int)HttpStatusCode.BadRequest;
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.BadRequest,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(ValidationException).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
         catch (Exception ex)
         {
+            var statusCode = (int)HttpStatusCode.InternalServerError;
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(Exception).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
     }
