@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.AWS.Frontend;
+using Wedding.Common.Serialization;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 
@@ -76,10 +77,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
+                Body = new FrontendApiData(result).ToBody()
             };
         }
         catch (ValidationException ex)
@@ -96,7 +94,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -121,7 +119,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {

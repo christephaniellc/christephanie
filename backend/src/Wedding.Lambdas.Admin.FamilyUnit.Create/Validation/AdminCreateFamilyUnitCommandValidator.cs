@@ -10,19 +10,19 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Validation
     /// Implements the <see cref="AbstractValidator{T}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class CreateFamilyUnitCommandValidator : AbstractValidator<CreateFamilyUnitCommand>, IValidate<CreateFamilyUnitCommand>
+    internal class AdminCreateFamilyUnitCommandValidator : AbstractValidator<AdminCreateFamilyUnitCommand>, IValidate<AdminCreateFamilyUnitCommand>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CreateFamilyUnitCommandValidator" /> class.
+        /// Initializes a new instance of the <see cref="AdminCreateFamilyUnitCommandValidator" /> class.
         /// </summary>
-        public CreateFamilyUnitCommandValidator()
+        public AdminCreateFamilyUnitCommandValidator()
         {
             RuleFor(cmd => cmd.FamilyUnit)
                 .NotNull()
                 .SetValidator(new CreateFamilyUnitDtoValidator());
         }
 
-        public void IsValid(CreateFamilyUnitCommand obj, object? _ = null)
+        public void IsValid(AdminCreateFamilyUnitCommand obj, object? _ = null)
             => this.ValidateAndThrow(obj);
     }
 }

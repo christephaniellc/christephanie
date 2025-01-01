@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
@@ -7,6 +8,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
 using Wedding.Common.ThirdParty;
@@ -33,8 +35,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
         {
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
+            
+            // TODO where is auth occurring?
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode);
+            // var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.UserInvitationCode.ToUpper());
 
             //TODO
             // if (command.FamilyUnit.MailingAddress != null && !command.AddressesConfirmed)
@@ -51,7 +55,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
             try
             {
-                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode);
+                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode.ToUpper());
                 var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 
                 var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
@@ -59,9 +63,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 
                 if (existingFamilyUnit == null)
                 {
-                    throw new InvalidOperationException($"Family unit with RSVP code '{command.FamilyUnit.InvitationCode}' does not exist.");
+                    throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
-                
+
+                // TODO: should only update certain properties, do a patch endpoint, not all guests / properties are included
                 var allGuests = new List<GuestDto>();
                 if (familyUnit.Guests != null)
                 {
@@ -76,12 +81,39 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                         var existingGuest = await _repository.LoadAsync<WeddingEntity>(
                             guestPartitionKey, guestSortKey, cancellationToken);
                 
-                        _mapper.Map(guest, existingGuest);
+                        existingGuest.AgeGroup = guest.AgeGroup;
+
+                        if (guest.Rsvp != null)
+                        {
+                            existingGuest.InvitationResponse = guest.Rsvp.InvitationResponse;
+                            existingGuest.SleepPreference = guest.Rsvp.SleepPreference;
+                            existingGuest.RsvpWedding = guest.Rsvp.Wedding;
+                            existingGuest.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
+                            existingGuest.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
+                            existingGuest.RsvpBuildWeek = guest.Rsvp.BuildWeek;
+                            existingGuest.RsvpNotes = guest.Rsvp.RsvpNotes;
+                            existingGuest.ArrivalDate = guest.Rsvp.ArrivalDate;
+                        }
+
+                        if (guest.Preferences != null)
+                        {
+                            existingGuest.PrefMeal = guest.Preferences.Meal;
+                            existingGuest.PrefKidsPortion = guest.Preferences.KidsPortion;
+                            existingGuest.PrefFoodAllergies = guest.Preferences.FoodAllergies;
+                            existingGuest.PrefSpecialAlcoholRequests = guest.Preferences.SpecialAlcoholRequests;
+                        }
+
+                        //_mapper.Map(guest, existingGuest);
+
                         await _repository.SaveAsync(existingGuest, cancellationToken);
                         allGuests.Add(_mapper.Map<GuestDto>(guest));
                     }
                 }
-                
+
+                existingFamilyUnit.MailingAddress = familyUnit.MailingAddress;
+                existingFamilyUnit.AdditionalAddresses = familyUnit.AdditionalAddresses;
+                existingFamilyUnit.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
+
                 _mapper.Map(familyUnit, existingFamilyUnit);
                 
                 existingFamilyUnit.PotentialHeadCount = familyUnit.CalculateHeadcount();

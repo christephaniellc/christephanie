@@ -1,4 +1,6 @@
-﻿using Wedding.Abstractions.Dtos;
+﻿using System.Collections.Generic;
+using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.FamilyUnit.Update.Commands
@@ -10,5 +12,5 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Commands
     /// <seealso cref="IWeddingQuery" />
     /// <param name="FamilyUnit">The FamilyUnit</param>
     public record UpdateFamilyUnitCommand(
-        FamilyUnitDto FamilyUnit, bool AddressesConfirmed = false) : IWeddingCommand;
+        FamilyUnitDto FamilyUnit, string UserInvitationCode, string UserGuestId, List<RoleEnum> UserRoles, bool AddressesConfirmed = false) : IWeddingCommand;
 }

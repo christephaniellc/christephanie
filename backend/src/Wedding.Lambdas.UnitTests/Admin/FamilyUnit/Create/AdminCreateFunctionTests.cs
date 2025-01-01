@@ -14,14 +14,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create;
 
 [TestFixture]
 [UnitTestsFor(typeof(Lambdas.Admin.FamilyUnit.Create.Function))]
-public class CreateFunctionTests
+public class AdminCreateFunctionTests
 {
     [Test]
     public async Task ShouldCreateFamilyUnitHandler()
     {
         var function = new Wedding.Lambdas.Admin.FamilyUnit.Create.Function();
         var context = new TestLambdaContext();
-        var command = new CreateFamilyUnitCommand(
+        var command = new AdminCreateFamilyUnitCommand(
             new FamilyUnitDto
             {
                 InvitationCode = "ABCDE",
@@ -39,11 +39,11 @@ public class CreateFunctionTests
             }
         );
         var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.Options)
+            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.FromFrontendOptions)
     };
 
         var json = request.Body; // Replace with actual JSON
-        var command2 = JsonSerializationHelper.DeserializeCommand<CreateFamilyUnitCommand>(json);
+        var command2 = JsonSerializationHelper.DeserializeFromFrontend<AdminCreateFamilyUnitCommand>(json);
 
         var response = await function.FunctionHandler(request, context);
         var result = response.GetResponseBody<FamilyUnitDto>();

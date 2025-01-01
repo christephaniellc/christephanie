@@ -143,7 +143,6 @@ namespace Wedding.Abstractions.Mapping
             public RsvpProfile()
             {
                 CreateMap<WeddingEntity, RsvpDto>()
-                    .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.InvitationResponse))
                     .ForMember(dest => dest.Wedding, opt => opt.MapFrom(src => src.RsvpWedding))
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
@@ -155,7 +154,6 @@ namespace Wedding.Abstractions.Mapping
                     ;
 
                 CreateMap<RsvpDto, WeddingEntity>()
-                    .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.InvitationResponse))
                     .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Wedding))
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
@@ -173,7 +171,6 @@ namespace Wedding.Abstractions.Mapping
             public PreferencesProfile()
             {
                 CreateMap<WeddingEntity, PreferencesDto>()
-                    .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.Meal, opt => opt.MapFrom(src => src.PrefMeal))
                     .ForMember(dest => dest.KidsPortion, opt => opt.MapFrom(src => src.PrefKidsPortion))
                     .ForMember(dest => dest.FoodAllergies, opt => opt.MapFrom(src => src.PrefFoodAllergies))
@@ -182,7 +179,6 @@ namespace Wedding.Abstractions.Mapping
                     ;
 
                 CreateMap<PreferencesDto, WeddingEntity>()
-                    .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Meal))
                     .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.KidsPortion))
                     .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.FoodAllergies))

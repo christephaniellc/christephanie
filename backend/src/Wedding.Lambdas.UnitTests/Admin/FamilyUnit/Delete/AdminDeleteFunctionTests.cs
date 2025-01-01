@@ -19,7 +19,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 {
     [TestFixture]
     [UnitTestsFor(typeof(Lambdas.Admin.FamilyUnit.Delete.Function))]
-    public class DeleteFunctionTests
+    public class AdminDeleteFunctionTests
     {
         [Test]
         public async Task ShouldDeleteFamily()
@@ -42,7 +42,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
                 .Returns(mockAsyncSearch.Object);
 
-            var deleteFamilyUnitHandler = new DeleteFamilyUnitHandler(Mock.Of<ILogger<DeleteFamilyUnitHandler>>(), repository.Object, mapper);
+            var deleteFamilyUnitHandler = new AdminDeleteFamilyUnitHandler(Mock.Of<ILogger<AdminDeleteFamilyUnitHandler>>(), repository.Object, mapper);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped(_ => deleteFamilyUnitHandler);

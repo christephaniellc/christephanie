@@ -10,19 +10,19 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation
     /// Implements the <see cref="AbstractValidator{DeleteFamilyUnitCommand}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class DeleteFamilyUnitCommandValidator : AbstractValidator<DeleteFamilyUnitCommand>, IValidate<DeleteFamilyUnitCommand>
+    internal class AdminDeleteFamilyUnitCommandValidator : AbstractValidator<AdminDeleteFamilyUnitCommand>, IValidate<AdminDeleteFamilyUnitCommand>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteFamilyUnitCommandValidator" /> class.
+        /// Initializes a new instance of the <see cref="AdminDeleteFamilyUnitCommandValidator" /> class.
         /// </summary>
-        public DeleteFamilyUnitCommandValidator()
+        public AdminDeleteFamilyUnitCommandValidator()
         {
             RuleFor(cmd => cmd.InvitationCode)
                 .NotNull()
                 .SetValidator(new InvitationCodeValidator());
         }
 
-        public void IsValid(DeleteFamilyUnitCommand obj, object? _ = null)
+        public void IsValid(AdminDeleteFamilyUnitCommand obj, object? _ = null)
             => this.ValidateAndThrow(obj);
     }
 }

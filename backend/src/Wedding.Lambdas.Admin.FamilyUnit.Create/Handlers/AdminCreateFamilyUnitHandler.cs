@@ -15,22 +15,22 @@ using Wedding.Lambdas.Admin.FamilyUnit.Create.Validation;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
 {
-    public class CreateFamilyUnitHandler : 
-        IAsyncCommandHandler<CreateFamilyUnitCommand, FamilyUnitDto>
+    public class AdminCreateFamilyUnitHandler : 
+        IAsyncCommandHandler<AdminCreateFamilyUnitCommand, FamilyUnitDto>
         //, IAsyncCommandHandler<CreateFamilyUnitsCommand, FamilyUnitDto>
     {
-        private readonly ILogger<CreateFamilyUnitHandler> _logger;
+        private readonly ILogger<AdminCreateFamilyUnitHandler> _logger;
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
 
-        public CreateFamilyUnitHandler(ILogger<CreateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public AdminCreateFamilyUnitHandler(ILogger<AdminCreateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> ExecuteAsync(CreateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<FamilyUnitDto> ExecuteAsync(AdminCreateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
 

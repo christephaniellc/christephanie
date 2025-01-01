@@ -12,29 +12,29 @@ using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 {
     [TestFixture]
-    [UnitTestsFor(typeof(DeleteFamilyUnitHandler))]
-    public class DeleteFamilyUnitHandlerTests
+    [UnitTestsFor(typeof(AdminDeleteFamilyUnitHandler))]
+    public class AdminDeleteFamilyUnitHandlerTests
     {
-        private Mock<ILogger<DeleteFamilyUnitHandler>> _mockLogger;
+        private Mock<ILogger<AdminDeleteFamilyUnitHandler>> _mockLogger;
         private Mock<IDynamoDBContext> _mockRepository;
         private Mock<IMapper> _mockMapper;
-        private DeleteFamilyUnitHandler _handler;
+        private AdminDeleteFamilyUnitHandler _handler;
 
         [SetUp]
         public void SetUp()
         {
-            _mockLogger = new Mock<ILogger<DeleteFamilyUnitHandler>>();
+            _mockLogger = new Mock<ILogger<AdminDeleteFamilyUnitHandler>>();
             _mockRepository = new Mock<IDynamoDBContext>();
             _mockMapper = new Mock<IMapper>();
 
-            _handler = new DeleteFamilyUnitHandler(_mockLogger.Object, _mockRepository.Object, _mockMapper.Object);
+            _handler = new AdminDeleteFamilyUnitHandler(_mockLogger.Object, _mockRepository.Object, _mockMapper.Object);
         }
 
         [Test]
         public async Task ExecuteAsync_DeletesFamilyUnit_ReturnsTrue()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
             var cancellationToken = CancellationToken.None;
 
             var weddingEntities = new List<WeddingEntity>
@@ -65,7 +65,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void ExecuteAsync_WhenRepositoryThrowsException_ThrowsApplicationException()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
             var cancellationToken = CancellationToken.None;
 
             _mockRepository
@@ -84,7 +84,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void ExecuteAsync_InvalidCommand_ThrowsArgumentException()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand(null);
+            var command = new AdminDeleteFamilyUnitCommand(null);
             var cancellationToken = CancellationToken.None;
 
             // Act & Assert

@@ -7,6 +7,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
@@ -54,7 +55,16 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            var command = JsonSerializationHelper.DeserializeCommand<UpdateFamilyUnitCommand>(request.Body);
+            var invitationCode = request.GetInvitationCode();
+            var guestId = request.GetGuestId();
+            var roles = request.GetRoles();
+            var familyUnitDto = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
+
+            context.Logger.LogInformation($"invitationCode: {invitationCode}");
+            context.Logger.LogInformation($"guestId: {guestId}");
+            context.Logger.LogInformation($"roles: {roles}");
+
+            var command = new UpdateFamilyUnitCommand(familyUnitDto, invitationCode, guestId, roles);
 
             if (command.FamilyUnit == null)
             {
@@ -74,10 +84,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
+                Body = new FrontendApiData(result).ToBody()
             };
         }
         catch (UnauthorizedAccessException ex)
@@ -94,14 +101,11 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiError
                 {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
-                    }
+                    Status = statusCode,
+                    Error = typeof(UnauthorizedAccessException).ToString(),
+                    Description = error
                 }.ToBody()
             };
         }
@@ -119,7 +123,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -144,7 +148,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {

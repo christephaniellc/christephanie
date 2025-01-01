@@ -13,14 +13,12 @@ using Wedding.Lambdas.Authorize.Providers;
 using AutoMapper;
 using Wedding.Abstractions.Enums;
 using System.Text.Json;
-using Amazon;
 using Microsoft.Extensions.Logging;
 
 namespace Wedding.Lambdas.Authorize;
 
 public class Function
 {
-    private readonly ILambdaLogger _logger;
     private readonly ServiceProvider _serviceProvider;
     private static string _authority;
     private static string _audience;
@@ -69,12 +67,12 @@ public class Function
     {
         context.Logger.LogInformation($"Received event: {JsonSerializer.Serialize(request)}");
         context.Logger.LogInformation($"Raw Auth Bearer Input: { request.AuthorizationToken }");
-        context.Logger.LogInformation($"LambdaContext: {JsonSerializer.Serialize(context)}");
+        context.Logger.LogDebug($"LambdaContext: {JsonSerializer.Serialize(context)}");
 
-        // foreach (var header in request.Headers)
-        // {
-        //     context.Logger.LogInformation($"{header.Key}: {header.Value}");
-        // }
+        foreach (var header in request.Headers)
+        {
+            context.Logger.LogDebug($"{header.Key}: {header.Value}");
+        }
 
         var authorizationHeader = request.Headers
             .FirstOrDefault(h => string.Equals(h.Key, "Authorization", StringComparison.OrdinalIgnoreCase))
@@ -90,18 +88,18 @@ public class Function
 
         if (string.IsNullOrEmpty(_authority) || string.IsNullOrEmpty(_audience))
         {
-            var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
             //AwsParameterCache.ClearCache();
+            var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
             var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
             _authority = authConfig.Authority ?? throw new InvalidOperationException();
             _audience = authConfig.Audience ?? throw new InvalidOperationException();
         }
 
-        context.Logger.LogInformation($"Authorization header: {authorizationHeader}");
-        context.Logger.LogInformation($"Authority: {_authority}");
-        context.Logger.LogInformation($"Audience: {_audience}");
-        context.Logger.LogInformation($"RouteKey: {routeKey}");
-        context.Logger.LogInformation($"Arn: {LambdaArnTranslations.ConvertToArn(routeKey)}");
+        context.Logger.LogDebug($"Authorization header: {authorizationHeader}");
+        context.Logger.LogDebug($"Authority: {_authority}");
+        context.Logger.LogDebug($"Audience: {_audience}");
+        context.Logger.LogDebug($"RouteKey: {routeKey}");
+        context.Logger.LogDebug($"Arn: {LambdaArnTranslations.ConvertToArn(routeKey)}");
 
         var query = new ValidateAuthQuery(
             _authority,
@@ -111,16 +109,8 @@ public class Function
 
         try
         {
-            context.Logger.LogInformation("Logging before calling AuthHandler");
             using var scope = _serviceProvider.CreateScope(); 
-            context.Logger.LogInformation("Logging after calling AuthHandler");
             var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
-            if (handler == null)
-            {
-                context.Logger.LogError("Failed to resolve AuthHandler. It is null.");
-                throw new InvalidOperationException("AuthHandler resolution failed.");
-            }
-            context.Logger.LogInformation("Logging before calling GetRequiredService");
             var result = await handler.GetAsync(query);
 
             return result;
@@ -128,7 +118,6 @@ public class Function
         catch (Exception ex)
         {
             context.Logger.LogError($"Function Exception Message: {ex.Message}");
-            //context.Logger.LogError($"Function Exception: {JsonSerializer.Serialize(ex)}");
             return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: $"Auth exception: {ex.Message}");
         }
     }

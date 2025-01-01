@@ -1,12 +1,12 @@
 ﻿using NUnit.Framework;
-using Wedding.Abstractions.Validation.Utility;
 using Wedding.Common.Utility.Testing.TestChain;
+using Wedding.Lambdas.FamilyUnit.Update.Handlers;
 
-namespace Wedding.Lambdas.UnitTests.Authorize.Validation
+namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
 {
     [TestFixture]
-    [UnitTestsFor(typeof(MailingAddressValidator))]
-    public class MailingAddressValidatorTests
+    [UnitTestsFor(typeof(UpdateFamilyUnitHandler))]
+    public class UpdateFamilyUnitHandlerTests
     {
         [Test]
         public void ShouldWriteTests()

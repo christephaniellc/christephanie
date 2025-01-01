@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Wedding.Common.Helpers.AWS.Frontend
@@ -9,24 +10,24 @@ namespace Wedding.Common.Helpers.AWS.Frontend
         /// Status Code
         /// </summary>
         [JsonPropertyName("status")]
-        public int Status;
+        public int Status { get; set; }
 
         /// <summary>
         /// Exception type
         /// </summary>
         [JsonPropertyName("error")]
-        public string Error;
+        public string Error { get; set; }
 
         /// <summary>
         /// Error string (user-facing)
         /// </summary>
         [JsonPropertyName("description")]
-        public string Description;
+        public string Description { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [JsonPropertyName("meta")]
-        public Dictionary<string, string>? Meta;
+        public Dictionary<string, string>? Meta { get; set; }
     }
 }
