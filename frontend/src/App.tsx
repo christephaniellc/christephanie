@@ -5,11 +5,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { withErrorHandler } from '@/error-handling';
 import AppErrorBoundaryFallback from '@/error-handling/fallbacks/App';
 import Pages from '@/routes/Pages';
-import Header from '@/sections/Header';
 import HotKeys from '@/sections/HotKeys';
 import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Sidebar from '@/sections/Sidebar';
+import BottomNav from '@/components/BottomNav';
 
 function App() {
   return (
@@ -19,9 +19,9 @@ function App() {
       <HotKeys />
       <SW />
 
-      <Header />
       <Sidebar />
       <Pages />
+      <BottomNav />
 
     </Fragment>
   );

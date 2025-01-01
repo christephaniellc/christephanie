@@ -13,7 +13,6 @@ function render(App: ComponentType) {
   root.render(
     <StrictMode>
       <BrowserRouter>
-
           <RecoilRoot>
             <Providers>
               <App />

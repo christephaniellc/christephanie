@@ -1,5 +1,5 @@
 import {useLocation} from "react-router-dom";
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 export const useRouteHistory = () => {
@@ -37,7 +37,7 @@ export const useRouteHistory = () => {
     return history[history.length - 1];
   }, [history]);
 
-  return { history, previousRoute, navValue, setNavValue, currentRoute };
+  return { history, previousRoute, navValue, setNavValue, currentRoute, appRoutes };
 };
 
 export const appRoutes = {

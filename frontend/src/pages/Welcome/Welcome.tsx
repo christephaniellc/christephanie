@@ -4,18 +4,27 @@ import {
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
+import useFamilyUnit from '@/store/family';
+import useUser from '@/store/user';
+import Countdowns from '@/components/Countdowns';
+import { InvitationResponseEnum } from '@/types/api';
 
 const Welcome = () => {
+  const [_familyUnit, actions] = useFamilyUnit();
+  const [user] = useUser();
+  const { getFamilyUnitQuery } = actions;
+  const _isLoading = !user && getFamilyUnitQuery.status === 'pending';
+
   return (
-    <Box display="flex" flexDirection="column" height="100%" justifyContent="flex-start" alignItems="flex-center"
-         textAlign="center">
-      <Typography variant="h2" color="text.primary" gutterBottom mt={4}>
-        welcomeMessage
+
+    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap='wrap'>
+      <Box display='flex' flexDirection='column' width='100%'>
+        <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%" textAlign="center">
+        Steph & Topher
       </Typography>
-      <Typography variant="h4" color="text.primary" gutterBottom mt={4} data-testid={'invitation-code'}>
-        Please enter your invitation code to get started.
-      </Typography>
-      <Box maxWidth={300} mx="auto" mb={2}>
+        <Countdowns event="Invitation" interested={InvitationResponseEnum.Pending} />
+      </Box>
+      <Box maxWidth={600} mx="auto" mb={2}>
         <InvitationCodeInputs />
       </Box>
     </Box>

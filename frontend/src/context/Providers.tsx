@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import ThemeProvider from '@/theme/Provider';
 import { ApiContextProvider } from '@/context/ApiContext';
+import { AppStateContextProvider } from '@/context/Providers/AppState/AppStateContext';
 
 export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { providerConfig } = useAuth0Providers();
@@ -21,7 +22,9 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
         <QueryClientProvider client={queryClient}>
           <HelmetProvider>
             <ThemeProvider>
-              {children as JSX.Element}
+              <AppStateContextProvider>
+                {children as JSX.Element}
+              </AppStateContextProvider>
             </ThemeProvider>
           </HelmetProvider>
         </QueryClientProvider>
