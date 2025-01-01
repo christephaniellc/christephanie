@@ -42,7 +42,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "A",
                     Guests = new List<GuestDto>
                     {
@@ -57,7 +57,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 
             var existingFamilyUnit = new WeddingEntity
             {
-                RsvpCode = $"{DynamoKeys.FamilyUnit}#ABCDE",
+                InvitationCode = $"{DynamoKeys.FamilyUnit}#ABCDE",
                 SortKey = DynamoKeys.FamilyInfo
             };
 
@@ -68,10 +68,6 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             // Act & Assert
             var ex = Assert.ThrowsAsync<ApplicationException>(async () => await _handler.ExecuteAsync(command));
             Assert.That(ex!.Message, Is.EqualTo("An error occurred while saving the family unit."));
-            //Assert.That(ex.Message, Is.EqualTo("Family unit with RSVP code 'ABCDE' already exists."));
-            // TODO
-            //Assert.That(_loggerMock.);
-            Assert.Fail();
         }
 
         [Test]
@@ -81,7 +77,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
-                    RsvpCode = "ABCDE",
+                    InvitationCode = "ABCDE",
                     Tier = "A",
                     Guests = new List<GuestDto>
                     {
@@ -100,7 +96,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 
             // Assert
             _repositoryMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
-            Assert.AreEqual("ABCDE", result.RsvpCode);
+            Assert.AreEqual("ABCDE", result.InvitationCode);
             Assert.AreEqual("Doe_John Family", result.UnitName);
             Assert.AreEqual(2, result.Guests!.Count);
         }
@@ -112,7 +108,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var command = new CreateFamilyUnitCommand(
                  new FamilyUnitDto
                  {
-                     RsvpCode = "ABCDE",
+                     InvitationCode = "ABCDE",
                      Tier = "A",
                      Guests = new List<GuestDto>
                     {

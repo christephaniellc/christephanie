@@ -4,6 +4,8 @@ using Amazon.Lambda.TestUtilities;
 using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
+using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 
@@ -14,28 +16,33 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create;
 public class CreateFunctionTests
 {
     [Test]
-    public async void ShouldCreateFamilyUnitHandler()
+    public async Task ShouldCreateFamilyUnitHandler()
     {
         var function = new Wedding.Lambdas.Admin.FamilyUnit.Create.Function();
         var context = new TestLambdaContext();
         var command = new CreateFamilyUnitCommand(
             new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto>
                 {
                     new GuestDto
                     {
                         FirstName = "John",
-                        LastName = "Doe"
+                        LastName = "Doe",
+                        GuestNumber = 1,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             }
         );
         var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command)
-        };
+            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.Options)
+    };
+
+        var json = request.Body; // Replace with actual JSON
+        var command2 = JsonSerializationHelper.DeserializeCommand<CreateFamilyUnitCommand>(json);
 
         var response = await function.FunctionHandler(request, context);
         var result = APIGatewayProxyResponseHelper.GetResponseBody<FamilyUnitDto>(response);

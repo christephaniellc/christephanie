@@ -13,5 +13,5 @@
   "function-memory-size": 512,
   "function-timeout": 30,
   "function-handler": "Wedding.Lambdas.Admin.FamilyUnit.Create::Wedding.Lambdas.Admin.FamilyUnit.Create.Function::FunctionHandler",
-  "function-name": "christephanie-api-dev-admin-familyunit-create"
+  "function-name": "christephanie-api-dev-authorize"
 }

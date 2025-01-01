@@ -13,11 +13,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation
     internal class DeleteFamilyUnitCommandValidator : AbstractValidator<DeleteFamilyUnitCommand>, IValidate<DeleteFamilyUnitCommand>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteSiteCommandValidator" /> class.
+        /// Initializes a new instance of the <see cref="DeleteFamilyUnitCommandValidator" /> class.
         /// </summary>
         public DeleteFamilyUnitCommandValidator()
         {
-            RuleFor(cmd => cmd.InvitationCode).SetValidator(new RsvpCodeValidator());
+            RuleFor(cmd => cmd.InvitationCode)
+                .NotNull()
+                .SetValidator(new InvitationCodeValidator());
         }
 
         public void IsValid(DeleteFamilyUnitCommand obj, object? _ = null)

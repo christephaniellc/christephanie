@@ -1,6 +1,4 @@
-﻿using Amazon.DynamoDBv2.Model;
-
-namespace Wedding.Abstractions.Keys
+﻿namespace Wedding.Abstractions.Keys
 {
     public static class DynamoKeys
     {
@@ -10,10 +8,11 @@ namespace Wedding.Abstractions.Keys
         public const string GuestInfo = "GUESTINFO";
         public const string Rsvp = "RSVP";
         public const string Preferences = "PREFS";
+        public const string GuestIdIndex = "GuestIdIndex";
 
-        public static string GetFamilyUnitPartitionKey(string rsvpCode)
+        public static string GetFamilyUnitPartitionKey(string invitationCode)
         {
-            return $"{DynamoKeys.FamilyUnit}#{rsvpCode}";
+            return $"{DynamoKeys.FamilyUnit}#{invitationCode}";
         }
 
         public static string GetFamilyInfoSortKey()
@@ -26,9 +25,9 @@ namespace Wedding.Abstractions.Keys
             return $"{lastName}_{firstName} Family";
         }
 
-        public static string GetGuestPartitionKey(string rsvpCode)
+        public static string GetGuestPartitionKey(string invitationCode)
         {
-            return $"{DynamoKeys.FamilyUnit}#{rsvpCode}";
+            return $"{DynamoKeys.FamilyUnit}#{invitationCode}";
         }
 
         public static string GetGuestSortKey(string guestId)

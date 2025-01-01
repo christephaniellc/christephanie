@@ -6,16 +6,14 @@ namespace Wedding.Abstractions.Dtos
 {
     public class GuestDto
     {
-        public string RsvpCode { get; set; } = "";
+        public string InvitationCode { get; set; } = "";
 
         public string GuestId { get; set; } = "";
 
         public int? GuestNumber { get; set; }
 
         public string? Auth0Id { get; set; }
-
-        public Dictionary<SupportedAuthorizationProvidersEnum, string>? AuthIdentities { get; set; }
-
+        
         public string FirstName { get; set; } = "";
 
         public List<string>? AdditionalFirstNames { get; set; }
@@ -25,6 +23,7 @@ namespace Wedding.Abstractions.Dtos
         public List<RoleEnum> Roles { get; set; }
 
         public string? Email { get; set; }
+        public bool EmailVerified { get; set; }
 
         public string? Phone { get; set; }
 
@@ -42,5 +41,10 @@ namespace Wedding.Abstractions.Dtos
         /// Guest last login as first element
         /// </summary>
         public List<DateTime>? GuestLogins { get; set; }
+
+        public bool IsAdmin()
+        {
+            return Roles.Contains(RoleEnum.Admin);
+        }
     }
 }
