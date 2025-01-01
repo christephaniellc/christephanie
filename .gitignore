@@ -401,3 +401,4 @@ swagger.json
 **/.DS_Store
 
 */.github/*
+e2e.yaml
