@@ -4,6 +4,7 @@ using Amazon.Lambda.TestUtilities;
 using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
@@ -39,7 +40,7 @@ public class GetFunctionTests
         };
 
         var response = await function.FunctionHandler(request, context);
-        var result = APIGatewayProxyResponseHelper.GetResponseBody<FamilyUnitDto>(response);
+        var result = response.GetResponseBody<FamilyUnitDto>();
 
         result.Guests.Should().NotBeNull();
         result.Guests!.Count.Should().BeGreaterThan(0);

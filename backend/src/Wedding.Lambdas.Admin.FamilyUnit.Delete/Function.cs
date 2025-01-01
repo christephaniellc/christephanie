@@ -8,6 +8,7 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
+using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
 
@@ -50,19 +51,7 @@ public class Function
 
             if (!request.PathParameters.TryGetValue("invitationCode", out var invitationCode) || string.IsNullOrEmpty(invitationCode))
             {
-                var error = "Invalid or missing InvitationCode in request.";
-                context.Logger.LogError(error);
-
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int) HttpStatusCode.BadRequest,
-                    IsBase64Encoded = false,
-                    Headers = new Dictionary<string, string>
-                    {
-                        { "Content-Type", "application/json" }
-                    },
-                    Body = JsonSerializer.Serialize(error)
-                };
+                throw new ValidationException("Invalid or missing InvitationCode in request.");
             }
 
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
@@ -75,6 +64,8 @@ public class Function
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<DeleteFamilyUnitHandler>();
             var result = await handler.ExecuteAsync(command);
+            var message = result ? $"Successfully deleted family unit <{invitationCode}>."
+                : $"Error deleting family unit <{invitationCode}";
             
             return new APIGatewayProxyResponse
             {
@@ -84,40 +75,60 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(result ? $"Successfully deleted family unit <{invitationCode}>." 
-                    : $"Error deleting family unit <{invitationCode}")
+                Body = new FrontendApiResponse
+                {
+                    Data = JsonSerializer.SerializeToElement(message)
+                }.ToBody()
             };
         }
         catch (ValidationException ex)
         {
+            var statusCode = (int)HttpStatusCode.BadRequest;
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.BadRequest,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
         catch (Exception ex)
         {
+            var statusCode = (int)HttpStatusCode.InternalServerError;
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
     }

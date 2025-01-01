@@ -20,7 +20,8 @@ namespace Wedding.Lambdas.Authorize.Validation
             RuleFor(cmd => cmd.Token)
                 .SetValidator(cmd => new JwtTokenValidator(cmd.JwtAuthority, cmd.JwtAudience));
             RuleFor(cmd => cmd.MethodArn)
-                .SetValidator(new ArnValidator());
+                .NotEmpty();
+            // .SetValidator(new ArnValidator());
         }
 
         public void IsValid(ValidateAuthQuery obj, object? _ = null)
