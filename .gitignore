@@ -399,3 +399,5 @@ swagger.json
 **/*.sln.startup.json
 
 **/.DS_Store
+
+*/.github/*
