@@ -402,3 +402,4 @@ swagger.json
 
 */.github/*
 e2e.yaml
+/frontend/.github/workflows/tests:e2e.yml
