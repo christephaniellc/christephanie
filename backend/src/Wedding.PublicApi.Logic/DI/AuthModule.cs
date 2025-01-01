@@ -6,7 +6,6 @@ using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Services.Auth;
-using IAuthorizationProvider = Wedding.Lambdas.Authorize.Providers.IAuthorizationProvider;
 
 namespace Wedding.PublicApi.Logic.DI
 {
@@ -31,7 +30,7 @@ namespace Wedding.PublicApi.Logic.DI
                 var isAdmin = _authProvider == SupportedAuthorizationProvidersEnum.NoOpAdmin;
                 builder.Register(_ =>
                     {
-                        return new NoOpAuthorizationProvider(isAdmin);
+                        return new NoOpAuthenticationProvider(isAdmin);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
@@ -39,36 +38,45 @@ namespace Wedding.PublicApi.Logic.DI
             }
             else
             {
-                builder.Register<IAuthorizationProvider>(context =>
+                builder.Register<IAuthenticationProvider>(context =>
                     {
                         if (_authProvider == SupportedAuthorizationProvidersEnum.Auth0)
                         {
                             var mapper = context.Resolve<IMapper>();
-                            return new Auth0Provider(_config.Authority, _config.Audience, _config.ClientId,
-                                _config.ClientSecret, mapper, _config.DynamoUserTableName, _config.DynamoIdentityCol,
-                                _config.DynamoIdentityIndex);
-                            //return new Auth0AuthorizationProvider(_baseUrl);
+
+                            return new Auth0Provider(mapper, _config.Authority, _config.Audience);
                         }
 
                         var repository = context.Resolve<IDynamoDBContext>();
-                        return new InternalAuthorizationProvider(repository);
+                        return new InternalAuthenticationProvider(repository);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
                     .SingleInstance();
 
-                builder.Register(context =>
+                builder.Register<IAuthorizationProvider>(context =>
                     {
-                        var authorizationProvider = context.Resolve<IAuthorizationProvider>();
-                        // var services = new ServiceCollection();
-                        // var provider = services.BuildServiceProvider();
-                        // var authorizationProvider = provider.GetRequiredService<IAuthorizationProvider>();
-                        // TODO SKS broken
-                        return new AuthenticationProvider(authorizationProvider, "");
+                        var mapper = context.Resolve<IMapper>();
+                        var repository = context.Resolve<IDynamoDBContext>();
+                        var authenticationProvider = context.Resolve<IAuthenticationProvider>();
+                        return new DatabaseRoleProvider(mapper, repository, authenticationProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
                     .SingleInstance();
+
+                // builder.Register(context =>
+                //     {
+                //         var authenticationProvider = context.Resolve<IAuthenticationProvider>();
+                //         // var services = new ServiceCollection();
+                //         // var provider = services.BuildServiceProvider();
+                //         // var authenticationProvider = provider.GetRequiredService<IAuthenticationProvider>();
+                //         // TODO SKS broken
+                //         return new AuthenticationProvider(authenticationProvider, "");
+                //     })
+                //     .AsImplementedInterfaces()
+                //     .AsSelf()
+                //     .SingleInstance();
             }
 
             // builder.Register(_ =>

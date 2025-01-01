@@ -41,7 +41,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         {
             var entity = new WeddingEntity
             {
-                RsvpCode = "RSVP123",
+                InvitationCode = "RSVP123",
                 UnitName = "Smith Family",
                 Tier = "A",
                 InvitationResponseNotes = "Looking forward to it!",
@@ -53,7 +53,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<FamilyUnitDto>(entity);
 
-            dto.RsvpCode.Should().Be(entity.RsvpCode);
+            dto.InvitationCode.Should().Be(entity.InvitationCode);
             dto.UnitName.Should().Be(entity.UnitName);
             dto.Tier.Should().Be(entity.Tier);
             dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
@@ -153,7 +153,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             // Arrange
             var dto = new FamilyUnitDto
             {
-                RsvpCode = "RSVP123",
+                InvitationCode = "RSVP123",
                 UnitName = "Smith Family",
                 Tier = "Gold",
                 InvitationResponseNotes = "Looking forward to it!",
@@ -189,7 +189,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             var entity = _mapper.Map<WeddingEntity>(dto);
 
             // Assert
-            entity.RsvpCode.Should().Be(dto.RsvpCode);
+            entity.InvitationCode.Should().Be(dto.InvitationCode);
             entity.UnitName.Should().Be(dto.UnitName);
             entity.Tier.Should().Be(dto.Tier);
             entity.InvitationResponseNotes.Should().Be(dto.InvitationResponseNotes);

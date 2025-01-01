@@ -34,7 +34,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.RsvpCode);
+            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode);
 
             //TODO
             // if (command.FamilyUnit.MailingAddress != null && !command.AddressesConfirmed)
@@ -51,7 +51,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
             try
             {
-                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.RsvpCode);
+                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode);
                 var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 
                 var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
@@ -59,7 +59,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 
                 if (existingFamilyUnit == null)
                 {
-                    throw new InvalidOperationException($"Family unit with RSVP code '{command.FamilyUnit.RsvpCode}' does not exist.");
+                    throw new InvalidOperationException($"Family unit with RSVP code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
                 
                 var allGuests = new List<GuestDto>();
@@ -67,10 +67,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 {
                     foreach (var guest in familyUnit!.OrderedGuests()!)
                     {
-                        guest.RsvpCode = command.FamilyUnit.RsvpCode;
+                        guest.InvitationCode = command.FamilyUnit.InvitationCode;
                 
                         // TODO, move db calls to a provider?
-                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(command.FamilyUnit.RsvpCode);
+                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(command.FamilyUnit.InvitationCode);
                         var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
                 
                         var existingGuest = await _repository.LoadAsync<WeddingEntity>(

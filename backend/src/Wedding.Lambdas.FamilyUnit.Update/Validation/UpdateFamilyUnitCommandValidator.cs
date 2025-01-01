@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
+using Wedding.Abstractions.Validation;
 using Wedding.Abstractions.Validation.Common;
-using Wedding.Abstractions.Validation.Utility;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 
 namespace Wedding.Lambdas.FamilyUnit.Update.Validation
@@ -17,10 +17,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
         /// </summary>
         public UpdateFamilyUnitCommandValidator()
         {
-            RuleFor(query => query.FamilyUnit.RsvpCode)
+            RuleFor(query => query.FamilyUnit)
                 .NotNull()
                 .NotEmpty()
-                .SetValidator(new RsvpCodeValidator());
+                .SetValidator(new UpdateFamilyUnitDtoValidator());
         }
 
         public void IsValid(UpdateFamilyUnitCommand obj, object? _ = null)

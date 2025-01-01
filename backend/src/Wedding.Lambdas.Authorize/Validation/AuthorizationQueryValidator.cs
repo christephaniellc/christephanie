@@ -1,15 +1,16 @@
 ﻿using FluentValidation;
 using Wedding.Abstractions.Validation.Common;
+using Wedding.Abstractions.Validation.Utility;
 using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Validation
 {
     /// <summary>
-    /// Validator for ValidateAuthorizationQuery.
+    /// Validator for ValidateAuthQuery.
     /// Implements the <see cref="AbstractValidator{T}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class AuthorizationQueryValidator : AbstractValidator<ValidateAuthorizationQuery>, IValidate<ValidateAuthorizationQuery>
+    internal class AuthorizationQueryValidator : AbstractValidator<ValidateAuthQuery>, IValidate<ValidateAuthQuery>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationQueryValidator" /> class.
@@ -17,12 +18,12 @@ namespace Wedding.Lambdas.Authorize.Validation
         public AuthorizationQueryValidator()
         {
             RuleFor(cmd => cmd.Token)
-                .NotEmpty();
-                //.SetValidator(new JwtTokenValidator());
-                //TODO SKS validate
+                .SetValidator(cmd => new JwtTokenValidator(cmd.JwtAuthority, cmd.JwtAudience));
+            RuleFor(cmd => cmd.MethodArn)
+                .SetValidator(new ArnValidator());
         }
 
-        public void IsValid(ValidateAuthorizationQuery obj, object? _ = null)
+        public void IsValid(ValidateAuthQuery obj, object? _ = null)
             => this.ValidateAndThrow(obj);
     }
 }

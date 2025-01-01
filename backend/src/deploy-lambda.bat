@@ -7,6 +7,7 @@ if "%~1"=="" (
 
 REM Set the working directory from the argument
 set WORKING_DIR=%~1
+echo "%WORKING_DIR%"
 
 REM Navigate to the working directory
 cd /d "%WORKING_DIR%"

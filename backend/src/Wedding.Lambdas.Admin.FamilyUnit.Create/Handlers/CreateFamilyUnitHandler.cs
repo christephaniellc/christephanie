@@ -37,9 +37,9 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
             try
             {
                 var familyUnit = command.FamilyUnit;
-                familyUnit.RsvpCode = familyUnit.RsvpCode.ToUpper();
+                familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
 
-                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(familyUnit.RsvpCode);
+                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(familyUnit.InvitationCode);
                 var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
@@ -48,14 +48,14 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
 
                 if (existingFamilyUnit != null)
                 {
-                    throw new InvalidOperationException($"Family unit with RSVP code '{familyUnit.RsvpCode}' already exists.");
+                    throw new InvalidOperationException($"Family unit with RSVP code '{familyUnit.InvitationCode}' already exists.");
                 }
 
                 var familyInfo = new WeddingEntity()
                 {
                     PartitionKey = familyInfoPartitionKey,
                     SortKey = familyInfoSortKey,
-                    RsvpCode = familyUnit.RsvpCode,
+                    InvitationCode = familyUnit.InvitationCode,
                     UnitName = familyUnit.UnitName,
                     Tier = familyUnit.Tier,
                     PotentialHeadCount = familyUnit.CalculateHeadcount()
@@ -70,7 +70,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                     {
                         guest.GuestId = Guid.NewGuid().ToString();
                         guest.GuestNumber = guestNumber++;
-                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(familyUnit.RsvpCode);
+                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(familyUnit.InvitationCode);
                         var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
                         AddDefaultRoles(guest);
                         
@@ -78,7 +78,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                         {
                             PartitionKey = guestPartitionKey,
                             SortKey = guestSortKey,
-                            RsvpCode = familyUnit.RsvpCode,
+                            InvitationCode = familyUnit.InvitationCode,
                             GuestId = guest.GuestId,
                             GuestNumber = guest.GuestNumber,
                             Tier = familyUnit.Tier,

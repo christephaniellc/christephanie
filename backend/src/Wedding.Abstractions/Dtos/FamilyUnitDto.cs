@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Dtos
 {
     public class FamilyUnitDto
     {
-        public string RsvpCode { get; set; } = "";
+        public string InvitationCode { get; set; } = "";
 
         public string UnitName { get; set; } = "";
 

@@ -4,10 +4,9 @@ using Amazon.Lambda.TestUtilities;
 using FluentAssertions;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Admin.FamilyUnit.Create;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
-using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 
@@ -16,14 +15,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 public class GetFunctionTests
 {
     [Test]
-    public async void TestUpdateFunction()
+    public async Task TestUpdateFunction()
     {
         var function = new Wedding.Lambdas.Admin.FamilyUnit.Create.Function();
         var context = new TestLambdaContext();
         var command = new CreateFamilyUnitCommand(
             new FamilyUnitDto
             {
-                RsvpCode = "ABCDE",
+                InvitationCode = "ABCDE",
                 Tier = "A",
                 Guests = new List<GuestDto>
                 {
@@ -36,7 +35,7 @@ public class GetFunctionTests
             }
         );
         var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command)
+            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.Options)
         };
 
         var response = await function.FunctionHandler(request, context);

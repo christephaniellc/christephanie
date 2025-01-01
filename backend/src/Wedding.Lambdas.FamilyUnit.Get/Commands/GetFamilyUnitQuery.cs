@@ -1,4 +1,6 @@
-﻿using Wedding.Common.Dispatchers;
+﻿using System.Collections.Generic;
+using Wedding.Abstractions.Enums;
+using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.FamilyUnit.Get.Commands
 {
@@ -7,7 +9,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="InvitationCode">The RsvpCode of the FamilyUnit</param>
+    /// <param name="GuestId">The user's guest id</param>
     public record GetFamilyUnitQuery(
-        string InvitationCode, string FirstName) : IWeddingQuery;
+        string InvitationCode, string GuestId, List<RoleEnum> Roles) : IWeddingQuery;
 }

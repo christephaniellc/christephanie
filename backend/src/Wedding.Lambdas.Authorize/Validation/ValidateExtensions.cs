@@ -11,8 +11,8 @@ namespace Wedding.Lambdas.Authorize.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this ValidateAuthorizationQuery obj,
+            this ValidateAuthQuery obj,
             object? context = default)
-            => ValidateHelpers.Validate<ValidateAuthorizationQuery, AuthorizationQueryValidator>(obj, context);
+            => ValidateHelpers.Validate<ValidateAuthQuery, AuthorizationQueryValidator>(obj, context);
     }
 }

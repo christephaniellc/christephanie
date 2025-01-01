@@ -19,31 +19,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Common.Web", "Weddi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.PublicApi.Logic.UnitTests", "Wedding.PublicApi.Logic.UnitTests\Wedding.PublicApi.Logic.UnitTests.csproj", "{F72E8E13-BF46-4FCE-9778-276099AD1CE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Abstractions.UnitTests", "Wedding.Abstractions.UnitTests\Wedding.Abstractions.UnitTests.csproj", "{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Abstractions.UnitTests", "Wedding.Abstractions.UnitTests\Wedding.Abstractions.UnitTests.csproj", "{4DA13AEC-2D87-4AEE-9623-E14D2E40EB07}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lambdas", "Lambdas", "{E6748537-5658-41F7-88E0-CC4AAADC5E97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Admin.FamilyUnit.Create", "Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj", "{D8657A79-19E3-41BA-ABBF-C3539E70260E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.FamilyUnit.Create", "Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj", "{D8657A79-19E3-41BA-ABBF-C3539E70260E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lambda", "Lambda", "{A5D3065A-9FCC-4C90-B5A0-918538EDDC52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.UnitTests", "Wedding.Lambdas.UnitTests\Wedding.Lambdas.UnitTests.csproj", "{C9941DFC-4EBE-4EF5-8E6B-EFCCCFF2BD18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.UnitTests", "Wedding.Lambdas.UnitTests\Wedding.Lambdas.UnitTests.csproj", "{C9941DFC-4EBE-4EF5-8E6B-EFCCCFF2BD18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.HelloWorld", "Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj", "{6DDA7029-926D-4100-A0D7-68B026A5CDFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.HelloWorld", "Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj", "{6DDA7029-926D-4100-A0D7-68B026A5CDFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Admin.FamilyUnit.Update", "Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj", "{0960AF14-5EFE-4BD2-9AF6-F51599DFE428}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.FamilyUnit.Update", "Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj", "{0960AF14-5EFE-4BD2-9AF6-F51599DFE428}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Admin.FamilyUnit.Delete", "Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj", "{5073EA11-84FD-46FF-BE86-71F8DDB835A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.FamilyUnit.Delete", "Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj", "{5073EA11-84FD-46FF-BE86-71F8DDB835A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.FamilyUnit.Get", "Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj", "{49E522EE-EC92-4D86-B2F4-81B2878E33D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.FamilyUnit.Get", "Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj", "{49E522EE-EC92-4D86-B2F4-81B2878E33D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.FamilyUnit.Update", "Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj", "{0605E1C4-C876-45F0-AF47-EB4820BA625A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.FamilyUnit.Update", "Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj", "{0605E1C4-C876-45F0-AF47-EB4820BA625A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Validate.Address", "Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj", "{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Validate.Address", "Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj", "{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Validate.InvitationCode", "Wedding.Lambdas.Validate.InvitationCode\Wedding.Lambdas.Validate.InvitationCode.csproj", "{AAFF4552-6815-417E-8F49-CF849F9CFCB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Authorize", "Wedding.Lambdas.Authorize\Wedding.Lambdas.Authorize.csproj", "{F94B78DB-1261-44FB-85B8-06C50A76CD3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wedding.Lambdas.Authorize", "Wedding.Lambdas.Authorize\Wedding.Lambdas.Authorize.csproj", "{F94B78DB-1261-44FB-85B8-06C50A76CD3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.User.Get", "Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj", "{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.User.Find", "Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj", "{DAD95F95-2803-46E5-ACCF-A20171977738}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,14 +117,18 @@ Global
 		{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AAFF4552-6815-417E-8F49-CF849F9CFCB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAFF4552-6815-417E-8F49-CF849F9CFCB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAFF4552-6815-417E-8F49-CF849F9CFCB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAFF4552-6815-417E-8F49-CF849F9CFCB1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAD95F95-2803-46E5-ACCF-A20171977738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAD95F95-2803-46E5-ACCF-A20171977738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAD95F95-2803-46E5-ACCF-A20171977738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAD95F95-2803-46E5-ACCF-A20171977738}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,8 +146,9 @@ Global
 		{49E522EE-EC92-4D86-B2F4-81B2878E33D5} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{0605E1C4-C876-45F0-AF47-EB4820BA625A} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{5527E21B-4DE2-4581-B11D-2B9A2DED8BEF} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
-		{AAFF4552-6815-417E-8F49-CF849F9CFCB1} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{DAD95F95-2803-46E5-ACCF-A20171977738} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE7DC1A-0F17-41CE-B205-8B3751B0072D}

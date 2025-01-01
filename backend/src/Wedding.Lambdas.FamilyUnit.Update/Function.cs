@@ -12,7 +12,6 @@ using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
 using Wedding.Common.ThirdParty;
-using Wedding.Lambdas.FamilyUnit.Get;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.FamilyUnit.Update.Handlers;
 
