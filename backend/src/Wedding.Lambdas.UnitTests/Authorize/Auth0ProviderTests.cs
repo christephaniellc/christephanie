@@ -39,10 +39,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
                 cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             _mapper = config.CreateMapper();
 
-            _auth0Provider = new Auth0Provider(
-                _mapper,
-                Authority,
-                Audience);
+            _auth0Provider = new Auth0Provider();
         }
 
         private void MockAmazonDynamoDB(QueryResponse response)

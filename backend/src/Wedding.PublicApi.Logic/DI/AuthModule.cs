@@ -2,6 +2,7 @@
 using Amazon.DynamoDBv2.DataModel;
 using Autofac;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Lambdas.Authorize.Providers;
@@ -42,9 +43,7 @@ namespace Wedding.PublicApi.Logic.DI
                     {
                         if (_authProvider == SupportedAuthorizationProvidersEnum.Auth0)
                         {
-                            var mapper = context.Resolve<IMapper>();
-
-                            return new Auth0Provider(mapper, _config.Authority, _config.Audience);
+                            return new Auth0Provider();
                         }
 
                         var repository = context.Resolve<IDynamoDBContext>();
@@ -56,10 +55,11 @@ namespace Wedding.PublicApi.Logic.DI
 
                 builder.Register<IAuthorizationProvider>(context =>
                     {
+                        var logger = context.Resolve<ILogger<DatabaseRoleProvider>>();
                         var mapper = context.Resolve<IMapper>();
                         var repository = context.Resolve<IDynamoDBContext>();
                         var authenticationProvider = context.Resolve<IAuthenticationProvider>();
-                        return new DatabaseRoleProvider(mapper, repository, authenticationProvider);
+                        return new DatabaseRoleProvider(logger, mapper, repository, authenticationProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()

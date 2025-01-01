@@ -26,13 +26,13 @@ using Wedding.Common.Configuration;
 using System.Text;
 using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2.DocumentModel;
-using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 using Amazon.Runtime.Internal.Transform;
 using FluentAssertions.Execution;
+using Wedding.Abstractions.Dtos.Auth;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -141,7 +141,7 @@ namespace Wedding.Lambdas.UnitTests
                 });
             mockAuthenticationProvider
                 .Setup(provider => provider.GetAudience())
-                .Returns(_jwtAudience);
+                .ReturnsAsync(_jwtAudience);
             var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, repository.Object, mockAuthenticationProvider.Object);
 
             _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), repository.Object, _mapper);

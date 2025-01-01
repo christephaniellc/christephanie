@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
     public interface IAuthenticationProvider
     {
-        string GetAudience();
+        Task<string> GetAudience();
         Task<Auth0User> GetUserInfo(string token);
     }
 }

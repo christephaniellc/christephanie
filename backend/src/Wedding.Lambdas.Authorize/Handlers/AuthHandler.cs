@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
@@ -50,12 +51,17 @@ namespace Wedding.Lambdas.Authorize.Handlers
 
                 //var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
+                _logger.LogInformation($"AuthHandler authorized user (authorized? {isAuthorized}): {JsonSerializer.Serialize(authorizedUser)}");
 
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(//isAuthenticated & 
+                var policy = APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(//isAuthenticated & 
                     isAuthorized
                         ? PolicyEffectEnum.Allow 
                         : PolicyEffectEnum.Deny, 
                     query.MethodArn, token, authorizedUser);
+
+                _logger.LogInformation($"Policy: {JsonSerializer.Serialize(policy)}");
+
+                return policy;
             }
             catch (UnauthorizedAccessException ex)
             {

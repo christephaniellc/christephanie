@@ -91,6 +91,7 @@ public class Function
         if (string.IsNullOrEmpty(_authority) || string.IsNullOrEmpty(_audience))
         {
             var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
+            //AwsParameterCache.ClearCache();
             var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
             _authority = authConfig.Authority ?? throw new InvalidOperationException();
             _audience = authConfig.Audience ?? throw new InvalidOperationException();
@@ -100,11 +101,12 @@ public class Function
         context.Logger.LogInformation($"Authority: {_authority}");
         context.Logger.LogInformation($"Audience: {_audience}");
         context.Logger.LogInformation($"RouteKey: {routeKey}");
+        context.Logger.LogInformation($"Arn: {LambdaArnTranslations.ConvertToArn(routeKey)}");
 
         var query = new ValidateAuthQuery(
             _authority,
             _audience,
-            routeKey,
+            LambdaArnTranslations.ConvertToArn(routeKey),
             authorizationHeader.Replace("Bearer ", ""));
 
         try
