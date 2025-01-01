@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.Lambda.Core;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth0;
 using Wedding.Abstractions.Entities;
@@ -16,12 +18,14 @@ namespace Wedding.Lambdas.Authorize.Providers
 {
     public class DatabaseRoleProvider : IAuthorizationProvider
     {
+        private ILogger<DatabaseRoleProvider> _logger;
         private readonly IMapper _mapper;
         private readonly IDynamoDBContext _repository;
         private readonly IAuthenticationProvider _authProvider;
 
-        public DatabaseRoleProvider(IMapper mapper, IDynamoDBContext repository, IAuthenticationProvider authProvider)
+        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBContext repository, IAuthenticationProvider authProvider)
         {
+            _logger = logger;
             _mapper = mapper;
             _repository = repository;
             _authProvider = authProvider;
@@ -68,7 +72,13 @@ namespace Wedding.Lambdas.Authorize.Providers
                 GuestDto? user = null;
                 WeddingEntity? entity = null;
 
+                _logger.LogInformation($"RoleProvider token: {token}");
+                _logger.LogInformation($"RoleProvider methodArn: {methodArn}");
+
                 var guestId = JwtClaimHelper.GetGuestIdFromToken(token, _authProvider.GetAudience());
+
+                _logger.LogInformation($"RoleProvider audience: {_authProvider.GetAudience()}");
+                _logger.LogInformation($"RoleProvider guestId: {guestId}");
 
                 var queryConfig = new DynamoDBOperationConfig
                 {

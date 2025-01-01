@@ -8,6 +8,7 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
+using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Common.Serialization;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
@@ -44,8 +45,7 @@ public class Function
 
             if (command.FamilyUnit == null)
             {
-                context.Logger.LogError("FamilyUnit is null.");
-                throw new Exception("Invalid FamilyUnit in request.");
+                throw new ValidationException("Invalid FamilyUnit in request.");
             }
 
             context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
@@ -63,39 +63,85 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(result)
+                Body = new FrontendApiResponse
+                {
+                    Data = JsonSerializer.SerializeToElement(result)
+                }.ToBody()
+            };
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            var statusCode = (int)HttpStatusCode.Unauthorized;
+            var error = $"Authorization exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = statusCode,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(UnauthorizedAccessException).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
         catch (ValidationException ex)
         {
+            var statusCode = (int)HttpStatusCode.BadRequest;
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.BadRequest,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(ValidationException).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
         catch (Exception ex)
         {
+            var statusCode = (int)HttpStatusCode.InternalServerError;
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
+                StatusCode = statusCode,
                 IsBase64Encoded = false,
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = JsonSerializer.Serialize(error)
+                Body = new FrontendApiResponse
+                {
+                    Error = new FrontendApiError
+                    {
+                        Status = statusCode,
+                        Error = typeof(Exception).ToString(),
+                        Description = error
+                    }
+                }.ToBody()
             };
         }
     }

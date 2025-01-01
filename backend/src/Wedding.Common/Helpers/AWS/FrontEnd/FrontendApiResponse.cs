@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Wedding.Common.Helpers.AWS.Frontend
 {
@@ -6,7 +7,7 @@ namespace Wedding.Common.Helpers.AWS.Frontend
     {
 
         [JsonPropertyName("data")]
-        public object? Data { get; set; }
+        public JsonElement? Data { get; set; }
 
         [JsonPropertyName("error")]
         public FrontendApiError? Error { get; set; }
