@@ -102,7 +102,7 @@ namespace Wedding.PublicApi.Controllers
                 var dynamoDbContext = _serviceProvider.GetRequiredService<IDynamoDBContext>();
                 Console.WriteLine("DynamoDB Context resolved: " + dynamoDbContext);
 
-                var handler = _serviceProvider.GetRequiredService<CreateFamilyUnitHandler>();
+                var handler = _serviceProvider.GetRequiredService<AdminCreateFamilyUnitHandler>();
                 Console.WriteLine("CreateFamilyUnitHandler resolved: " + handler);
 
                 return Ok("Dependencies resolved successfully");

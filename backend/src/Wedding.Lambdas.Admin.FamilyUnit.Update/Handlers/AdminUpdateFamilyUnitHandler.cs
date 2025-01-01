@@ -15,31 +15,24 @@ using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 {
-    public class UpdateFamilyUnitHandler : IAsyncCommandHandler<UpdateFamilyUnitCommand, FamilyUnitDto>
+    public class AdminUpdateFamilyUnitHandler : IAsyncCommandHandler<AdminUpdateFamilyUnitCommand, FamilyUnitDto>
     {
-        private readonly ILogger<UpdateFamilyUnitHandler> _logger;
+        private readonly ILogger<AdminUpdateFamilyUnitHandler> _logger;
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
 
-        public UpdateFamilyUnitHandler(ILogger<UpdateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public AdminUpdateFamilyUnitHandler(ILogger<AdminUpdateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> ExecuteAsync(UpdateFamilyUnitCommand command,
+        public async Task<FamilyUnitDto> ExecuteAsync(AdminUpdateFamilyUnitCommand command,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
-            var permittedToUpdateFamilyUnit = (command.InvitationCode == familyUnit.InvitationCode) ||
-                                      command.Roles.Contains(RoleEnum.Admin);
-
-            if (!permittedToUpdateFamilyUnit)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this family.");
-            }
 
             try
             {

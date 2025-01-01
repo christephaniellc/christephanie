@@ -66,7 +66,7 @@ public class Function
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<UspsAddressValidationHandler>();
             
-            var dto = JsonSerializationHelper.DeserializeCommand<AddressDto>(request.Body);
+            var dto = JsonSerializationHelper.DeserializeFromFrontend<AddressDto>(request.Body);
             context.Logger.LogInformation($"Deserialized Input: {dto.StreetAddress}");
 
             var query = new ValidateUspsAddressQuery(dto);
@@ -81,10 +81,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
+                Body = new FrontendApiData(result).ToBody()
             };
         }
         catch (ValidationException ex)
@@ -101,7 +98,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -126,7 +123,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {

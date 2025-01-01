@@ -259,7 +259,7 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
             actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
 
             // Step 2. Authorize user by token and guest ID 
@@ -325,7 +325,7 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
-                    { "InvitationCode", "ABAAB" },
+                    { "UserInvitationCode", "ABAAB" },
                     { "firstName", "John" }
                 }
             };
@@ -337,7 +337,7 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
             actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
@@ -349,7 +349,7 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
-                    { "InvitationCode", TestDataHelper.TEST_INVITATION_CODE },
+                    { "UserInvitationCode", TestDataHelper.TEST_INVITATION_CODE },
                     { "firstName", "Jane" }
                 }
             };
@@ -361,7 +361,7 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
             actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JANE.GuestId);
         }
 

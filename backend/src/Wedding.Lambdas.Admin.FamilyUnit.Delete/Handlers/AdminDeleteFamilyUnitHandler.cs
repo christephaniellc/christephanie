@@ -12,20 +12,20 @@ using Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers
 {
-    public class DeleteFamilyUnitHandler : IAsyncCommandHandler<DeleteFamilyUnitCommand, bool>
+    public class AdminDeleteFamilyUnitHandler : IAsyncCommandHandler<AdminDeleteFamilyUnitCommand, bool>
     {
-        private readonly ILogger<DeleteFamilyUnitHandler> _logger;
+        private readonly ILogger<AdminDeleteFamilyUnitHandler> _logger;
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
 
-        public DeleteFamilyUnitHandler(ILogger<DeleteFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public AdminDeleteFamilyUnitHandler(ILogger<AdminDeleteFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<bool> ExecuteAsync(DeleteFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> ExecuteAsync(AdminDeleteFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
 

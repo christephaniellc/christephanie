@@ -1,23 +1,28 @@
 ﻿using FluentValidation.TestHelper;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
+using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
-using Wedding.Lambdas.FamilyUnit.Update.Commands;
-using Wedding.Lambdas.FamilyUnit.Update.Validation;
+using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
 {
     [TestFixture]
-    [UnitTestsFor(typeof(UpdateFamilyUnitHandler))]
-    public class UpdateFamilyUnitHandlerTests
+    [UnitTestsFor(typeof(AdminUpdateFamilyUnitHandler))]
+    public class AdminUpdateFamilyUnitHandlerTests
     {
-        private UpdateFamilyUnitCommandValidator _validator;
+        private AdminUpdateFamilyUnitCommandValidator _validator;
+        private List<RoleEnum> _adminRoles;
+        private List<RoleEnum> _nonAdminRoles;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new UpdateFamilyUnitCommandValidator();
+            _validator = new AdminUpdateFamilyUnitCommandValidator();
+            _adminRoles = new List<RoleEnum> { RoleEnum.Admin };
+            _nonAdminRoles = new List<RoleEnum> { RoleEnum.Guest };
         }
 
         [Test]
@@ -39,7 +44,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     }
                 }
             };
-            var command = new UpdateFamilyUnitCommand(validFamilyUnit);
+            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, _adminRoles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -50,7 +55,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Have_Error_When_FamilyUnit_Is_Null()
         {
             // Arrange
-            var command = new UpdateFamilyUnitCommand(null);
+            var command = new AdminUpdateFamilyUnitCommand(null, _adminRoles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -68,7 +73,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                 Tier = "Tier1",
                 Guests = new List<GuestDto>()
             };
-            var command = new UpdateFamilyUnitCommand(invalidFamilyUnit);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, _adminRoles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -89,11 +94,37 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     new GuestDto { FirstName = "Guest1", Email = "guest1@example.com" }
                 }
             };
-            var command = new UpdateFamilyUnitCommand(invalidFamilyUnit);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, _adminRoles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor("FamilyUnit.InvitationCode");
+            result.ShouldHaveValidationErrorFor("FamilyUnit.UserInvitationCode");
+        }
+
+        [Test]
+        public void Should_Have_Error_When_User_Not_Admin()
+        {
+            // Arrange
+            var validFamilyUnit = new FamilyUnitDto
+            {
+                InvitationCode = "ABCDE",
+                Tier = "A",
+                Guests = new List<GuestDto>
+                {
+                    new GuestDto
+                    {
+                        FirstName = "Guest1",
+                        LastName = "Last",
+                        Email = "guest1@example.com",
+                        GuestNumber = 1
+                    }
+                }
+            };
+            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, _nonAdminRoles);
+
+            // Act & Assert
+            var result = _validator.TestValidate(command);
+            result.ShouldHaveValidationErrorFor("FamilyUnit.UserInvitationCode");
         }
     }
 }

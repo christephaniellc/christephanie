@@ -15,12 +15,12 @@ using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 {
     [TestFixture]
-    [UnitTestsFor(typeof(CreateFamilyUnitHandler))]
-    public class CreateFamilyUnitHandlerTests
+    [UnitTestsFor(typeof(AdminCreateFamilyUnitHandler))]
+    public class AdminCreateFamilyUnitHandlerTests
     {
-        private Mock<ILogger<CreateFamilyUnitHandler>> _loggerMock;
+        private Mock<ILogger<AdminCreateFamilyUnitHandler>> _loggerMock;
         private Mock<IDynamoDBContext> _repositoryMock;
-        private CreateFamilyUnitHandler _handler;
+        private AdminCreateFamilyUnitHandler _handler;
         private IMapper _mapper;
 
         [SetUp]
@@ -30,16 +30,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             _mapper = config.CreateMapper();
 
-            _loggerMock = new Mock<ILogger<CreateFamilyUnitHandler>>();
+            _loggerMock = new Mock<ILogger<AdminCreateFamilyUnitHandler>>();
             _repositoryMock = new Mock<IDynamoDBContext>();
-            _handler = new CreateFamilyUnitHandler(_loggerMock.Object, _repositoryMock.Object, _mapper);
+            _handler = new AdminCreateFamilyUnitHandler(_loggerMock.Object, _repositoryMock.Object, _mapper);
         }
 
         [Test]
         public async Task ExecuteAsync_Should_Throw_Exception_When_FamilyUnit_Already_Exists()
         {
             // Arrange
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",
@@ -74,7 +74,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         public async Task ExecuteAsync_Should_Save_FamilyUnit_And_Guests()
         {
             // Arrange
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",
@@ -105,7 +105,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         public async Task ExecuteAsync_Should_Add_Default_Roles_When_Guest_Roles_Are_Null()
         {
             // Arrange
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                  new FamilyUnitDto
                  {
                      InvitationCode = "ABCDE",

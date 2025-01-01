@@ -67,8 +67,8 @@ namespace Wedding.PublicApi.Controllers
 
                 foreach (var unit in familyUnits)
                 {
-                    var command = new CreateFamilyUnitsCommand(familyUnits);
-                    var result = await _dispatcher.ExecuteAsync<CreateFamilyUnitsCommand, FamilyUnitDto>(command, cancellationToken);
+                    var command = new AdminCreateFamilyUnitsCommand(familyUnits);
+                    var result = await _dispatcher.ExecuteAsync<AdminCreateFamilyUnitsCommand, FamilyUnitDto>(command, cancellationToken);
                 }
 
                 return Ok(familyUnits);
@@ -140,11 +140,11 @@ namespace Wedding.PublicApi.Controllers
                 }
 //#endif
 
-                var command = new UpdateFamilyUnitCommand(familyUnit,
+                var command = new AdminUpdateFamilyUnitCommand(familyUnit,
                     authenticatedGuest.GuestId, 
                     authenticatedGuest.InvitationCode, 
                     authenticatedGuest.Roles);
-                var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+                var result = await _dispatcher.ExecuteAsync<AdminUpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
                 return Ok(familyUnit);
             }
@@ -164,7 +164,7 @@ namespace Wedding.PublicApi.Controllers
 #else
         [Authorize]
 #endif
-        [HttpDelete("{InvitationCode}")]
+        [HttpDelete("{UserInvitationCode}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default)
@@ -178,8 +178,8 @@ namespace Wedding.PublicApi.Controllers
             }
 #endif
 
-            var command = new DeleteFamilyUnitCommand(invitationCode);
-            var result = await _dispatcher.ExecuteAsync<DeleteFamilyUnitCommand, bool>(command, cancellationToken);
+            var command = new AdminDeleteFamilyUnitCommand(invitationCode);
+            var result = await _dispatcher.ExecuteAsync<AdminDeleteFamilyUnitCommand, bool>(command, cancellationToken);
             
             return Ok(new DeleteResponse { Success = result });
         }

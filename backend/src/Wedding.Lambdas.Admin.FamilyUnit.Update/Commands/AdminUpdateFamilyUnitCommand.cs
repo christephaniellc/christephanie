@@ -5,9 +5,7 @@ using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Commands
 {
-    public record UpdateFamilyUnitCommand(
+    public record AdminUpdateFamilyUnitCommand(
         FamilyUnitDto FamilyUnit,
-        string GuestId,
-        string InvitationCode,
-        List<RoleEnum> Roles) : IWeddingCommand;
+        List<RoleEnum> UserRoles) : IWeddingCommand;
 }

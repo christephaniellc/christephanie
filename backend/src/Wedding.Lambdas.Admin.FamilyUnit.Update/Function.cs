@@ -24,7 +24,7 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
-        serviceCollection.AddScoped<UpdateFamilyUnitHandler>();
+        serviceCollection.AddScoped<AdminUpdateFamilyUnitHandler>();
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
@@ -41,7 +41,7 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            var command = JsonSerializationHelper.DeserializeCommand<UpdateFamilyUnitCommand>(request.Body);
+            var command = JsonSerializationHelper.DeserializeFromFrontend<AdminUpdateFamilyUnitCommand>(request.Body);
 
             if (command.FamilyUnit == null)
             {
@@ -52,7 +52,7 @@ public class Function
             context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnit)}");
 
             using var scope = _serviceProvider.CreateScope();
-            var handler = scope.ServiceProvider.GetRequiredService<UpdateFamilyUnitHandler>();
+            var handler = scope.ServiceProvider.GetRequiredService<AdminUpdateFamilyUnitHandler>();
             var result = await handler.ExecuteAsync(command);
             
             return new APIGatewayProxyResponse
@@ -63,10 +63,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
+                Body = new FrontendApiData(result).ToBody()
             };
         }
         catch (UnauthorizedAccessException ex)
@@ -83,7 +80,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -108,7 +105,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -133,7 +130,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {

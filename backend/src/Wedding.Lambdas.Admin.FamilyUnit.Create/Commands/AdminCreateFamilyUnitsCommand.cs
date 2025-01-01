@@ -4,6 +4,6 @@ using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Commands
 {
-    public record CreateFamilyUnitsCommand(
+    public record AdminCreateFamilyUnitsCommand(
         List<FamilyUnitDto> FamilyUnits) : IWeddingCommand;
 }

@@ -71,15 +71,13 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
+                Body = new FrontendApiData(result).ToBody()
             };
         }
         catch (UnauthorizedAccessException ex)
         {
             var statusCode = (int) HttpStatusCode.Unauthorized;
+            var viewError = $"Invitation not found. Please contact your hosts to resolve.";
             var error = $"Authorization exception: {ex.Message}";
             context.Logger.LogError(error);
 
@@ -91,13 +89,13 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
                         Status = statusCode,
                         Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
+                        Description = viewError
                     }
                 }.ToBody()
             };
@@ -117,7 +115,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -143,7 +141,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {

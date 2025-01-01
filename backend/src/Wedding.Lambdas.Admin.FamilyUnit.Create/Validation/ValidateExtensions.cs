@@ -11,8 +11,8 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this CreateFamilyUnitCommand obj,
+            this AdminCreateFamilyUnitCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<CreateFamilyUnitCommand, CreateFamilyUnitCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<AdminCreateFamilyUnitCommand, AdminCreateFamilyUnitCommandValidator>(obj, context);
     }
 }

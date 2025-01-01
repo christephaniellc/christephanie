@@ -8,10 +8,10 @@ using Wedding.Lambdas.Admin.FamilyUnit.Create.Validation;
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 {
     [TestFixture]
-    [UnitTestsFor(typeof(CreateFamilyUnitCommandValidator))]
-    public class CreateFamilyUnitCommandValidatorTests
+    [UnitTestsFor(typeof(AdminCreateFamilyUnitCommandValidator))]
+    public class AdminCreateFamilyUnitCommandValidatorTests
     {
-        private CreateFamilyUnitCommandValidator _validator;
+        private AdminCreateFamilyUnitCommandValidator _validator;
 
         private static readonly GuestDto VALID_GUEST = new GuestDto
         {
@@ -23,13 +23,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [SetUp]
         public void SetUp()
         {
-            _validator = new CreateFamilyUnitCommandValidator();
+            _validator = new AdminCreateFamilyUnitCommandValidator();
         }
 
         [Test]
         public void Should_Have_Error_When_FamilyUnit_Is_Null()
         {
-            var command = new CreateFamilyUnitCommand(null!);
+            var command = new AdminCreateFamilyUnitCommand(null!);
             var result = _validator.TestValidate(command);
             result.ShouldHaveValidationErrorFor(x => x.FamilyUnit);
         }
@@ -37,7 +37,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Have_Error_When_FamilyUnit_InvitationCode_Is_Empty()
         {
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = string.Empty
@@ -50,7 +50,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Have_Error_When_InvitationCode_Is_NotValid()
         {
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "sldkfsdfsdfj"
@@ -63,7 +63,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Have_Error_When_Tier_Is_NotValid()
         {
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",
@@ -77,7 +77,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Have_Error_When_No_Guests()
         {
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE"
@@ -90,7 +90,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [Test]
         public void Should_Not_Have_Error_When_Command_Is_Valid()
         {
-            var command = new CreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitCommand(
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",

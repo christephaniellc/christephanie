@@ -32,7 +32,7 @@ namespace Wedding.Lambdas.User.Find.Handlers
             
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode);
+                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode.ToUpper());
                 var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
 
                 var matchingGuest = items.FirstOrDefault(item =>

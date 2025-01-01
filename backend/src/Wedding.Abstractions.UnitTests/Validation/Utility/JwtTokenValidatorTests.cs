@@ -1,11 +1,10 @@
 ﻿using FluentValidation.TestHelper;
 using Microsoft.Extensions.Configuration;
-using NUnit.Framework;
 using Wedding.Abstractions.Validation.Utility;
 using Wedding.Common.Configuration;
 using Wedding.Common.Utility.Testing.TestChain;
 
-namespace Wedding.Lambdas.UnitTests.Authorize.Validation
+namespace Wedding.Abstractions.UnitTests.Validation.Utility
 {
     [TestFixture]
     [UnitTestsFor(typeof(JwtTokenValidator))]

@@ -1,18 +1,17 @@
 ﻿using System.Text.Json;
+using Wedding.Common.Serialization;
 
 namespace Wedding.Common.Helpers.AWS.Frontend
 {
     public static class FrontendApiResponseExtentions
     {
-        public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new JsonSerializerOptions
+        public static string ToBody(this FrontendApiData data)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        };
-
-        public static string ToBody(this FrontendApiResponse response)
+            return JsonSerializer.Serialize(data, JsonSerializationHelper.CamelCaseJsonSerializerOptions);
+        }
+        public static string ToBody(this FrontendApiError error)
         {
-            return JsonSerializer.Serialize(response, DefaultJsonSerializerOptions);
+            return JsonSerializer.Serialize(error, JsonSerializationHelper.CamelCaseJsonSerializerOptions);
         }
     }
 }

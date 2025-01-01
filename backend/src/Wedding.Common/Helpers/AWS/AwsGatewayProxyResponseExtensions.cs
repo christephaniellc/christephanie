@@ -9,7 +9,7 @@ namespace Wedding.Common.Helpers.AWS
     {
         public static T GetResponseBody<T>(this APIGatewayProxyResponse response)
         {
-            var body = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
+            var body = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
 
             if (body?.Data is not JsonElement data || data.ValueKind != JsonValueKind.Object)
             {

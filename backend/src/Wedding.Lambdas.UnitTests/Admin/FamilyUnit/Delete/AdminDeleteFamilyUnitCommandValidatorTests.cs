@@ -6,23 +6,23 @@ using Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 {
-    [UnitTestsFor(typeof(DeleteFamilyUnitCommandValidator))]
+    [UnitTestsFor(typeof(AdminDeleteFamilyUnitCommandValidator))]
     [TestFixture]
-    public class DeleteFamilyUnitCommandValidatorTests
+    public class AdminDeleteFamilyUnitCommandValidatorTests
     {
-        private DeleteFamilyUnitCommandValidator _validator;
+        private AdminDeleteFamilyUnitCommandValidator _validator;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new DeleteFamilyUnitCommandValidator();
+            _validator = new AdminDeleteFamilyUnitCommandValidator();
         }
 
         [Test]
         public void Validate_ValidInvitationCode_ShouldNotHaveValidationError()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
 
             // Act
             var result = _validator.TestValidate(command);
@@ -35,7 +35,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void Validate_InvalidInvitationCode_ShouldHaveValidationError()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("INVALID!CODE");
+            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE");
 
             // Act
             var result = _validator.TestValidate(command);
@@ -48,7 +48,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void Validate_NullInvitationCode_ShouldHaveValidationError()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand(null);
+            var command = new AdminDeleteFamilyUnitCommand(null);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -61,7 +61,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void IsValid_ThrowsException_WhenCommandIsInvalid()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("INVALID!CODE");
+            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE");
 
             // Act & Assert
             Assert.Throws<FluentValidation.ValidationException>(() => _validator.IsValid(command));
@@ -71,7 +71,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void IsValid_DoesNotThrowException_WhenCommandIsValid()
         {
             // Arrange
-            var command = new DeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
 
             // Act & Assert
             Assert.DoesNotThrow(() => _validator.IsValid(command));

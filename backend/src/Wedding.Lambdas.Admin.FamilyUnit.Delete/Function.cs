@@ -32,7 +32,7 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
-        serviceCollection.AddScoped<DeleteFamilyUnitHandler>();
+        serviceCollection.AddScoped<AdminDeleteFamilyUnitHandler>();
 
         return serviceCollection.BuildServiceProvider();
     }
@@ -56,13 +56,13 @@ public class Function
 
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
 
-            var command = new DeleteFamilyUnitCommand(invitationCode);
+            var command = new AdminDeleteFamilyUnitCommand(invitationCode);
 
             context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
             context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.InvitationCode)}");
 
             using var scope = _serviceProvider.CreateScope();
-            var handler = scope.ServiceProvider.GetRequiredService<DeleteFamilyUnitHandler>();
+            var handler = scope.ServiceProvider.GetRequiredService<AdminDeleteFamilyUnitHandler>();
             var result = await handler.ExecuteAsync(command);
             var message = result ? $"Successfully deleted family unit <{invitationCode}>."
                 : $"Error deleting family unit <{invitationCode}";
@@ -75,10 +75,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(message)
-                }.ToBody()
+                Body = new FrontendApiData(message).ToBody()
             };
         }
         catch (ValidationException ex)
@@ -95,7 +92,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
@@ -120,7 +117,7 @@ public class Function
                 {
                     { "Content-Type", "application/json" }
                 },
-                Body = new FrontendApiResponse
+                Body = new FrontendApiData
                 {
                     Error = new FrontendApiError
                     {
