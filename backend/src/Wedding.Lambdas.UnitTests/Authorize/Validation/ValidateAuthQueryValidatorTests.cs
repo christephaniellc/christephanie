@@ -10,7 +10,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
 {
     [TestFixture]
     [UnitTestsFor(typeof(ValidateAuthQueryValidator))]
-    public class AuthorizationQueryValidatorTests
+    public class ValidateAuthQueryValidatorTests
     {
         private TestTokenHelper _testTokenHelper;
         private ValidateAuthQueryValidator _validator;

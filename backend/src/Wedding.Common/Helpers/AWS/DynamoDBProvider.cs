@@ -27,7 +27,7 @@ namespace Wedding.Common.Helpers.AWS
         }
         public async Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string invitationCode, CancellationToken cancellationToken = default)
         {
-            var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(invitationCode.ToUpper());
+            var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
 
             return await _repository.LoadAsync<WeddingEntity>(
@@ -44,7 +44,7 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<WeddingEntity?> LoadGuestByGuestIdAsync(string invitationCode, string guestId,
             CancellationToken cancellationToken = default)
         {
-            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode.ToUpper());
+            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var guestSortKey = DynamoKeys.GetGuestSortKey(guestId);
 
             return await _repository.LoadAsync<WeddingEntity>(
@@ -95,7 +95,7 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<FamilyUnitDto?> GetFamilyUnitAsync(string invitationCode,
             CancellationToken cancellationToken = default)
         {
-            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode.ToUpper());
+            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var dynamoQuery = new QueryOperationConfig()
             {
                 KeyExpression = new Expression
