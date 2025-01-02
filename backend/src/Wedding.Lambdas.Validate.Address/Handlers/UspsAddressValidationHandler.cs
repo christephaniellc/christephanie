@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
@@ -14,17 +13,14 @@ namespace Wedding.Lambdas.Validate.Address.Handlers
     public class UspsAddressValidationHandler : IAsyncQueryHandler<ValidateUspsAddressQuery, AddressDto>
     {
         private readonly ILogger<UspsAddressValidationHandler> _logger;
-        private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
         private readonly IUspsMailingAddressValidationProvider _uspsMailingAddressValidationProvider;
 
         public UspsAddressValidationHandler(ILogger<UspsAddressValidationHandler> logger, 
-            IDynamoDBContext repository, 
             IMapper mapper, 
             IUspsMailingAddressValidationProvider uspsMailingAddressValidationProvider)
         {
             _logger = logger;
-            _repository = repository;
             _mapper = mapper;
             _uspsMailingAddressValidationProvider = uspsMailingAddressValidationProvider;
         }

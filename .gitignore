@@ -399,3 +399,7 @@ swagger.json
 **/*.sln.startup.json
 
 **/.DS_Store
+
+*/.github/*
+e2e.yaml
+/frontend/.github/workflows/tests:e2e.yml

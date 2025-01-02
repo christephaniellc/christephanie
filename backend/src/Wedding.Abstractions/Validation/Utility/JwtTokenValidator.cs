@@ -30,7 +30,7 @@ namespace Wedding.Abstractions.Validation.Utility
         /// <param name="_">The .</param>
         public void IsValid(string? obj, object? _ = null)
             => this!.ValidateAndThrow(obj);
-
+            
         /// <summary>
         /// Validates JwtToken
         /// </summary>
@@ -38,6 +38,8 @@ namespace Wedding.Abstractions.Validation.Utility
         /// <returns></returns>
         private bool BeAValidJwt(string token, string authority, string audience)
         {
+            Console.WriteLine($"JwtTokenValidator authority: {authority}");
+            Console.WriteLine($"JwtTokenValidator audience: {audience}");
             Console.WriteLine($"BeAValidJwt: {token}");
             if (string.IsNullOrWhiteSpace(token))
                 return false;
@@ -49,6 +51,22 @@ namespace Wedding.Abstractions.Validation.Utility
 
             try
             {
+                try
+                {
+                    using var client = new HttpClient();
+                    var response = client.GetAsync($"{authority}/.well-known/jwks.json").Result; ;
+                    Console.WriteLine($"JwtTokenValidator HTTP Response: {response.StatusCode}");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new Exception($"Failed to reach authority: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Network error: {ex.Message}");
+                    throw;
+                }
+
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -56,6 +74,7 @@ namespace Wedding.Abstractions.Validation.Utility
                     ValidateAudience = true,
                     ValidAudience = audience,
                     ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(5), // Allow 5 minutes of clock skew
                     IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
                     {
                         var client = new HttpClient();
@@ -70,8 +89,9 @@ namespace Wedding.Abstractions.Validation.Utility
                 tokenHandler.ValidateToken(token, validationParameters, out _);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"JwtTokenValidator exception: {ex.Message}");
                 return false;
             }
         }

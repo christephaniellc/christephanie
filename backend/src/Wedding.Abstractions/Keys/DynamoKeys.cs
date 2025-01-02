@@ -10,9 +10,9 @@
         public const string Preferences = "PREFS";
         public const string GuestIdIndex = "GuestIdIndex";
 
-        public static string GetFamilyUnitPartitionKey(string invitationCode)
+        public static string GetPartitionKey(string invitationCode)
         {
-            return $"{DynamoKeys.FamilyUnit}#{invitationCode}";
+            return $"{DynamoKeys.FamilyUnit}#{invitationCode.ToUpper()}";
         }
 
         public static string GetFamilyInfoSortKey()
@@ -23,11 +23,6 @@
         public static string GetFamilyUnitName(string firstName, string lastName)
         {
             return $"{lastName}_{firstName} Family";
-        }
-
-        public static string GetGuestPartitionKey(string invitationCode)
-        {
-            return $"{DynamoKeys.FamilyUnit}#{invitationCode}";
         }
 
         public static string GetGuestSortKey(string guestId)

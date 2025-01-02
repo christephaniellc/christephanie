@@ -2,7 +2,6 @@
 using System.Reflection;
 using System;
 using Autofac;
-using Wedding.Common.Abstractions;
 using Wedding.Common.Dispatchers;
 using Module = Autofac.Module;
 

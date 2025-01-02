@@ -1,7 +1,7 @@
 ﻿namespace Wedding.Common.Web.Options
 {
     /// <summary>
-    /// Options for specifying what Data Boundary value should be used.
+    /// FromFrontendOptions for specifying what Data Boundary value should be used.
     /// </summary>
     public class BoundedDataOptions
     {

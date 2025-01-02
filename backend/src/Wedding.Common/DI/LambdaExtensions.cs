@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 
 namespace Wedding.Common.DI
 {
@@ -25,7 +26,8 @@ namespace Wedding.Common.DI
         public static IServiceCollection AddLambdaRegistrations(this IServiceCollection services, Type registrationHook)
         {
             services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
-            services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
+            services.AddScoped<IDynamoDBContext, DynamoDBContext>();
+            services.AddScoped<IDynamoDBProvider, DynamoDBProvider>();
             services.AddLogging(logging => logging.AddConsole());
 
             services.AddWeddingAutomapper();

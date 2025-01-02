@@ -2,36 +2,40 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Helpers.AWS;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
     public class Auth0Provider : IAuthenticationProvider
     {
-        private string _authority;
-        private string _audience;
-
         public Auth0Provider()
         {
         }
 
-        public string GetAudience()
+        public async Task<Auth0Configuration> GetConfig()
         {
-            return _audience;
+            var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
+            return await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
+        }
+
+        public async Task<string> GetAuthority()
+        {
+            return (await GetConfig()).Authority ?? throw new InvalidOperationException();
+        }
+
+        public async Task<string> GetAudience()
+        {
+            return (await GetConfig()).Audience ?? throw new InvalidOperationException();
         }
 
         public async Task<Auth0User> GetUserInfo(string token)
         {
             try
             {
-                var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
-                var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
-
-                _authority = authConfig.Authority ?? throw new InvalidOperationException();
-                _audience = authConfig.Audience ?? throw new InvalidOperationException();
-
-                var userInfoEndpoint = $"{_authority}/userinfo";
+                var authority = await GetAuthority();
+                var userInfoEndpoint = $"{authority}/userinfo";
                 using (var authClient = new HttpClient())
                 {
                     authClient.DefaultRequestHeaders.Authorization =
@@ -45,6 +49,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                     }
 
                     var jsonResponse = await infoResponse.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Auth0Provider jsonResponse: {jsonResponse}");
                     var options = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true

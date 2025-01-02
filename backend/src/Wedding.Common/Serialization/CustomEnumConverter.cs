@@ -16,6 +16,16 @@ namespace Wedding.Common.Serialization
                     return result;
                 }
             }
+            else if (reader.TokenType == JsonTokenType.Number)
+            {
+                if (reader.TryGetInt32(out int intValue))
+                {
+                    if (Enum.IsDefined(typeof(T), intValue))
+                    {
+                        return (T)Enum.ToObject(typeof(T), intValue);
+                    }
+                }
+            }
 
             throw new JsonException($"Unable to convert \"{reader.GetString()}\" to enum \"{typeof(T)}\".");
         }

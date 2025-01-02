@@ -1,38 +1,109 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using Microsoft.Extensions.Configuration;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Wedding.Common.Configuration;
 
 namespace Wedding.Lambdas.UnitTests.TestData
 {
-    public static class TestTokenHelper
+    public class TestTokenHelper
     {
+        public string JwtAuthority { get; }
+        public string JwtAudience { get; }
+        public string ClientId { get; }
+        public string ClientSecret { get; }
+        public string TokenEndpoint { get; }
 
-        public static string GenerateTestToken(string authority, string audience, string? guestId = null)
+        public TestTokenHelper(IConfigurationRoot configuration)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("awwefdvxdae4tw3trdegdrhsefawrq4terdhdrt4tetrdtftyjdrtawerqrsrghcghmghweaasrdkhjknklg"));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            JwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority];
+            JwtAudience = configuration[ConfigurationKeys.AuthenticationAudience];
+            ClientId = configuration[ConfigurationKeys.AuthenticationClientId];
+            ClientSecret = configuration[ConfigurationKeys.AuthenticationClientSecret];
+            TokenEndpoint = JwtAuthority + "/oauth/token";
+        }
 
-            var claims = new List<Claim>
+        public async Task<string> GenerateAuth0Token(string? guestId = null)
+        {
+            var requestBody = new
             {
-                new Claim(JwtRegisteredClaimNames.Sub, "auth0|user-id"),
-                new Claim(JwtRegisteredClaimNames.Email, "john.doe@example.com"),
-                new Claim("permissions", "read:guests"),
-                new Claim("permissions", "write:guests")
+                client_id = ClientId,
+                client_secret = ClientSecret,
+                audience = JwtAudience,
+                grant_type = "client_credentials"
             };
-            if (!string.IsNullOrEmpty(guestId))
+            var requestBodyGuest = new
             {
-                claims.Add(new Claim(audience + "/guest_id", guestId));
+                client_id = ClientId,
+                client_secret = ClientSecret,
+                audience = JwtAudience,
+                grant_type = "client_credentials",
+                guest_id = guestId!
+            };
+
+            StringContent content;
+            if (string.IsNullOrEmpty(guestId))
+            {
+                content = new StringContent(
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+            }
+            else
+            {
+                content = new StringContent(
+                    JsonSerializer.Serialize(requestBodyGuest),
+                    Encoding.UTF8,
+                    "application/json");
             }
 
-            var token = new JwtSecurityToken(
-                issuer: authority,
-                audience: audience,
-                claims: claims.ToArray(),
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: credentials);
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.PostAsync(TokenEndpoint, content);
+                response.EnsureSuccessStatusCode();
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
+
+                return tokenResponse.access_token;
+            }
         }
+
+        public class TokenResponse
+        {
+            [JsonPropertyName("access_token")]
+            public string access_token { get; set; }
+            [JsonPropertyName("expires_in")]
+            public int expires_in { get; set; }
+            [JsonPropertyName("token_type")]
+            public string token_type { get; set; }
+        }
+
+        // public static string GenerateTestToken(string authority, string audience, string? guestId = null)
+        // {
+        //     var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("awwefdvxdae4tw3trdegdrhsefawrq4terdhdrt4tetrdtftyjdrtawerqrsrghcghmghweaasrdkhjknklg"));
+        //     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        //
+        //     var claims = new List<Claim>
+        //     {
+        //         new Claim(JwtRegisteredClaimNames.Sub, "auth0|user-id"),
+        //         new Claim(JwtRegisteredClaimNames.Email, "john.doe@example.com"),
+        //         new Claim("permissions", "read:guests"),
+        //         new Claim("permissions", "write:guests")
+        //     };
+        //     if (!string.IsNullOrEmpty(guestId))
+        //     {
+        //         claims.Add(new Claim(audience + "/guest_id", guestId));
+        //     }
+        //
+        //     var token = new JwtSecurityToken(
+        //         issuer: authority,
+        //         audience: audience,
+        //         claims: claims.ToArray(),
+        //         expires: DateTime.Now.AddHours(1),
+        //         signingCredentials: credentials);
+        //
+        //     return new JwtSecurityTokenHandler().WriteToken(token);
+        // }
     }
 }

@@ -4,6 +4,10 @@ using Amazon.Extensions.NETCore.Setup;
 using Autofac;
 using System.Diagnostics.CodeAnalysis;
 using Amazon;
+using Wedding.Common.Helpers.AWS;
+using AutoMapper;
+using Microsoft.Extensions.Logging;
+using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.DI
 {
@@ -32,6 +36,16 @@ namespace Wedding.PublicApi.Logic.DI
                 var client = c.Resolve<IAmazonDynamoDB>();
                 return new DynamoDBContext(client);
             }).As<IDynamoDBContext>().SingleInstance();
+
+            builder.Register(c =>
+            {
+                var logger = c.Resolve<ILogger<DynamoDBProvider>>();
+                var context = c.Resolve<IDynamoDBContext>();
+                var mapper = c.Resolve<IMapper>();
+                return new DynamoDBProvider(logger, context, mapper);
+            }).As<IDynamoDBProvider>()
+                .AsImplementedInterfaces() 
+                .InstancePerDependency();
         }
     }
 }
