@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.Lambda.Core;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
-using Wedding.Abstractions.Keys;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Lambdas.Authorize.Commands;
 
@@ -20,15 +19,15 @@ namespace Wedding.Lambdas.Authorize.Providers
     {
         private ILogger<DatabaseRoleProvider> _logger;
         private readonly IMapper _mapper;
-        private readonly IDynamoDBContext _repository;
-        private readonly IAuthenticationProvider _authProvider;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
+        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBContext repository, IAuthenticationProvider authProvider)
+        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider)
         {
             _logger = logger;
             _mapper = mapper;
-            _repository = repository;
-            _authProvider = authProvider;
+            _dynamoDBProvider = dynamoDBProvider;
+            _authenticationProvider = authenticationProvider;
         }
 
         private string GetRequiredPermissionByEndpoint(string methodArn)
@@ -61,42 +60,45 @@ namespace Wedding.Lambdas.Authorize.Providers
         /// 1. 
         /// 2. Has Auth0Id saved to guest entity
         /// </summary>
-        /// <param name="authenticatedUser"></param>
+        /// <param name="token"></param>
         /// <param name="methodArn"></param>
         /// <returns></returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<GuestDto?> Authorize(string token, string methodArn)
+        public async Task<GuestDto?> Authorize(ValidateAuthQuery query)
         {
             try
             {
                 GuestDto? user = null;
                 WeddingEntity? entity = null;
 
-                _logger.LogInformation($"RoleProvider token: {token}");
-                _logger.LogInformation($"RoleProvider methodArn: {methodArn}");
+                var audience = query.JwtAudience ?? throw new InvalidOperationException();
 
-                var guestId = JwtClaimHelper.GetGuestIdFromToken(token, _authProvider.GetAudience());
+                _logger.LogInformation($"RoleProvider token: {query.Token}");
+                _logger.LogInformation($"RoleProvider methodArn: {query.MethodArn}");
 
-                _logger.LogInformation($"RoleProvider audience: {_authProvider.GetAudience()}");
+                var guestId = JwtClaimHelper.GetGuestIdFromToken(query.Token, audience);
+
                 _logger.LogInformation($"RoleProvider guestId: {guestId}");
+                _logger.LogInformation($"RoleProvider audience: {audience}");
+                
+                var results = await _dynamoDBProvider.QueryByGuestIdIndex(guestId);
 
-                var queryConfig = new DynamoDBOperationConfig
+                _logger.LogInformation($"RoleProvider query guest result: {results}");
+
+                if (results == null || results.Count > 1)
                 {
-                    IndexName = DynamoKeys.GuestIdIndex
-                };
-
-                var result = await _repository.LoadAsync<WeddingEntity>(guestId, queryConfig);
-
-                if (result == null)
-                {
+                    _logger.LogError("More than one entity result");
                     throw new UnauthorizedAccessException("Access denied");
                 }
 
-                entity = result;
+                entity = results.FirstOrDefault();
 
                 if (string.IsNullOrEmpty(entity.Auth0Id))
                 {
-                    var authenticatedUser = await _authProvider.GetUserInfo(token);
+                    _logger.LogInformation("Auth0Id is null, updating...");
+                    var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
+                    _logger.LogInformation(
+                        $"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
                     authenticatedUser.InvitationCode = entity.InvitationCode;
                     await TryUpdateUser(entity, authenticatedUser);
                 }
@@ -104,28 +106,31 @@ namespace Wedding.Lambdas.Authorize.Providers
                 await TryUpdateFamilyUnit(entity.InvitationCode);
 
                 user = _mapper.Map<GuestDto>(entity);
-                entity.GuestLogins.Add(DateTime.UtcNow);
 
-                var permissions = user.Roles.Select(r => r.ToString().ToUpper());
-                var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
+                entity.LastActivity = DateTime.UtcNow;
 
-                // TODO think about this
-                if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
-                    //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
-                {
-                    throw new UnauthorizedAccessException("Access denied");
-                }
+                // var permissions = user.Roles.Select(r => r.ToString().ToUpper());
+                // var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
+                //
+                // // TODO think about this
+                // if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
+                //     //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
+                // {
+                //     throw new UnauthorizedAccessException("Access denied");
+                // }
 
-                _repository.SaveAsync(entity);
+                await _dynamoDBProvider.SaveAsync(entity);
 
                 return user;
             }
             catch (UnauthorizedAccessException ex)
             {
+                _logger.LogError(ex, $"UnauthorizedAccessException {ex.Message}");
                 throw ex;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Exception {ex.Message}");
                 throw new UnauthorizedAccessException($"User not found. {ex.Message}");
             }
         }
@@ -149,19 +154,17 @@ namespace Wedding.Lambdas.Authorize.Providers
             
             matchingGuest.Auth0Id = user.UserId;
             matchingGuest.Email = user.Email;
-            matchingGuest.EmailVerified = user.EmailVerified;
+            matchingGuest.EmailVerified = user.EmailVerified ?? false;
         }
 
         public async Task TryUpdateFamilyUnit(string invitationCode)
         {
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
-                var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                var item = await _repository.LoadAsync<WeddingEntity>(familyUnitPartitionKey, familyUnitSortKey);
+                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(invitationCode);
 
-                item.FamilyUnitLastLogin = DateTime.UtcNow;
-                _repository.SaveAsync(item);
+                familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
+                _dynamoDBProvider.SaveAsync(familyUnit);
             }
             catch (Exception ex)
             {

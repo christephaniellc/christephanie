@@ -11,8 +11,8 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this DeleteFamilyUnitCommand obj,
+            this AdminDeleteFamilyUnitCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<DeleteFamilyUnitCommand, DeleteFamilyUnitCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<AdminDeleteFamilyUnitCommand, AdminDeleteFamilyUnitCommandValidator>(obj, context);
     }
 }

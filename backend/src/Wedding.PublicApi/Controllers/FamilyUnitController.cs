@@ -55,8 +55,8 @@ namespace Wedding.PublicApi.Controllers
             var authQuery = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, LambdaArns.AdminFamilyUnitUpdate, token);
             var authUserResult = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(authQuery);
 
-            var command = new UpdateFamilyUnitCommand(familyUnit, authUserResult.GetGuestId(), authUserResult.GetInvitationCode(), authUserResult.GetRoles());
-            var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+            var command = new AdminUpdateFamilyUnitCommand(familyUnit, authUserResult.GetRoles());
+            var result = await _dispatcher.ExecuteAsync<AdminUpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
             return Ok(result);
         }

@@ -1,21 +1,21 @@
-﻿using Amazon.DynamoDBv2.DataModel;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
 {
     public class InternalAuthenticationProvider : IAuthenticationProvider
     {
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
 
-        public InternalAuthenticationProvider(IDynamoDBContext repository)
+        public InternalAuthenticationProvider(IDynamoDBProvider dynamoDBProvider)
         {
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
         }
 
-        public string GetAudience()
+        public Task<string> GetAudience()
         {
             throw new NotImplementedException();
         }

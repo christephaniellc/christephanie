@@ -57,13 +57,14 @@ namespace Wedding.Common.Helpers.AWS
             if (output == null) 
                 throw new ArgumentNullException(nameof(output));
 
-            var serializedContext = JsonSerializer.Serialize(output);
-            var context = JsonSerializer.Deserialize<APIGatewayCustomAuthorizerContext>(serializedContext);
-
-            if (context == null)
+            var wrappedContextJson = JsonSerializer.Serialize(new { lambda = output });
+            var wrappedContext = JsonSerializer.Deserialize<Dictionary<string, APIGatewayCustomAuthorizerContext>>(wrappedContextJson);
+            if (wrappedContext == null || !wrappedContext.TryGetValue("lambda", out var lambda))
             {
                 throw new InvalidOperationException("Failed to convert context.");
             }
+
+            var context = JsonSerializer.Deserialize<APIGatewayCustomAuthorizerContext>(wrappedContextJson);
 
             return context;
         }

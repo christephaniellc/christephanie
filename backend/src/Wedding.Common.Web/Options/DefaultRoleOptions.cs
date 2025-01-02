@@ -97,7 +97,7 @@ namespace Wedding.Common.Web.Options
         public bool UseUserContext { get; set; } = true;
 
         /// <summary>
-        /// Options for applying post build 
+        /// FromFrontendOptions for applying post build 
         /// </summary>
         public TPostBuildRoleOptions PostBuildOptions { get; set; } = new();
 

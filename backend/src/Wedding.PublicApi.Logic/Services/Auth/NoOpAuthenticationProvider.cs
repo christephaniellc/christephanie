@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth0;
+using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
@@ -36,15 +36,15 @@ namespace Wedding.PublicApi.Logic.Services.Auth
         // {
         //     if (_isAdmin)
         //     {
-        //         authenticatedUser.Roles.Add(RoleEnum.Admin);
+        //         authenticatedUser.UserRoles.Add(RoleEnum.Admin);
         //         return Task.FromResult(authenticatedUser);
         //     }
         //
-        //     authenticatedUser.Roles.Add(RoleEnum.Guest);
+        //     authenticatedUser.UserRoles.Add(RoleEnum.Guest);
         //     return Task.FromResult(authenticatedUser);
         //}
 
-        public string GetAudience()
+        public Task<string> GetAudience()
         {
             throw new System.NotImplementedException();
         }
@@ -54,7 +54,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             throw new System.NotImplementedException();
         }
 
-        public Task<GuestDto?> Authorize(string token, string methodArn)
+        public Task<GuestDto?> Authorize(ValidateAuthQuery query)
         {
             throw new System.NotImplementedException();
         }

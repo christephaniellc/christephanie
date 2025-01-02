@@ -21,7 +21,7 @@
 //         var function = new Wedding.Lambdas.FamilyUnit.Get.Function();
 //         var context = new TestLambdaContext();
 //         
-//         var guestId = request.GetGuestId();
+//         var guestId = request.GetGuestIdFromAuthContext();
 //         query = new GetFamilyUnitQuery(guestId);
 //         
 //         // var request = new APIGatewayProxyRequest {

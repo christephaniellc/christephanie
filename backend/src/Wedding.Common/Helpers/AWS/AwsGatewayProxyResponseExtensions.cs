@@ -2,22 +2,56 @@
 using System.Text.Json;
 using System;
 using Wedding.Common.Helpers.AWS.Frontend;
+using System.Collections.Generic;
+using System.Net;
 
 namespace Wedding.Common.Helpers.AWS
 {
     public static class AwsGatewayProxyResponseExtensions
     {
-        public static T GetResponseBody<T>(this APIGatewayProxyResponse response)
+        public static T GetResponseBodyData<T>(this APIGatewayProxyResponse response)
         {
-            var body = JsonSerializer.Deserialize<FrontendApiResponse>(response.Body);
-
-            if (body?.Data is not JsonElement data || data.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidOperationException("Response body data is not a valid JSON object.");
-            }
-
-            return data.Deserialize<T>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            return JsonSerializer.Deserialize<T>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                    ?? throw new InvalidOperationException("Deserialization returned null.");
+        }
+
+        public static FrontendApiError GetResponseBodyError(this APIGatewayProxyResponse response)
+        {
+            return JsonSerializer.Deserialize<FrontendApiError>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                   ?? throw new InvalidOperationException("Deserialization returned null.");
+        }
+
+        public static APIGatewayProxyResponse OkResponse<T>(this T data)
+        {
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = data.ToFrontendResponseBody()
+            };
+        }
+
+        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType)
+        {
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = errorStatusCode,
+                IsBase64Encoded = false,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = new FrontendApiError
+                {
+                    Status = errorStatusCode,
+                    Error = errorType,
+                    Description = errorDescription
+                }.ToFrontendResponseBody()
+            };
         }
     }
 }

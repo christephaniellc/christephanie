@@ -2,12 +2,11 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Find.Validation;
 
@@ -16,13 +15,13 @@ namespace Wedding.Lambdas.User.Find.Handlers
     public class FindUserHandler : IAsyncQueryHandler<FindUserQuery, string>
     {
         private readonly ILogger<FindUserHandler> _logger;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IMapper _mapper;
 
-        public FindUserHandler(ILogger<FindUserHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public FindUserHandler(ILogger<FindUserHandler> logger, IDynamoDBProvider dynamoDBProvider, IMapper mapper)
         {
             _logger = logger;
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
             _mapper = mapper;
         }
 
@@ -32,8 +31,7 @@ namespace Wedding.Lambdas.User.Find.Handlers
             
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(query.InvitationCode);
-                var items = await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
+                var items = await _dynamoDBProvider.QueryAsync(query.InvitationCode);
 
                 var matchingGuest = items.FirstOrDefault(item =>
                     item.FirstName?.ToUpper() == query.FirstName.ToUpper() ||

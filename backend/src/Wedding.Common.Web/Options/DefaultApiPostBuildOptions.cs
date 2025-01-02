@@ -25,7 +25,7 @@ namespace Wedding.Common.Web.Options
         public bool UseEndpointControllerMappings { get; set; } = true;
 
         // /// <summary>
-        // /// Configure HealthCheck Options
+        // /// Configure HealthCheck FromFrontendOptions
         // /// </summary>
         // public void ConfigureHealthChecks(Action<PlatformHealthCheckOptions> configureHealthCheckOptions) => this.ConfigureHealthCheckOptions = configureHealthCheckOptions;
 

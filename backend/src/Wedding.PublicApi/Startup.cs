@@ -12,6 +12,7 @@ using Wedding.PublicApi.Swagger;
 using Wedding.Common.DI;
 using System.Threading.Tasks;
 using System;
+using System.Text.Json;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 
@@ -32,6 +33,7 @@ namespace Wedding.PublicApi
             services.AddWeddingAutomapper();
             services.AddControllers().AddJsonOptions(options =>
             {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 

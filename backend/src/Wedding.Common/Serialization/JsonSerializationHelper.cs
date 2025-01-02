@@ -6,34 +6,42 @@ namespace Wedding.Common.Serialization
 {
     public static class JsonSerializationHelper
     {
-        public static readonly JsonSerializerOptions Options;
+        public static readonly JsonSerializerOptions FromFrontendOptions;
+
+        public static readonly JsonSerializerOptions CamelCaseJsonSerializerOptions;
 
         static JsonSerializationHelper()
         {
-            Options = new JsonSerializerOptions
+            FromFrontendOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 Converters =
                 {
-                    new CustomEnumConverter<RoleEnum>(),
                     new CustomEnumConverter<AgeGroupEnum>(),
                     new CustomEnumConverter<InvitationResponseEnum>(),
                     new CustomEnumConverter<MealPreferenceEnum>(),
+                    new CustomEnumConverter<PolicyEffectEnum>(),
+                    new CustomEnumConverter<RoleEnum>(),
                     new CustomEnumConverter<RsvpEnum>(),
                     new CustomEnumConverter<RsvpStage>(),
-                    new CustomEnumConverter<SleepPreferenceEnum>()
+                    new CustomEnumConverter<SleepPreferenceEnum>(),
                 }
+            };
+            CamelCaseJsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             };
         }
 
-        public static T DeserializeCommand<T>(string json)
+        public static T DeserializeFromFrontend<T>(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
                 throw new ArgumentException("Input JSON cannot be null or empty.", nameof(json));
             }
 
-            return JsonSerializer.Deserialize<T>(json, Options)
+            return JsonSerializer.Deserialize<T>(json, FromFrontendOptions)
                    ?? throw new InvalidOperationException($"Deserialization failed for type {typeof(T).Name}.");
         }
     }

@@ -51,7 +51,7 @@ public class Function
             FindUserQuery query;
             context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
 
-            //var userId = request.GetGuestId();
+            //var userId = request.GetGuestIdFromAuthContext();
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
 
@@ -62,97 +62,32 @@ public class Function
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<FindUserHandler>();
             var result = await handler.GetAsync(query);
-            
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = (int) HttpStatusCode.OK,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiResponse
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
-            };
+
+            return result.OkResponse();
         }
         catch (UnauthorizedAccessException ex)
         {
-            var statusCode = (int) HttpStatusCode.Unauthorized;
+            var viewError = $"Invitation not found. Please contact your hosts to resolve.";
             var error = $"Authorization exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiResponse
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
-                    }
-                }.ToBody()
-            };
+            return viewError.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
         }
         catch (ValidationException ex)
         {
-            var statusCode = (int)HttpStatusCode.BadRequest;
             var viewError = $"Invitation not found. Please contact your hosts to resolve.";
             var logError = $"Validation exception: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiResponse
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(ValidationException).ToString(),
-                        Description = viewError
-                    }
-                }.ToBody()
-            };
+            return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
         }
         catch (Exception ex)
         {
-            var statusCode = (int)HttpStatusCode.InternalServerError;
             var viewError = $"Application exception. Please contact your hosts to resolve.";
             var logError = $"Error occurred: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiResponse
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(Exception).ToString(),
-                        Description = viewError
-                    }
-                }.ToBody()
-            };
+            return viewError.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
         }
     }
 }
