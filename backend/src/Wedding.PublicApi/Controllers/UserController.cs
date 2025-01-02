@@ -31,7 +31,7 @@ namespace Wedding.PublicApi.Controllers
         private readonly Auth0Configuration _authConfiguration;
         private readonly IAuthorizationProvider _authorizationProvider;
 
-        public UserController(ILogger<UserController> logger, 
+        public UserController(ILogger<UserController> logger,
             IControllerDispatcher dispatcher, 
             IServiceProvider serviceProvider, 
             IConfiguration configuration,
@@ -76,7 +76,8 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authenticatedUser = await _authorizationProvider.Authorize(token, LambdaArns.UserGet);
+            var request = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, LambdaArns.UserGet, token);
+            var authenticatedUser = await _authorizationProvider.Authorize(request);
             if (authenticatedUser == null)
             {
                 return Unauthorized(new { message = "Authentication error." });

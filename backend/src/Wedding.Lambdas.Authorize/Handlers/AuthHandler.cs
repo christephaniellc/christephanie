@@ -47,7 +47,7 @@ namespace Wedding.Lambdas.Authorize.Handlers
                 var token = query.Token.Replace("Bearer ", "");
 
                 //var isAuthenticated = await _authProvider.GetGuestIdFromToken(token);
-                var authorizedUser = await _databaseRoleProvider.Authorize(token, query.MethodArn);
+                var authorizedUser = await _databaseRoleProvider.Authorize(query);
 
                 //var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;

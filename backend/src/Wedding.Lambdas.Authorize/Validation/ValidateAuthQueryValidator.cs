@@ -10,12 +10,12 @@ namespace Wedding.Lambdas.Authorize.Validation
     /// Implements the <see cref="AbstractValidator{T}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class AuthorizationQueryValidator : AbstractValidator<ValidateAuthQuery>, IValidate<ValidateAuthQuery>
+    internal class ValidateAuthQueryValidator : AbstractValidator<ValidateAuthQuery>, IValidate<ValidateAuthQuery>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthorizationQueryValidator" /> class.
+        /// Initializes a new instance of the <see cref="ValidateAuthQueryValidator" /> class.
         /// </summary>
-        public AuthorizationQueryValidator()
+        public ValidateAuthQueryValidator()
         {
             RuleFor(cmd => cmd.Token)
                 .SetValidator(cmd => new JwtTokenValidator(cmd.JwtAuthority, cmd.JwtAudience));

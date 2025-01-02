@@ -15,8 +15,12 @@ using System.Threading;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
+using Wedding.Common.Configuration.Identity;
+using Wedding.Common.Configuration;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -28,8 +32,10 @@ namespace Wedding.PublicApi.Controllers
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
         private IAuthorizationProvider _authProvider;
+        private Auth0Configuration _auth0Configuration;
 
-        public HelloWorldController(ILogger<HelloWorldController> logger, 
+        public HelloWorldController(ILogger<HelloWorldController> logger,
+            IConfiguration configuration,
             IControllerDispatcher dispatcher, 
             IServiceProvider serviceProvider,
             IAuthorizationProvider authProvider)
@@ -38,6 +44,7 @@ namespace Wedding.PublicApi.Controllers
             _dispatcher = dispatcher;
             _serviceProvider = serviceProvider;
             _authProvider = authProvider;
+            _auth0Configuration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
         }
 
         [AllowAnonymous]
@@ -71,7 +78,8 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var authenticatedUser = await _authProvider.Authorize(token, LambdaArns.AddressValidate);
+                var request = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience, LambdaArns.AddressValidate, token);
+                var authenticatedUser = await _authProvider.Authorize(request);
                 if (authenticatedUser == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });
@@ -101,6 +109,9 @@ namespace Wedding.PublicApi.Controllers
 
                 var dynamoDbContext = _serviceProvider.GetRequiredService<IDynamoDBContext>();
                 Console.WriteLine("DynamoDB Context resolved: " + dynamoDbContext);
+
+                var dynamoDbProvider = _serviceProvider.GetRequiredService<IDynamoDBProvider>();
+                Console.WriteLine("DynamoDb Provider resolved: " + dynamoDbProvider);
 
                 var handler = _serviceProvider.GetRequiredService<AdminCreateFamilyUnitHandler>();
                 Console.WriteLine("CreateFamilyUnitHandler resolved: " + handler);

@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using NUnit.Framework;
@@ -14,6 +15,8 @@ using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.JwtClaim;
+using Wedding.Lambdas.Authorize.Commands;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests.Authorize
 {
@@ -23,18 +26,17 @@ namespace Wedding.Lambdas.UnitTests.Authorize
     {
         private IMapper _mapper;
         private Auth0Provider _auth0Provider;
-
-        private const string Authority = "api.wedding.christephanie.com";
-        private const string Audience = "test";
-        private const string ClientId = "clientid";
-        private const string ClientSecret = "clientsecret";
-        private const string DynamoTableName = "TestTable";
-        private const string DynamoTableIdentityCol = "IdentityId";
-        private const string DynamoTableIdentityIndex = "IdentityIndex";
+        private TestTokenHelper _testTokenHelper;
 
         [SetUp]
         public void Setup()
         {
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
+
             var config = new MapperConfiguration(
                 cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             _mapper = config.CreateMapper();
@@ -53,56 +55,51 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         }
 
-        private string GenerateTestJwtToken(RoleEnum role)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKeyHereOsdiojo9jowijefoisjdlkfJLSDKjfoisjO")); 
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-
-            var header = new JwtHeader(credentials);
-            var payload = new JwtPayload
-            {
-                { "sub", "Auth0|12345" },
-                { "name", "John Doe" },
-                { "UserRoles", new[] { role.ToString() } }
-            };
-
-            var token = new JwtSecurityToken(header, payload);
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        // private string GenerateTestJwtToken(RoleEnum role)
+        // {
+        //     var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKeyHereOsdiojo9jowijefoisjdlkfJLSDKjfoisjO")); 
+        //     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        //
+        //
+        //     var header = new JwtHeader(credentials);
+        //     var payload = new JwtPayload
+        //     {
+        //         { "sub", "Auth0|12345" },
+        //         { "name", "John Doe" },
+        //         { "UserRoles", new[] { role.ToString() } }
+        //     };
+        //
+        //     var token = new JwtSecurityToken(header, payload);
+        //     return new JwtSecurityTokenHandler().WriteToken(token);
+        // }
 
         [Test]
         public async Task IsAuthorized_AuthenticateToken()
         {
             // Arrange
-            var token = GenerateTestJwtToken(RoleEnum.Admin);
-            var methodArn = "arn:aws:execute-api:region:account-id:api-id/stage/method/resource";
-            var userId = "Auth0|12345";
-            var invitationCode = "ABCDE";
-
-            var dynamoResponse = new QueryResponse
-            {
-                Items = new List<Dictionary<string, AttributeValue>>
-                {
-                    new Dictionary<string, AttributeValue>
-                    {
-                        {"UserRoles", new AttributeValue {SS = new List<string> { RoleEnum.Admin.ToString() }}}
-                    }
-                }
-            };
-
-            var weddingEntity = new WeddingEntity { Auth0Id = userId };
-            var guestDto = new GuestDto { Roles = new List<RoleEnum> { RoleEnum.Admin } };
-
-            MockAmazonDynamoDB(dynamoResponse);
-            // _mapper.Setup(m => m.Map<WeddingEntity>(It.IsAny<QueryResponse>())).Returns(weddingEntity);
-            // _mapper.Setup(m => m.Map<GuestDto>(weddingEntity)).Returns(guestDto);
+            var token = await _testTokenHelper.GenerateAuth0Token(TestDataHelper.GUEST_JOHN.GuestId);
+            // var methodArn = LambdaArns.FamilyUnitGet;
+            // var userId = "Auth0|12345";
+            // var invitationCode = "ABCDE";
+            //
+            // var dynamoResponse = new QueryResponse
+            // {
+            //     Items = new List<Dictionary<string, AttributeValue>>
+            //     {
+            //         new Dictionary<string, AttributeValue>
+            //         {
+            //             {"UserRoles", new AttributeValue {SS = new List<string> { RoleEnum.Admin.ToString() }}}
+            //         }
+            //     }
+            // };
+            //
+            //MockAmazonDynamoDB(dynamoResponse);
 
             // Act
-            var response = JwtClaimHelper.GetGuestIdFromToken(token, Audience);
+            var response = JwtClaimHelper.GetGuestIdFromToken(token, _testTokenHelper.JwtAudience);
 
             // Assert
-            response.Should().Be(userId);
+            response.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
         [Test]
@@ -110,12 +107,12 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         {
             // Arrange
             var token = "invalid.jwt.token";
-            var methodArn = "arn:aws:execute-api:region:account-id:api-id/stage/method/resource";
-            var invitationCode = "ABCDE";
+            // var methodArn = "arn:aws:execute-api:region:account-id:api-id/stage/method/resource";
+            // var invitationCode = "ABCDE";
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-                JwtClaimHelper.GetGuestIdFromToken(token, Audience));
+                JwtClaimHelper.GetGuestIdFromToken(token, _testTokenHelper.JwtAudience));
         }
     }
 }

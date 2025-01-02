@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DataModel;
@@ -33,6 +34,13 @@ namespace Wedding.Common.Helpers.AWS
                 familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
         }
 
+        /// <summary>
+        /// TODO Is this necessary with query by guest ID?
+        /// </summary>
+        /// <param name="invitationCode"></param>
+        /// <param name="guestId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<WeddingEntity?> LoadGuestByGuestIdAsync(string invitationCode, string guestId,
             CancellationToken cancellationToken = default)
         {
@@ -41,6 +49,47 @@ namespace Wedding.Common.Helpers.AWS
 
             return await _repository.LoadAsync<WeddingEntity>(
                 partitionKey, guestSortKey, cancellationToken);
+        }
+
+        public async Task<List<WeddingEntity>?> QueryAsync(string invitationCode, CancellationToken cancellationToken = default)
+        {
+            var familyUnitPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
+            return await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
+        }
+
+        public async Task<List<WeddingEntity>?> QueryByGuestIdIndex(string guestId, CancellationToken cancellationToken = default)
+        {
+            var queryConfig = new DynamoDBOperationConfig
+            {
+                IndexName = DynamoKeys.GuestIdIndex
+            };
+
+            return await _repository.QueryAsync<WeddingEntity>(guestId, queryConfig).GetRemainingAsync();
+        }
+
+        /// <summary>
+        /// TODO: Is this a duplicate of the QueryAsync?
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="invitationCode"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<List<WeddingEntity>?> FromQueryAsync(string invitationCode, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
+            var dynamoQuery = new QueryOperationConfig()
+            {
+                KeyExpression = new Expression
+                {
+                    ExpressionStatement = "PartitionKey = :pk",
+                    ExpressionAttributeValues =
+                    {
+                        { ":pk", partitionKey },
+                    }
+                }
+            };
+
+            return await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
         }
 
         public async Task<FamilyUnitDto?> GetFamilyUnitAsync(string invitationCode,
@@ -88,6 +137,12 @@ namespace Wedding.Common.Helpers.AWS
         public async Task SaveAsync(WeddingEntity entity, CancellationToken cancellationToken = default)
         {
             await _repository.SaveAsync(entity, cancellationToken);
+        }
+
+        public async Task DeleteAsync(string invitationCode, string sortKey, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
+            await _repository.DeleteAsync<WeddingEntity>(partitionKey, sortKey, cancellationToken);
         }
     }
 }

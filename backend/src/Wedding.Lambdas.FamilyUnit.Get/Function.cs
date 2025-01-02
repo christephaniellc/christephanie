@@ -50,9 +50,9 @@ public class Function
             context.Logger.LogInformation($"Raw Request Context: {JsonSerializer.Serialize(request)}");
             context.Logger.LogInformation($"Raw Lambda Context: {JsonSerializer.Serialize(context)}");
 
-            var invitationCode = request.GetInvitationCode();
-            var guestId = request.GetGuestId();
-            var roles = request.GetRoles();
+            var invitationCode = request.GetInvitationCodeFromAuthContext();
+            var guestId = request.GetGuestIdFromAuthContext();
+            var roles = request.GetRolesFromAuthContext();
 
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
             context.Logger.LogInformation($"guestId: {guestId}");

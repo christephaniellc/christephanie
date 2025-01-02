@@ -1,7 +1,4 @@
 ﻿using Autofac;
-using FluentAssertions.Common;
-using System.Threading.Tasks;
-using System;
 using Wedding.Common.Configuration;
 using Wedding.Common.ThirdParty;
 

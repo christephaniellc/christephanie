@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.User.Get.Commands;
 using Wedding.Lambdas.User.Get.Validation;
 
@@ -16,13 +14,13 @@ namespace Wedding.Lambdas.User.Get.Handlers
     public class GetUserHandler : IAsyncQueryHandler<GetUserQuery, GuestDto>
     {
         private readonly ILogger<GetUserHandler> _logger;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IMapper _mapper;
 
-        public GetUserHandler(ILogger<GetUserHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public GetUserHandler(ILogger<GetUserHandler> logger, IDynamoDBProvider dynamoDBProvider, IMapper mapper)
         {
             _logger = logger;
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
             _mapper = mapper;
         }
 
@@ -30,14 +28,9 @@ namespace Wedding.Lambdas.User.Get.Handlers
         {
             query.Validate(nameof(query));
 
-            var queryRequest = new DynamoDBOperationConfig
-            {
-                IndexName = DynamoKeys.GuestIdIndex // Specify the GSI name
-            };
-
             try
             {
-                var result = await _repository.QueryAsync<WeddingEntity>(query.GuestId, queryRequest).GetRemainingAsync();
+                var result = await _dynamoDBProvider.QueryByGuestIdIndex(query.GuestId, cancellationToken);
 
                 if (result == null || result.Count == 0)
                 {

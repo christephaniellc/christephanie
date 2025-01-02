@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
-using Wedding.Abstractions.Keys;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Lambdas.Authorize.Commands;
@@ -21,14 +19,14 @@ namespace Wedding.Lambdas.Authorize.Providers
     {
         private ILogger<DatabaseRoleProvider> _logger;
         private readonly IMapper _mapper;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IAuthenticationProvider _authenticationProvider;
 
-        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBContext repository, IAuthenticationProvider authenticationProvider)
+        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider)
         {
             _logger = logger;
             _mapper = mapper;
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
             _authenticationProvider = authenticationProvider;
         }
 
@@ -66,33 +64,26 @@ namespace Wedding.Lambdas.Authorize.Providers
         /// <param name="methodArn"></param>
         /// <returns></returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<GuestDto?> Authorize(string token, string methodArn)
+        public async Task<GuestDto?> Authorize(ValidateAuthQuery query)
         {
             try
             {
                 GuestDto? user = null;
                 WeddingEntity? entity = null;
 
-                var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
-                var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
-                var audience = authConfig.Audience ?? throw new InvalidOperationException();
+                var audience = query.JwtAudience ?? throw new InvalidOperationException();
 
-                _logger.LogInformation($"RoleProvider token: {token}");
-                _logger.LogInformation($"RoleProvider methodArn: {methodArn}");
+                _logger.LogInformation($"RoleProvider token: {query.Token}");
+                _logger.LogInformation($"RoleProvider methodArn: {query.MethodArn}");
 
-                var guestId = JwtClaimHelper.GetGuestIdFromToken(token, audience);
+                var guestId = JwtClaimHelper.GetGuestIdFromToken(query.Token, audience);
 
                 _logger.LogInformation($"RoleProvider guestId: {guestId}");
                 _logger.LogInformation($"RoleProvider audience: {audience}");
+                
+                var results = await _dynamoDBProvider.QueryByGuestIdIndex(guestId);
 
-                var queryConfig = new DynamoDBOperationConfig
-                {
-                    IndexName = DynamoKeys.GuestIdIndex
-                };
-
-                var results = await _repository.QueryAsync<WeddingEntity>(guestId, queryConfig).GetRemainingAsync();
-
-                _logger.LogInformation($"RoleProvider load guest result: {results}");
+                _logger.LogInformation($"RoleProvider query guest result: {results}");
 
                 if (results == null || results.Count > 1)
                 {
@@ -105,7 +96,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 if (string.IsNullOrEmpty(entity.Auth0Id))
                 {
                     _logger.LogInformation("Auth0Id is null, updating...");
-                    var authenticatedUser = await _authenticationProvider.GetUserInfo(token);
+                    var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
                     _logger.LogInformation(
                         $"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
                     authenticatedUser.InvitationCode = entity.InvitationCode;
@@ -128,7 +119,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 //     throw new UnauthorizedAccessException("Access denied");
                 // }
 
-                _repository.SaveAsync(entity);
+                await _dynamoDBProvider.SaveAsync(entity);
 
                 return user;
             }
@@ -170,12 +161,10 @@ namespace Wedding.Lambdas.Authorize.Providers
         {
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
-                var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                var item = await _repository.LoadAsync<WeddingEntity>(familyUnitPartitionKey, familyUnitSortKey);
+                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(invitationCode);
 
-                item.FamilyUnitLastLogin = DateTime.UtcNow;
-                _repository.SaveAsync(item);
+                familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
+                _dynamoDBProvider.SaveAsync(familyUnit);
             }
             catch (Exception ex)
             {

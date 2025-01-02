@@ -61,9 +61,9 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            var invitationCode = request.GetInvitationCode();
-            var guestId = request.GetGuestId();
-            var roles = request.GetRoles();
+            var invitationCode = request.GetInvitationCodeFromAuthContext();
+            var guestId = request.GetGuestIdFromAuthContext();
+            var roles = request.GetRolesFromAuthContext();
             var familyUnitDto = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
 
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
