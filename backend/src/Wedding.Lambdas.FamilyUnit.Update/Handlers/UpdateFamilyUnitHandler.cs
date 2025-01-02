@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
-using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.FamilyUnit.Update.Validation;
@@ -20,14 +16,14 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
     public class UpdateFamilyUnitHandler : IAsyncCommandHandler<UpdateFamilyUnitCommand, FamilyUnitDto>
     {
         private readonly ILogger<UpdateFamilyUnitHandler> _logger;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
         private readonly Lazy<IUspsMailingAddressValidationProvider> _uspsMailingAddressValidationProvider;
 
-        public UpdateFamilyUnitHandler(ILogger<UpdateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public UpdateFamilyUnitHandler(ILogger<UpdateFamilyUnitHandler> logger, IDynamoDBProvider dynamoDbProvider, IMapper mapper)
         {
             _logger = logger;
-            _repository = repository;
+            _dynamoDbProvider = dynamoDbProvider;
             _mapper = mapper;
         }
 
@@ -38,7 +34,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
             
             // TODO where is auth occurring?
 
-            // var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.UserInvitationCode.ToUpper());
+            // var partitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.UserInvitationCode.ToUpper());
 
             //TODO
             // if (command.FamilyUnit.MailingAddress != null && !command.AddressesConfirmed)
@@ -55,13 +51,8 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
             try
             {
-                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(command.FamilyUnit.InvitationCode.ToUpper());
-                var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                
-                var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
-                    familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
-                
-                if (existingFamilyUnit == null)
+                var existingFamilyUnitEntity = await _dynamoDbProvider.LoadFamilyUnitOnlyAsync(command.FamilyUnit.InvitationCode, cancellationToken);
+                if (existingFamilyUnitEntity == null)
                 {
                     throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
@@ -73,54 +64,51 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     foreach (var guest in familyUnit!.OrderedGuests()!)
                     {
                         guest.InvitationCode = command.FamilyUnit.InvitationCode;
-                
-                        // TODO, move db calls to a provider?
-                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(command.FamilyUnit.InvitationCode);
-                        var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                
-                        var existingGuest = await _repository.LoadAsync<WeddingEntity>(
-                            guestPartitionKey, guestSortKey, cancellationToken);
-                
-                        existingGuest.AgeGroup = guest.AgeGroup;
+                        
+                        var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.FamilyUnit.InvitationCode, guest.GuestId, cancellationToken);
+                        
+                        existingGuestEntity.AgeGroup = guest.AgeGroup;
 
                         if (guest.Rsvp != null)
                         {
-                            existingGuest.InvitationResponse = guest.Rsvp.InvitationResponse;
-                            existingGuest.SleepPreference = guest.Rsvp.SleepPreference;
-                            existingGuest.RsvpWedding = guest.Rsvp.Wedding;
-                            existingGuest.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
-                            existingGuest.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
-                            existingGuest.RsvpBuildWeek = guest.Rsvp.BuildWeek;
-                            existingGuest.RsvpNotes = guest.Rsvp.RsvpNotes;
-                            existingGuest.ArrivalDate = guest.Rsvp.ArrivalDate;
+                            existingGuestEntity.InvitationResponse = guest.Rsvp.InvitationResponse;
+                            existingGuestEntity.SleepPreference = guest.Rsvp.SleepPreference;
+                            existingGuestEntity.RsvpWedding = guest.Rsvp.Wedding;
+                            existingGuestEntity.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
+                            existingGuestEntity.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
+                            existingGuestEntity.RsvpBuildWeek = guest.Rsvp.BuildWeek;
+                            existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
+                            existingGuestEntity.ArrivalDate = guest.Rsvp.ArrivalDate;
                         }
 
                         if (guest.Preferences != null)
                         {
-                            existingGuest.PrefMeal = guest.Preferences.Meal;
-                            existingGuest.PrefKidsPortion = guest.Preferences.KidsPortion;
-                            existingGuest.PrefFoodAllergies = guest.Preferences.FoodAllergies;
-                            existingGuest.PrefSpecialAlcoholRequests = guest.Preferences.SpecialAlcoholRequests;
+                            existingGuestEntity.PrefMeal = guest.Preferences.Meal;
+                            existingGuestEntity.PrefKidsPortion = guest.Preferences.KidsPortion;
+                            existingGuestEntity.PrefFoodAllergies = guest.Preferences.FoodAllergies;
+                            existingGuestEntity.PrefSpecialAlcoholRequests = guest.Preferences.SpecialAlcoholRequests;
                         }
 
                         //_mapper.Map(guest, existingGuest);
 
-                        await _repository.SaveAsync(existingGuest, cancellationToken);
-                        allGuests.Add(_mapper.Map<GuestDto>(guest));
+                        await _dynamoDbProvider.SaveAsync(existingGuestEntity, cancellationToken);
+                        allGuests.Add(_mapper.Map<GuestDto>(existingGuestEntity));
                     }
                 }
 
-                existingFamilyUnit.MailingAddress = familyUnit.MailingAddress;
-                existingFamilyUnit.AdditionalAddresses = familyUnit.AdditionalAddresses;
-                existingFamilyUnit.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
+                existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress;
+                existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses;
+                existingFamilyUnitEntity.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
 
-                _mapper.Map(familyUnit, existingFamilyUnit);
-                
-                existingFamilyUnit.PotentialHeadCount = familyUnit.CalculateHeadcount();
-                
-                await _repository.SaveAsync(existingFamilyUnit, cancellationToken);
 
-                return familyUnit;
+                _mapper.Map(familyUnit, existingFamilyUnitEntity);
+
+                familyUnit.Guests = allGuests;
+                existingFamilyUnitEntity.PotentialHeadCount = familyUnit.CalculateHeadcount();
+                
+                await _dynamoDbProvider.SaveAsync(existingFamilyUnitEntity, cancellationToken);
+
+                return await _dynamoDbProvider.GetFamilyUnitAsync(command.FamilyUnit.InvitationCode);
             }
             catch (Exception ex)
             {

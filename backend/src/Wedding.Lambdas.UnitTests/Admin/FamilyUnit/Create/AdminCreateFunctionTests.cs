@@ -40,13 +40,13 @@ public class AdminCreateFunctionTests
         );
         var request = new APIGatewayProxyRequest {
             Body = JsonSerializer.Serialize(command, JsonSerializationHelper.FromFrontendOptions)
-    };
+        };
 
         var json = request.Body; // Replace with actual JSON
         var command2 = JsonSerializationHelper.DeserializeFromFrontend<AdminCreateFamilyUnitCommand>(json);
 
         var response = await function.FunctionHandler(request, context);
-        var result = response.GetResponseBody<FamilyUnitDto>();
+        var result = response.GetResponseBodyData<FamilyUnitDto>();
 
         result.Guests.Should().NotBeNull();
         result.Guests!.Count.Should().BeGreaterThan(0);

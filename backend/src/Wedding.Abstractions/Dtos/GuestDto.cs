@@ -40,7 +40,7 @@ namespace Wedding.Abstractions.Dtos
         /// <summary>
         /// Guest last login as first element
         /// </summary>
-        public List<DateTime>? GuestLogins { get; set; }
+        public DateTime? LastActivity { get; set; }
 
         public bool IsAdmin()
         {

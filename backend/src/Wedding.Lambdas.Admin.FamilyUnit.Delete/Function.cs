@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -8,7 +7,7 @@ using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
-using Wedding.Common.Helpers.AWS.Frontend;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
 
@@ -66,67 +65,22 @@ public class Function
             var result = await handler.ExecuteAsync(command);
             var message = result ? $"Successfully deleted family unit <{invitationCode}>."
                 : $"Error deleting family unit <{invitationCode}";
-            
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = (int)HttpStatusCode.OK,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData(message).ToBody()
-            };
+
+            return message.OkResponse();
         }
         catch (ValidationException ex)
         {
-            var statusCode = (int)HttpStatusCode.BadRequest;
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
-                    }
-                }.ToBody()
-            };
+            return error.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
         }
         catch (Exception ex)
         {
-            var statusCode = (int)HttpStatusCode.InternalServerError;
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
-                    }
-                }.ToBody()
-            };
+            return error.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
         }
     }
 }

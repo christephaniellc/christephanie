@@ -33,6 +33,7 @@ using Wedding.Lambdas.UnitTests.TestData;
 using Amazon.Runtime.Internal.Transform;
 using FluentAssertions.Execution;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Lambdas.FamilyUnit.Update.Handlers;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -142,11 +143,13 @@ namespace Wedding.Lambdas.UnitTests
             mockAuthenticationProvider
                 .Setup(provider => provider.GetAudience())
                 .ReturnsAsync(_jwtAudience);
+
             var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, repository.Object, mockAuthenticationProvider.Object);
+            var dynamoDBProvider = new DynamoDBProvider(Mock.Of<ILogger<DynamoDBProvider>>(), repository.Object, _mapper);
 
             _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), repository.Object, _mapper);
             _authHandler = new AuthHandler(mockLogger.Object, authProvider);
-            _getFamilyUnitHandler = new GetFamilyUnitHandler(Mock.Of<ILogger<GetFamilyUnitHandler>>(), repository.Object, _mapper);
+            _getFamilyUnitHandler = new GetFamilyUnitHandler(Mock.Of<ILogger<GetFamilyUnitHandler>>(), dynamoDBProvider, _mapper);
 
             serviceCollection.AddScoped(_ => _findUserHandler);
             serviceCollection.AddScoped(_ => _authHandler);
@@ -166,7 +169,7 @@ namespace Wedding.Lambdas.UnitTests
             mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
                 .ReturnsAsync(familySearchResult);
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
+            var partitionKey = DynamoKeys.GetPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
             repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
                 .Returns(mockAsyncSearch.Object);
 
@@ -309,7 +312,7 @@ namespace Wedding.Lambdas.UnitTests
                     }
                 };
                 var familyUnitGetResponse = await _familyUnitGetFunction.FunctionHandler(familyUnitRequest, context);
-                var familyUnit = familyUnitGetResponse.GetResponseBody<FamilyUnitDto>();
+                var familyUnit = familyUnitGetResponse.GetResponseBodyData<FamilyUnitDto>();
 
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests.Count.Should().Be(2);

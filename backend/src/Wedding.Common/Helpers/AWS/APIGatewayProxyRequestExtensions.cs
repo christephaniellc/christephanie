@@ -56,6 +56,7 @@ namespace Wedding.Common.Helpers.AWS
         {
             var authorizerContext = request.RequestContext.Authorizer;
             Console.WriteLine($"authorizerContext: {JsonSerializer.Serialize(authorizerContext)}");
+
             if (authorizerContext != null && authorizerContext.TryGetValue("lambda", out var lambdaContext))
             {
                 Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");

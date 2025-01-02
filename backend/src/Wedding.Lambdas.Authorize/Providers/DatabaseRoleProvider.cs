@@ -62,7 +62,7 @@ namespace Wedding.Lambdas.Authorize.Providers
         /// 1. 
         /// 2. Has Auth0Id saved to guest entity
         /// </summary>
-        /// <param name="authenticatedUser"></param>
+        /// <param name="token"></param>
         /// <param name="methodArn"></param>
         /// <returns></returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
@@ -116,21 +116,17 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 user = _mapper.Map<GuestDto>(entity);
 
-                if (entity.GuestLogins == null)
-                {
-                    entity.GuestLogins = new List<DateTime>();
-                }
-                entity.GuestLogins.Add(DateTime.UtcNow);
+                entity.LastActivity = DateTime.UtcNow;
 
-                var permissions = user.Roles.Select(r => r.ToString().ToUpper());
-                var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
-
-                // TODO think about this
-                if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
-                    //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
-                {
-                    throw new UnauthorizedAccessException("Access denied");
-                }
+                // var permissions = user.Roles.Select(r => r.ToString().ToUpper());
+                // var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
+                //
+                // // TODO think about this
+                // if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
+                //     //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
+                // {
+                //     throw new UnauthorizedAccessException("Access denied");
+                // }
 
                 _repository.SaveAsync(entity);
 
@@ -174,7 +170,7 @@ namespace Wedding.Lambdas.Authorize.Providers
         {
             try
             {
-                var familyUnitPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
+                var familyUnitPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
                 var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 var item = await _repository.LoadAsync<WeddingEntity>(familyUnitPartitionKey, familyUnitSortKey);
 
