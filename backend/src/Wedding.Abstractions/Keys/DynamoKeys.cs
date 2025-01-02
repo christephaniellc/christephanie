@@ -12,7 +12,7 @@
 
         public static string GetPartitionKey(string invitationCode)
         {
-            return $"{DynamoKeys.FamilyUnit}#{invitationCode}";
+            return $"{DynamoKeys.FamilyUnit}#{invitationCode.ToUpper()}";
         }
 
         public static string GetFamilyInfoSortKey()
