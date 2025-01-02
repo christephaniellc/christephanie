@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Amazon.DynamoDBv2.DataModel;
 using Autofac;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Services.Auth;
 
@@ -46,8 +46,8 @@ namespace Wedding.PublicApi.Logic.DI
                             return new Auth0Provider();
                         }
 
-                        var repository = context.Resolve<IDynamoDBContext>();
-                        return new InternalAuthenticationProvider(repository);
+                        var dynamoDBProvider = context.Resolve<IDynamoDBProvider>();
+                        return new InternalAuthenticationProvider(dynamoDBProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
@@ -57,13 +57,23 @@ namespace Wedding.PublicApi.Logic.DI
                     {
                         var logger = context.Resolve<ILogger<DatabaseRoleProvider>>();
                         var mapper = context.Resolve<IMapper>();
-                        var repository = context.Resolve<IDynamoDBContext>();
+                        var dynamoDBProvider = context.Resolve<IDynamoDBProvider>();
                         var authenticationProvider = context.Resolve<IAuthenticationProvider>();
-                        return new DatabaseRoleProvider(logger, mapper, repository, authenticationProvider);
+                        return new DatabaseRoleProvider(logger, mapper, dynamoDBProvider, authenticationProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()
                     .SingleInstance();
+
+                // builder.Register<Wedding.Common.Configuration.IConfigurationProvider>(context => 
+                // {
+                //     var services = new ServiceCollection();
+                //     services.AddScoped(_ => _config);
+                //     return new Wedding.Common.Configuration.ConfigurationProvider(_config);
+                // })
+                // .AsImplementedInterfaces()
+                // .AsSelf()
+                // .SingleInstance();
 
                 // builder.Register(context =>
                 //     {

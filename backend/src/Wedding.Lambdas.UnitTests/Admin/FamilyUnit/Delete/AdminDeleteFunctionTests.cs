@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using AutoMapper;
@@ -9,8 +8,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Keys;
 using Wedding.Abstractions.Mapping;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
@@ -29,20 +28,22 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             var mapper = config.CreateMapper();
 
-            var repository = new Mock<IDynamoDBContext>();
+            //var repository = new Mock<IDynamoDBContext>();
+            var dynamoDBProvider = new Mock<IDynamoDBProvider>();
             var mockLambdaContext = new Mock<ILambdaContext>();
             mockLambdaContext.Setup(x => x.Logger).Returns(new Mock<ILambdaLogger>().Object);
 
             var family = mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE);
-            var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
-            mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
+            // var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
+            // mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
+            //     .ReturnsAsync(new List<WeddingEntity> { family });
+
+            // repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
+            //     .Returns(mockAsyncSearch.Object);
+            dynamoDBProvider.Setup(x => x.QueryAsync(invitationCode, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { family });
 
-            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
-            repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
-                .Returns(mockAsyncSearch.Object);
-
-            var deleteFamilyUnitHandler = new AdminDeleteFamilyUnitHandler(Mock.Of<ILogger<AdminDeleteFamilyUnitHandler>>(), repository.Object, mapper);
+            var deleteFamilyUnitHandler = new AdminDeleteFamilyUnitHandler(Mock.Of<ILogger<AdminDeleteFamilyUnitHandler>>(), dynamoDBProvider.Object, mapper);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped(_ => deleteFamilyUnitHandler);

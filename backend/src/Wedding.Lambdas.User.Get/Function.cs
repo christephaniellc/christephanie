@@ -39,9 +39,9 @@ public class Function
             GetUserQuery query;
             context.Logger.LogInformation($"Raw Query Input (should be empty): {request.QueryStringParameters}");
 
-            var userId = request.GetGuestId();
-            var invitationCode = request.GetInvitationCode();
-            var roles = request.GetRoles();
+            var userId = request.GetGuestIdFromAuthContext();
+            var invitationCode = request.GetInvitationCodeFromAuthContext();
+            var roles = request.GetRolesFromAuthContext();
 
             context.Logger.LogInformation($"Raw Auth Input: {userId} {invitationCode} {string.Join(",", roles)}");
 

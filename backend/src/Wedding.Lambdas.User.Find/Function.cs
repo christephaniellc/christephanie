@@ -51,7 +51,7 @@ public class Function
             FindUserQuery query;
             context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
 
-            //var userId = request.GetGuestId();
+            //var userId = request.GetGuestIdFromAuthContext();
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
 

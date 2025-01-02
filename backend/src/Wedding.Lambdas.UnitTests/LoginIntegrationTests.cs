@@ -17,23 +17,16 @@ using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Find.Handlers;
 using Wedding.Abstractions.Mapping;
-using Wedding.Abstractions.Keys;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Handlers;
 using Wedding.Lambdas.Authorize.Providers;
 using Microsoft.Extensions.Configuration;
 using Wedding.Common.Configuration;
-using System.Text;
-using System.Text.Json.Serialization;
-using Amazon.DynamoDBv2.DocumentModel;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
-using Amazon.Runtime.Internal.Transform;
-using FluentAssertions.Execution;
 using Wedding.Abstractions.Dtos.Auth;
-using Wedding.Lambdas.FamilyUnit.Update.Handlers;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -44,79 +37,16 @@ namespace Wedding.Lambdas.UnitTests
         private Wedding.Lambdas.Authorize.Function _authFunction;
         private Wedding.Lambdas.FamilyUnit.Get.Function _familyUnitGetFunction;
 
-        private Mock<ILambdaLogger> _logger;
         private Mock<ILambdaContext> _mockLambdaContext;
         private IMapper _mapper;
+        private TestTokenHelper _testTokenHelper;
         private FindUserHandler _findUserHandler;
         private AuthHandler _authHandler;
         private GetFamilyUnitHandler _getFamilyUnitHandler;
 
         private string _johnAuth0Id = "auth0|12345";
 
-        private string _jwtAuthority;
-        private string _jwtAudience;
-        private string _clientId;
-        private string _clientSecret;
-        private string _tokenEndpoint;
-
-        private async Task<string> GenerateAuth0Token(string? guestId = null)
-        {
-            var requestBody = new
-            {
-                client_id = _clientId,
-                client_secret = _clientSecret,
-                audience = _jwtAudience,
-                grant_type = "client_credentials"
-            };
-            var requestBodyGuest = new
-            {
-                client_id = _clientId,
-                client_secret = _clientSecret,
-                audience = _jwtAudience,
-                grant_type = "client_credentials",
-                guest_id = guestId!
-            };
-
-            StringContent content;
-            if (string.IsNullOrEmpty(guestId))
-            {
-                content = new StringContent(
-                    JsonSerializer.Serialize(requestBody),
-                    Encoding.UTF8,
-                    "application/json");
-            }
-            else
-            {
-                content = new StringContent(
-                    JsonSerializer.Serialize(requestBodyGuest),
-                    Encoding.UTF8,
-                    "application/json");
-            }
-
-            using (var httpClient = new HttpClient())
-            {
-                var response = await httpClient.PostAsync(_tokenEndpoint, content);
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-                var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
-
-                return tokenResponse.access_token;
-            }
-        }
-
-        public class TokenResponse
-        {
-            [JsonPropertyName("access_token")]
-            public string access_token { get; set; }
-            [JsonPropertyName("expires_in")]
-            public int expires_in { get; set; }
-            [JsonPropertyName("token_type")]
-            public string token_type { get; set; }
-        }
-
-
-        public void SetUpHandlers(Mock<IDynamoDBContext> repository, ServiceCollection serviceCollection)
+        public void SetUpHandlers(Mock<IDynamoDBProvider> dynamoDBProvider, ServiceCollection serviceCollection)
         {
             var mockLogger = new Mock<ILogger<AuthHandler>>();
             var mockAuthenticationProvider = new Mock<IAuthenticationProvider>();
@@ -142,21 +72,20 @@ namespace Wedding.Lambdas.UnitTests
                 });
             mockAuthenticationProvider
                 .Setup(provider => provider.GetAudience())
-                .ReturnsAsync(_jwtAudience);
+                .ReturnsAsync(_testTokenHelper.JwtAudience);
 
-            var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, repository.Object, mockAuthenticationProvider.Object);
-            var dynamoDBProvider = new DynamoDBProvider(Mock.Of<ILogger<DynamoDBProvider>>(), repository.Object, _mapper);
+            var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, dynamoDBProvider.Object, mockAuthenticationProvider.Object);
 
-            _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), repository.Object, _mapper);
+            _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), dynamoDBProvider.Object, _mapper);
             _authHandler = new AuthHandler(mockLogger.Object, authProvider);
-            _getFamilyUnitHandler = new GetFamilyUnitHandler(Mock.Of<ILogger<GetFamilyUnitHandler>>(), dynamoDBProvider, _mapper);
+            _getFamilyUnitHandler = new GetFamilyUnitHandler(Mock.Of<ILogger<GetFamilyUnitHandler>>(), dynamoDBProvider.Object, _mapper);
 
             serviceCollection.AddScoped(_ => _findUserHandler);
             serviceCollection.AddScoped(_ => _authHandler);
             serviceCollection.AddScoped(_ => _getFamilyUnitHandler);
         }
         
-        public void SetUpRepository(Mock<IDynamoDBContext> repository)
+        public void SetUpRepository(Mock<IDynamoDBProvider> dynamoDBProvider)
         {
             var familySearchResult = new List<WeddingEntity>
             {
@@ -165,48 +94,42 @@ namespace Wedding.Lambdas.UnitTests
                 _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE)
             };
 
-            var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
-            mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
+            // var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
+            // mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
+            //     .ReturnsAsync(familySearchResult);
+            //
+            // var partitionKey = DynamoKeys.GetPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
+            // repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
+            //     .Returns(mockAsyncSearch.Object);
+            //
+            // var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
+            // repository.Setup(x => x.LoadAsync<WeddingEntity>(partitionKey, familyUnitSortKey, It.IsAny<CancellationToken>()))
+            //     .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
+            // repository.Setup(x => x.LoadAsync<WeddingEntity>(TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
+            //     .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
+            //
+            // repository.Setup(x => x.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
+            //     .Returns(mockAsyncSearch.Object);
+            // var mockAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
+            // mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
+            //     .ReturnsAsync(familySearchResult);
+
+            //var partitionKey = DynamoKeys.GetPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
+            dynamoDBProvider.Setup(x => x.QueryAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(familySearchResult);
 
-            var partitionKey = DynamoKeys.GetPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
-            repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
-                .Returns(mockAsyncSearch.Object);
-
-            var familyUnitSortKey = DynamoKeys.GetFamilyInfoSortKey();
-            repository.Setup(x => x.LoadAsync<WeddingEntity>(partitionKey, familyUnitSortKey, It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
-            repository.Setup(x => x.LoadAsync<WeddingEntity>(TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
+            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(TestDataHelper.GUEST_JOHN.GuestId,  It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<WeddingEntity> {_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN) });
+            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<WeddingEntity> { _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE) });
+            dynamoDBProvider.Setup(x =>
+                    x.GetFamilyUnitAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestDataHelper.FAMILY_DOE);
+            dynamoDBProvider.Setup(x => x.FromQueryAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(familySearchResult);
 
-            // var mockFamilyAsyncSearch = new Mock<AsyncSearch<WeddingEntity>>(MockBehavior.Strict);
-            // repository.Setup(x => x.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
-            //     .Returns(familySearchResult);
-
-            // repository
-            //     .Setup(repo => repo.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
-            //     .Returns(new MockDynamoQuery<WeddingEntity>(familySearchResult));
-
-            repository.Setup(x => x.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
-                .Returns(mockAsyncSearch.Object);
-
-            // repository
-            //     .Setup(repo => repo.FromQueryAsync<WeddingEntity>(It.IsAny<QueryOperationConfig>(), It.IsAny<DynamoDBOperationConfig>()))
-            //     .ReturnsAsync(mockAsyncSearch);
-
-            // var dynamoQuery = new QueryOperationConfig()
-            // {
-            //     KeyExpression = new Expression
-            //     {
-            //         ExpressionStatement = "PartitionKey = :pk",
-            //         ExpressionAttributeValues =
-            //         {
-            //             { ":pk", partitionKey },
-            //         }
-            //     }
-            // };
-            //
-            // var results = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
         }
 
         public void SetUpFunctions(ServiceCollection serviceCollection)
@@ -214,7 +137,7 @@ namespace Wedding.Lambdas.UnitTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             _userFindFunction = new Wedding.Lambdas.User.Find.Function(serviceProvider);
-            _authFunction = new Wedding.Lambdas.Authorize.Function(serviceProvider, _jwtAuthority, _jwtAudience);
+            _authFunction = new Wedding.Lambdas.Authorize.Function(serviceProvider, _testTokenHelper.JwtAuthority, _testTokenHelper.JwtAudience);
             _familyUnitGetFunction = new Wedding.Lambdas.FamilyUnit.Get.Function(serviceProvider);
         }
 
@@ -225,11 +148,7 @@ namespace Wedding.Lambdas.UnitTests
                 .AddJsonFile("appsettings.Development.json")
             .Build();
 
-            _jwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority];
-            _jwtAudience = configuration[ConfigurationKeys.AuthenticationAudience];
-            _clientId = configuration[ConfigurationKeys.AuthenticationClientId];
-            _clientSecret = configuration[ConfigurationKeys.AuthenticationClientSecret];
-            _tokenEndpoint = _jwtAuthority + "/oauth/token";
+            _testTokenHelper = new TestTokenHelper(configuration);
 
             var config = new MapperConfiguration(cfg =>
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
@@ -239,10 +158,10 @@ namespace Wedding.Lambdas.UnitTests
             _mockLambdaContext.Setup(x => x.Logger).Returns(new Mock<ILambdaLogger>().Object);
 
             var serviceCollection = new ServiceCollection();
-            var repository = new Mock<IDynamoDBContext>();
+            var dynamoDBProvider = new Mock<IDynamoDBProvider>();
 
-            SetUpRepository(repository);
-            SetUpHandlers(repository, serviceCollection);
+            SetUpRepository(dynamoDBProvider);
+            SetUpHandlers(dynamoDBProvider, serviceCollection);
             SetUpFunctions(serviceCollection);
         }
 
@@ -262,11 +181,11 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
-            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+            var actualResult = response.GetResponseBodyData<string>();
+            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
 
             // Step 2. Authorize user by token and guest ID 
-            var token = await GenerateAuth0Token(tokenWithGuestId ? TestDataHelper.GUEST_JOHN.GuestId : null);
+            var token = await _testTokenHelper.GenerateAuth0Token(tokenWithGuestId ? TestDataHelper.GUEST_JOHN.GuestId : null);
 
             var authRequest = new APIGatewayCustomAuthorizerRequest
             {
@@ -296,7 +215,8 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.Should().NotBeNull();
                 authResponse.PrincipalID.Should().Be(_johnAuth0Id);
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Effect.Should().Be(PolicyEffectEnum.Allow.ToString());
-                authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be("GET /api/familyunit");
+                //authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be("GET /api/familyunit");
+                authResponse.PolicyDocument.Statement.FirstOrDefault().Resource.FirstOrDefault().Should().Be("arn:aws:execute-api:us-east-1:502723119948:fpo6t7lub7/proto/GET/api/familyunit");
                 authResponse.PolicyDocument.Statement.FirstOrDefault().Action.FirstOrDefault().Should().Be("execute-api:Invoke");
                 authResponse.Context.Should().Contain(x => x.Key == "token" && x.Value.Equals(token));
                 authResponse.Context.Should().Contain(x => x.Key == "guestId" && x.Value.Equals(TestDataHelper.GUEST_JOHN.GuestId));
@@ -313,7 +233,7 @@ namespace Wedding.Lambdas.UnitTests
                 };
                 var familyUnitGetResponse = await _familyUnitGetFunction.FunctionHandler(familyUnitRequest, context);
                 var familyUnit = familyUnitGetResponse.GetResponseBodyData<FamilyUnitDto>();
-
+                
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests.Count.Should().Be(2);
                 familyUnit.InvitationCode.Should().Be(TestDataHelper.TEST_INVITATION_CODE);
@@ -328,7 +248,7 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
-                    { "UserInvitationCode", "ABAAB" },
+                    { "invitationCode", "ABAAB" },
                     { "firstName", "John" }
                 }
             };
@@ -340,8 +260,8 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
-            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+            var actualResult = response.GetResponseBodyData<string>();
+            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
         [Test]
@@ -352,7 +272,7 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
-                    { "UserInvitationCode", TestDataHelper.TEST_INVITATION_CODE },
+                    { "invitationCode", TestDataHelper.TEST_INVITATION_CODE },
                     { "firstName", "Jane" }
                 }
             };
@@ -364,8 +284,8 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = JsonSerializer.Deserialize<FrontendApiData>(response.Body);
-            actualResult.Data.ToString().Should().Be(TestDataHelper.GUEST_JANE.GuestId);
+            var actualResult = response.GetResponseBodyData<string>();
+            actualResult.Should().Be(TestDataHelper.GUEST_JANE.GuestId);
         }
 
         // [Test]

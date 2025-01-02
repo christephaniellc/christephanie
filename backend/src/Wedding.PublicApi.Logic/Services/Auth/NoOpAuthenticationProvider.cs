@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
@@ -53,7 +54,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
             throw new System.NotImplementedException();
         }
 
-        public Task<GuestDto?> Authorize(string token, string methodArn)
+        public Task<GuestDto?> Authorize(ValidateAuthQuery query)
         {
             throw new System.NotImplementedException();
         }

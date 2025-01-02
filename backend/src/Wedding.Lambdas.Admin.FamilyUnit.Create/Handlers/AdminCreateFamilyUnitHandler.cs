@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
@@ -10,6 +9,7 @@ using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Validation;
 
@@ -20,13 +20,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
         //, IAsyncCommandHandler<CreateFamilyUnitsCommand, FamilyUnitDto>
     {
         private readonly ILogger<AdminCreateFamilyUnitHandler> _logger;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IMapper _mapper;
 
-        public AdminCreateFamilyUnitHandler(ILogger<AdminCreateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public AdminCreateFamilyUnitHandler(ILogger<AdminCreateFamilyUnitHandler> logger, IDynamoDBProvider dynamoDBProvider, IMapper mapper)
         {
             _logger = logger;
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
             _mapper = mapper;
         }
 
@@ -43,12 +43,11 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                 var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
-                var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
-                    familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
+                var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(familyUnit.InvitationCode);
 
                 if (existingFamilyUnit != null)
                 {
-                    throw new InvalidOperationException($"Family unit with RSVP code '{familyUnit.InvitationCode}' already exists.");
+                    throw new InvalidOperationException($"Family unit with Invitation code '{familyUnit.InvitationCode}' already exists.");
                 }
 
                 var familyInfo = new WeddingEntity()
@@ -60,7 +59,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                     Tier = familyUnit.Tier,
                     PotentialHeadCount = familyUnit.CalculateHeadcount()
                 };
-                await _repository.SaveAsync(familyInfo, cancellationToken);
+                await _dynamoDBProvider.SaveAsync(familyInfo, cancellationToken);
 
                 var addedGuests = new List<GuestDto>();
                 var guestNumber = 1;
@@ -72,7 +71,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                         guest.GuestNumber = guestNumber++;
                         var partitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                         var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                        AddDefaultRoles(guest);
+                        AddDefaultRolesIfEmpty(guest);
                         
                         var guestEntity = new WeddingEntity()
                         {
@@ -90,7 +89,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                             AgeGroup = guest.AgeGroup,
                             InvitationResponse = InvitationResponseEnum.Pending
                         };
-                        await _repository.SaveAsync(guestEntity, cancellationToken);
+                        await _dynamoDBProvider.SaveAsync(guestEntity, cancellationToken);
                         addedGuests.Add(_mapper.Map<GuestDto>(guestEntity));
                     }
                 }
@@ -105,7 +104,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
             }
         }
 
-        public void AddDefaultRoles(GuestDto guest)
+        public void AddDefaultRolesIfEmpty(GuestDto guest)
         {
             if (guest.Roles is null || guest.Roles.Count == 0)
             {

@@ -1,4 +1,5 @@
 ﻿using FluentValidation.TestHelper;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Commands;
@@ -8,19 +9,25 @@ using Wedding.Lambdas.UnitTests.TestData;
 namespace Wedding.Lambdas.UnitTests.Authorize.Validation
 {
     [TestFixture]
-    [UnitTestsFor(typeof(AuthorizationQueryValidator))]
+    [UnitTestsFor(typeof(ValidateAuthQueryValidator))]
     public class AuthorizationQueryValidatorTests
     {
-        private AuthorizationQueryValidator _validator;
+        private TestTokenHelper _testTokenHelper;
+        private ValidateAuthQueryValidator _validator;
 
         [SetUp]
         public void Setup()
         {
-            _validator = new AuthorizationQueryValidator();
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
+            _validator = new ValidateAuthQueryValidator();
         }
 
         [Test]
-        public void Should_Validate_When_All_Fields_Are_Valid()
+        public async Task Should_Validate_When_All_Fields_Are_Valid()
         {
             // Arrange
             var authority = "https://valid-authority.com";
@@ -28,7 +35,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
             var query = new ValidateAuthQuery(authority,
                 audience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
-                TestTokenHelper.GenerateTestToken(authority, audience));
+                await _testTokenHelper.GenerateAuth0Token());
 
             // Act & Assert
             var result = _validator.TestValidate(query);

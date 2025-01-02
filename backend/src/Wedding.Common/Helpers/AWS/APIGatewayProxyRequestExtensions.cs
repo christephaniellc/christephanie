@@ -76,12 +76,12 @@ namespace Wedding.Common.Helpers.AWS
             return null;
         }
 
-        public static string? GetGuestId(this APIGatewayProxyRequest request)
+        public static string? GetGuestIdFromAuthContext(this APIGatewayProxyRequest request)
         {
             return request.RequestLambdaData("guestId");
         }
 
-        public static string? GetInvitationCode(this APIGatewayProxyRequest request)
+        public static string? GetInvitationCodeFromAuthContext(this APIGatewayProxyRequest request)
         {
             return request.RequestLambdaData("invitationCode");
         }
@@ -91,7 +91,7 @@ namespace Wedding.Common.Helpers.AWS
         //     return request.RequestContext.Authorizer["lambda:token"]?.ToString();
         // }
 
-        public static List<RoleEnum>? GetRoles(this APIGatewayProxyRequest request)
+        public static List<RoleEnum>? GetRolesFromAuthContext(this APIGatewayProxyRequest request)
         {
             var roles = request.RequestLambdaData("roles");
             return roles?

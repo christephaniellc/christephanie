@@ -54,10 +54,10 @@ public class Function
         {
             var logger = sc.GetRequiredService<ILogger<DatabaseRoleProvider>>();
             var mapper = sc.GetRequiredService<IMapper>();
-            var dynamoDbContext = sc.GetRequiredService<IDynamoDBContext>();
+            var dynamoDbProvider= sc.GetRequiredService<IDynamoDBProvider>();
             var authenticationProvider = sc.GetRequiredService<IAuthenticationProvider>();
 
-            return new DatabaseRoleProvider(logger, mapper, dynamoDbContext, authenticationProvider);
+            return new DatabaseRoleProvider(logger, mapper, dynamoDbProvider, authenticationProvider);
         });
 
         return serviceCollection.BuildServiceProvider();

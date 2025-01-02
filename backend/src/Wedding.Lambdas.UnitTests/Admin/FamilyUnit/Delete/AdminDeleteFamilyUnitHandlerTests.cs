@@ -1,10 +1,10 @@
-﻿using Amazon.DynamoDBv2.DataModel;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Entities;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
@@ -16,7 +16,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
     public class AdminDeleteFamilyUnitHandlerTests
     {
         private Mock<ILogger<AdminDeleteFamilyUnitHandler>> _mockLogger;
-        private Mock<IDynamoDBContext> _mockRepository;
+        private Mock<IDynamoDBProvider> _mockDynamoDBProvider;
         private Mock<IMapper> _mockMapper;
         private AdminDeleteFamilyUnitHandler _handler;
 
@@ -24,10 +24,10 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void SetUp()
         {
             _mockLogger = new Mock<ILogger<AdminDeleteFamilyUnitHandler>>();
-            _mockRepository = new Mock<IDynamoDBContext>();
+            _mockDynamoDBProvider = new Mock<IDynamoDBProvider>();
             _mockMapper = new Mock<IMapper>();
 
-            _handler = new AdminDeleteFamilyUnitHandler(_mockLogger.Object, _mockRepository.Object, _mockMapper.Object);
+            _handler = new AdminDeleteFamilyUnitHandler(_mockLogger.Object, _mockDynamoDBProvider.Object, _mockMapper.Object);
         }
 
         [Test]
@@ -43,13 +43,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
                 new WeddingEntity { PartitionKey = "PK2", SortKey = "SK2" }
             };
 
-            _mockRepository
-                .Setup(r => r.QueryAsync<WeddingEntity>(It.IsAny<string>(), It.IsAny<DynamoDBOperationConfig>())
-                    .GetRemainingAsync(It.IsAny<CancellationToken>()))
+            _mockDynamoDBProvider
+                .Setup(r => r.QueryAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(weddingEntities);
 
-            _mockRepository
-                .Setup(r => r.DeleteAsync<WeddingEntity>(It.IsAny<string>(), It.IsAny<string>(), cancellationToken))
+            _mockDynamoDBProvider
+                .Setup(r => r.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), cancellationToken))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -57,8 +56,9 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 
             // Assert
             Assert.IsTrue(result);
-            _mockRepository.Verify(r => r.DeleteAsync<WeddingEntity>("PK1", "SK1", cancellationToken), Times.Once);
-            _mockRepository.Verify(r => r.DeleteAsync<WeddingEntity>("PK2", "SK2", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.QueryAsync("ABCDE", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.DeleteAsync("ABCDE", "SK1", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.DeleteAsync("ABCDE", "SK2", cancellationToken), Times.Once);
         }
 
         [Test]
@@ -68,9 +68,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             var command = new AdminDeleteFamilyUnitCommand("ABCDE");
             var cancellationToken = CancellationToken.None;
 
-            _mockRepository
-                .Setup(r => r.QueryAsync<WeddingEntity>(It.IsAny<string>(), It.IsAny<DynamoDBOperationConfig>())
-                    .GetRemainingAsync(It.IsAny<CancellationToken>()))
+            _mockDynamoDBProvider
+                .Setup(r => r.QueryAsync("ABCDE", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Repository failure"));
 
             // Act & Assert

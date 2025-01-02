@@ -13,6 +13,6 @@ namespace Wedding.Lambdas.Authorize.Validation
         public static void Validate(
             this ValidateAuthQuery obj,
             object? context = default)
-            => ValidateHelpers.Validate<ValidateAuthQuery, AuthorizationQueryValidator>(obj, context);
+            => ValidateHelpers.Validate<ValidateAuthQuery, ValidateAuthQueryValidator>(obj, context);
     }
 }

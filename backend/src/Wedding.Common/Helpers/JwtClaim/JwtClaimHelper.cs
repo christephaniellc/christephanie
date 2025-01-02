@@ -24,14 +24,21 @@ namespace Wedding.Common.Helpers.JwtClaim
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            var jwtToken = jwtTokenHandler.ReadJwtToken(token);
-            Console.WriteLine($"JwtClaimHelper token: {JsonSerializer.Serialize(jwtToken)}");
-            var guestId = jwtToken.GetGuestId(audience);
+            try
+            {
+                var jwtToken = jwtTokenHandler.ReadJwtToken(token);
+                Console.WriteLine($"JwtClaimHelper token: {JsonSerializer.Serialize(jwtToken)}");
+                var guestId = jwtToken.GetGuestId(audience);
 
-            if (string.IsNullOrEmpty(guestId))
+                if (string.IsNullOrEmpty(guestId))
+                    throw new UnauthorizedAccessException("Invalid token");
+
+                return guestId;
+            }
+            catch (Exception ex)
+            {
                 throw new UnauthorizedAccessException("Invalid token");
-
-            return guestId;
+            }
         }
     }
 }

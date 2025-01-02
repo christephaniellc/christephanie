@@ -122,11 +122,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     }
                 }
             };
-            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, TestDataHelper.GUEST_JOHN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor("FamilyUnit.UserRoles");
+            result.ShouldHaveValidationErrorFor("UserRoles");
         }
     }
 }

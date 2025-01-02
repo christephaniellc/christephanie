@@ -8,6 +8,7 @@ using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
 using Wedding.Abstractions.Mapping;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
@@ -19,7 +20,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
     public class AdminCreateFamilyUnitHandlerTests
     {
         private Mock<ILogger<AdminCreateFamilyUnitHandler>> _loggerMock;
-        private Mock<IDynamoDBContext> _repositoryMock;
+        private Mock<IDynamoDBProvider> _dynamoProviderMock;
         private AdminCreateFamilyUnitHandler _handler;
         private IMapper _mapper;
 
@@ -31,8 +32,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             _mapper = config.CreateMapper();
 
             _loggerMock = new Mock<ILogger<AdminCreateFamilyUnitHandler>>();
-            _repositoryMock = new Mock<IDynamoDBContext>();
-            _handler = new AdminCreateFamilyUnitHandler(_loggerMock.Object, _repositoryMock.Object, _mapper);
+            _dynamoProviderMock = new Mock<IDynamoDBProvider>();
+            _handler = new AdminCreateFamilyUnitHandler(_loggerMock.Object, _dynamoProviderMock.Object, _mapper);
         }
 
         [Test]
@@ -61,8 +62,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 SortKey = DynamoKeys.FamilyInfo
             };
 
-            _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            // _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
+            //     It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            //     .ReturnsAsync(existingFamilyUnit);
+
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(command.FamilyUnit.InvitationCode,It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamilyUnit);
 
             // Act & Assert
@@ -87,15 +91,15 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 }
             );
 
-            _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+                    It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
             var result = await _handler.ExecuteAsync(command);
 
             // Assert
-            _repositoryMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
             Assert.AreEqual("ABCDE", result.InvitationCode);
             Assert.AreEqual("Doe_John Family", result.UnitName);
             Assert.AreEqual(2, result.Guests!.Count);
@@ -117,8 +121,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                  }
             );
 
-            _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
-                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))!
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+                    It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
@@ -136,7 +140,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = null! };
 
             // Act
-            _handler.AddDefaultRoles(guest);
+            _handler.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles!.Count);
@@ -150,7 +154,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = new List<RoleEnum>() };
 
             // Act
-            _handler.AddDefaultRoles(guest);
+            _handler.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);
@@ -164,7 +168,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = new List<RoleEnum> { RoleEnum.Admin } };
 
             // Act
-            _handler.AddDefaultRoles(guest);
+            _handler.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);

@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Configuration;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
@@ -27,15 +30,18 @@ namespace Wedding.PublicApi.Controllers
         private readonly ILogger<AdminFamilyUnitController> _logger;
         private readonly IControllerDispatcher _dispatcher;
         private IAuthorizationProvider _authProvider;
+        private Auth0Configuration _auth0Configuration;
 
         public AdminFamilyUnitController(
             ILogger<AdminFamilyUnitController> logger,
+            IConfiguration configuration,
             IControllerDispatcher dispatcher,
             IAuthorizationProvider authProvider)
         {
             _logger = logger;
             _dispatcher = dispatcher;
             _authProvider = authProvider;
+            _auth0Configuration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
         }
 
 #if DEBUG_ANONYMOUS
@@ -133,7 +139,9 @@ namespace Wedding.PublicApi.Controllers
 
 //#if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var authenticatedGuest = await _authProvider.Authorize(token, LambdaArns.AdminFamilyUnitUpdate);
+                var query = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                    LambdaArns.AdminFamilyUnitUpdate, token);
+                var authenticatedGuest = await _authProvider.Authorize(query);
                 if (authenticatedGuest == null)
                 {
                     return Unauthorized(new { message = "Authentication error." });

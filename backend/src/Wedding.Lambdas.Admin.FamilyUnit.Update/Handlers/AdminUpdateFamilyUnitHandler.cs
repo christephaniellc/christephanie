@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
 
@@ -19,13 +19,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
     public class AdminUpdateFamilyUnitHandler : IAsyncCommandHandler<AdminUpdateFamilyUnitCommand, FamilyUnitDto>
     {
         private readonly ILogger<AdminUpdateFamilyUnitHandler> _logger;
-        private readonly IDynamoDBContext _repository;
+        private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IMapper _mapper;
 
-        public AdminUpdateFamilyUnitHandler(ILogger<AdminUpdateFamilyUnitHandler> logger, IDynamoDBContext repository, IMapper mapper)
+        public AdminUpdateFamilyUnitHandler(ILogger<AdminUpdateFamilyUnitHandler> logger, IDynamoDBProvider dynamoDBProvider, IMapper mapper)
         {
             _logger = logger;
-            _repository = repository;
+            _dynamoDBProvider = dynamoDBProvider;
             _mapper = mapper;
         }
 
@@ -37,27 +37,28 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
             try
             {
-                var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode);
-                var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
+                // var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode);
+                // var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
 
-                // var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
-                //     familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
+                // // var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
+                // //     familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
+                //
+                // var dynamoQuery = new QueryOperationConfig()
+                // {
+                //     KeyExpression = new Expression
+                //     {
+                //         ExpressionStatement = "PartitionKey = :pk",
+                //         ExpressionAttributeValues =
+                //         {
+                //             { ":pk", familyInfoPartitionKey },
+                //         }
+                //     }
+                // };
 
-                var dynamoQuery = new QueryOperationConfig()
-                {
-                    KeyExpression = new Expression
-                    {
-                        ExpressionStatement = "PartitionKey = :pk",
-                        ExpressionAttributeValues =
-                        {
-                            { ":pk", familyInfoPartitionKey },
-                        }
-                    }
-                };
+                var results = await _dynamoDBProvider.FromQueryAsync(command.FamilyUnit.InvitationCode);
 
-                var results = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
-
-                var existingFamilyUnit = _mapper.Map<FamilyUnitDto>(results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
+                var existingFamilyUnitEntity = results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
+                var existingFamilyUnit = _mapper.Map<FamilyUnitDto>(existingFamilyUnitEntity);
                 var existingGuests = results.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
                     .Select(x => _mapper.Map<GuestDto>(x))
                     .ToList();
@@ -93,25 +94,20 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 
                 foreach (var guest in guestsToDelete)
                 {
-                    var partitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode);
                     var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                    await _repository.DeleteAsync<WeddingEntity>(partitionKey, guestSortKey, cancellationToken);
+                    await _dynamoDBProvider.DeleteAsync(command.FamilyUnit.InvitationCode, guestSortKey, cancellationToken);
                 }
 
                 foreach (var guest in guestsToUpdate)
                 {
                     guest.InvitationCode = command.FamilyUnit.InvitationCode;
 
-                    // TODO, move db calls to a provider?
-                    var guestPartitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode);
-                    var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-
-                    var existingGuest = await _repository.LoadAsync<WeddingEntity>(
-                        guestPartitionKey, guestSortKey, cancellationToken);
+                    var existingGuest = await _dynamoDBProvider.LoadGuestByGuestIdAsync(guest.InvitationCode,
+                        guest.GuestId, cancellationToken);
 
                     _mapper.Map(guest, existingGuest);
                     //_mapper.Map(existingGuest, guest);
-                    await _repository.SaveAsync(existingGuest, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(existingGuest, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
 
@@ -121,7 +117,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                     guest.GuestNumber = addedGuests.Count + 1;
 
                     var entity = _mapper.Map<WeddingEntity>(guest);
-                    await _repository.SaveAsync(entity, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(entity, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
 
@@ -131,11 +127,11 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 // var updatedResults = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
                 // var updatedFamilyUnit = _mapper.Map<FamilyUnitDto>(updatedResults.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
 
-                _mapper.Map(familyUnit, existingFamilyUnit);
+                _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
-                existingFamilyUnit.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
+                existingFamilyUnitEntity.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
 
-                await _repository.SaveAsync(existingFamilyUnit, cancellationToken);
+                await _dynamoDBProvider.SaveAsync(existingFamilyUnitEntity, cancellationToken);
             }
             catch (Exception ex)
             {
