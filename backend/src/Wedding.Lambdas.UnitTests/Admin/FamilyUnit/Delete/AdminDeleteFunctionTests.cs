@@ -38,7 +38,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             mockAsyncSearch.Setup(x => x.GetRemainingAsync(default))
                 .ReturnsAsync(new List<WeddingEntity> { family });
 
-            var partitionKey = DynamoKeys.GetFamilyUnitPartitionKey(invitationCode);
+            var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             repository.Setup(x => x.QueryAsync<WeddingEntity>(partitionKey, It.IsAny<DynamoDBOperationConfig>()))
                 .Returns(mockAsyncSearch.Object);
 

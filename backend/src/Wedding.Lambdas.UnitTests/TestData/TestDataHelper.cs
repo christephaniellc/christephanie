@@ -12,6 +12,13 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 return "ABAAB";
             }
         }
+        public static string TEST_INVITATION_CODE_NEW
+        {
+            get
+            {
+                return "MMMMM";
+            }
+        }
 
         public static GuestDto GUEST_JOHN
         {
@@ -85,22 +92,21 @@ namespace Wedding.Lambdas.UnitTests.TestData
 
         public static string REAL_JSON_FAMILY_UNIT = @"
 {
-    ""invitationCode"": ""RVMBL"",
-    ""unitName"": ""Sikorra_Topher Family"",
+    ""invitationCode"": ""ABAAB"",
+    ""unitName"": ""The Doe Family"",
     ""tier"": ""A+"",
     ""guests"": [
         {
-            ""invitationCode"": ""RVMBL"",
-            ""guestId"": ""6f2e238d-6792-453f-82d1-1cde35414d5b"",
+            ""invitationCode"": ""ABAAB"",
+            ""guestId"": ""73340000-0000-0000-0000-000000000001"",
             ""guestNumber"": 1,
             ""auth0Id"": ""placeholder-auth0-id"",
-            ""firstName"": ""FirstNamePlaceholder"",
+            ""firstName"": ""John"",
             ""additionalFirstNames"": [
                 ""additionalNamePlaceholder1""
             ],
-            ""lastName"": ""LastNamePlaceholder"",
+            ""lastName"": ""Doe"",
             ""roles"": [
-                5,
                 3,
                 2
             ],
@@ -119,15 +125,15 @@ namespace Wedding.Lambdas.UnitTests.TestData
             ]
         },
         {
-            ""invitationCode"": ""RVMBL"",
-            ""guestId"": ""8e22da5e-2943-4297-bb78-1d60e82ba94c"",
+            ""invitationCode"": ""ABAAB"",
+            ""guestId"": ""73340000-0000-0000-0000-000000000002"",
             ""guestNumber"": 2,
             ""auth0Id"": ""placeholder-auth0-id-2"",
-            ""firstName"": ""FirstNamePlaceholder2"",
+            ""firstName"": ""Jane"",
             ""additionalFirstNames"": [
                 ""additionalNamePlaceholder2""
             ],
-            ""lastName"": ""LastNamePlaceholder2"",
+            ""lastName"": ""Doe"",
             ""roles"": [
                 5,
                 3,

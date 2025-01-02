@@ -1,7 +1,6 @@
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
@@ -10,8 +9,7 @@ using Wedding.Common.DI;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
 using Wedding.Common.Serialization;
-using Wedding.Common.Helpers.AWS.Frontend;
-using System.Text.Json;
+using Wedding.Common.Helpers.AWS;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Create;
 
@@ -19,14 +17,23 @@ public class Function
 {
     private readonly ServiceProvider _serviceProvider;
 
-    public Function()
+    public Function() : this(BuildDefaultServiceProvider())
+    {
+    }
+
+    public Function(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    private static ServiceProvider BuildDefaultServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<AdminCreateFamilyUnitHandler>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
@@ -59,94 +66,28 @@ public class Function
 
             var result = await handler.ExecuteAsync(command);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = (int)HttpStatusCode.OK,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Data = JsonSerializer.SerializeToElement(result)
-                }.ToBody()
-            };
+            return result.OkResponse();
         }
         catch (UnauthorizedAccessException ex)
         {
-            var statusCode = (int)HttpStatusCode.Unauthorized;
             var error = $"Authorization exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(UnauthorizedAccessException).ToString(),
-                        Description = error
-                    }
-                }.ToBody()
-            };
+            return error.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
         }
         catch (ValidationException ex)
         {
-            var statusCode = (int)HttpStatusCode.BadRequest;
             var exception = $"Validation exception: {ex.Message}";
             context.Logger.LogError(exception);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(ValidationException).ToString(),
-                        Description = exception
-                    }
-                }.ToBody()
-            };
+            return exception.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
         }
         catch (Exception ex)
         {
-            var statusCode = (int)HttpStatusCode.InternalServerError;
             var exception = $"Error occurred: {ex.Message}";
             context.Logger.LogError(exception);
-
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(Exception).ToString(),
-                        Description = exception
-                    }
-                }.ToBody()
-            };
+            
+            return exception.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
         }
     }
 }

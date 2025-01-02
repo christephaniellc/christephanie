@@ -79,7 +79,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
                 InvitationResponseNotes = "Can't wait!",
-                GuestLogins = new List<DateTime> { System.DateTime.Now, System.DateTime.Now }
+                LastActivity = System.DateTime.Now 
             };
 
             var dto = _mapper.Map<GuestDto>(entity);
@@ -93,7 +93,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Email.Should().Be(entity.Email);
             dto.Phone.Should().Be(entity.Phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
-            dto.GuestLogins.Should().BeEquivalentTo(entity.GuestLogins);
+            dto.LastActivity.Should().Be(entity.LastActivity);
             dto.Rsvp.Should().NotBeNull();
             dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
             EmptyObjectHelper.ObjectPropertiesAreNullOrEmpty(dto.Preferences!).Should().BeTrue();
@@ -116,7 +116,6 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<RsvpDto>(entity);
 
-            dto.GuestId.Should().Be(entity.GuestId);
             dto.InvitationResponse.Should().Be(entity.InvitationResponse);
             dto.Wedding.Should().Be(entity.RsvpWedding);
             dto.SleepPreference.Should().Be(entity.SleepPreference);
@@ -140,11 +139,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<PreferencesDto>(entity);
 
-           dto.GuestId.Should().Be(entity.GuestId);
-           dto.Meal.Should().Be(entity.PrefMeal);
-           dto.KidsPortion.Should().Be(entity.PrefKidsPortion);
-           dto.FoodAllergies.Should().Be(entity.PrefFoodAllergies);
-           dto.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
+            dto.Meal.Should().Be(entity.PrefMeal);
+            dto.KidsPortion.Should().Be(entity.PrefKidsPortion);
+            dto.FoodAllergies.Should().Be(entity.PrefFoodAllergies);
+            dto.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
         }
 
         [Test]
@@ -178,7 +176,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                             SleepPreference = SleepPreferenceEnum.Camping,
                             ArrivalDate = System.DateTime.Now
                         },
-                        GuestLogins = new List<DateTime>{System.DateTime.Now},
+                        LastActivity = System.DateTime.Now,
                     },
                     new GuestDto { GuestId = Guid.NewGuid().ToString() }
                 },
@@ -213,7 +211,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Email = "john.doe@example.com",
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
-                GuestLogins = new List<DateTime> { System.DateTime.Now },
+                LastActivity =  System.DateTime.Now,
                 InvitationResponse = InvitationResponseEnum.Interested,
                 RsvpWedding = RsvpEnum.Attending,
                 PrefMeal = MealPreferenceEnum.Vegan,
@@ -265,7 +263,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                     FoodAllergies = "Peanuts",
                     SpecialAlcoholRequests = "Non-alcoholic beer"
                 },
-                GuestLogins = new List<DateTime> { System.DateTime.Now },
+                LastActivity = System.DateTime.Now,
             };
 
             // Act
@@ -281,7 +279,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.Roles.Should().BeEquivalentTo(guestDto.Roles);
             entity.Email.Should().Be(guestDto.Email);
             entity.Phone.Should().Be(guestDto.Phone);
-            entity.GuestLogins.Should().BeEquivalentTo(guestDto.GuestLogins);
+            entity.LastActivity.Should().Be(guestDto.LastActivity);
 
             entity.InvitationResponse.Should().Be(guestDto.Rsvp.InvitationResponse);
             entity.RsvpWedding.Should().Be(guestDto.Rsvp.Wedding);

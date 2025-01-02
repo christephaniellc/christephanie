@@ -76,7 +76,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
             // Act & Assert
             var result = _validator.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.MethodArn)
-                  .WithErrorMessage("Arn cannot be empty.");
+                  .WithErrorMessage("'MethodArn' must not be empty.");
         }
 
         [Test]

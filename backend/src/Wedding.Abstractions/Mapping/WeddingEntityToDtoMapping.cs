@@ -46,7 +46,7 @@ namespace Wedding.Abstractions.Mapping
                 /// Creates database record from family
                 /// </summary>
                 CreateMap<FamilyUnitDto, WeddingEntity>()
-                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetFamilyUnitPartitionKey(src.InvitationCode)))
+                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetPartitionKey(src.InvitationCode)))
                     .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => DynamoKeys.GetFamilyInfoSortKey()))
                     .ForMember(dest => dest.InvitationCode, opt => opt.MapFrom(src => src.InvitationCode))
                     .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.UnitName))
@@ -80,7 +80,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => src.EmailVerified))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
-                    .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
+                    .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
                     .ForMember(dest => dest.Rsvp, opt => 
                         opt.MapFrom(src => new RsvpDto
                     {
@@ -107,7 +107,7 @@ namespace Wedding.Abstractions.Mapping
                 /// Creates database record from family
                 /// </summary>
                 CreateMap<GuestDto, WeddingEntity>()
-                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetGuestPartitionKey(src.InvitationCode)))
+                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => DynamoKeys.GetPartitionKey(src.InvitationCode)))
                     .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => DynamoKeys.GetGuestSortKey(src.GuestId)))
                     .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.GuestNumber, opt => opt.MapFrom(src => src.GuestNumber))
@@ -120,7 +120,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => src.EmailVerified))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
-                    .ForMember(dest => dest.GuestLogins, opt => opt.MapFrom(src => src.GuestLogins))
+                    .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
 
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.InvitationResponse : InvitationResponseEnum.Pending))
                     .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.Wedding : null))

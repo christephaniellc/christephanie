@@ -4,12 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using Wedding.Common.DI;
 using Wedding.Lambdas.HelloWorld.Handlers;
-using System.Collections.Generic;
 using System.Net;
-using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
-using Wedding.Common.Helpers.AWS.Frontend;
-using Microsoft.AspNetCore.Http;
+using Wedding.Common.Helpers.AWS;
 
 namespace Wedding.Lambdas.HelloWorld;
 
@@ -40,41 +37,14 @@ public class Function
             var handler = scope.ServiceProvider.GetRequiredService<HelloWorldHandler>();
             var result = await handler.GetAsync();
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = (int)HttpStatusCode.OK,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData(result).ToBody()
-            };
+            return result.OkResponse();
         }
         catch (Exception ex)
         {
-            var statusCode = (int)HttpStatusCode.InternalServerError;
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
-            return new APIGatewayProxyResponse
-            {
-                StatusCode = statusCode,
-                IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = new FrontendApiData
-                {
-                    Error = new FrontendApiError
-                    {
-                        Status = statusCode,
-                        Error = typeof(Exception).ToString(),
-                        Description = error
-                    }
-                }.ToBody()
-            };
+            return error.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
         }
     }
 }

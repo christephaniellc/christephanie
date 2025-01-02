@@ -39,7 +39,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                 var familyUnit = command.FamilyUnit;
                 familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
 
-                var familyInfoPartitionKey = DynamoKeys.GetFamilyUnitPartitionKey(familyUnit.InvitationCode);
+                var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                 var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                 familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
@@ -70,13 +70,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                     {
                         guest.GuestId = Guid.NewGuid().ToString();
                         guest.GuestNumber = guestNumber++;
-                        var guestPartitionKey = DynamoKeys.GetGuestPartitionKey(familyUnit.InvitationCode);
+                        var partitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                         var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
                         AddDefaultRoles(guest);
                         
                         var guestEntity = new WeddingEntity()
                         {
-                            PartitionKey = guestPartitionKey,
+                            PartitionKey = partitionKey,
                             SortKey = guestSortKey,
                             InvitationCode = familyUnit.InvitationCode,
                             GuestId = guest.GuestId,

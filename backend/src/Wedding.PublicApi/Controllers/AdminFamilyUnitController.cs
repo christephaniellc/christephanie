@@ -141,8 +141,6 @@ namespace Wedding.PublicApi.Controllers
 //#endif
 
                 var command = new AdminUpdateFamilyUnitCommand(familyUnit,
-                    authenticatedGuest.GuestId, 
-                    authenticatedGuest.InvitationCode, 
                     authenticatedGuest.Roles);
                 var result = await _dispatcher.ExecuteAsync<AdminUpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 

@@ -24,8 +24,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_NotValidate_When_Self_NotAdmin()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, 
-                TestDataHelper.GUEST_JOHN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_JOHN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -36,8 +35,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Validate_When_FamilyUnit_Is_Valid_And_Admin()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE,
-                TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_ADMIN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -48,8 +46,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_NotValidate_When_FamilyUnit_Is_Valid_And_User_Has_No_Permission()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE,
-                TestDataHelper.GUEST_JOHN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_JOHN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -60,8 +57,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Have_Error_When_FamilyUnit_Is_Null()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(null,
-                TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(null, TestDataHelper.GUEST_ADMIN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -79,8 +75,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                 Tier = "Tier1",
                 Guests = new List<GuestDto>()
             };
-            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit,
-            TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -101,12 +96,37 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     new GuestDto { FirstName = "Guest1", Email = "guest1@example.com" }
                 }
             };
-            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit,
-            TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
             result.ShouldHaveValidationErrorFor("FamilyUnit.InvitationCode");
+        }
+
+        [Test]
+        public void Should_Have_Error_When_User_Not_Admin()
+        {
+            // Arrange
+            var validFamilyUnit = new FamilyUnitDto
+            {
+                InvitationCode = "ABCDE",
+                Tier = "A",
+                Guests = new List<GuestDto>
+                {
+                    new GuestDto
+                    {
+                        FirstName = "Guest1",
+                        LastName = "Last",
+                        Email = "guest1@example.com",
+                        GuestNumber = 1
+                    }
+                }
+            };
+            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
+
+            // Act & Assert
+            var result = _validator.TestValidate(command);
+            result.ShouldHaveValidationErrorFor("FamilyUnit.UserRoles");
         }
     }
 }
