@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
@@ -34,7 +35,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public async Task ExecuteAsync_DeletesFamilyUnit_ReturnsTrue()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
             var cancellationToken = CancellationToken.None;
 
             var weddingEntities = new List<WeddingEntity>
@@ -65,7 +66,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void ExecuteAsync_WhenRepositoryThrowsException_ThrowsApplicationException()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE");
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
             var cancellationToken = CancellationToken.None;
 
             _mockDynamoDBProvider
@@ -83,7 +84,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void ExecuteAsync_InvalidCommand_ThrowsArgumentException()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand(null);
+            var command = new AdminDeleteFamilyUnitCommand(null, new List<RoleEnum> { RoleEnum.Admin });
             var cancellationToken = CancellationToken.None;
 
             // Act & Assert

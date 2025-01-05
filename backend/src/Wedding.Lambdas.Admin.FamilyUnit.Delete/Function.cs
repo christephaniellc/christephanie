@@ -53,12 +53,14 @@ public class Function
                 throw new ValidationException("Invalid or missing InvitationCode in request.");
             }
 
+            var authContext = request.GetAuthContext();
+
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
 
-            var command = new AdminDeleteFamilyUnitCommand(invitationCode);
+            var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext.ParseRoles());
 
-            context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
-            context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.InvitationCode)}");
+            context.Logger.LogInformation($"Command: {JsonSerializer.Serialize(command)}");
+            context.Logger.LogInformation($"FamilyUnit: {JsonSerializer.Serialize(command.InvitationCode)}");
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AdminDeleteFamilyUnitHandler>();

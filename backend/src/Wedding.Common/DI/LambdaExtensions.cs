@@ -66,7 +66,6 @@ namespace Wedding.Common.DI
 
         private static void RegisterHandlers(ContainerBuilder builder, Type type, IEnumerable<Assembly> assemblies)
         {
-
             foreach (var assembly in assemblies)
             {
                 builder.RegisterAssemblyTypes(assembly)

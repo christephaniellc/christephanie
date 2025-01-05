@@ -12,6 +12,10 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
+using Wedding.Lambdas.FamilyUnit.Get.Validation;
+using Wedding.Lambdas.FamilyUnit.Update.Commands;
+using Wedding.Lambdas.FamilyUnit.Update.Validation;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -20,12 +24,14 @@ namespace Wedding.PublicApi.Controllers
     public class FamilyUnitController : ControllerBase
     {
         private readonly IControllerDispatcher _dispatcher;
-        private readonly Auth0Configuration _authConfiguration;
+        private ILambdaAuthorizer _lambdaAuthorizer;
+        private Auth0Configuration _auth0Configuration;
 
-        public FamilyUnitController(IControllerDispatcher dispatcher, Auth0Configuration authConfiguration)
+        public FamilyUnitController(IControllerDispatcher dispatcher, Auth0Configuration auth0Configuration, ILambdaAuthorizer lambdaAuthorizer)
         {
             _dispatcher = dispatcher;
-            _authConfiguration = authConfiguration;
+            _lambdaAuthorizer = lambdaAuthorizer;
+            _auth0Configuration = auth0Configuration;
         }
 
         [Authorize]
@@ -34,11 +40,12 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                LambdaArns.AdminFamilyUnitCreate, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
-            var authQuery = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, LambdaArns.FamilyUnitGet, token);
-            var authResponse = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(authQuery);
-
-            var query = new GetFamilyUnitQuery(authResponse.GetInvitationCode(), authResponse.GetGuestId(), authResponse.GetRoles());
+            var query = new GetFamilyUnitQuery(authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            query.Validate();
             var result = await _dispatcher.GetAsync<GetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
             return Ok(result);
@@ -51,12 +58,13 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<FamilyUnitDto>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                LambdaArns.AdminFamilyUnitCreate, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
-            var authQuery = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, LambdaArns.AdminFamilyUnitUpdate, token);
-            var authUserResult = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(authQuery);
-
-            var command = new AdminUpdateFamilyUnitCommand(familyUnit, authUserResult.GetRoles());
-            var result = await _dispatcher.ExecuteAsync<AdminUpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+            var command = new UpdateFamilyUnitCommand(familyUnit, authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            command.Validate();
+            var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
             return Ok(result);
         }

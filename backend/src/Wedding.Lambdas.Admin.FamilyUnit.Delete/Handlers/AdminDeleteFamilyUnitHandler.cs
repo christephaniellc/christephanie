@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Wedding.Abstractions.Entities;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
@@ -31,6 +30,12 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers
             try
             {
                 var items = await _dynamoDBProvider.QueryAsync(command.InvitationCode);
+
+                if (items == null)
+                {
+                    _logger.LogError($"Could not delete family with invitation code '{command.InvitationCode}': family not found.");
+                    throw new Exception();
+                }
 
                 foreach (var item in items)
                 {

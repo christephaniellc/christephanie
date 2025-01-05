@@ -39,13 +39,11 @@ public class Function
             GetUserQuery query;
             context.Logger.LogInformation($"Raw Query Input (should be empty): {request.QueryStringParameters}");
 
-            var userId = request.GetGuestIdFromAuthContext();
-            var invitationCode = request.GetInvitationCodeFromAuthContext();
-            var roles = request.GetRolesFromAuthContext();
+            var authContext = request.GetAuthContext();
 
-            context.Logger.LogInformation($"Raw Auth Input: {userId} {invitationCode} {string.Join(",", roles)}");
+            context.Logger.LogInformation($"Raw Auth Input: {authContext.GuestId} {authContext.InvitationCode} {authContext.Roles}");
 
-            query = new GetUserQuery(userId, invitationCode, roles);
+            query = new GetUserQuery(authContext.GuestId, authContext.InvitationCode, authContext.ParseRoles());
         
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetUserHandler>();

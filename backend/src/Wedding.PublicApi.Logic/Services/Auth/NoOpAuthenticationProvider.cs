@@ -36,11 +36,11 @@ namespace Wedding.PublicApi.Logic.Services.Auth
         // {
         //     if (_isAdmin)
         //     {
-        //         authenticatedUser.UserRoles.Add(RoleEnum.Admin);
+        //         authenticatedUser.CurrentUserRoles.Add(RoleEnum.Admin);
         //         return Task.FromResult(authenticatedUser);
         //     }
         //
-        //     authenticatedUser.UserRoles.Add(RoleEnum.Guest);
+        //     authenticatedUser.CurrentUserRoles.Add(RoleEnum.Guest);
         //     return Task.FromResult(authenticatedUser);
         //}
 

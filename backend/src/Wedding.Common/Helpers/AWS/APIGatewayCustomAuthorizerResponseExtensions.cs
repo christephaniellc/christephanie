@@ -69,23 +69,23 @@ namespace Wedding.Common.Helpers.AWS
             return context;
         }
 
-        public static string? GetGuestId(this APIGatewayCustomAuthorizerResponse response)
+        public static string? GetGuestIdFromAuth(this APIGatewayCustomAuthorizerResponse response)
         {
             //return response.Context["principalId"]?.ToString();
             return response.Context["guestId"]?.ToString();
         }
 
-        public static string? GetInvitationCode(this APIGatewayCustomAuthorizerResponse response)
+        public static string? GetInvitationCodeFromAuth(this APIGatewayCustomAuthorizerResponse response)
         {
             return response.Context["invitationCode"]?.ToString();
         }
 
-        public static string? GetToken(this APIGatewayCustomAuthorizerResponse response)
+        public static string? GetTokenFromAuth(this APIGatewayCustomAuthorizerResponse response)
         {
             return response.Context["token"]?.ToString();
         }
 
-        public static List<RoleEnum>? GetRoles(this APIGatewayCustomAuthorizerResponse response)
+        public static List<RoleEnum>? GetRolesFromAuth(this APIGatewayCustomAuthorizerResponse response)
         {
             return response.Context["roles"]?.ToString()
                 .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
