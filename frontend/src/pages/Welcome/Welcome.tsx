@@ -4,25 +4,22 @@ import {
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
-import useFamilyUnit from '@/store/family';
-import useUser from '@/store/user';
-import Countdowns from '@/components/Countdowns';
-import { InvitationResponseEnum } from '@/types/api';
+import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
+
 
 const Welcome = () => {
-  const [_familyUnit, actions] = useFamilyUnit();
-  const [user] = useUser();
-  const { getFamilyUnitQuery } = actions;
-  const _isLoading = !user && getFamilyUnitQuery.status === 'pending';
-
   return (
-
     <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap='wrap'>
       <Box display='flex' flexDirection='column' width='100%'>
         <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%" textAlign="center">
         Steph & Topher
-      </Typography>
-        <Countdowns event="Invitation" interested={InvitationResponseEnum.Pending} />
+        </Typography>
+        <Box mx='auto'>
+          <EightBitWeddingLogo />
+        </Box>
+        <Typography variant='caption' color='text.secondary' mt={-4}>
+          We're gettin' hitched.
+        </Typography>
       </Box>
       <Box maxWidth={600} mx="auto" mb={2}>
         <InvitationCodeInputs />

@@ -4,54 +4,58 @@ import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Link } from 'react-router-dom';
 import { useAppStateContext } from '@/context/Providers/AppState/AppStateContext';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import ThemeIcon from '@mui/icons-material/InvertColors';
-import IconButton from '@mui/material/IconButton';
 import useTheme from '@/store/theme';
+import { Themes } from '@/theme/types';
+import { Link } from 'react-router-dom';
 
 export const BottomNav = () => {
   const { navValue, setNavValue } = useAppStateContext();
-  const { user, loginWithPopup } = useAuth0();
-  const [_, themeActions] = useTheme();
+  const { user, loginWithPopup, logout } = useAuth0();
+  const [themes, themeActions] = useTheme();
 
   return (
     <Box position="fixed" bottom={0} width="100%">
       <BottomNavigation
-        sx={{ pt: 1 }}
         value={navValue}
         onChange={(event, newValue) => {
           setNavValue(newValue);
         }}
       >
-        <Link to={routes[Pages.Welcome].path!}>
-          <BottomNavigationAction
-            showLabel={true}
-            value={routes[Pages.Welcome].path!}
-            label="Home"
-            icon={<HomeIcon />}
-          />
-        </Link>
-        <Link to={routes[Pages.SaveTheDate].path!}>
-          <BottomNavigationAction showLabel={true} value={routes[Pages.SaveTheDate].path!} label="Invitation" icon={<ConnectWithoutContactIcon />} />
-        </Link>
-        <Link to={routes[Pages.Profile].path!} onClick={() => user ? () => {} : loginWithPopup()}>
-          <BottomNavigationAction showLabel={true} value={routes[Pages.Profile].path!} label="Profile" icon={<ProfileIcon />} />
-        </Link>
-        <IconButton
-          color="info"
-          edge="end"
-          size="large"
-          onClick={themeActions.toggle}
-          data-pw="theme-toggle"
-          sx={{ pt: 1, ml: 'auto', mr: 1}}
-        >
-          <ThemeIcon />
-        </IconButton>
-      </BottomNavigation>
+        <BottomNavigationAction // Routes
+          label="Home"
+          component={Link}
+          showLabel={true}
+          to={routes[Pages.Welcome].path!}
+          icon={<HomeIcon />}
+        />
+        <BottomNavigationAction
+          disabled={!user}
+          label="Invitation"
+          component={Link}
+          showLabel={true}
+          to={routes[Pages.SaveTheDate].path!}
+          icon={<ConnectWithoutContactIcon />}
+        />
 
+        <BottomNavigationAction // Actions
+          label={user ? 'Logout' : 'Login'}
+          sx={{ ml: 'auto' }}
+          showLabel={true}
+          icon={<ProfileIcon />}
+          onClick={() => user ? logout() : loginWithPopup()}
+        />
+        <BottomNavigationAction
+          showLabel={true}
+          icon={<ThemeIcon />}
+          label={themes === Themes.DARK ? 'Light' : 'Dark'}
+          onClick={() => themeActions.toggle()}
+        />
+      </BottomNavigation>
     </Box>
-  );
+  )
+    ;
 };

@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import Api from '@/api/Api';
 import { useNavigate } from 'react-router-dom';
+import { getConfig } from '@/auth_config';
 
 interface ApiContextProps {
   api: Api;
@@ -10,7 +11,8 @@ export const ApiContext = React.createContext({} as ApiContextProps);
 
 export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const navigate = useNavigate();
-  const api = new Api(navigate)
+
+  const api = new Api(navigate);
 
   return (
     <ApiContext.Provider value={{ api }}>
@@ -19,7 +21,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   );
 };
 
-export const useApi = () => {
+export const useApiContext = () => {
   const context = useContext(ApiContext);
   if (context === undefined) {
     throw new Error('useApi must be used within a ApiContextProvider');
