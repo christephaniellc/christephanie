@@ -30,8 +30,8 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         public async Task Should_Validate_When_All_Fields_Are_Valid()
         {
             // Arrange
-            var authority = "https://valid-authority.com";
-            var audience = "valid-audience";
+            var authority = _testTokenHelper.JwtAuthority;
+            var audience = _testTokenHelper.JwtAudience;
             var query = new ValidateAuthQuery(authority,
                 audience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
@@ -46,10 +46,11 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         public void Should_Have_Error_When_Token_Is_Invalid()
         {
             // Arrange
-            var query = new ValidateAuthQuery("https://valid-authority.com",
-                "valid-audience",
+            var query = new ValidateAuthQuery(
+                _testTokenHelper.JwtAuthority,
+                _testTokenHelper.JwtAudience,
                "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
-                "");
+                "sdfsdfsdf");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
@@ -60,8 +61,9 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         public void Should_Have_Error_When_MethodArn_Is_Invalid()
         {
             // Arrange
-            var query = new ValidateAuthQuery("https://valid-authority.com",
-                "valid-audience",
+            var query = new ValidateAuthQuery(
+            _testTokenHelper.JwtAuthority,
+            _testTokenHelper.JwtAudience,
                 "invalid:arn",
                 "valid.jwt.token");
 
@@ -75,25 +77,42 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         public void Should_Have_Error_When_MethodArn_Is_Empty()
         {
             // Arrange
-            var query = new ValidateAuthQuery("https://valid-authority.com",
-                "valid-audience",
+            var query = new ValidateAuthQuery(
+                _testTokenHelper.JwtAuthority,
+                _testTokenHelper.JwtAudience,
                 "",
                 "valid.jwt.token");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.MethodArn)
-                  .WithErrorMessage("'MethodArn' must not be empty.");
+                  .WithErrorMessage("'Method Arn' must not be empty.");
         }
 
         [Test]
         public void Should_Have_Error_When_Token_Is_Null()
         {
             // Arrange
-            var query = new ValidateAuthQuery( "https://valid-authority.com",
-                "valid-audience",
+            var query = new ValidateAuthQuery(
+                _testTokenHelper.JwtAuthority,
+                _testTokenHelper.JwtAudience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
                 null);
+
+            // Act & Assert
+            var result = _validator.TestValidate(query);
+            result.ShouldHaveValidationErrorFor(q => q.Token);
+        }
+
+        [Test]
+        public void Should_Have_Error_When_Token_Is_Empty()
+        {
+            // Arrange
+            var query = new ValidateAuthQuery(
+                _testTokenHelper.JwtAuthority,
+                _testTokenHelper.JwtAudience,
+                "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
+                "");
 
             // Act & Assert
             var result = _validator.TestValidate(query);
