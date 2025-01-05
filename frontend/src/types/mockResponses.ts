@@ -1,4 +1,4 @@
-import { FamilyUnitDto } from '@/types/api';
+import {FamilyUnitDto, InvitationResponseEnum} from '@/types/api';
 
 export const mockFamilyUnitDto: FamilyUnitDto = {
   'invitationCode': 'abc',
@@ -26,7 +26,7 @@ export const mockFamilyUnitDto: FamilyUnitDto = {
       'ageGroup': 'Adult',
       'rsvp': {
         'guestId': 'guest-001',
-        'invitationResponse': 'Interested',
+        'invitationResponse': InvitationResponseEnum.Interested,
         'wedding': 'Attending',
         'sleepPreference': 'Hotel',
         'rehearsalDinner': 'Pending',
@@ -66,7 +66,7 @@ export const mockFamilyUnitDto: FamilyUnitDto = {
       'ageGroup': 'Teenager',
       'rsvp': {
         'guestId': 'guest-002',
-        'invitationResponse': 'Pending',
+        'invitationResponse': InvitationResponseEnum.Pending,
         'wedding': 'Pending',
         'sleepPreference': 'Unknown',
         'rehearsalDinner': 'Pending',

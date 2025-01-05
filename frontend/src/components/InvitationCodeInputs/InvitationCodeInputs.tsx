@@ -1,38 +1,50 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Button, TextField, Typography } from '@mui/material';
-import { useRecoilState } from 'recoil';
-import { firstNameState, invitationCodeState } from '@/store/invitationInputs';
-import useUser from '@/store/user';
-import { useAuth0 } from '@auth0/auth0-react';
-import { useNavigate } from 'react-router-dom';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import {
+  findUserState,
+  firstNameState,
+  invitationButtonSelectorState,
+  invitationCodeState,
+} from '@/store/invitationInputs';
+import { userState } from '@/store/user';
+import { useQuery } from '@tanstack/react-query';
+import { useApiContext } from '@/context/ApiContext';
 
 export const InvitationCodeInputs = () => {
+  const { api } = useApiContext();
   const [invitationCode, setInvitationCode] = useRecoilState(invitationCodeState);
   const [firstName, setFirstName] = useRecoilState(firstNameState);
-  const { user: auth0User } = useAuth0();
-  const [_user, actions] = useUser();
-  const { findUserMutation} = actions;
-  const navigate = useNavigate();
-  const handleFindUser = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    findUserMutation.mutate();
+  const [user, setUser] = useRecoilState(userState);
+  const [findUser, setFindUser] = useRecoilState(findUserState);
+
+  const queryKey = `invitationCode=${invitationCode}&firstName=${firstName}`;
+
+  const findUserQuery = useQuery({
+    queryKey: [`findUserQuery`, queryKey],
+    queryFn: () => api.findUser(queryKey),
+    retry: false,
+    enabled: findUser,
+  });
+
+  const handleFindUser = () => {
+    if (invitationCode && firstName) {
+      setFindUser(true);
+    }
+  };
+
+  const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
+
+  if (user?.auth0Id) {
+    return (
+      <Button
+        color="warning"
+        variant="outlined"
+      >
+        Let&#39;s get started
+      </Button>
+    );
   }
-
-  const createAcctButtonText = useMemo(() => {
-    if (auth0User) return "Account Created!"
-    if (findUserMutation.data) return "Please sign in"
-    if (findUserMutation.status === "idle") return "Create Account"
-    if (findUserMutation.status === "pending") return "Checking guest list"
-    if (findUserMutation.status === 'error') return `No matching invitation found`
-  }, [findUserMutation, auth0User])
-
-  // useEffect(() => {
-  //   if (auth0User) {
-  //     navigate('/save-the-date');
-  //   }
-  // }, [auth0User]);
-
-  if (auth0User) return <Button color="warning" variant="outlined" onClick={() => navigate('/save-the-date')}>Let&#39;s get started</Button>
 
   return (
     <form>
@@ -70,9 +82,10 @@ export const InvitationCodeInputs = () => {
           },
         }}
       />
-      <Button
-        type="submit" disabled={!firstName || !invitationCode || !!auth0User} fullWidth variant="contained"
-              onClick={handleFindUser}>{createAcctButtonText}</Button>
+      <Button disabled={!firstName || !invitationCode || !!user?.auth0Id} fullWidth
+              variant="contained" onClick={() => handleFindUser()}>
+        {invitationButtonText}
+      </Button>
     </form>
   );
 };

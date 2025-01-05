@@ -1,11 +1,13 @@
 import React from 'react';
-import { Box, TextField, Typography } from '@mui/material';
-import { useInvitation } from '@/context/Providers/AppState/Wedding/Rsvp/useInvitation';
-import useTheme from '@/store/theme';
+import { Box, TextField, Typography, useTheme } from '@mui/material';
+import { useRecoilValue } from 'recoil';
+import { familyGuestsStates, familyState } from '@/store/family';
 
 const AddressEnvelope: React.FC = () => {
-  const { lastNames, setFamilyUnitAddress, familyUnit } = useInvitation();
-  const { theme } = useTheme();
+  // const { lastNames, setFamilyUnitAddress, familyUnit } = useInvitation();
+  const familyUnit = useRecoilValue(familyState)
+  const { callByLastNames } = useRecoilValue(familyGuestsStates);
+  const theme = useTheme();
   const gradientBorder = `
     repeating-linear-gradient(
       45deg,
@@ -39,7 +41,7 @@ const AddressEnvelope: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-          The {lastNames}
+          The {callByLastNames}
         </Typography>
         <Box
           component="form"
@@ -54,7 +56,7 @@ const AddressEnvelope: React.FC = () => {
                      variant="standard"
                      fullWidth
                      value={familyUnit?.mailingAddress || ''}
-                     onChange={(e) => setFamilyUnitAddress('street', e.target.value)}
+                     // onChange={(e) => setFamilyUnitAddress('street', e.target.value)}
                      size="small"
           />
           <TextField color="secondary" label="Apartment Number" variant="standard" fullWidth size="small" />
