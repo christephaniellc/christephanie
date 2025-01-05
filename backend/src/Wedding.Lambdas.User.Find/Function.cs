@@ -76,7 +76,7 @@ public class Function
             var error = $"KeyNotFoundException exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString());
+            return viewError.ErrorResponse((int)HttpStatusCode.NoContent, typeof(KeyNotFoundException).ToString());
         }
         catch (Exception ex)
         {
