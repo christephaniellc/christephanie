@@ -60,6 +60,8 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
+            var authContext = request.GetAuthContext();
+
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<UspsAddressValidationHandler>();
             

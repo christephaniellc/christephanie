@@ -134,6 +134,42 @@ namespace Wedding.Common.Helpers.AWS
             return familyUnit;
         }
 
+        public async Task<List<FamilyUnitDto>?> GetFamilyUnitsAsync(CancellationToken cancellationToken = default)
+        {
+            var familyUnits = new List<FamilyUnitDto>();
+            var scanConfig = new ScanOperationConfig
+            {
+                // Add any optional filters here, if needed
+            };
+
+            var results = await _repository.FromScanAsync<WeddingEntity>(scanConfig).GetRemainingAsync();
+
+            //var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
+
+            var familyUnitEntities = _mapper.Map<List<FamilyUnitDto>>(results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
+
+            foreach (var familyUnit in familyUnitEntities)
+            {
+                var guests = results.Where(x => 
+                        x.SortKey.StartsWith(DynamoKeys.Guest) && x.InvitationCode.Equals(familyUnit.InvitationCode))
+                    .Select(x => _mapper.Map<GuestDto>(x))
+                    .ToList();
+
+                if (guests.Count == 0)
+                {
+                    _logger.LogError($"No guests with invitation code '{familyUnit.InvitationCode}' found.");
+                    //throw new ApplicationException($"Invalid invitation code '{familyUnit.InvitationCode}', no guests found.");
+                }
+
+                familyUnit.Guests = guests;
+                familyUnit.Guests = familyUnit.OrderedGuests();
+
+                familyUnits.Add(familyUnit);
+            }
+
+            return familyUnits;
+        }
+
         public async Task SaveAsync(WeddingEntity entity, CancellationToken cancellationToken = default)
         {
             await _repository.SaveAsync(entity, cancellationToken);

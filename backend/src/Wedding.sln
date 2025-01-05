@@ -47,6 +47,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.User.Get", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.User.Find", "Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj", "{DAD95F95-2803-46E5-ACCF-A20171977738}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.FamilyUnit.Get", "Wedding.Lambdas.Admin.FamilyUnit.Get\Wedding.Lambdas.Admin.FamilyUnit.Get.csproj", "{EDB59F5C-0E79-41DC-A481-6C4A3339A65F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,10 @@ Global
 		{DAD95F95-2803-46E5-ACCF-A20171977738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAD95F95-2803-46E5-ACCF-A20171977738}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAD95F95-2803-46E5-ACCF-A20171977738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDB59F5C-0E79-41DC-A481-6C4A3339A65F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDB59F5C-0E79-41DC-A481-6C4A3339A65F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDB59F5C-0E79-41DC-A481-6C4A3339A65F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDB59F5C-0E79-41DC-A481-6C4A3339A65F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -149,6 +155,7 @@ Global
 		{F94B78DB-1261-44FB-85B8-06C50A76CD3F} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{D76B5FD4-6EA7-4EC0-95C2-BB32ACE9D7FF} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{DAD95F95-2803-46E5-ACCF-A20171977738} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{EDB59F5C-0E79-41DC-A481-6C4A3339A65F} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE7DC1A-0F17-41CE-B205-8B3751B0072D}

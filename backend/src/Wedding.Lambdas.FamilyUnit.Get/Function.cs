@@ -46,19 +46,16 @@ public class Function
     {
         try
         {
-            GetFamilyUnitQuery query;
             context.Logger.LogInformation($"Raw Request Context: {JsonSerializer.Serialize(request)}");
             context.Logger.LogInformation($"Raw Lambda Context: {JsonSerializer.Serialize(context)}");
 
-            var invitationCode = request.GetInvitationCodeFromAuthContext();
-            var guestId = request.GetGuestIdFromAuthContext();
-            var roles = request.GetRolesFromAuthContext();
+            var authContext = request.GetAuthContext();
 
-            context.Logger.LogInformation($"invitationCode: {invitationCode}");
-            context.Logger.LogInformation($"guestId: {guestId}");
-            context.Logger.LogInformation($"roles: {roles}");
+            context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
+            context.Logger.LogInformation($"guestId: {authContext.GuestId}");
+            context.Logger.LogInformation($"roles: {authContext.Roles}");
 
-            query = new GetFamilyUnitQuery(invitationCode, guestId, roles);
+            var query = new GetFamilyUnitQuery(authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
             
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();

@@ -60,17 +60,14 @@ public class Function
         try
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
-
-            var invitationCode = request.GetInvitationCodeFromAuthContext();
-            var guestId = request.GetGuestIdFromAuthContext();
-            var roles = request.GetRolesFromAuthContext();
+            var authContext = request.GetAuthContext();
             var familyUnitDto = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
 
-            context.Logger.LogInformation($"invitationCode: {invitationCode}");
-            context.Logger.LogInformation($"guestId: {guestId}");
-            context.Logger.LogInformation($"roles: {roles}");
+            context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
+            context.Logger.LogInformation($"guestId: {authContext.GuestId}");
+            context.Logger.LogInformation($"roles: {authContext.Roles}");
 
-            var command = new UpdateFamilyUnitCommand(familyUnitDto, invitationCode, guestId, roles);
+            var command = new UpdateFamilyUnitCommand(familyUnitDto, authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
 
             if (command.FamilyUnit == null)
             {

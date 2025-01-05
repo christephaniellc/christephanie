@@ -16,8 +16,7 @@ using Wedding.Lambdas.Admin.FamilyUnit.Create.Validation;
 namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
 {
     public class AdminCreateFamilyUnitHandler : 
-        IAsyncCommandHandler<AdminCreateFamilyUnitCommand, FamilyUnitDto>
-        //, IAsyncCommandHandler<CreateFamilyUnitsCommand, FamilyUnitDto>
+        IAsyncCommandHandler<AdminCreateFamilyUnitsCommand, List<FamilyUnitDto>>
     {
         private readonly ILogger<AdminCreateFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -30,72 +29,79 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> ExecuteAsync(AdminCreateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<FamilyUnitDto>> ExecuteAsync(AdminCreateFamilyUnitsCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
+            var familyUnitsCreated = new List<FamilyUnitDto>();
 
             try
             {
-                var familyUnit = command.FamilyUnit;
-                familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
-
-                var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
-                var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
-
-                var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(familyUnit.InvitationCode);
-
-                if (existingFamilyUnit != null)
+                foreach (var familyUnit in command.FamilyUnits)
                 {
-                    throw new InvalidOperationException($"Family unit with Invitation code '{familyUnit.InvitationCode}' already exists.");
-                }
+                    familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
 
-                var familyInfo = new WeddingEntity()
-                {
-                    PartitionKey = familyInfoPartitionKey,
-                    SortKey = familyInfoSortKey,
-                    InvitationCode = familyUnit.InvitationCode,
-                    UnitName = familyUnit.UnitName,
-                    Tier = familyUnit.Tier,
-                    PotentialHeadCount = familyUnit.CalculateHeadcount()
-                };
-                await _dynamoDBProvider.SaveAsync(familyInfo, cancellationToken);
+                    var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
+                    var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
+                    familyUnit.UnitName =
+                        DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
-                var addedGuests = new List<GuestDto>();
-                var guestNumber = 1;
-                if (familyUnit.Guests != null)
-                {
-                    foreach (var guest in familyUnit.Guests)
+                    var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(familyUnit.InvitationCode);
+
+                    if (existingFamilyUnit != null)
                     {
-                        guest.GuestId = Guid.NewGuid().ToString();
-                        guest.GuestNumber = guestNumber++;
-                        var partitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
-                        var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                        AddDefaultRolesIfEmpty(guest);
-                        
-                        var guestEntity = new WeddingEntity()
-                        {
-                            PartitionKey = partitionKey,
-                            SortKey = guestSortKey,
-                            InvitationCode = familyUnit.InvitationCode,
-                            GuestId = guest.GuestId,
-                            GuestNumber = guest.GuestNumber,
-                            Tier = familyUnit.Tier,
-                            FirstName = guest.FirstName,
-                            LastName = guest.LastName,
-                            Roles = guest.Roles,
-                            Email = guest.Email,
-                            Phone = guest.Phone,
-                            AgeGroup = guest.AgeGroup,
-                            InvitationResponse = InvitationResponseEnum.Pending
-                        };
-                        await _dynamoDBProvider.SaveAsync(guestEntity, cancellationToken);
-                        addedGuests.Add(_mapper.Map<GuestDto>(guestEntity));
+                        throw new InvalidOperationException(
+                            $"Family unit with Invitation code '{familyUnit.InvitationCode}' already exists.");
                     }
+
+                    var familyInfo = new WeddingEntity()
+                    {
+                        PartitionKey = familyInfoPartitionKey,
+                        SortKey = familyInfoSortKey,
+                        InvitationCode = familyUnit.InvitationCode,
+                        UnitName = familyUnit.UnitName,
+                        Tier = familyUnit.Tier,
+                        PotentialHeadCount = familyUnit.CalculateHeadcount()
+                    };
+                    await _dynamoDBProvider.SaveAsync(familyInfo, cancellationToken);
+
+                    var addedGuests = new List<GuestDto>();
+                    var guestNumber = 1;
+                    if (familyUnit.Guests != null)
+                    {
+                        foreach (var guest in familyUnit.Guests)
+                        {
+                            guest.GuestId = Guid.NewGuid().ToString();
+                            guest.GuestNumber = guestNumber++;
+                            var partitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
+                            var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
+                            AddDefaultRolesIfEmpty(guest);
+
+                            var guestEntity = new WeddingEntity()
+                            {
+                                PartitionKey = partitionKey,
+                                SortKey = guestSortKey,
+                                InvitationCode = familyUnit.InvitationCode,
+                                GuestId = guest.GuestId,
+                                GuestNumber = guest.GuestNumber,
+                                Tier = familyUnit.Tier,
+                                FirstName = guest.FirstName,
+                                LastName = guest.LastName,
+                                Roles = guest.Roles,
+                                Email = guest.Email,
+                                Phone = guest.Phone,
+                                AgeGroup = guest.AgeGroup,
+                                InvitationResponse = InvitationResponseEnum.Pending
+                            };
+                            await _dynamoDBProvider.SaveAsync(guestEntity, cancellationToken);
+                            addedGuests.Add(_mapper.Map<GuestDto>(guestEntity));
+                        }
+                    }
+
+                    familyUnit.Guests = addedGuests;
+                    familyUnitsCreated.Add(familyUnit);
                 }
 
-                familyUnit.Guests = addedGuests;
-                return familyUnit;
+                return familyUnitsCreated;
             }
             catch (Exception ex)
             {

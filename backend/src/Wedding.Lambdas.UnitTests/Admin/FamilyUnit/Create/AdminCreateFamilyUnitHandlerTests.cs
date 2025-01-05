@@ -1,5 +1,5 @@
-﻿using Amazon.DynamoDBv2.DataModel;
-using AutoMapper;
+﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -40,20 +40,23 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         public async Task ExecuteAsync_Should_Throw_Exception_When_FamilyUnit_Already_Exists()
         {
             // Arrange
-            var command = new AdminCreateFamilyUnitCommand(
-                new FamilyUnitDto
+            var command = new AdminCreateFamilyUnitsCommand(
+                new List<FamilyUnitDto>() 
                 {
-                    InvitationCode = "ABCDE",
-                    Tier = "A",
-                    Guests = new List<GuestDto>
+                    new FamilyUnitDto
                     {
-                        new GuestDto
+                        InvitationCode = "ABCDE",
+                        Tier = "A",
+                        Guests = new List<GuestDto>
                         {
-                            FirstName = "John",
-                            LastName = "Doe"
+                            new GuestDto
+                            {
+                                FirstName = "John",
+                                LastName = "Doe"
+                            }
                         }
-                    }
-                }
+                    }},
+                new List<RoleEnum> { RoleEnum.Admin }
             );
 
             var existingFamilyUnit = new WeddingEntity
@@ -62,11 +65,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 SortKey = DynamoKeys.FamilyInfo
             };
 
-            // _repositoryMock.Setup(r => r.LoadAsync<WeddingEntity>(
-            //     It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            //     .ReturnsAsync(existingFamilyUnit);
-
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(command.FamilyUnit.InvitationCode,It.IsAny<CancellationToken>()))
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(command.FamilyUnits[0].InvitationCode,It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamilyUnit);
 
             // Act & Assert
@@ -75,20 +74,51 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         }
 
         [Test]
-        public async Task ExecuteAsync_Should_Save_FamilyUnit_And_Guests()
+        public async Task ExecuteAsync_Should_Throw_Exception_When_NotAdmin()
         {
             // Arrange
-            var command = new AdminCreateFamilyUnitCommand(
+            var command = new AdminCreateFamilyUnitsCommand(
+                new List<FamilyUnitDto>()
+                    {
                 new FamilyUnitDto
                 {
-                    InvitationCode = "ABCDE",
+                    InvitationCode = "BBCDE",
                     Tier = "A",
                     Guests = new List<GuestDto>
                     {
-                        new GuestDto { FirstName = "John", LastName = "Doe" },
-                        new GuestDto { FirstName = "Jane", LastName = "Doe" }
+                        new GuestDto
+                        {
+                            FirstName = "Horst",
+                            LastName = "Klu"
+                        }
                     }
-                }
+                }},
+                new List<RoleEnum> { RoleEnum.Guest }
+            );
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ValidationException>(async () => await _handler.ExecuteAsync(command));
+            Assert.That(ex!.Message, Does.Contain("CurrentUserRoles: No admin permissions"));
+        }
+
+        [Test]
+        public async Task ExecuteAsync_Should_Save_FamilyUnit_And_Guests()
+        {
+            // Arrange
+            var command = new AdminCreateFamilyUnitsCommand(
+                new List<FamilyUnitDto>()
+                    {
+                        new FamilyUnitDto
+                        {
+                            InvitationCode = "ABCDE",
+                            Tier = "A",
+                            Guests = new List<GuestDto>
+                            {
+                                new GuestDto { FirstName = "John", LastName = "Doe" },
+                                new GuestDto { FirstName = "Jane", LastName = "Doe" }
+                            }
+                        }},
+                new List<RoleEnum> { RoleEnum.Admin }
             );
 
             _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
@@ -100,25 +130,28 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 
             // Assert
             _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
-            Assert.AreEqual("ABCDE", result.InvitationCode);
-            Assert.AreEqual("Doe_John Family", result.UnitName);
-            Assert.AreEqual(2, result.Guests!.Count);
+            Assert.AreEqual("ABCDE", result[0].InvitationCode);
+            Assert.AreEqual("Doe_John Family", result[0].UnitName);
+            Assert.AreEqual(2, result[0].Guests!.Count);
         }
 
         [Test]
         public async Task ExecuteAsync_Should_Add_Default_Roles_When_Guest_Roles_Are_Null()
         {
             // Arrange
-            var command = new AdminCreateFamilyUnitCommand(
-                 new FamilyUnitDto
-                 {
-                     InvitationCode = "ABCDE",
-                     Tier = "A",
-                     Guests = new List<GuestDto>
+            var command = new AdminCreateFamilyUnitsCommand(
+                new List<FamilyUnitDto>()
                     {
-                        new GuestDto { FirstName = "John", LastName = "Doe", Roles = null! }
-                    }
-                 }
+                     new FamilyUnitDto
+                     {
+                         InvitationCode = "ABCDE",
+                         Tier = "A",
+                         Guests = new List<GuestDto>
+                        {
+                            new GuestDto { FirstName = "John", LastName = "Doe", Roles = null! }
+                        }
+                     }},
+                 new List<RoleEnum> { RoleEnum.Admin }
             );
 
             _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
@@ -129,8 +162,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var result = await _handler.ExecuteAsync(command);
 
             // Assert
-            Assert.AreEqual(1, result.Guests![0].Roles.Count);
-            Assert.AreEqual(RoleEnum.Guest, result.Guests[0].Roles[0]);
+            Assert.AreEqual(1, result[0].Guests![0].Roles.Count);
+            Assert.AreEqual(RoleEnum.Guest, result[0].Guests[0].Roles[0]);
         }
 
         [Test]
