@@ -14,6 +14,7 @@ namespace Wedding.Common.Helpers.AWS
         Task<List<WeddingEntity>?> QueryByGuestIdIndex(string guestId, CancellationToken cancellationToken = default);
         Task<List<WeddingEntity>?> FromQueryAsync(string invitationCode, CancellationToken cancellationToken = default);
         Task<FamilyUnitDto?> GetFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default);
+        Task<List<FamilyUnitDto>?> GetFamilyUnitsAsync(CancellationToken cancellationToken = default);
         Task SaveAsync(WeddingEntity entity, CancellationToken cancellationToken = default);
         Task DeleteAsync(string invitationCode, string sortKey, CancellationToken cancellationToken = default);
     }

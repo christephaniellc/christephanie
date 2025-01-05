@@ -28,7 +28,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(c => c.UserRoles);
+            result.ShouldHaveValidationErrorFor(c => c.CurrentUserRoles);
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(c => c.UserRoles);
+            result.ShouldHaveValidationErrorFor(c => c.CurrentUserRoles);
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor("UserRoles");
+            result.ShouldHaveValidationErrorFor("CurrentUserRoles");
         }
     }
 }

@@ -2,7 +2,6 @@
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
-using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
 {

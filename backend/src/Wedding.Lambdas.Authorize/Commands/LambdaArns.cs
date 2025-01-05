@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Wedding.Lambdas.Authorize.Commands
@@ -7,6 +6,7 @@ namespace Wedding.Lambdas.Authorize.Commands
     public static class LambdaArns
     {
         public const string AdminFamilyUnitCreate = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-admin-familyunit-create";
+        public const string AdminFamilyUnitGet = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-admin-familyunit-get";
         public const string AdminFamilyUnitUpdate = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-admin-familyunit-update";
         public const string AdminFamilyUnitDelete = "arn:aws:lambda:us-east-1:502723119948:function:christephanie-api-dev-admin-familyunit-delete";
 
@@ -27,6 +27,7 @@ namespace Wedding.Lambdas.Authorize.Commands
 
         public static Dictionary<string, string> Translations = new Dictionary<string, string>() {
             { "PUT /api/admin/familyunit", LambdaArns.AdminFamilyUnitCreate },
+            { "GET /api/admin/familyunit", LambdaArns.AdminFamilyUnitGet },
             { "POST /api/admin/familyunit", LambdaArns.AdminFamilyUnitUpdate },
             { "DELETE /api/admin/familyunit", LambdaArns.AdminFamilyUnitDelete },
             { "GET /api/familyunit", LambdaArns.FamilyUnitGet },

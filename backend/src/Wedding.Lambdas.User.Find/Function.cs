@@ -51,7 +51,6 @@ public class Function
             FindUserQuery query;
             context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
 
-            //var userId = request.GetGuestIdFromAuthContext();
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
 
@@ -65,14 +64,14 @@ public class Function
 
             return result.OkResponse();
         }
-        catch (UnauthorizedAccessException ex)
-        {
-            var viewError = $"Invitation not found. Please contact your hosts to resolve.";
-            var error = $"Authorization exception: {ex.Message}";
-            context.Logger.LogError(error);
-
-            return viewError.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
-        }
+        // catch (UnauthorizedAccessException ex)
+        // {
+        //     var viewError = $"Invitation not found. Please contact your hosts to resolve.";
+        //     var error = $"Authorization exception: {ex.Message}";
+        //     context.Logger.LogError(error);
+        //
+        //     return viewError.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
+        // }
         catch (ValidationException ex)
         {
             var viewError = $"Invitation not found. Please contact your hosts to resolve.";

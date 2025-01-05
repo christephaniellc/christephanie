@@ -2,7 +2,6 @@ using Amazon.Lambda.APIGatewayEvents;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using Amazon.DynamoDBv2.DataModel;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Amazon.Lambda.Core;

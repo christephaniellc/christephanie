@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using System.Net;
-using System.Text.Json;
-using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -21,9 +19,7 @@ using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Handlers;
 using Wedding.Lambdas.Authorize.Providers;
 using Microsoft.Extensions.Configuration;
-using Wedding.Common.Configuration;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Abstractions.Dtos.Auth;
@@ -224,13 +220,7 @@ namespace Wedding.Lambdas.UnitTests
                 authResponse.Context.Should().Contain(x => x.Key == "invitationCode" && x.Value.Equals(TestDataHelper.GUEST_JOHN.InvitationCode));
 
                 // Step 3. Get family unit DTO using auth context
-                var familyUnitRequest = new APIGatewayProxyRequest
-                {
-                    RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
-                    {
-                        Authorizer = authResponse.Context.ConvertToCustomAuthorizerContext()
-                    }
-                };
+                var familyUnitRequest = new APIGatewayProxyRequest().AddAuthToRequest(authResponse);
                 var familyUnitGetResponse = await _familyUnitGetFunction.FunctionHandler(familyUnitRequest, context);
                 var familyUnit = familyUnitGetResponse.GetResponseBodyData<FamilyUnitDto>();
                 

@@ -1,6 +1,7 @@
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
@@ -10,6 +11,7 @@ using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
 using Wedding.Common.Serialization;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Abstractions.Dtos;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Create;
 
@@ -46,12 +48,14 @@ public class Function
     {
         try
         {
-            // TODO auth layer
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            var command = JsonSerializationHelper.DeserializeFromFrontend<AdminCreateFamilyUnitCommand>(request.Body);
+            var authContext = request.GetAuthContext();
 
-            if (command.FamilyUnit == null)
+            var familyUnits = JsonSerializationHelper.DeserializeFromFrontend<List<FamilyUnitDto>>(request.Body);
+            var command = new AdminCreateFamilyUnitsCommand(familyUnits, authContext.ParseRoles());
+
+            if (command.FamilyUnits == null || command.FamilyUnits.Count == 0)
             {
                 context.Logger.LogError("FamilyUnit is null.");
                 throw new Exception("Invalid FamilyUnit in request.");
@@ -59,7 +63,7 @@ public class Function
 
             context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
             context.Logger.LogInformation(
-                $"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnit)}");
+                $"FamilyUnits: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnits)}");
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AdminCreateFamilyUnitHandler>();

@@ -83,8 +83,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 {
                     GuestId = TestDataHelper.GUEST_JOHN.GuestId,
                     InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
-                    Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
-                    Token = "fake-token"
+                    Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles)
                 };
 
                 var request = new APIGatewayProxyRequest
