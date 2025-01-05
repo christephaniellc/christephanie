@@ -38,6 +38,7 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APIGatewayCustomAuthorizerResponse))]
         //[ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIGatewayCustomAuthorizerResponse>> AuthorizeUser(string? invitationCode = null, 
             string? firstName = null,
             string? arn = null, CancellationToken cancellationToken = default)

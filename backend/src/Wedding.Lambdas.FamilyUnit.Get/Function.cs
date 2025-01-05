@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -76,6 +77,14 @@ public class Function
             context.Logger.LogError(error);
 
             return error.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
+        }
+        catch (KeyNotFoundException ex)
+        {
+            var viewError = $"Family unit not found.";
+            var error = $"KeyNotFoundException exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString());
         }
         catch (Exception ex)
         {

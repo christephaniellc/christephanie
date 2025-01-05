@@ -55,10 +55,11 @@ namespace Wedding.PublicApi.Controllers
         [Authorize]
 #endif
         [HttpPut("create")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<FamilyUnitDto>> AdminCreateFamilyUnits([FromBody] List<FamilyUnitDto> familyUnits, CancellationToken cancellationToken = default)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<FamilyUnitDto>>> AdminCreateFamilyUnits([FromBody] List<FamilyUnitDto> familyUnits, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -119,27 +120,50 @@ namespace Wedding.PublicApi.Controllers
         #else
                 [Authorize]
         #endif
-                [HttpGet]
-                [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
-                public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string invitationCode, CancellationToken cancellationToken = default)
-                {
-                    if (string.IsNullOrEmpty(invitationCode))
-                    {
-                        return BadRequest("Invitation Code is required.");
-                    }
+        [HttpGet("invitationCode")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(string invitationCode, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(invitationCode))
+            {
+                return BadRequest("Invitation Code is required.");
+            }
 
 #if !DEBUG_ANONYMOUS
-                    var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                    var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
-                        LambdaArns.AdminFamilyUnitCreate, token);
-                    var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                LambdaArns.AdminFamilyUnitCreate, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-                    var query = new AdminGetFamilyUnitQuery(invitationCode, authContext.ParseRoles());
-                    query.Validate();
-                    var result = await _dispatcher.GetAsync<AdminGetFamilyUnitQuery, List<FamilyUnitDto>>(query, cancellationToken);
-        
-                    return Ok(result);
-                }
+            var query = new AdminGetFamilyUnitQuery(invitationCode, authContext.ParseRoles());
+            query.Validate();
+            var result = await _dispatcher.GetAsync<AdminGetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<FamilyUnitDto>>> GetFamilyUnits(CancellationToken cancellationToken = default)
+        {
+#if !DEBUG_ANONYMOUS
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                LambdaArns.AdminFamilyUnitCreate, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+#endif
+            var query = new AdminGetFamilyUnitsQuery(authContext.ParseRoles());
+            query.Validate();
+            var result = await _dispatcher.GetAsync<AdminGetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
+
+            return Ok(result);
+        }
 
 #if DEBUG_ANONYMOUS
         [AllowAnonymous]
@@ -150,6 +174,7 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit([FromBody] FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             try
@@ -195,7 +220,9 @@ namespace Wedding.PublicApi.Controllers
 #endif
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AdminDeleteFamilyUnitAsync(string invitationCode, CancellationToken cancellationToken = default)
         {
 #if !DEBUG_ANONYMOUS
