@@ -4,19 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using FluentValidation;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Lambdas.User.Get.Commands;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Authorize.Commands;
-using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Get.Validation;
 using Wedding.PublicApi.Logic.Services.Auth;
@@ -49,8 +46,9 @@ namespace Wedding.PublicApi.Controllers
         [AllowAnonymous]
         [HttpGet("find")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> FindGuest(string invitationCode, string firstName, CancellationToken cancellationToken = default)
         {
             try
@@ -75,6 +73,7 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);

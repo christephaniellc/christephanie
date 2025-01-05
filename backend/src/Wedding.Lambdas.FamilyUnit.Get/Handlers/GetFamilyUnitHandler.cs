@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,8 +37,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 
                 if (results == null)
                 {
-                    _logger.LogError("Family unit with Invitation code '{query.InvitationCode}' not found.");
-                    throw new InvalidOperationException($"Family unit with Invitation code '{query.InvitationCode}' not found.");
+                    throw new KeyNotFoundException($"Family unit with invitation code '{query.InvitationCode}' not found.");
                 }
 
                 if (results.Guests.Any(result => result.GuestId == query.GuestId) == null && !query.Roles.Contains(RoleEnum.Admin))
@@ -46,6 +46,14 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 }
 
                 return results;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new KeyNotFoundException(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new UnauthorizedAccessException(ex.Message);
             }
             catch (Exception ex)
             {

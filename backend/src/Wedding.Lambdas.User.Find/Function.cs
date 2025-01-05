@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -9,7 +8,6 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Helpers.AWS.Frontend;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Find.Handlers;
 
@@ -64,14 +62,6 @@ public class Function
 
             return result.OkResponse();
         }
-        // catch (UnauthorizedAccessException ex)
-        // {
-        //     var viewError = $"Invitation not found. Please contact your hosts to resolve.";
-        //     var error = $"Authorization exception: {ex.Message}";
-        //     context.Logger.LogError(error);
-        //
-        //     return viewError.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
-        // }
         catch (ValidationException ex)
         {
             var viewError = $"Invitation not found. Please contact your hosts to resolve.";
@@ -79,6 +69,14 @@ public class Function
             context.Logger.LogError(logError);
 
             return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
+        }
+        catch (KeyNotFoundException ex)
+        {
+            var viewError = $"Invitation not found. Please contact your hosts to resolve.";
+            var error = $"KeyNotFoundException exception: {ex.Message}";
+            context.Logger.LogError(error);
+
+            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString());
         }
         catch (Exception ex)
         {
