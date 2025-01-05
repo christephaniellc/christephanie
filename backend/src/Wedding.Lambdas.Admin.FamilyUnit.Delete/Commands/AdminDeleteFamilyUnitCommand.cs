@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands
@@ -12,5 +14,5 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands
     /// <seealso cref="IEquatable{DeleteSiteCommand}" />
     /// <param name="Id">The Id of the Site</param>
     public record AdminDeleteFamilyUnitCommand(
-        string InvitationCode) : IWeddingCommand;
+        string InvitationCode, List<RoleEnum> CurrentUserRoles) : IWeddingCommand;
 }

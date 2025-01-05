@@ -7,7 +7,10 @@ using Amazon;
 using Wedding.Common.Helpers.AWS;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Wedding.Lambdas.Authorize.Providers;
+using Amazon.Lambda.APIGatewayEvents;
+using Wedding.Common.Abstractions;
+using Wedding.Lambdas.Authorize.Commands;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Logic.DI
 {
@@ -46,6 +49,14 @@ namespace Wedding.PublicApi.Logic.DI
             }).As<IDynamoDBProvider>()
                 .AsImplementedInterfaces() 
                 .InstancePerDependency();
+
+            builder.Register(ctx =>
+            {
+                var authHandler = ctx.Resolve<IAsyncQueryHandler<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>>();
+                return new LambdaAuthorizer(authHandler);
+            }).As<ILambdaAuthorizer>()
+            .AsImplementedInterfaces()
+            .InstancePerDependency();
         }
     }
 }

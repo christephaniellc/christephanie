@@ -5,6 +5,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Wedding.Abstractions.Dtos;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
@@ -48,7 +49,10 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
 
-            var command = JsonSerializationHelper.DeserializeFromFrontend<AdminUpdateFamilyUnitCommand>(request.Body);
+            var authContext = request.GetAuthContext();
+
+            var familyUnit = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
+            var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext.ParseRoles());
 
             if (command.FamilyUnit == null)
             {

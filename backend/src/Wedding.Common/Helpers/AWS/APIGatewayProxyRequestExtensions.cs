@@ -10,6 +10,16 @@ namespace Wedding.Common.Helpers.AWS
 {
     public static class APIGatewayProxyRequestExtensions
     {
+        public static AuthContext GetAuthContext(this APIGatewayProxyRequest request)
+        {
+            return new AuthContext
+            {
+                InvitationCode = request.GetInvitationCodeFromAuthContext(),
+                GuestId = request.GetGuestIdFromAuthContext(),
+                Roles = request.GetRoleStringFromAuthContext()
+            };
+        }
+
         public static string? GetCaseInsensitiveParam(APIGatewayProxyRequest request, string paramName)
         {
             string paramValue = null;
@@ -39,38 +49,41 @@ namespace Wedding.Common.Helpers.AWS
         //     return request.RequestContext.Authorizer["principalId"]?.ToString();
         // }
 
-        public static AuthContext? Parse(string json)
+
+        public static APIGatewayProxyRequest AddAuthToRequest(this APIGatewayProxyRequest request, APIGatewayCustomAuthorizerResponse authResponse)
         {
-            try
+            request.RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
             {
-                return JsonSerializer.Deserialize<AuthContext>(json);
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"Failed to deserialize AuthContext: {ex.Message}");
-                return null;
-            }
+                Authorizer = authResponse.Context.ConvertToCustomAuthorizerContext()
+            };
+            return request;
         }
 
         public static string? RequestLambdaData(this APIGatewayProxyRequest request, string key)
         {
-            var authorizerContext = request.RequestContext.Authorizer;
-            Console.WriteLine($"authorizerContext: {JsonSerializer.Serialize(authorizerContext)}");
-
-            if (authorizerContext != null && authorizerContext.TryGetValue("lambda", out var lambdaContext))
+            try
             {
-                Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");
+                var authorizerContext = request.RequestContext.Authorizer;
+                Console.WriteLine($"authorizerContext: {JsonSerializer.Serialize(authorizerContext)}");
 
-                var context = Parse(lambdaContext.ToString());
-
-                return key switch
+                if (authorizerContext != null && authorizerContext.TryGetValue("lambda", out var lambdaContext))
                 {
-                    "guestId" => context.GuestId,
-                    "invitationCode" => context.InvitationCode,
-                    "roles" => context.Roles,
-                    "token" => context.Token,
-                    _ => null // Return null if key does not match any property
-                };
+                    Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");
+
+                    var context = ParseAuthContext(lambdaContext.ToString());
+
+                    return key switch
+                    {
+                        "guestId" => context.GuestId,
+                        "invitationCode" => context.InvitationCode,
+                        "roles" => context.Roles,
+                        _ => null // Return null if key does not match any property
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new UnauthorizedAccessException("Unauthorized access exception.");
             }
 
             return null;
@@ -86,7 +99,7 @@ namespace Wedding.Common.Helpers.AWS
             return request.RequestLambdaData("invitationCode");
         }
 
-        // public static string? GetToken(this APIGatewayProxyRequest request)
+        // public static string? GetTokenFromAuth(this APIGatewayProxyRequest request)
         // {
         //     return request.RequestContext.Authorizer["lambda:token"]?.ToString();
         // }
@@ -101,6 +114,13 @@ namespace Wedding.Common.Helpers.AWS
                 .ToList(); // comma delimited string of roles
         }
 
+        public static string? GetRoleStringFromAuthContext(this APIGatewayProxyRequest request)
+        {
+            var roles = request.RequestLambdaData("roles");
+            return roles?
+                .ToString(); // comma delimited string of roles
+        }
+
         public static string? GetInvitationCodeFromParams(this APIGatewayProxyRequest request)
         {
             return GetCaseInsensitiveParam(request, "invitationCode");
@@ -109,6 +129,19 @@ namespace Wedding.Common.Helpers.AWS
         public static string? GetFirstNameFromParams(this APIGatewayProxyRequest request)
         {
             return GetCaseInsensitiveParam(request, "firstName");
+        }
+
+        public static AuthContext? ParseAuthContext(string json)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<AuthContext>(json);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Failed to deserialize AuthContext: {ex.Message}");
+                return null;
+            }
         }
     }
 }

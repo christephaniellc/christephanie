@@ -18,6 +18,8 @@ using Wedding.Common.Helpers;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Lambdas.User.Find.Commands;
+using Wedding.Lambdas.User.Get.Validation;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -28,20 +30,20 @@ namespace Wedding.PublicApi.Controllers
         private readonly ILogger<UserController> _logger;
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Auth0Configuration _authConfiguration;
-        private readonly IAuthorizationProvider _authorizationProvider;
+        private ILambdaAuthorizer _lambdaAuthorizer;
+        private Auth0Configuration _auth0Configuration;
 
         public UserController(ILogger<UserController> logger,
             IControllerDispatcher dispatcher, 
             IServiceProvider serviceProvider, 
-            IConfiguration configuration,
-            IAuthorizationProvider authorizationProvider)
+            IConfiguration configuration, 
+            ILambdaAuthorizer lambdaAuthorizer)
         {
             _logger = logger;
             _dispatcher = dispatcher;
             _serviceProvider = serviceProvider;
-            _authorizationProvider = authorizationProvider;
-            _authConfiguration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
+            _lambdaAuthorizer = lambdaAuthorizer;
+            _auth0Configuration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
         }
 
         [AllowAnonymous]
@@ -76,17 +78,14 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<GuestDto>> GetMe(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var request = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, LambdaArns.UserGet, token);
-            var authenticatedUser = await _authorizationProvider.Authorize(request);
-            if (authenticatedUser == null)
-            {
-                return Unauthorized(new { message = "Authentication error." });
-            }
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                LambdaArns.AdminFamilyUnitCreate, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
             try
             {
-                var query = new GetUserQuery(authenticatedUser.GuestId, authenticatedUser.InvitationCode,
-                    authenticatedUser.Roles);
+                var query = new GetUserQuery(authContext.GuestId, authContext.InvitationCode, authContext.ParseRoles());
+                query.Validate();
                 var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
 
                 return Ok(result);

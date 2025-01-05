@@ -66,7 +66,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         //     {
         //         { "sub", "Auth0|12345" },
         //         { "name", "John Doe" },
-        //         { "UserRoles", new[] { role.ToString() } }
+        //         { "CurrentUserRoles", new[] { role.ToString() } }
         //     };
         //
         //     var token = new JwtSecurityToken(header, payload);
@@ -88,7 +88,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             //     {
             //         new Dictionary<string, AttributeValue>
             //         {
-            //             {"UserRoles", new AttributeValue {SS = new List<string> { RoleEnum.Admin.ToString() }}}
+            //             {"CurrentUserRoles", new AttributeValue {SS = new List<string> { RoleEnum.Admin.ToString() }}}
             //         }
             //     }
             // };

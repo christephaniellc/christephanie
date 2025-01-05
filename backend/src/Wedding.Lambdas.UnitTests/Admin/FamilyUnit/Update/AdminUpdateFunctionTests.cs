@@ -3,18 +3,17 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 
@@ -25,13 +24,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 public class GetFunctionTests
 {
     private IMapper _mapper;
+    private TestAuthorizer _testAuthorizer;
     private Wedding.Lambdas.Admin.FamilyUnit.Update.Function _function;
 
     [SetUp]
     public void SetUp()
     {
+        var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+            .AddJsonFile("appsettings.Development.json")
+            .Build();
         var serviceCollection = new ServiceCollection();
-        //var repository = new Mock<IDynamoDBContext>();
         var dynamoDBProvider = new Mock<IDynamoDBProvider>();
 
         var config = new MapperConfiguration(cfg =>
@@ -67,6 +69,7 @@ public class GetFunctionTests
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
+        _testAuthorizer = new TestAuthorizer(configuration, serviceCollection);
         _function = new Wedding.Lambdas.Admin.FamilyUnit.Update.Function(serviceProvider);
     }
 
@@ -79,9 +82,11 @@ public class GetFunctionTests
             dto.Guests[0].LastName = "Doe-Smith";
 
             var context = new TestLambdaContext();
-            var command = new AdminUpdateFamilyUnitCommand(dto, new List<RoleEnum> { RoleEnum.Admin });
-            var request = new APIGatewayProxyRequest {
-            Body = JsonSerializer.Serialize(command, JsonSerializationHelper.FromFrontendOptions)};
+            var authContext = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_ADMIN);
+            var request = new APIGatewayProxyRequest 
+            {
+                Body = JsonSerializer.Serialize(dto, JsonSerializationHelper.FromFrontendOptions)
+            }.AddAuthToRequest(authContext);
 
             var response = await _function.FunctionHandler(request, context);
             var result = response.GetResponseBodyData<FamilyUnitDto>();

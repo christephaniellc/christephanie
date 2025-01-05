@@ -18,9 +18,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Authorize.Commands;
-using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Configuration;
+using Wedding.Lambdas.Validate.Address.Validation;
+using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -31,19 +32,19 @@ namespace Wedding.PublicApi.Controllers
         private readonly ILogger<HelloWorldController> _logger;
         private readonly IControllerDispatcher _dispatcher;
         private readonly IServiceProvider _serviceProvider;
-        private IAuthorizationProvider _authProvider;
+        private ILambdaAuthorizer _lambdaAuthorizer;
         private Auth0Configuration _auth0Configuration;
 
         public HelloWorldController(ILogger<HelloWorldController> logger,
             IConfiguration configuration,
             IControllerDispatcher dispatcher, 
-            IServiceProvider serviceProvider,
-            IAuthorizationProvider authProvider)
+            IServiceProvider serviceProvider, 
+            ILambdaAuthorizer lambdaAuthorizer)
         {
             _logger = logger;
             _dispatcher = dispatcher;
             _serviceProvider = serviceProvider;
-            _authProvider = authProvider;
+            _lambdaAuthorizer = lambdaAuthorizer;
             _auth0Configuration = configuration.GetSection(ConfigurationKeys.Auth0).Get<Auth0Configuration>()!;
         }
 
@@ -78,15 +79,13 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var request = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience, LambdaArns.AddressValidate, token);
-                var authenticatedUser = await _authProvider.Authorize(request);
-                if (authenticatedUser == null)
-                {
-                    return Unauthorized(new { message = "Authentication error." });
-                }
+                var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
+                    LambdaArns.AdminFamilyUnitCreate, token);
+                var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-
+                // TODO: needs auth?
                 var command = new ValidateUspsAddressQuery(address);
+                command.Validate();
                 var result = await _dispatcher.GetAsync<ValidateUspsAddressQuery, AddressDto>(command, cancellationToken);
 
                 return Ok(result);
