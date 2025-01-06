@@ -5,25 +5,35 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
 import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
+import { useRecoilValue } from 'recoil';
+import { userIdQueryState } from '@/store/user';
 
 
 const Welcome = () => {
+  const userQuery = useRecoilValue(userIdQueryState);
+
   return (
-    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap='wrap'>
-      <Box display='flex' flexDirection='column' width='100%'>
+    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center"
+         flexWrap="wrap">
+      <Box display="flex" flexDirection="column" width="100%">
         <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%" textAlign="center">
-        Steph & Topher
+          Steph & Topher
         </Typography>
-        <Box mx='auto'>
+        <Box mx="auto">
           <EightBitWeddingLogo />
         </Box>
-        <Typography variant='caption' color='text.secondary' mt={-4}>
+        <Typography variant="caption" color="text.secondary" mt={-4}>
           We're gettin' hitched.
         </Typography>
+        <Typography variant="caption" color="text.secondary" mt={2}>
+          {JSON.stringify(userQuery)}
+        </Typography>
       </Box>
-      <Box maxWidth={600} mx="auto" mb={2}>
-        <InvitationCodeInputs />
-      </Box>
+      {!userQuery?.data?.guestId &&
+        (<Box maxWidth={600} mx="auto" mb={2}>
+            <InvitationCodeInputs />
+          </Box>
+        )}
     </Box>
   );
 };
