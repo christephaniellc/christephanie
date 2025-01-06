@@ -62,7 +62,7 @@ export default class Api {
         });
 
       case 404:
-        return Promise.resolve(response.json());
+        return Promise.reject(response.json());
 
       case 422:
         return this.handleRecoverableError(response);
@@ -96,10 +96,7 @@ export default class Api {
       .json()
       .then((apiResponseJson: T) => {
         // TODO NotificationService.error(apiResponseJson.error as ApiError);
-        return {
-          data: undefined,
-          error: apiResponseJson.error,
-        };
+        Promise.reject(apiResponseJson);
       });
   };
 
@@ -113,10 +110,7 @@ export default class Api {
         if (errorAction) {
           errorAction(error);
         }
-        return {
-          data: undefined,
-          error: error,
-        } as T;
+        Promise.reject(response);
       });
   };
 
@@ -130,10 +124,7 @@ export default class Api {
         if (errorAction) {
           errorAction();
         }
-        return Promise.resolve({
-          data: undefined,
-          error: this.buildErrorFromEmptyResponse(errorMessage, response),
-        });
+        return Promise.reject(errorMessage);
       });
   };
 
@@ -165,7 +156,7 @@ export default class Api {
       data: _rejectedReason,
       error: this.buildError('UnknownError', 'Encountered unhandled error in app. Please notify admin if continues.', 500, ''),
     };
-    return Promise.resolve(response);
+    return Promise.reject(response);
   };
 
   private buildConfig = (method: string, data: object | null, requiresAuth: boolean) => {

@@ -1,50 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, TextField, Typography } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
-  findUserState,
   firstNameState,
   invitationButtonSelectorState,
-  invitationCodeState,
+  invitationCodeState, queryKeySelector,
 } from '@/store/invitationInputs';
-import { userState } from '@/store/user';
-import { useQuery } from '@tanstack/react-query';
+import { userSelector, userIdQueryState } from '@/store/user';
+import { useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useApiContext } from '@/context/ApiContext';
+
 
 export const InvitationCodeInputs = () => {
   const { api } = useApiContext();
   const [invitationCode, setInvitationCode] = useRecoilState(invitationCodeState);
   const [firstName, setFirstName] = useRecoilState(firstNameState);
-  const [user, setUser] = useRecoilState(userState);
-  const [findUser, setFindUser] = useRecoilState(findUserState);
+  const [userIdQuery, setUserIdQuery] = useRecoilState(userIdQueryState);
+  const user = useRecoilValue(userSelector);
+  const queryKey = useRecoilValue(queryKeySelector);
+  const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
 
-  const queryKey = `invitationCode=${invitationCode}&firstName=${firstName}`;
+  const queryClient = useQueryClient();
 
-  const findUserQuery = useQuery({
-    queryKey: [`findUserQuery`, queryKey],
+  const queryResult = useQuery({
+    queryKey: [`findUserQuery`, `${queryKey}`],
     queryFn: () => api.findUser(queryKey),
     retry: false,
-    enabled: findUser,
+    enabled: false,
   });
 
   const handleFindUser = () => {
-    if (invitationCode && firstName) {
-      setFindUser(true);
-    }
+    queryResult.refetch();
   };
 
-  const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
+  useEffect(() => {
+    if (queryResult.isPending || queryResult.isError || queryResult.data || queryResult.isFetching) {
+      setUserIdQuery(queryResult as UseQueryResult<string>);
+    }
+  }, [queryResult.data, queryResult.isPending, queryResult.isError, queryResult.isFetching, setUserIdQuery]);
 
-  if (user?.auth0Id) {
-    return (
-      <Button
-        color="warning"
-        variant="outlined"
-      >
-        Let&#39;s get started
-      </Button>
-    );
-  }
 
   return (
     <form>

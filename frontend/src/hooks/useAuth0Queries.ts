@@ -1,7 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
 import { useRecoilValue } from 'recoil';
-import { userState } from '@/store/user';
+import { userIdQueryState } from '@/store/user';
 
 export const useAuth0Queries = () => {
   const { getAccessTokenSilently } = useAuth0();
