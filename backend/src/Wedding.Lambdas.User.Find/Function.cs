@@ -16,6 +16,7 @@ namespace Wedding.Lambdas.User.Find;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
+    private Dictionary<string, string> _metaData { get; set; }
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -51,6 +52,11 @@ public class Function
 
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
+            _metaData = new Dictionary<string, string>
+            {
+                {"invitationCode", invitationCode},
+                {"firstName", firstName}
+            };
 
             context.Logger.LogInformation($"Query Input: {invitationCode} {firstName}");
 
@@ -68,7 +74,7 @@ public class Function
             var logError = $"Validation exception: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
+            return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
         }
         catch (KeyNotFoundException ex)
         {
@@ -76,7 +82,7 @@ public class Function
             var error = $"KeyNotFoundException exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.NoContent, typeof(KeyNotFoundException).ToString());
+            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString(), _metaData);
         }
         catch (Exception ex)
         {
@@ -84,7 +90,7 @@ public class Function
             var logError = $"Error occurred: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
+            return viewError.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString(), _metaData);
         }
     }
 }

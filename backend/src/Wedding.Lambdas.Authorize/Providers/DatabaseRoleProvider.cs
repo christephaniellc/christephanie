@@ -105,19 +105,8 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 await TryUpdateFamilyUnit(entity.InvitationCode);
 
-                user = _mapper.Map<GuestDto>(entity);
-
                 entity.LastActivity = DateTime.UtcNow;
-
-                // var permissions = user.Roles.Select(r => r.ToString().ToUpper());
-                // var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
-                //
-                // // TODO think about this
-                // if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
-                //     //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
-                // {
-                //     throw new UnauthorizedAccessException("Access denied");
-                // }
+                user = _mapper.Map<GuestDto>(entity);
 
                 await _dynamoDBProvider.SaveAsync(entity);
 
