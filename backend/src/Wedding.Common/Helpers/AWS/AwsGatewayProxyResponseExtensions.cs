@@ -35,7 +35,7 @@ namespace Wedding.Common.Helpers.AWS
             };
         }
 
-        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType)
+        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType, Dictionary<string, string>? meta = null)
         {
             return new APIGatewayProxyResponse
             {
@@ -49,8 +49,9 @@ namespace Wedding.Common.Helpers.AWS
                 {
                     Status = errorStatusCode,
                     Error = errorType,
-                    Description = errorDescription
-                }.ToFrontendResponseBody()
+                    Description = errorDescription,
+                    Meta = meta
+                }.ToFrontendResponseBody(),
             };
         }
     }

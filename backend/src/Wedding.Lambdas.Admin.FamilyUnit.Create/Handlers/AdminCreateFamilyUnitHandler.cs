@@ -42,15 +42,14 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
 
                     var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                     var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                    familyUnit.UnitName =
-                        DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
+                    familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
                     var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(familyUnit.InvitationCode);
 
                     if (existingFamilyUnit != null)
                     {
-                        throw new InvalidOperationException(
-                            $"Family unit with Invitation code '{familyUnit.InvitationCode}' already exists.");
+                        _logger.LogWarning($"Family unit with Invitation code '{familyUnit.InvitationCode}' already exists ('{existingFamilyUnit.LastName}'). Skipping create...");
+                        continue;
                     }
 
                     var familyInfo = new WeddingEntity()

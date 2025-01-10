@@ -35,7 +35,7 @@ namespace Wedding.PublicApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
