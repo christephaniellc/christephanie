@@ -5,8 +5,9 @@ import {InvitationResponseEnum} from '@/types/api';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import Countdowns from '@/components/Countdowns';
-import {useRecoilState} from "recoil";
+import { useRecoilState, useRecoilValue } from 'recoil';
 import {guestSelector} from "@/store/family";
+import { userState } from '@/store/user';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -15,6 +16,8 @@ interface AttendanceButtonProps {
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   const [interested, setInterested] = React.useState<InvitationResponseEnum>(InvitationResponseEnum.Pending);
   const [guest, setGuest] = useRecoilState(guestSelector(guestId));
+  const user = useRecoilValue(userState);
+
   const setUserIsAttending = (guestId: string, interested: InvitationResponseEnum) => {
     setGuest({...guest, rsvp: {invitationResponse: interested}});
   }
@@ -31,8 +34,10 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     return <Typography variant="caption">No guest found</Typography>;
   }
 
+  console.log('guest', guest);
+  console.log('user', user);
+
   const buttonProps = (interested: InvitationResponseEnum) => {
-    console.log('interested', interested, InvitationResponseEnum[interested]);
     switch (interested) {
       case InvitationResponseEnum.Interested:
         return {color: 'primary', fontSize: 'large', border: `2px solid ${theme.palette.primary.main}`};
@@ -85,7 +90,10 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       <CountdownMessage>
         <Countdowns event="Invitation" interested={interested} />
       </CountdownMessage>
-      <Typography variant="h6" sx={{ mx: 'auto' }}>{guest?.firstName}</Typography>
+      {/*{guest.guestId}*/}
+      <Typography variant="h6" sx={{ mx: 'auto' }}>
+        {guest.guestId === user.guestId ? 'You' : guest?.firstName}
+      </Typography>
     </ImageButton>
   );
 };

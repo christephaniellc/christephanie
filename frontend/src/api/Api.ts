@@ -9,37 +9,47 @@ export type ApiError = {
 };
 
 export default class Api {
-
   // eslint-disable-next-line no-unused-vars
-  constructor() {
+  constructor(private readonly getAccessTokenSilently: () => Promise<string | null>) {
   }
 
-  getJwt = (): string | null => {
-    return window.localStorage.getItem('jwt');
+  getJwt = async () => {
+    return await this.getAccessTokenSilently();
   };
 
-  getMe = (): Promise<GuestDto> => {
+  async getMe(): Promise<GuestDto> {
     return this.get('/GuestDtos/me');
-  };
+  }
 
-  findUser = (queryKey: string): Promise<string> => {
+  async findUserId(queryKey: string): Promise<string> {
     return this.getPublic(`/user/find?${queryKey}`);
-  };
+  }
 
-  getFamilyUnit = (): Promise<FamilyUnitDto> => {
+  async getFamilyUnit(): Promise<FamilyUnitDto> {
     return this.get('/familyunit');
-  };
+  }
 
-  updateFamilyUnit = (familyUnit: FamilyUnitDto): Promise<FamilyUnitDto> => {
+  async updateFamilyUnit(familyUnit: FamilyUnitDto): Promise<FamilyUnitDto> {
     return this.post(`/familyunit`, familyUnit);
-  };
+  }
 
-  getGuestDto = (id: number): Promise<GuestDto> => this.get(`/GuestDtos/${id}`);
-  postGuestDto = (GuestDto: GuestDto): Promise<GuestDto> => this.post(`/GuestDtos`, GuestDto);
-  patchGuestDto = (GuestDto: GuestDto): Promise<GuestDto> => this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
-  deleteGuestDto = (id: number): Promise<GuestDto> => this.delete(`/GuestDtos/${id}/change-password`);
+  getGuestDto(id: number): Promise<GuestDto> {
+    return this.get(`/GuestDtos/${id}`);
+  }
 
-  private handleResponse = <T>(response: Response): Promise<T> => {
+  postGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
+    return this.post(`/GuestDtos`, GuestDto);
+  }
+
+  patchGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
+    return this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
+  }
+
+  deleteGuestDto(id: number): Promise<GuestDto> {
+    return this.delete(`/GuestDtos/${id}/change-password`);
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
       case 200:
         return Promise.resolve(response.json());
@@ -62,7 +72,7 @@ export default class Api {
         });
 
       case 404:
-        return Promise.reject(response.json());
+        return this.handleRecoverableError(response);
 
       case 422:
         return this.handleRecoverableError(response);
@@ -79,7 +89,8 @@ export default class Api {
         if (response.headers.has('Content-Length')
           && parseInt(response.headers.get('Content-Length')) === 0) {
 
-          return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => {});
+          return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => {
+          });
           // TODO return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => this.history.replace(AppPaths.internalError()));
 
         } else {
@@ -87,20 +98,20 @@ export default class Api {
           });
         }
     }
-  };
+  }
 
   // from here below, i haven't really put too much thought, the handle* functions are mostly sane.
   // the last functions are for dealing with creating error objects when error is not present.
-  private handleRecoverableError = <T>(response: Response): Promise<T> => {
-    return response
-      .json()
-      .then((apiResponseJson: T) => {
-        // TODO NotificationService.error(apiResponseJson.error as ApiError);
-        Promise.reject(apiResponseJson);
-      });
-  };
+  private async handleRecoverableError(response: Response): Promise<any> {
+    return response.json().then((error: ApiError) => {
+      return Promise.reject(error);
+    });
+  }
 
-  private handleUnRecoverableError = <T>(response: Response, errorAction: (_error: ApiError) => void): Promise<T> => {
+  private async handleUnRecoverableError<T>(
+    response: Response,
+    errorAction: (_error: ApiError) => void
+  ): Promise<T> {
     return response
       .json()
       .then((response: T) => {
@@ -112,9 +123,12 @@ export default class Api {
         }
         Promise.reject(response);
       });
-  };
+  }
 
-  private handleUnRecoverableErrorWithoutErrorMessage = <T>(response: Response, errorAction?: () => void): Promise<T> => {
+  private async handleUnRecoverableErrorWithoutErrorMessage<T>(
+    response: Response,
+    errorAction?: () => void
+  ): Promise<T> {
     return response
       .json()
       .then(() => {
@@ -150,97 +164,84 @@ export default class Api {
   };
 
   //  only used for catching exceptions
-  private handleRejected = <T>(_rejectedReason: string): Promise<T> => {
+  private async handleRejected<T>(reason: any): Promise<T> {
     console.log('rejected unrecoverable promise, redirect to /500');
-    const response = {
-      data: _rejectedReason,
-      error: this.buildError('UnknownError', 'Encountered unhandled error in app. Please notify admin if continues.', 500, ''),
-    };
-    return Promise.reject(response);
-  };
+    return Promise.reject(reason);
+  }r
 
-  private buildConfig = (method: string, data: object | null, requiresAuth: boolean) => {
-    if (data != null) {
-      return {
-        method: method,
-        body: JSON.stringify(data),
-        headers: this.buildHeaders(requiresAuth),
-      };
-    }
-    return {
-      method: method,
-      headers: this.buildHeaders(requiresAuth),
-    };
-  };
+  private async buildConfig(
+    method: string,
+    data: object | null,
+    requiresAuth: boolean
+  ): Promise<RequestInit> {
+    const headers = await this.buildHeaders(requiresAuth);
+    const config: RequestInit = { method, headers };
+    if (data != null) config.body = JSON.stringify(data);
+    return config;
+  }
 
-  private buildMutipartFormConfig = (method: string, data: any = {}) => {
+  private async buildMutipartFormConfig(method: string, data: any = {}): Promise<RequestInit> {
     const formData = new FormData();
-
-    for (let name in data) {
+    for (const name in data) {
       formData.append(name, data[name]);
     }
+    const token = await this.getAccessTokenSilently();
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    return { method, body: formData, headers };
+  }
 
-    return {
-      method: method,
-      body: formData,
-      headers: {
-        'Authorization': 'Bearer ' + this.getJwt(),
-      },
-    };
-  };
-
-  private buildHeaders = (requiresAuth: boolean): any => {
+  private async buildHeaders(requiresAuth: boolean): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (requiresAuth) {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.getJwt(),
-      };
+      const token = await this.getAccessTokenSilently();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
     }
-    return {
-      'Content-Type': 'application/json',
-    };
-  };
+    return headers;
+  }
 
-  private compositeResponseHandler = <T>(promise: Promise<Response>, callback?: (_response: T) => T): Promise<T> => {
-    return promise
-      .then((response: Response) => {
-        if (callback) {
-          return this.handleResponse<T>(response)
-            .then(callback);
-        }
-        return this.handleResponse<T>(response);
-      })
-      .catch((reason: string) => {
-        return this.handleRejected<T>(reason);
-      });
-  };
+  private async compositeResponseHandler<T>(
+    promise: Promise<Response>,
+    callback?: (_response: T) => T
+  ): Promise<T> {
+    try {
+      const response = await promise;
+      let result = await this.handleResponse<T>(response);
+      if (callback) {
+        result = callback(result);
+      }
+      return result;
+    } catch (reason) {
+      return this.handleRejected<T>(reason);
+    }
+  }
 
-  get = <T>(path: string, callback?: (_response: T) => T): Promise<T> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('GET', null, true)), callback);
-  };
+  async get<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
+  }
 
-  getPublic = <T>(path: string, callback?: (_response: T) => T): Promise<T> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('GET', null, false)), callback);
-  };
+  async getPublic<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, false)), callback);
+  }
 
-  post = <T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('POST', data, true)), callback);
-  };
+  async post<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
+  }
 
-  patch = <T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('PATCH', data, true)), callback);
-  };
+  async patch<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PATCH', data, true)), callback);
+  }
 
-  put = <T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> => {
+  async put<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('PUT', data, true)), callback);
-  };
+  }
 
-  delete = <T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> => {
+  async delete<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('DELETE', data, true)), callback);
-  };
+  }
 
-  postForm = <T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> => {
+  async postForm<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildMutipartFormConfig('POST', data)), callback);
-  };
-
+  }
 }

@@ -3,27 +3,19 @@ import { useRouteHistory } from './useRouteHistory';
 import { useAppLayout } from './useAppLayout';
 
 interface AppStateContextProps {
-  history: ReturnType<typeof useRouteHistory>['history'];
-  previousRoute: ReturnType<typeof useRouteHistory>['previousRoute'];
-  navValue: ReturnType<typeof useRouteHistory>['navValue'];
-  setNavValue: ReturnType<typeof useRouteHistory>['setNavValue'];
+  routeHistory: ReturnType<typeof useRouteHistory>;
   appLayout: ReturnType<typeof useAppLayout>;
-  currentRoute: ReturnType<typeof useRouteHistory>['currentRoute'];
 }
 
 const AppStateContext = createContext<AppStateContextProps | undefined>(undefined);
 
-export const AppStateContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { history, previousRoute, navValue, setNavValue, currentRoute } = useRouteHistory();
+export const AppStateContextProvider = ({ children }: {children: ReactNode}) => {
+  const routeHistory = useRouteHistory();
   const appLayout = useAppLayout();
   return (
     <AppStateContext.Provider value={{
+      routeHistory,
       appLayout,
-      history,
-      previousRoute,
-      navValue,
-      setNavValue,
-      currentRoute,
     }}>
       {children}
     </AppStateContext.Provider>

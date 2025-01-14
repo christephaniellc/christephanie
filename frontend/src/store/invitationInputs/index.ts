@@ -1,17 +1,5 @@
 import { atom, selector } from 'recoil';
-import { userSelector, userIdQueryState } from '@/store/user';
-import { useAuth0 } from '@auth0/auth0-react';
-import { UseQueryResult } from '@tanstack/react-query';
-
-export const invitationCodeState = atom<string>({
-  key: 'invitationCode',
-  default: '',
-});
-
-export const firstNameState = atom<string>({
-  key: 'firstName',
-  default: '',
-});
+import { userIdQueryState, userState } from '@/store/user';
 
 export const findUserState = atom<boolean>({
   key: 'findUser',
@@ -22,21 +10,35 @@ export const findUserState = atom<boolean>({
 export const invitationButtonSelectorState = selector<string>({
   key: 'createAcctButtonText',
   get: ({ get }) => {
-    const invitationCode = get(invitationCodeState);
-    const firstName = get(firstNameState);
     const userIdQuery = get(userIdQueryState);
-    const user = get(userSelector);
+    const user = get(userState);
 
-    if (userIdQuery?.isFetching) return 'Checking guest list';
-    if (userIdQuery?.error) return userIdQuery?.error.message;
+    const firstName = user?.firstName;
+    const invitationCode = user?.invitationCode;
 
-    if (!userIdQuery?.data) {
+    if (userIdQuery?.isLoading) return 'Checking guest list';
+    if (userIdQuery?.error && userIdQuery?.error?.status) {
+      switch (userIdQuery.error.status) {
+        case 404:
+        case 400:
+          return userIdQuery.error.description;
+        default:
+          return userIdQuery.error.status;
+
+      }
+    }
+
+    if (!user?.guestId) {
       const pleaseEnter = [];
       if (!firstName) pleaseEnter.push('first name');
       if (!invitationCode) pleaseEnter.push('invitation code');
       if (!(firstName && invitationCode)) return `Please enter your ${pleaseEnter.join(' and ')}`;
+      return "Create Account";
     }
-    if (userIdQuery?.data) {
+    if (!userIdQuery) return 'Check Guest List';
+    if (user.guestId) return "Guest Found! Please Create Account";
+
+    if (user?.guestId && !user?.auth0Id) {
       if (user.auth0Id) return 'Account Created!';
       if (user.guestId) return 'Create Account';
     }
@@ -47,8 +49,7 @@ export const invitationButtonSelectorState = selector<string>({
 export const queryKeySelector = selector<string>({
   key: 'queryKey',
   get: ({ get }) => {
-    const invitationCode = get(invitationCodeState);
-    const firstName = get(firstNameState);
-    return `invitationCode=${invitationCode}&firstName=${firstName}`;
+    const user= get(userState);
+    return `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
   },
 });
