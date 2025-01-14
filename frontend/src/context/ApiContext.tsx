@@ -1,30 +1,51 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Api from '@/api/Api';
-import { useNavigate } from 'react-router-dom';
-import { getConfig } from '@/auth_config';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
 
-interface ApiContextProps {
-  api: Api;
-}
+type ApiContextProps = Api;
+
 
 export const ApiContext = React.createContext({} as ApiContextProps);
 
 export const ApiContextProvider = (props: { children: JSX.Element }) => {
-  const navigate = useNavigate();
+  const user = useRecoilValue(userState);
+  const { getAccessTokenSilently } = useAuth0();
 
-  const api = new Api(navigate);
+  useEffect(() => {
+    console.log('detecting changes in user', user);
+  }, [user]);
+
+  const getTokenFunc = React.useCallback(async () => {
+    try {
+      console.log('getting token');
+      return await getAccessTokenSilently();
+    } catch (err) {
+      console.error('Failed to get token', err);
+      return null;
+    }
+  }, [getAccessTokenSilently, user]);
+
+  const apiRef = React.useRef(new Api(getTokenFunc));
+
+  useEffect(() => {
+    console.log('updating apiRef.current', apiRef.current);
+    apiRef.current = new Api(getTokenFunc);
+  }, [user]);
 
   return (
-    <ApiContext.Provider value={{ api }}>
+    <ApiContext.Provider value={apiRef.current}>
       {props.children}
     </ApiContext.Provider>
   );
 };
 
 export const useApiContext = () => {
-  const context = useContext(ApiContext);
-  if (context === undefined) {
+  const api = useContext(ApiContext);
+  if (api === undefined) {
     throw new Error('useApi must be used within a ApiContextProvider');
   }
-  return context;
+
+  return api;
 };

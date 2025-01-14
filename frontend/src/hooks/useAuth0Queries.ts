@@ -1,29 +1,48 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
-import { useRecoilValue } from 'recoil';
-import { userIdQueryState } from '@/store/user';
+import { useRecoilState } from 'recoil';
+import { userState } from '@/store/user';
+import { useEffect } from 'react';
 
 export const useAuth0Queries = () => {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, loginWithPopup, user: auth0User, isAuthenticated, logout } = useAuth0();
   const config = getConfig();
-  const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
+
+  const logOutFromAuth0 = async () => {
+    return await logout().then(() => {
+      localStorage.removeItem('jwt');
+    });
+  };
 
   const getAccessTokenPleasePleasePlease = async () => {
-    if (!user?.data?.firstName) return;
     try {
+      if (!isAuthenticated) throw Error('User is not authenticated');
+    } catch (_e) {
+      await loginWithPopup();
+    } finally {
+      console.log('getting access token');
       await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
-        }
+        },
       })
-        .then((value) => {
-          localStorage.setItem('jwt', value);
-        })
-        .catch((reason) => console.log(`I am a failure: ${reason}`));
-    } catch (reason) {
-      console.log(`I am a failure: ${reason}`);
     }
   };
 
-  return { getAccessTokenPleasePleasePlease };
-}
+  useEffect(() => {
+    if (auth0User) {
+      const newUser = {
+        ...user,
+        auth0Id: auth0User?.sub,
+      };
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    }
+    if (!auth0User) {
+      setUser({ ...user, auth0Id: null });
+    }
+  }, [auth0User]);
+
+  return { getAccessTokenPleasePleasePlease, logOutFromAuth0 };
+};

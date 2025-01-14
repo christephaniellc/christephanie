@@ -1,18 +1,27 @@
 import {
   atom, selector,
-  selectorFamily,
+  selectorFamily, useRecoilState,
   useSetRecoilState,
 } from 'recoil';
 import { FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
 import { FamilyGuestsStates } from '@/store/family/types';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useApiContext } from '@/context/ApiContext';
 
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
   default: null,
 });
 
-export const familyGuestsStates = selector<FamilyGuestsStates>({
+export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
+  key: 'familyQuery',
+  default: null,
+});
+
+
+export const  familyGuestsStates = selector<FamilyGuestsStates>({
   key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
@@ -72,3 +81,29 @@ export const useUpdateFamilyGuest = (guestId: string) => {
 
   return useMemo(() => ({ updateInvitation }), [updateGuest]);
 };
+
+export const useFamily = () => {
+  const [family, setFamily] = useRecoilState(familyState);
+  const { auth0User } = useAuth0();
+  const api = useApiContext();
+
+  const getFamilyUnitQuery = useQuery({
+    queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
+    queryFn: () => api.getFamilyUnit(),
+    retry: false,
+    enabled: false,
+  });
+
+  const getFamily = useCallback(() => getFamilyUnitQuery.refetch(), []);
+
+  useEffect(() => {
+    if (getFamilyUnitQuery.data) {
+      setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
+    }
+
+  }, [getFamilyUnitQuery.data, setFamily]);
+
+  const familyActions = useMemo(() => ({ getFamily }), [getFamily]);
+
+  return [family, familyActions] as const;
+}

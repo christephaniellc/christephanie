@@ -1,8 +1,8 @@
+import React from 'react';
 import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
-import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useAppStateContext } from '@/context/Providers/AppState/AppStateContext';
 import routes from '@/routes';
@@ -11,10 +11,13 @@ import ThemeIcon from '@mui/icons-material/InvertColors';
 import useTheme from '@/store/theme';
 import { Themes } from '@/theme/types';
 import { Link } from 'react-router-dom';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 export const BottomNav = () => {
-  const { navValue, setNavValue } = useAppStateContext();
-  const { user, loginWithPopup, logout } = useAuth0();
+  const { routeHistory } = useAppStateContext();
+  const { navValue, setNavValue } = routeHistory;
+  const { user, loginWithPopup } = useAuth0();
+  const { logOutFromAuth0, getAccessTokenPleasePleasePlease } = useAuth0Queries();
   const [themes, themeActions] = useTheme();
 
   return (
@@ -46,7 +49,9 @@ export const BottomNav = () => {
           sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
-          onClick={() => user ? logout() : loginWithPopup()}
+          onClick={() => {
+            user ? logOutFromAuth0() : loginWithPopup().then(() => getAccessTokenPleasePleasePlease());
+          }}
         />
         <BottomNavigationAction
           showLabel={true}
@@ -56,6 +61,5 @@ export const BottomNav = () => {
         />
       </BottomNavigation>
     </Box>
-  )
-    ;
+  );
 };
