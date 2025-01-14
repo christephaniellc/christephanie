@@ -234,14 +234,14 @@ export default class Api {
   }
 
   async put<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('PUT', data, true)), callback);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PUT', data, true)), callback);
   }
 
   async delete<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('DELETE', data, true)), callback);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('DELETE', data, true)), callback);
   }
 
   async postForm<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildMutipartFormConfig('POST', data)), callback);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildMutipartFormConfig('POST', data)), callback);
   }
 }
