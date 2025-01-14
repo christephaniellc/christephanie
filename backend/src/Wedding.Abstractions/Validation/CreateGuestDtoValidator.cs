@@ -18,7 +18,8 @@ namespace Wedding.Abstractions.Validation
             RuleFor(g => g.LastName)
                 .NotEmpty()
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Last name"))
-                ;
+                .When(g => g.FirstName != "+1");
+            ;
             RuleFor(e => e.AgeGroup).IsInEnum();
             RuleForEach(g => g.Roles)
                 .IsInEnum();

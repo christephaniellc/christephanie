@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2.Model;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
@@ -93,15 +94,9 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 entity = results.FirstOrDefault();
 
-                if (string.IsNullOrEmpty(entity.Auth0Id))
-                {
-                    _logger.LogInformation("Auth0Id is null, updating...");
-                    var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
-                    _logger.LogInformation(
-                        $"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
-                    authenticatedUser.InvitationCode = entity.InvitationCode;
-                    await TryUpdateUser(entity, authenticatedUser);
-                }
+                var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
+                _logger.LogInformation($"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
+                await TryUpdateUser(entity, authenticatedUser);
 
                 await TryUpdateFamilyUnit(entity.InvitationCode);
 
@@ -111,6 +106,11 @@ namespace Wedding.Lambdas.Authorize.Providers
                 await _dynamoDBProvider.SaveAsync(entity);
 
                 return user;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, $"InvalidOperationException {ex.Message}");
+                throw ex;
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -140,7 +140,15 @@ namespace Wedding.Lambdas.Authorize.Providers
             {
                 matchingGuest.AdditionalFirstNames.Add(user.Nickname);
             }
-            
+
+            if (!string.IsNullOrEmpty(matchingGuest.Auth0Id) && !matchingGuest.Auth0Id.Equals(user.UserId))
+            {
+                var message = $"Invalid operation: Account already created for this guest. Please login with {matchingGuest.Email}.";
+                throw new InvalidOperationException(message);
+            }
+
+            //matchingGuest.InvitationCode = entity.InvitationCode;
+
             matchingGuest.Auth0Id = user.UserId;
             matchingGuest.Email = user.Email;
             matchingGuest.EmailVerified = user.EmailVerified ?? false;

@@ -69,7 +69,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                     {
                         foreach (var guest in familyUnit.Guests)
                         {
-                            guest.GuestId = Guid.NewGuid().ToString();
+                            guest.GuestId = string.IsNullOrEmpty(guest.GuestId) ? Guid.NewGuid().ToString() : guest.GuestId;
                             guest.GuestNumber = guestNumber++;
                             var partitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                             var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
