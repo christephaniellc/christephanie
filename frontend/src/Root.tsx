@@ -2,7 +2,6 @@ import { ComponentType, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RecoilRoot } from 'recoil';
 
-import { ApiContextProvider } from '@/context/ApiContext';
 import { Providers } from '@/context/Providers';
 import { BrowserRouter } from 'react-router-dom';
 

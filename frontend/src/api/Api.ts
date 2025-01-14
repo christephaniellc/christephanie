@@ -1,10 +1,5 @@
 import { FamilyUnitDto, GuestDto } from '@/types/api';
-import { getConfig } from '@/browser-config';
-
-export type ApiResponse<T> = {
-  data: T | undefined;
-  error: ApiError | undefined;
-};
+import { getConfig } from '@/auth_config';
 
 export type ApiError = {
   status: number;
@@ -13,53 +8,48 @@ export type ApiError = {
   meta?: Map<string, string>;
 };
 
-
 export default class Api {
-
   // eslint-disable-next-line no-unused-vars
-  constructor(private readonly navigate: (path: string) => void) {
-
+  constructor(private readonly getAccessTokenSilently: () => Promise<string | null>) {
   }
 
-  getJwt = (): string | null => {
-    return window.localStorage.getItem('jwt');
+  getJwt = async () => {
+    return await this.getAccessTokenSilently();
   };
 
-  getMe = (): Promise<ApiResponse<GuestDto>> => {
-    return this.get('/GuestDtos/me', (response: GuestDto) => {
-      if (response === undefined) {
-        return response;
-      }
-      return response;
-    });
-  };
+  async getMe(): Promise<GuestDto> {
+    return this.get('/GuestDtos/me');
+  }
 
-  findUser = (invitationCode: string, firstName: string): Promise<ApiResponse<string>> => {
-    return this.getPublic(`/user/find?invitationCode=${invitationCode}&firstName=${firstName}`)
-      // .then((response: string) => {
-      //   console.log(response);
-      //   return response;
-      // })
-      // .catch((reason: string) => {
-      //   console.log(reason);
-      //   return Error(reason);
-        // console.log(`mocking response for provided params: ${invitationCode} and ${firstName}`);
-        // return Promise.resolve('6f2e238d-6792-453f-82d1-1cde35414d5b');
-      // });
-  };
+  async findUserId(queryKey: string): Promise<string> {
+    return this.getPublic(`/user/find?${queryKey}`);
+  }
 
-  getFamilyUnit = (): Promise<ApiResponse<FamilyUnitDto>> => {
-    console.log('getting family unit');
-    return this.get('/familyunit')
-  };
+  async getFamilyUnit(): Promise<FamilyUnitDto> {
+    return this.get('/familyunit');
+  }
 
-  getGuestDto = (id: number): Promise<ApiResponse<GuestDto>> => this.get(`/GuestDtos/${id}`);
-  postGuestDto = (GuestDto: GuestDto): Promise<ApiResponse<GuestDto>> => this.post(`/GuestDtos`, GuestDto);
-  patchGuestDto = (GuestDto: GuestDto): Promise<ApiResponse<GuestDto>> => this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
-  deleteGuestDto = (id: number): Promise<ApiResponse<GuestDto>> => this.delete(`/GuestDtos/${id}/change-password`);
+  async updateFamilyUnit(familyUnit: FamilyUnitDto): Promise<FamilyUnitDto> {
+    return this.post(`/familyunit`, familyUnit);
+  }
 
-  private handleResponse = <T>(response: Response): Promise<ApiResponse<T>> => {
-    console.log(response.status);
+  getGuestDto(id: number): Promise<GuestDto> {
+    return this.get(`/GuestDtos/${id}`);
+  }
+
+  postGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
+    return this.post(`/GuestDtos`, GuestDto);
+  }
+
+  patchGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
+    return this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
+  }
+
+  deleteGuestDto(id: number): Promise<GuestDto> {
+    return this.delete(`/GuestDtos/${id}/change-password`);
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
       case 200:
         return Promise.resolve(response.json());
@@ -69,22 +59,20 @@ export default class Api {
 
       case 401:
         return this.handleUnRecoverableError(response, () => {
-          console.log('api auth check fail, logging out');
-          console.error('received unauth\'d');
           // TODO solve what to do if unauthed
           // if auth0 enabled, just redirect back to login page
           // const redirectUri = this.history.location.pathname;
-          // this.navigate(AppPaths.login(redirectUri));
+          // this.history.replace(AppPaths.login(redirectUri));
         });
 
       case 403:
         return this.handleUnRecoverableError(response, () => {
           console.log('user not found in db, redirect to /403');
-          // this.navigate(AppPaths.userNotFound());
+          // this.history.replace(AppPaths.userNotFound());
         });
 
       case 404:
-        return Promise.resolve(response.json());
+        return this.handleRecoverableError(response);
 
       case 422:
         return this.handleRecoverableError(response);
@@ -92,81 +80,71 @@ export default class Api {
 
       case 409: // TODO/TO NOTE http conflict, the error thrown if your api is accidentally concurrently trying to make a user with the same keys and they clash in sql.
         // if this happens to you, make your app only load the user once, when the app loads and don't allow it to call whatever endpoint you have to create a user in parallel.
-        window.location.reload();
-        return this.handleUnRecoverableError(response, () => window.location.reload()); // refreshing the page works for this error as it typically occurs during first page load when user creates account.
+        // window.location.reload();
+        return this.handleUnRecoverableError(response, () => console.log('409')); // refreshing the page works for this error as it typically occurs during first page load when user creates account.
 
       case 500:
       default:
+
         if (response.headers.has('Content-Length')
           && parseInt(response.headers.get('Content-Length')) === 0) {
 
-          return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => this.navigate('/500'));
-          // TODO return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => this.navigate(AppPaths.internalError()));
+          return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => {
+          });
+          // TODO return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => this.history.replace(AppPaths.internalError()));
 
         } else {
-          return this.handleUnRecoverableError(response, (error: ApiError) => {
-            // TODO this.navigate(AppPaths.internalError({error: error}));
-            this.navigate('/500?error=' + encodeURIComponent(error.error) + '&description=' + encodeURIComponent(error.description));
+          return this.handleUnRecoverableError(response, (_error: ApiError) => {
           });
         }
     }
-  };
+  }
 
   // from here below, i haven't really put too much thought, the handle* functions are mostly sane.
   // the last functions are for dealing with creating error objects when error is not present.
-  private handleRecoverableError = (response: Response): Promise<unknown> => {
+  private async handleRecoverableError(response: Response): Promise<any> {
+    return response.json().then((error: ApiError) => {
+      return Promise.reject(error);
+    });
+  }
+
+  private async handleUnRecoverableError<T>(
+    response: Response,
+    errorAction: (_error: ApiError) => void
+  ): Promise<T> {
     return response
       .json()
-      .then((apiResponseJson) => {
-        console.error('recoverable error: ' + JSON.stringify(apiResponseJson.error as ApiError));
-        // TODO NotificationService.error(apiResponseJson.error as ApiError);
-        return Promise.reject(apiResponseJson.error);
-
-      });
-  };
-
-  // eslint-disable-next-line no-unused-vars
-  private handleUnRecoverableError = (response: Response, errorAction: (error: ApiError) => void): Promise<unknown> => {
-    return response
-      .json()
-      .then((response) => {
+      .then((response: T) => {
         const error: ApiError = response.error;
-        console.error('unrecoverable error: ' + JSON.stringify(error));
         // TODO NotificationService.error(error);
         // ok, so if we do encounter an unrecoverable error, call the errorAction()
         if (errorAction) {
           errorAction(error);
         }
-        return Promise.reject(error);
+        Promise.reject(response);
       });
-  };
+  }
 
-  private handleUnRecoverableErrorWithoutErrorMessage = (response: Response, errorAction?: () => void): Promise<unknown> => {
+  private async handleUnRecoverableErrorWithoutErrorMessage<T>(
+    response: Response,
+    errorAction?: () => void
+  ): Promise<T> {
     return response
       .json()
-      .then((_: unknown) => {
+      .then(() => {
         const errorMessage = 'Received error with no message. Please report problem to admin.';
         //NotificationService.error(errorMessage);
-        console.error('unrecoverable error without message, why did api return no error');
         // ok, so if we do encounter an unrecoverable error, call the errorAction()
         if (errorAction) {
           errorAction();
         }
-        return Promise.reject(this.buildErrorFromEmptyResponse(errorMessage, response));
+        return Promise.reject(errorMessage);
       });
   };
 
   // handle empty errors
   // do as you please
-  private buildErrorFromEmptyResponse = (message: string, response: Response): ApiError => this.buildError(this.buildErrorType(response), message, response.status);
-
-  private buildError = (error: string, description: string, status: number): ApiError => {
-    return {
-      status: status,
-      error: error,
-      description: description,
-    };
-  };
+  private buildErrorFromEmptyResponse = (message: string, response: Response): ApiError => this.buildError(this.buildErrorType(response), message, response.status, response.url);
 
   private buildErrorType = (response: Response): string => {
     if (response.status === 500) {
@@ -176,116 +154,94 @@ export default class Api {
     return 'InternalServerError';
   };
 
-  //  only used for catching exceptions
-  private handleRejected = <T>(rejectedReason: unknown): Promise<T> => {
-    console.log('rejected unrecoverable promise, redirect to /500');
-    console.error('handle rejected api call');
-    // NotificationService.error(rejectedReason);
-    //this.navigate(AppPaths.internalError({msg: rejectedReason}));
-    // this.navigate(`${routes[Pages.NotFound].path}?reason=${encodeURIComponent(rejectedReason)}`);
-    const response = this.buildError('UnknownError', rejectedReason as string, 500);
 
-    return Promise.reject(response);
-  };
-
-  private buildConfig = (method: string, data = null, requiresAuth: boolean): RequestInit => {
-    if (data != null) {
-      return {
-        method: method,
-        body: JSON.stringify(data),
-        headers: this.buildHeaders(requiresAuth),
-      } as RequestInit;
-    }
+  private buildError = (error: string, description: string, status: number, _path: string): ApiError => {
     return {
-      method: method,
-      headers: this.buildHeaders(requiresAuth),
-    } as RequestInit;
-  };
-
-  private buildMutipartFormConfig = (method: string, data = {}) => {
-    const formData = new FormData();
-
-    for (const name in data) {
-      formData.append(name, data[name]);
-    }
-
-    return {
-      method: method,
-      body: formData,
-      headers: {
-        'Authorization': 'Bearer ' + this.getJwt(),
-      },
+      status: status,
+      error: error,
+      description: description,
     };
   };
 
-  private buildHeaders = (requiresAuth: boolean, hasBody: boolean = false): HeadersInit => {
-    const headers: HeadersInit = {};
+  //  only used for catching exceptions
+  private async handleRejected<T>(reason: any): Promise<T> {
+    console.log('rejected unrecoverable promise, redirect to /500');
+    return Promise.reject(reason);
+  }r
 
-    if (hasBody) {
-      headers['Content-Type'] = 'application/json';
+  private async buildConfig(
+    method: string,
+    data: object | null,
+    requiresAuth: boolean
+  ): Promise<RequestInit> {
+    const headers = await this.buildHeaders(requiresAuth);
+    const config: RequestInit = { method, headers };
+    if (data != null) config.body = JSON.stringify(data);
+    return config;
+  }
+
+  private async buildMutipartFormConfig(method: string, data: any = {}): Promise<RequestInit> {
+    const formData = new FormData();
+    for (const name in data) {
+      formData.append(name, data[name]);
     }
+    const token = await this.getAccessTokenSilently();
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    return { method, body: formData, headers };
+  }
 
+  private async buildHeaders(requiresAuth: boolean): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (requiresAuth) {
-      const token = this.getJwt();
+      const token = await this.getAccessTokenSilently();
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
     }
-
     return headers;
-  };
+  }
 
+  private async compositeResponseHandler<T>(
+    promise: Promise<Response>,
+    callback?: (_response: T) => T
+  ): Promise<T> {
+    try {
+      const response = await promise;
+      let result = await this.handleResponse<T>(response);
+      if (callback) {
+        result = callback(result);
+      }
+      return result;
+    } catch (reason) {
+      return this.handleRejected<T>(reason);
+    }
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  private compositeResponseHandler = <T>(promise: Promise<Response>, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return promise
-      .then((response: Response) => {
-        console.log(response, callback);
-        if (callback) {
-          return this.handleResponse<T>(response)
-            .then(callback);
-        }
-        return this.handleResponse<T>(response);
-      })
-      .catch((reason) => {
-        console.log(reason);
-        return this.handleRejected<T>(reason);
-      });
-  };
+  async get<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  get = <T>(path: string, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('GET', null, true)), callback);
-  };
+  async getPublic<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, false)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  getPublic = <T>(path: string, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('GET', null, false)), callback);
-  };
+  async post<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  post = <T>(path: string, data?: unknown, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('POST', data, true)), callback);
-  };
+  async patch<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PATCH', data, true)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  patch = <T>(path: string, data?: unknown, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('PATCH', data, true)), callback);
-  };
+  async put<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PUT', data, true)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  put = <T>(path: string, data?: unknown, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('PUT', data, true)), callback);
-  };
+  async delete<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('DELETE', data, true)), callback);
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  delete = <T>(path: string, data?: unknown, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildConfig('DELETE', data, true)), callback);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-unused-vars
-  postForm = <T>(path: string, data?: any, callback?: (response: T) => T): Promise<ApiResponse<T>> => {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, this.buildMutipartFormConfig('POST', data)), callback);
-  };
-
+  async postForm<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildMutipartFormConfig('POST', data)), callback);
+  }
 }
