@@ -41,7 +41,7 @@ namespace Wedding.Lambdas.Authorize.Handlers
             Console.WriteLine($"CONSOLE: AuthHandler token: {query.Token}");
 
             query.Validate(nameof(query));
-            
+
             try
             {
                 var token = query.Token.Replace("Bearer ", "");
@@ -53,15 +53,19 @@ namespace Wedding.Lambdas.Authorize.Handlers
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
                 _logger.LogInformation($"AuthHandler authorized user (authorized? {isAuthorized}): {JsonSerializer.Serialize(authorizedUser)}");
 
-                var policy = APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(//isAuthenticated & 
+                var policy = APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy( //isAuthenticated & 
                     isAuthorized
-                        ? PolicyEffectEnum.Allow 
-                        : PolicyEffectEnum.Deny, 
+                        ? PolicyEffectEnum.Allow
+                        : PolicyEffectEnum.Deny,
                     query.MethodArn, token, authorizedUser);
 
                 _logger.LogInformation($"Policy: {JsonSerializer.Serialize(policy)}");
 
                 return policy;
+            }
+            catch (InvalidOperationException ex)
+            {
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {

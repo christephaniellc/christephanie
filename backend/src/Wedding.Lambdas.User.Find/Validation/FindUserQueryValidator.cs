@@ -22,7 +22,9 @@ namespace Wedding.Lambdas.User.Find.Validation
             RuleFor(query => query.FirstName)
                 .NotNull()
                 .NotEmpty()
-                .WithMessage("FirstName cannot be null.");
+                .WithMessage("FirstName cannot be null.")
+                .Must(firstName => firstName != "+1")
+                .WithMessage("Invalid first name.");
         }
 
         public void IsValid(FindUserQuery obj, object? _ = null)

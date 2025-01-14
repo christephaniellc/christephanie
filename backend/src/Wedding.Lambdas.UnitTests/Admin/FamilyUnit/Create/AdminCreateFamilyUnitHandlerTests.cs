@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentAssertions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -69,8 +70,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 .ReturnsAsync(existingFamilyUnit);
 
             // Act & Assert
-            var ex = Assert.ThrowsAsync<ApplicationException>(async () => await _handler.ExecuteAsync(command));
-            Assert.That(ex!.Message, Is.EqualTo("An error occurred while saving the family unit."));
+            Assert.DoesNotThrowAsync(async () => await _handler.ExecuteAsync(command));
+            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(0));
         }
 
         [Test]
@@ -133,6 +134,41 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             Assert.AreEqual("ABCDE", result[0].InvitationCode);
             Assert.AreEqual("Doe_John Family", result[0].UnitName);
             Assert.AreEqual(2, result[0].Guests!.Count);
+        }
+
+        [Test]
+        public async Task ExecuteAsync_Should_Save_FamilyUnit_And_Guest_With_GuestId()
+        {
+            // Arrange
+            var guestId = Guid.NewGuid();
+            var command = new AdminCreateFamilyUnitsCommand(
+                new List<FamilyUnitDto>()
+                {
+                    new FamilyUnitDto
+                    {
+                        InvitationCode = "ABCDE",
+                        Tier = "A",
+                        Guests = new List<GuestDto>
+                        {
+                            new GuestDto { FirstName = "Barney", LastName = "Doe", GuestId = guestId.ToString()},
+                        }
+                    }},
+                new List<RoleEnum> { RoleEnum.Admin }
+            );
+
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+                    It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((WeddingEntity)null!);
+
+            // Act
+            var result = await _handler.ExecuteAsync(command);
+
+            // Assert
+            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            Assert.AreEqual("ABCDE", result[0].InvitationCode);
+            Assert.AreEqual("Doe_Barney Family", result[0].UnitName);
+            Assert.AreEqual(1, result[0].Guests!.Count);
+            result[0].Guests[0].GuestId.Should().Be(guestId.ToString());
         }
 
         [Test]
