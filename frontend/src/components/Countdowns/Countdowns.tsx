@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
-import useFamilyUnit from '@/store/family';
+import {familyState} from '@/store/family';
 import { InvitationResponseEnum } from '@/types/api';
-import useUser from '@/store/user';
+// import useUser from '@/store/user';
+import {useRecoilValue} from "recoil";
 
 export const Countdowns = ({event = "Wedding", interested }: {event: "Wedding" | "Invitation", interested: InvitationResponseEnum}) => {
-  const [user] = useUser();
-  const [familyUnit] = useFamilyUnit();
+  // const [user] = useUser();
+  const familyUnit = useRecoilValue(familyState)
   const addressValidated = familyUnit?.mailingAddress
   const today = new Date();
   const weddingDay = new Date(2025, 6, 5);
@@ -17,13 +18,13 @@ export const Countdowns = ({event = "Wedding", interested }: {event: "Wedding" |
     if (!familyUnit) return `Are waiting for you to Create an Account!`;
     switch(interested) {
       case "Pending":
-        return `Are waiting on your response!`;
+        return `Let us know when you know!`;
       case "Interested":
         return addressValidated ? `${daysUntil} days until the ${event}!` : `${daysUntil} days to provide your address!`;
       case "Declined":
         return `Sorry to miss you at the Wedding!`;
     }
-  }, [interested, addressValidated, user, familyUnit]);
+  }, [interested, addressValidated, familyUnit]);
 
   if (event === "Invitation") {
     return <Box textAlign='center' mb={2}>

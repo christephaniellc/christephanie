@@ -1,79 +1,99 @@
 import { atom, useRecoilState } from 'recoil';
-import { invitationCodeState, firstNameState } from '@/store/invitationInputs';
-import { useMutation } from '@tanstack/react-query';
-import { useApi } from '@/context/ApiContext';
-import { useEffect, useMemo } from 'react';
 import { GuestDto } from '@/types/api';
+import { UseMutationResult, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
-import { getConfig } from '@/browser-config';
+import { useEffect, useMemo } from 'react';
+import { useApiContext } from '@/context/ApiContext';
 
-export const userState = atom<Partial<GuestDto> | null>({
-  key: 'user',
-  default: {} as GuestDto,
+export const userIdQueryState = atom<Partial<UseQueryResult<string | null>>>({
+  key: 'userIdQueryState',
+  default: null,
 });
 
-function useUser() {
-  const { api } = useApi();
+
+export const userState = atom<Partial<GuestDto>>({
+  key: 'userState',
+  default: {
+    guestId: '',
+    firstName: '',
+    invitationCode: '',
+  } as GuestDto,
+});
+
+export const refetchUserState = atom<() => void>({
+  key: 'refetchUserState',
+  default: false,
+});
+
+export const userMutationState = atom<Partial<UseMutationResult<GuestDto | null>>>({
+  key: 'userMutationState',
+  default: null,
+});
+
+export const useUser = () => {
+  const api = useApiContext();
   const [user, setUser] = useRecoilState(userState);
-  const [invitationCode] = useRecoilState(invitationCodeState);
-  const [firstName] = useRecoilState(firstNameState);
-  const { loginWithPopup } = useAuth0();
-  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
-  const config = getConfig();
+  // doing this so we can check its state within a recoil selector;
+  const [userIdQuery, setUserIdQuery] = useRecoilState(userIdQueryState);
+  const queryClient = useQueryClient();
+  const { user: auth0User } = useAuth0();
 
-  const _setUserId = (guestId: string) => {
-    setUser({ ...user, guestId });
-  };
+  const queryKey = `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
 
-  const _setUserRsvpCodeAndFirstName = (rsvpCode: string, firstName: string) => {
-    setUser({ ...user, rsvpCode, firstName });
-  };
-
-  const findUserMutation = useMutation({
-    mutationKey: [`findUser-${invitationCode}-${firstName}`],
-    mutationFn: () => api.findUser(invitationCode, firstName),
-    onSuccess: (data) => {
-      console.log('data', data.data);
-      _setUserId(data.data);
-      _setUserRsvpCodeAndFirstName(invitationCode, firstName);
-      // set the validated invitationCode and firstName to localstorage
-      loginWithPopup({
-        authorizationParams: {
-          screen_hint: 'signup',
-          guest_id: data.data,
-        },
-      }).then(() => {
-        console.log('logged in');
-      });
-    },
+  const findUserIdQuery = useQuery({
+    queryKey: [`findUserIdQuery`, `${queryKey}`],
+    queryFn: () => api.findUserId(queryKey),
+    retry: false,
+    enabled: false,
   });
 
-  const actions = useMemo(() => ({ findUserMutation }), [findUserMutation]);
-
-  // Auth
   useEffect(() => {
-    const getAccessTokenPleasePleasePlease = async () => {
-      if (!user?.firstName) return;
-      try {
-        await getAccessTokenSilently({
-          authorizationParams: {
-            audience: config.audience,
-            scope: config.scope,
-          }
-        })
-          .then((value) => {
-            localStorage.setItem('jwt', value);
-          })
-          .catch((reason) => console.log(`I am a failure: ${reason}`));
-      } catch (reason) {
-        console.log(`I am a failure: ${reason}`);
-      }
-    };
+    if (findUserIdQuery.isLoading) {
+      setUserIdQuery(findUserIdQuery);
+    }
+  }, [findUserIdQuery.isLoading]);
 
-    if (isAuthenticated && user?.firstName) getAccessTokenPleasePleasePlease();
-  }, [isAuthenticated, user]);
+  useEffect(() => {
+    if (findUserIdQuery.status === 'success') {
+      setUserIdQuery(findUserIdQuery);
+    }
+  }, [findUserIdQuery.status]);
 
-  return [user, actions];
+  useEffect(() => {
+    if (findUserIdQuery.error) {
+      setUserIdQuery(findUserIdQuery);
+      console.log(findUserIdQuery.error);
+    }
+  }, [findUserIdQuery.error, setUserIdQuery]);
+
+  useEffect(() => {
+    if (findUserIdQuery.data) {
+      const newUser = {
+        ...user,
+        guestId: findUserIdQuery.data,
+      };
+      setUser(newUser);
+    }
+  }, [findUserIdQuery.data, setUserIdQuery]);
+
+  useEffect(() => {
+    if (auth0User) {
+      setUser({ ...user, auth0Id: auth0User.sub } as GuestDto);
+    }
+
+  }, [auth0User]);
+
+  useEffect(() => {
+    setUserIdQuery({...userIdQuery, error: null} as UseQueryResult<string | null>);
+    queryClient.resetQueries({ queryKey: [`findUserIdQuery`] });
+  }, [user.firstName, user.invitationCode]);
+
+
+  useEffect(() => {
+    console.log(user)
+  }, [user]);
+
+  const userActions = useMemo(() => ({findUserIdQuery, setUser}), [findUserIdQuery, setUser]);
+
+  return [user, userActions] as const;
 }
-
-export default useUser;

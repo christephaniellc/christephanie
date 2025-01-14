@@ -11,14 +11,18 @@ import { AppStateContextProvider } from '@/context/Providers/AppState/AppStateCo
 export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { providerConfig } = useAuth0Providers();
   const { queryClient } = useQueryProvider();
+
+
   return (
-    <ApiContextProvider>
-      <Auth0Provider
-        domain={providerConfig.domain}
-        clientId={providerConfig.clientId}
-        onRedirectCallback={providerConfig.onRedirectCallback}
-        authorizationParams={providerConfig.authorizationParams}
-      >
+    <Auth0Provider
+      domain={providerConfig.domain}
+      clientId={providerConfig.clientId}
+      onRedirectCallback={providerConfig.onRedirectCallback}
+      authorizationParams={providerConfig.authorizationParams}
+      cacheLocation="localstorage"
+      useRefreshTokens
+    >
+      <ApiContextProvider>
         <QueryClientProvider client={queryClient}>
           <HelmetProvider>
             <ThemeProvider>
@@ -28,7 +32,7 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
             </ThemeProvider>
           </HelmetProvider>
         </QueryClientProvider>
-      </Auth0Provider>
-    </ApiContextProvider>
+      </ApiContextProvider>
+    </Auth0Provider>
   );
 };
