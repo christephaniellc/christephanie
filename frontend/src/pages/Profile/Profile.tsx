@@ -1,17 +1,29 @@
-import Typography from '@mui/material/Typography';
+import { LogoutOptions, useAuth0 } from '@auth0/auth0-react';
 
-import Meta from '@/components/Meta';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
+export function Profile() {
+  const { isAuthenticated, user, isLoading, loginWithPopup, logout } = useAuth0();
 
-function Profile() {
+  if (isLoading) {
+    return <div>Loading user...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <p>You’re not authenticated.</p>
+        <button onClick={() => loginWithPopup()}>Log In with Popup</button>
+        {/* Or loginWithRedirect if you prefer */}
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Meta title="page 2" />
-      <FullSizeCenteredFlexBox>
-        <Typography variant="h3">Page 2</Typography>
-      </FullSizeCenteredFlexBox>
-    </>
+    <div>
+      <h1>Welcome, {user?.name || 'User'}!</h1>
+      <p>Email: {user?.email}</p>
+      <button onClick={() => logout({ returnTo: window.location.origin } as LogoutOptions)}>
+        Log Out
+      </button>
+    </div>
   );
 }
-
-export default Profile;
