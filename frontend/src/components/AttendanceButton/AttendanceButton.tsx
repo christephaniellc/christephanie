@@ -1,21 +1,28 @@
-import { Box, ButtonBase, Typography, useTheme } from '@mui/material';
-import React, { useEffect } from 'react';
-import { styled } from '@mui/material/styles';
-import { useInvitation } from '@/context/Providers/AppState/Wedding/Rsvp/useInvitation';
-import { InvitationResponseEnum } from '@/types/api';
+import {Box, ButtonBase, Typography, useTheme} from '@mui/material';
+import React, {useEffect} from 'react';
+import {styled} from '@mui/material/styles';
+import {InvitationResponseEnum} from '@/types/api';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import Countdowns from '@/components/Countdowns';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import {guestSelector} from "@/store/family";
+import { userState } from '@/store/user';
 
 interface AttendanceButtonProps {
   guestId: string;
 }
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
-  const { matchingUsers, setUserIsAttending  } = useInvitation();
-  const theme = useTheme();
-  const guest = matchingUsers?.find((user) => user.guestId === guestId);
   const [interested, setInterested] = React.useState<InvitationResponseEnum>(InvitationResponseEnum.Pending);
+  const [guest, setGuest] = useRecoilState(guestSelector(guestId));
+  const user = useRecoilValue(userState);
+
+  const setUserIsAttending = (guestId: string, interested: InvitationResponseEnum) => {
+    setGuest({...guest, rsvp: {invitationResponse: interested}});
+  }
+
+  const theme = useTheme();
 
   useEffect(() => {
     if (guest && guest.rsvp && guest.rsvp.invitationResponse) {
@@ -23,31 +30,42 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     }
   }, [guest]);
 
-  if (!guest) {
+  if (!guest || !guest.guestId) {
     return <Typography variant="caption">No guest found</Typography>;
   }
 
-  const buttonProps = {
-    'Interested': { color: 'primary', fontSize: 'large', border: `2px solid ${theme.palette.primary.main}` },
-    'Declined': { color: 'error', fontSize: 'small', border: '2px dashed red' },
-    'Pending': { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.secondary.main}` },
-  } as const;
+  console.log('guest', guest);
+  console.log('user', user);
+
+  const buttonProps = (interested: InvitationResponseEnum) => {
+    switch (interested) {
+      case InvitationResponseEnum.Interested:
+        return {color: 'primary', fontSize: 'large', border: `2px solid ${theme.palette.primary.main}`};
+      case InvitationResponseEnum.Declined:
+        return {color: 'error', fontSize: 'small', border: '2px dashed red'};
+      case InvitationResponseEnum.Pending:
+        return {color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.secondary.main}`};
+    }
+  };
+
+
 
   return (
     <ImageButton
       onClick={() => {
-        if (interested === 'Interested') {
-          setUserIsAttending(guest, 'Declined');
-        } else if (interested === 'Declined') {
-          setUserIsAttending(guest, 'Pending');
+        if (!guest || !guest.guestId) return;
+        if (interested === InvitationResponseEnum.Interested) {
+          setUserIsAttending(guest.guestId, InvitationResponseEnum.Declined);
+        } else if (interested === InvitationResponseEnum.Declined) {
+          setUserIsAttending(guest.guestId, InvitationResponseEnum.Pending);
         } else {
-          setUserIsAttending(guest,'Interested');
+          setUserIsAttending(guest.guestId,InvitationResponseEnum.Interested);
         }
       }}
       sx={{
-        fontSize: buttonProps[interested].fontSize,
-        border: buttonProps[interested].border,
-        color: buttonProps[interested].color,
+        fontSize: buttonProps(interested)?.fontSize || 'medium',
+        border: buttonProps(interested)?.border || `2px solid ${theme.palette.secondary.main}`,
+        color: buttonProps(interested)?.color || 'default',
         // borderRadius: 16,
         boxShadow: 1,
         '&:hover': {
@@ -72,7 +90,10 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       <CountdownMessage>
         <Countdowns event="Invitation" interested={interested} />
       </CountdownMessage>
-      <Typography variant="h6" sx={{ mx: 'auto' }}>{guest?.firstName}</Typography>
+      {/*{guest.guestId}*/}
+      <Typography variant="h6" sx={{ mx: 'auto' }}>
+        {guest.guestId === user.guestId ? 'You' : guest?.firstName}
+      </Typography>
     </ImageButton>
   );
 };

@@ -1,24 +1,22 @@
-import {useLocation} from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import routes from '@/routes';
 
 export const useRouteHistory = () => {
-  const [navValue, setNavValue] = useState<string>("");
+  const [navValue, setNavValue] = useState<number>(0);
   const location = useLocation();
-  const [history, setHistory] = useState<string[]>([]);
-  const { user } = useAuth0();
+  const [history, setHistory] = useState<number[]>([]);
 
   useEffect(() => {
-    if (!user) {
-    }
-  }, [user]);
+    setNavValue(
+      Object.values(routes)
+        .findIndex((route) => route.path === location.pathname)?.valueOf() || 0,
+    );
+  }, [location]);
 
   useEffect(() => {
-    setNavValue(location.pathname);
-  }, []);
-
-  useEffect(() => {
-    history.push(location.pathname);
+    history.push(Object.values(routes)
+      .findIndex((route) => route.path === location.pathname)?.valueOf() || 0);
   }, [location]);
 
   const previousRoute = useMemo(() => {
@@ -41,7 +39,7 @@ export const useRouteHistory = () => {
 };
 
 export const appRoutes = {
-  Invitation: "/invitation",
-  Home: "/",
-  Profile: "/profile",
+  Invitation: '/invitation',
+  Home: '/',
+  Profile: '/profile',
 } as const;

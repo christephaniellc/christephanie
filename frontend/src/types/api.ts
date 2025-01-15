@@ -72,6 +72,21 @@ export interface FamilyUnitDto {
   familyUnitLastLogin?: string | null;
 }
 
+
+export interface GuestInterface {
+  invitationCode?: string | null;
+  guestId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  roles?: RoleEnum[] | null;
+  email?: string | null;
+  emailVerified?: boolean;
+  phone?: string | null;
+  rsvp?: RsvpDto;
+  preferences?: PreferencesDto;
+  ageGroup?: AgeGroupEnum;
+}
+
 export interface GuestDto {
   invitationCode?: string | null;
   guestId?: string | null;
@@ -407,23 +422,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags AdminFamilyUnit
-     * @name AdminFamilyunitDetail
-     * @request GET:/api/admin/familyunit/{interested}
-     * @secure
-     */
-    adminFamilyunitDetail: (interested: boolean | null, params: RequestParams = {}) =>
-      this.request<FamilyUnitDto[], void>({
-        path: `/api/admin/familyunit/${interested}`,
-        method: 'GET',
-        secure: true,
         format: 'json',
         ...params,
       }),

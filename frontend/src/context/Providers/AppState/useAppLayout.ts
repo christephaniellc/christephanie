@@ -1,6 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {useChristephanieTheme} from "./ThemeContext";
-import { SxProps, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
 export const useAppLayout = () => {
   const [screenWidth, setScreenWidth] = useState(0)
