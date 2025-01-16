@@ -108,16 +108,29 @@ public class Function
 
         try
         {
-            using var scope = _serviceProvider.CreateScope(); 
+            using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
             var result = await handler.GetAsync(query);
 
             return result;
         }
+        catch (InvalidOperationException ex)
+        {
+            context.Logger.LogError($"InvalidOperationException: {ex.Message}");
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+                error: $"Auth InvalidOperationException exception: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            context.Logger.LogError($"UnauthorizedAccessException: {ex.Message}");
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+                error: $"Auth UnauthorizedAccessException exception: {ex.Message}");
+        }
         catch (Exception ex)
         {
             context.Logger.LogError($"Function Exception Message: {ex.Message}");
-            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: $"Auth exception: {ex.Message}");
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+                error: $"Auth Exception: {ex.Message}");
         }
     }
 }
