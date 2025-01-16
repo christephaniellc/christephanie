@@ -136,7 +136,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 matchingGuest.AdditionalFirstNames = new List<string>();
             }
 
-            if (!string.IsNullOrEmpty(user.Nickname))
+            if (!string.IsNullOrEmpty(user.Nickname) && !matchingGuest.AdditionalFirstNames.Contains(user.Nickname))
             {
                 matchingGuest.AdditionalFirstNames.Add(user.Nickname);
             }
