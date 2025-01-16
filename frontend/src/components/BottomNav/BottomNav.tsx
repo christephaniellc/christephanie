@@ -11,13 +11,11 @@ import ThemeIcon from '@mui/icons-material/InvertColors';
 import useTheme from '@/store/theme';
 import { Themes } from '@/theme/types';
 import { Link } from 'react-router-dom';
-import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 export const BottomNav = () => {
-  const { routeHistory } = useAppStateContext();
-  const { navValue, setNavValue } = routeHistory;
-  const { user, loginWithPopup } = useAuth0();
-  const { logOutFromAuth0, getAccessTokenPleasePleasePlease } = useAuth0Queries();
+  const { navValue, setNavValue } = useAppStateContext();
+  const { user, loginWithPopup, logout  } = useAuth0();
+
   const [themes, themeActions] = useTheme();
 
   return (
@@ -50,7 +48,7 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => {
-            user ? logOutFromAuth0() : loginWithPopup().then(() => getAccessTokenPleasePleasePlease());
+            user ? logout() : loginWithPopup();
           }}
         />
         <BottomNavigationAction
