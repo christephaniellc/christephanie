@@ -18,13 +18,10 @@ function SaveTheDatePage() {
   const { user: auth0User } = useAuth0();
   const { callByLastNames, attendingLastNames, guests, nobodyComing } = useRecoilValue(familyGuestsStates);
 
-  if (!guests || !guests.length) return <div onClick={() => familyActions.getFamily()}>No guests found</div>;
-
-
 
   return (
     <Box display="flex" flexDirection="column" justifyContent="" pb={10}>
-      <Box display="flex" flexDirection="column" width="100%" maxWidth={"600px"} mx='auto' textAlign='center'>
+      <Box display="flex" flexDirection="column" width="100%" maxWidth={'600px'} mx="auto" textAlign="center">
         <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%">
           Steph & Topher
         </Typography>
@@ -36,6 +33,7 @@ function SaveTheDatePage() {
         </Typography>
         <Countdowns event={'Wedding'} interested={InvitationResponseEnum.Pending} />
       </Box>
+      {(!guests || !guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
       {guests && !!guests.length && (
         <Box>
           {!nobodyComing && <Typography sx={{ mx: 'auto', textAlign: 'center', mb: 2 }}>

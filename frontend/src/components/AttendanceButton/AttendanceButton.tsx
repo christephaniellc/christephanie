@@ -1,57 +1,55 @@
-import {Box, ButtonBase, Typography, useTheme} from '@mui/material';
-import React, {useEffect} from 'react';
-import {styled} from '@mui/material/styles';
-import {InvitationResponseEnum} from '@/types/api';
+import { Box, ButtonBase, darken, Typography, useTheme } from '@mui/material';
+import React, { useMemo } from 'react';
+import { styled } from '@mui/material/styles';
+import { InvitationResponseEnum } from '@/types/api';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import Countdowns from '@/components/Countdowns';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import {guestSelector} from "@/store/family";
-import { userState } from '@/store/user';
+import { useRecoilState } from 'recoil';
+import { guestSelector, useFamily } from '@/store/family';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface AttendanceButtonProps {
   guestId: string;
 }
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
-  const [interested, setInterested] = React.useState<InvitationResponseEnum>(InvitationResponseEnum.Pending);
   const [guest, setGuest] = useRecoilState(guestSelector(guestId));
-  const user = useRecoilValue(userState);
+  const { user } = useAuth0();
+  const [familyUnit, familyActions] = useFamily();
+
+  const isPending = familyActions.updateFamilyMutation.isPending;
+  const darkenCoefficent = isPending ? .5 : 0
 
   const setUserIsAttending = (guestId: string, interested: InvitationResponseEnum) => {
-    setGuest({...guest, rsvp: {invitationResponse: interested}});
+    console.log('sending request as', interested);
+    familyActions.updateFamilyGuest(guestId, interested);
   }
 
   const theme = useTheme();
 
-  useEffect(() => {
-    if (guest && guest.rsvp && guest.rsvp.invitationResponse) {
-      setInterested(guest.rsvp.invitationResponse);
-    }
-  }, [guest]);
+  const interested = useMemo(() => guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending, [guest]);
 
-  if (!guest || !guest.guestId) {
-    return <Typography variant="caption">No guest found</Typography>;
-  }
-
-  console.log('guest', guest);
-  console.log('user', user);
-
-  const buttonProps = (interested: InvitationResponseEnum) => {
+  const buttonProps = useMemo( () => {
     switch (interested) {
-      case InvitationResponseEnum.Interested:
-        return {color: 'primary', fontSize: 'large', border: `2px solid ${theme.palette.primary.main}`};
+      case InvitationResponseEnum["Interested"]:
+        console.log('interested yay', InvitationResponseEnum.Interested);
+        return {color: 'primary', fontSize: 'large', border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}`};
       case InvitationResponseEnum.Declined:
-        return {color: 'error', fontSize: 'small', border: '2px dashed red'};
+        console.log('error red', InvitationResponseEnum.Declined);
+        return {color: 'error', fontSize: 'small', border: `2px dashed ${darken(theme.palette.error.main, darkenCoefficent)}`};
       case InvitationResponseEnum.Pending:
-        return {color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.secondary.main}`};
+        console.log('pending yellow', InvitationResponseEnum.Pending);
+        return {color: 'default', fontSize: 'medium', border: `2px solid ${darken(theme.palette.secondary.main, darkenCoefficent)}`};
+      default:
+        return {color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}`};
+
     }
-  };
-
-
+  }, [interested, theme.palette.primary.main, theme.palette.secondary.main, darkenCoefficent]);
 
   return (
     <ImageButton
+      disabled={familyActions.updateFamilyMutation.isPending}
       onClick={() => {
         if (!guest || !guest.guestId) return;
         if (interested === InvitationResponseEnum.Interested) {
@@ -63,9 +61,9 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         }
       }}
       sx={{
-        fontSize: buttonProps(interested)?.fontSize || 'medium',
-        border: buttonProps(interested)?.border || `2px solid ${theme.palette.secondary.main}`,
-        color: buttonProps(interested)?.color || 'default',
+        fontSize: buttonProps.fontSize,
+        border: buttonProps.border,
+        color: darken(theme.palette.text.primary, darkenCoefficent),
         // borderRadius: 16,
         boxShadow: 1,
         '&:hover': {
@@ -78,21 +76,20 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 
     >
       <Box position="absolute" top={20} right={15}>
-        <WeddingAttendanceRadios interested={interested} />
+        <WeddingAttendanceRadios interested={interested} isMe={guest?.auth0Id === user?.sub} />
       </Box>
       <Box id="spacer" height={20} />
       <Box position="relative" mb={1} flexDirection="row" alignItems="flex-start" display="flex"
            mx={interested === 'Interested' ? 'auto' : 0}>
         <StickFigureIcon hidden={interested === 'Declined'}
-                         fontSize={interested === 'Interested' && 'large' || 'medium'} />
+                         fontSize={interested === 'Interested' && 'large' || 'medium'} loading={familyActions.updateFamilyMutation.isPending} />
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
       <CountdownMessage>
         <Countdowns event="Invitation" interested={interested} />
       </CountdownMessage>
-      {/*{guest.guestId}*/}
       <Typography variant="h6" sx={{ mx: 'auto' }}>
-        {guest.guestId === user.guestId ? 'You' : guest?.firstName}
+        {guest?.auth0Id === user?.sub ? 'You' : guest?.firstName}
       </Typography>
     </ImageButton>
   );

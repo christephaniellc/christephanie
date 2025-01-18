@@ -3,12 +3,13 @@ import {
   selectorFamily, useRecoilState,
   useSetRecoilState,
 } from 'recoil';
-import { FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
+import { AddressDto, FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
 import { FamilyGuestsStates } from '@/store/family/types';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
+import { userState } from '@/store/user';
 
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
@@ -21,7 +22,7 @@ export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
 });
 
 
-export const  familyGuestsStates = selector<FamilyGuestsStates>({
+export const familyGuestsStates = selector<FamilyGuestsStates>({
   key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
@@ -84,6 +85,7 @@ export const useUpdateFamilyGuest = (guestId: string) => {
 
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
+  const [user, setUser] = useRecoilState(userState);
   const { auth0User } = useAuth0();
   const api = useApiContext();
 
@@ -94,16 +96,47 @@ export const useFamily = () => {
     enabled: false,
   });
 
-  const getFamily = useCallback(() => getFamilyUnitQuery.refetch(), []);
+  const updateFamilyMutation = useMutation({
+    mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
+    mutationFn: ({ updatedFamily }) => api.updateFamilyUnit(updatedFamily),
+    onSuccess: data => setFamily(data)
+  });
+
+  const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
+    .then((res) => {
+      if (!res.data || !res.data.guests) return;
+
+      const matchingUser = res.data.guests.find((value: GuestDto) => {
+        return value.guestId === user.guestId
+      });
+      if (matchingUser) {
+        setUser(matchingUser);
+      }
+    }), []);
+  const updateFamilyGuest = useCallback((guestId: string, interested: InvitationResponseEnum) => {
+    const updatedGuests = family?.guests?.map((prevGuest) => {
+      if (prevGuest.guestId === guestId) {
+        return {
+          ...prevGuest,
+          rsvp: { invitationResponse: interested }, // merges the updates onto the original guest
+        };
+      }
+      return prevGuest;
+    });
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
+  }, [family]);
+
+  const updateFamilyAddress = useCallback((mailingAddress: AddressDto) => {
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, mailingAddress } });
+  }, [family]);
 
   useEffect(() => {
     if (getFamilyUnitQuery.data) {
       setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
     }
-
   }, [getFamilyUnitQuery.data, setFamily]);
 
-  const familyActions = useMemo(() => ({ getFamily }), [getFamily]);
+  const familyActions = useMemo(() => ({ getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, setFamily }), [getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, setFamily]);
 
   return [family, familyActions] as const;
-}
+};
