@@ -9,6 +9,8 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Amazon.Lambda.APIGatewayEvents;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Auth.Commands;
+using Wedding.Common.Multitenancy;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
 
@@ -45,9 +47,18 @@ namespace Wedding.PublicApi.Logic.DI
                 var logger = c.Resolve<ILogger<DynamoDBProvider>>();
                 var context = c.Resolve<IDynamoDBContext>();
                 var mapper = c.Resolve<IMapper>();
-                return new DynamoDBProvider(logger, context, mapper);
+                var multitenancySettingsProvider = c.Resolve<IMultitenancySettingsProvider>();
+                return new DynamoDBProvider(logger, context, mapper, multitenancySettingsProvider);
             }).As<IDynamoDBProvider>()
                 .AsImplementedInterfaces() 
+                .InstancePerDependency();
+
+            builder.Register(c =>
+                {
+                    var logger = c.Resolve<ILogger<MultitenancySettingsProvider>>();
+                    return new MultitenancySettingsProvider(logger);
+                }).As<IMultitenancySettingsProvider>()
+                .AsImplementedInterfaces()
                 .InstancePerDependency();
 
             builder.Register(ctx =>

@@ -16,6 +16,7 @@ using Wedding.Common.Helpers;
 using Wedding.Lambdas.Validate.Address.Commands;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Common.Configuration.Identity;
@@ -63,9 +64,9 @@ namespace Wedding.PublicApi.Controllers
             return await Task.FromResult(response);
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("address-validate")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -43,7 +43,7 @@ public class Function
 
             context.Logger.LogInformation($"Raw Auth Input: {authContext.GuestId} {authContext.InvitationCode} {authContext.Roles}");
 
-            query = new GetUserQuery(authContext.GuestId, authContext.InvitationCode, authContext.ParseRoles());
+            query = new GetUserQuery(authContext);
         
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetUserHandler>();

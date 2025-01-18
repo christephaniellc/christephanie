@@ -8,6 +8,14 @@ namespace Wedding.Common.Helpers.AWS
 {
     public static class APIGatewayCustomAuthorizerRequestExtensions
     {
+        public static string? GetOriginFromRequest(this APIGatewayCustomAuthorizerRequest request)
+        {
+            if (request.Headers == null) return null;
+            if (request.Headers.ContainsKey("Origin")) return request.Headers["Origin"].ToLower();
+            if (request.Headers.ContainsKey("origin")) return request.Headers["origin"].ToLower();
+            return null;
+        }
+
         public static string? GetCaseInsensitiveParam(APIGatewayCustomAuthorizerRequest request, string paramName)
         {
             string paramValue = null;

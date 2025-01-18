@@ -47,12 +47,12 @@ public class Function
 
             if (!string.IsNullOrEmpty(invitationCode))
             {
-                var query = new AdminGetFamilyUnitQuery(invitationCode, authContext.ParseRoles());
+                var query = new AdminGetFamilyUnitQuery(invitationCode, authContext);
                 var result = await handler.GetAsync(query);
                 return result.OkResponse();
             }
 
-            var queryUnits = new AdminGetFamilyUnitsQuery(authContext.ParseRoles());
+            var queryUnits = new AdminGetFamilyUnitsQuery(authContext);
             var results = await handler.GetAsync(queryUnits);
             return results.OkResponse();
 

@@ -5,9 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Handlers;
-using Wedding.Lambdas.Authorize.Providers;
 
 namespace Wedding.Lambdas.UnitTests.TestData
 {

@@ -18,14 +18,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Validation
         /// </summary>
         public AdminUpdateFamilyUnitCommandValidator()
         {
-            RuleFor(query => query.CurrentUserRoles)
-                .NotNull()
-                .NotEmpty()
-                .SetValidator(new AdminValidator());
             RuleFor(cmd => cmd.FamilyUnit)
                 .NotNull()
                 .NotEmpty()
                 .SetValidator(new UpdateFamilyUnitDtoValidator());
+            RuleFor(cmd => cmd.AuthContext)
+                .NotNull()
+                .SetValidator(new AuthContextValidator(true));
         }
 
         public void IsValid(AdminUpdateFamilyUnitCommand obj, object? _ = null)

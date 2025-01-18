@@ -54,16 +54,18 @@ public class Function
             var authContext = request.GetAuthContext();
             _metaData = new Dictionary<string, string>
             {
+                {"audience", authContext?.Audience ?? "unknown"},
                 {"invitationCode", authContext?.InvitationCode ?? "unknown"},
                 {"guestId", authContext?.GuestId ?? "unknown"},
                 {"roles", authContext?.Roles ?? "unknown"}
             };
 
+            context.Logger.LogInformation($"audience: {authContext.Audience}");
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
 
-            var query = new GetFamilyUnitQuery(authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            var query = new GetFamilyUnitQuery(authContext);
             
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();

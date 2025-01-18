@@ -1,6 +1,8 @@
 ﻿using FluentValidation.TestHelper;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
@@ -12,11 +14,17 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
     [UnitTestsFor(typeof(AdminUpdateFamilyUnitCommandValidator))]
     public class AdminUpdateFamilyUnitCommandValidatorTests
     {
+        private TestTokenHelper _testTokenHelper;
         private AdminUpdateFamilyUnitCommandValidator _validator;
 
         [SetUp]
         public void SetUp()
         {
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
             _validator = new AdminUpdateFamilyUnitCommandValidator();
         }
 
@@ -24,18 +32,32 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_NotValidate_When_Self_NotAdmin()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_JOHN.Roles);
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+            };
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(c => c.CurrentUserRoles);
+            result.ShouldHaveValidationErrorFor(c => c.AuthContext);
         }
 
         [Test]
         public void Should_Validate_When_FamilyUnit_Is_Valid_And_Admin()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_ADMIN.Roles);
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -46,18 +68,32 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_NotValidate_When_FamilyUnit_Is_Valid_And_User_Has_No_Permission()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, TestDataHelper.GUEST_JOHN.Roles);
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+            };
+            var command = new AdminUpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor(c => c.CurrentUserRoles);
+            result.ShouldHaveValidationErrorFor(c => c.AuthContext);
         }
 
         [Test]
         public void Should_Have_Error_When_FamilyUnit_Is_Null()
         {
             // Arrange
-            var command = new AdminUpdateFamilyUnitCommand(null, TestDataHelper.GUEST_ADMIN.Roles);
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminUpdateFamilyUnitCommand(null, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -69,13 +105,20 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Have_Error_When_FamilyUnit_Guests_Are_Empty()
         {
             // Arrange
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
             var invalidFamilyUnit = new FamilyUnitDto
             {
                 InvitationCode = "ABCDE",
                 Tier = "Tier1",
                 Guests = new List<GuestDto>()
             };
-            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -87,6 +130,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Have_Error_When_InvitationCode_Is_Invalid()
         {
             // Arrange
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
             var invalidFamilyUnit = new FamilyUnitDto
             {
                 InvitationCode = "",
@@ -96,7 +146,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     new GuestDto { FirstName = "Guest1", Email = "guest1@example.com" }
                 }
             };
-            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, TestDataHelper.GUEST_ADMIN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(invalidFamilyUnit, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -107,6 +157,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         public void Should_Have_Error_When_User_Not_Admin()
         {
             // Arrange
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+            };
             var validFamilyUnit = new FamilyUnitDto
             {
                 InvitationCode = "ABCDE",
@@ -122,11 +179,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                     }
                 }
             };
-            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, TestDataHelper.GUEST_JOHN.Roles);
+            var command = new AdminUpdateFamilyUnitCommand(validFamilyUnit, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
-            result.ShouldHaveValidationErrorFor("CurrentUserRoles");
+            result.ShouldHaveValidationErrorFor("AuthContext");
         }
     }
 }

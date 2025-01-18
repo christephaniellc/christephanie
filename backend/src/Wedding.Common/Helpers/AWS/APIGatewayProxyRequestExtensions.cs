@@ -10,10 +10,19 @@ namespace Wedding.Common.Helpers.AWS
 {
     public static class APIGatewayProxyRequestExtensions
     {
+        public static string? GetOriginFromRequest(this APIGatewayProxyRequest request)
+        {
+            if (request.Headers == null) return null;
+            if (request.Headers.ContainsKey("Origin")) return request.Headers["Origin"].ToLower();
+            if (request.Headers.ContainsKey("origin")) return request.Headers["origin"].ToLower();
+            return null;
+        }
+
         public static AuthContext GetAuthContext(this APIGatewayProxyRequest request)
         {
             return new AuthContext
             {
+                Audience = request.GetAudienceFromAuthContext(),
                 InvitationCode = request.GetInvitationCodeFromAuthContext(),
                 GuestId = request.GetGuestIdFromAuthContext(),
                 Roles = request.GetRoleStringFromAuthContext()
@@ -74,6 +83,7 @@ namespace Wedding.Common.Helpers.AWS
 
                     return key switch
                     {
+                        "audience" => context.Audience,
                         "guestId" => context.GuestId,
                         "invitationCode" => context.InvitationCode,
                         "roles" => context.Roles,
@@ -87,6 +97,11 @@ namespace Wedding.Common.Helpers.AWS
             }
 
             return null;
+        }
+
+        public static string? GetAudienceFromAuthContext(this APIGatewayProxyRequest request)
+        {
+            return request.RequestLambdaData("audience");
         }
 
         public static string? GetGuestIdFromAuthContext(this APIGatewayProxyRequest request)

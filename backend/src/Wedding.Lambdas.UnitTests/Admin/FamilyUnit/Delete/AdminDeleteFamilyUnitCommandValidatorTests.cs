@@ -1,10 +1,11 @@
 ﻿using FluentValidation.TestHelper;
-using IdentityModel.OidcClient;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
-using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Validation;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 {
@@ -12,11 +13,17 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
     [TestFixture]
     public class AdminDeleteFamilyUnitCommandValidatorTests
     {
+        private TestTokenHelper _testTokenHelper;
         private AdminDeleteFamilyUnitCommandValidator _validator;
 
         [SetUp]
         public void SetUp()
         {
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
             _validator = new AdminDeleteFamilyUnitCommandValidator();
         }
 
@@ -24,7 +31,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void Validate_ValidInvitationCode_ShouldNotHaveValidationError()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -37,7 +51,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void Validate_InvalidInvitationCode_ShouldHaveValidationError()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", authContext);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -50,7 +71,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void Validate_NullInvitationCode_ShouldHaveValidationError()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand(null, new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand(null, authContext);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -63,7 +91,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void IsValid_ThrowsException_WhenCommandIsInvalid()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", authContext);
 
             // Act & Assert
             Assert.Throws<FluentValidation.ValidationException>(() => _validator.IsValid(command));
@@ -73,7 +108,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void IsValid_DoesNotThrowException_WhenCommandIsValid()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 
             // Act & Assert
             Assert.DoesNotThrow(() => _validator.IsValid(command));
@@ -83,13 +125,20 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void IsValid_ThrowsException_WhenCommandIsValid_ButNotAdmin()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Guest });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 
             // Act
             var result = _validator.TestValidate(command);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(cmd => cmd.CurrentUserRoles);
+            result.ShouldHaveValidationErrorFor(cmd => cmd.AuthContext);
         }
     }
 }

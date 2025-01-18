@@ -1,5 +1,5 @@
-﻿using Wedding.Common.Helpers;
-using Wedding.Lambdas.Authorize.Commands;
+﻿using Wedding.Common.Auth.Commands;
+using Wedding.Common.Helpers;
 
 namespace Wedding.Lambdas.Authorize.Validation
 {

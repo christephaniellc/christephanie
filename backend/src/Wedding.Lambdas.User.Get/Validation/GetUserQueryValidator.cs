@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
 using Wedding.Abstractions.Validation.Common;
+using Wedding.Abstractions.Validation.Utility;
 using Wedding.Lambdas.User.Get.Commands;
 
 namespace Wedding.Lambdas.User.Get.Validation
 {
     /// <summary>
-    /// Validator for GetFamilyUnitQuery.
-    /// Implements the <see cref="AbstractValidator{ GetFamilyUnitQuery }" />
+    /// Validator for GetUserQuery.
+    /// Implements the <see cref="AbstractValidator{ GetUserQuery }" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
     internal class GetUserQueryValidator : AbstractValidator<GetUserQuery>, IValidate<GetUserQuery>
@@ -16,10 +17,9 @@ namespace Wedding.Lambdas.User.Get.Validation
         /// </summary>
         public GetUserQueryValidator()
         {
-            RuleFor(query => query.GuestId)
+            RuleFor(cmd => cmd.AuthContext)
                 .NotNull()
-                .NotEmpty()
-                .WithMessage("UserId cannot be null.");
+                .SetValidator(new AuthContextValidator(false));
         }
 
         public void IsValid(GetUserQuery obj, object? _ = null)

@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.Model;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
+using Wedding.Common.Multitenancy;
 using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Providers
@@ -22,13 +24,15 @@ namespace Wedding.Lambdas.Authorize.Providers
         private readonly IMapper _mapper;
         private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IAuthenticationProvider _authenticationProvider;
+        private readonly IMultitenancySettingsProvider _multitenancySettingsProvider;
 
-        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider)
+        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider, IMultitenancySettingsProvider multitenancySettingsProvider)
         {
             _logger = logger;
             _mapper = mapper;
             _dynamoDBProvider = dynamoDBProvider;
             _authenticationProvider = authenticationProvider;
+            _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
         private string GetRequiredPermissionByEndpoint(string methodArn)
@@ -82,7 +86,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 _logger.LogInformation($"RoleProvider guestId: {guestId}");
                 _logger.LogInformation($"RoleProvider audience: {audience}");
                 
-                var results = await _dynamoDBProvider.QueryByGuestIdIndex(guestId);
+                var results = await _dynamoDBProvider.QueryByGuestIdIndex(audience, guestId);
 
                 _logger.LogInformation($"RoleProvider query guest result: {results}");
 
@@ -96,14 +100,14 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
                 _logger.LogInformation($"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
-                await TryUpdateUser(entity, authenticatedUser);
 
-                await TryUpdateFamilyUnit(entity.InvitationCode);
+                await TryUpdateUser(entity, authenticatedUser);
+                await TryUpdateFamilyUnit(query.JwtAudience, entity.InvitationCode);
 
                 entity.LastActivity = DateTime.UtcNow;
                 user = _mapper.Map<GuestDto>(entity);
 
-                await _dynamoDBProvider.SaveAsync(entity);
+                await _dynamoDBProvider.SaveAsync(query.JwtAudience, entity);
 
                 return user;
             }
@@ -154,14 +158,14 @@ namespace Wedding.Lambdas.Authorize.Providers
             matchingGuest.EmailVerified = user.EmailVerified ?? false;
         }
 
-        public async Task TryUpdateFamilyUnit(string invitationCode)
+        public async Task TryUpdateFamilyUnit(string audience, string invitationCode)
         {
             try
             {
-                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(invitationCode);
+                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(audience, invitationCode);
 
                 familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
-                _dynamoDBProvider.SaveAsync(familyUnit);
+                _dynamoDBProvider.SaveAsync(audience, familyUnit);
             }
             catch (Exception ex)
             {

@@ -53,7 +53,7 @@ public class Function
             var authContext = request.GetAuthContext();
 
             var familyUnits = JsonSerializationHelper.DeserializeFromFrontend<List<FamilyUnitDto>>(request.Body);
-            var command = new AdminCreateFamilyUnitsCommand(familyUnits, authContext.ParseRoles());
+            var command = new AdminCreateFamilyUnitsCommand(familyUnits, authContext);
 
             if (command.FamilyUnits == null || command.FamilyUnits.Count == 0)
             {

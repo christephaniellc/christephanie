@@ -30,7 +30,7 @@ namespace Wedding.Lambdas.User.Get.Handlers
 
             try
             {
-                var result = await _dynamoDBProvider.QueryByGuestIdIndex(query.GuestId, cancellationToken);
+                var result = await _dynamoDBProvider.QueryByGuestIdIndex(query.AuthContext.Audience, query.AuthContext.GuestId, cancellationToken);
 
                 if (result == null || result.Count == 0)
                 {

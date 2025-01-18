@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -8,6 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Multitenancy;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Find.Handlers;
 
@@ -48,21 +50,44 @@ public class Function
         try
         {
             FindUserQuery query;
-            context.Logger.LogInformation($"Raw Query Input: {request.QueryStringParameters}");
+            context.Logger.LogInformation($"Raw Query Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
+            context.Logger.LogInformation($"Headers count: {request.Headers.Count}");
+            context.Logger.LogInformation($"Headers: {JsonSerializer.Serialize(request.Headers)}");
+            foreach (var header in request.Headers)
+            {
+                context.Logger.LogDebug($"Header: {header.Key}: {header.Value}");
+            }
 
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
+            var origin = request.GetOriginFromRequest();
+
+            var audience = request.GetOriginFromRequest();
+
+            using var scope = _serviceProvider.CreateScope();
+            var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
+            audience = multitenancySettingsProvider.GetAudience(origin) ?? throw new InvalidOperationException();
+
             _metaData = new Dictionary<string, string>
             {
+                {"audience", audience},
                 {"invitationCode", invitationCode},
                 {"firstName", firstName}
             };
 
+            if (string.IsNullOrEmpty(audience))
+            {
+                var viewError = $"This request looks shifty.";
+                var logError = $"Audience exception: audience empty.";
+                context.Logger.LogError(logError);
+
+                return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
+            }
+
             context.Logger.LogInformation($"Query Input: {invitationCode} {firstName}");
 
-            query = new FindUserQuery(invitationCode, firstName);
+            query = new FindUserQuery(audience, invitationCode, firstName);
             
-            using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<FindUserHandler>();
             var result = await handler.GetAsync(query);
 

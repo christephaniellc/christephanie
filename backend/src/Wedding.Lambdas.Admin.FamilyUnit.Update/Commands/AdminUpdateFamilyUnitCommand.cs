@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Enums;
+﻿using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Commands
 {
     public record AdminUpdateFamilyUnitCommand(
-        FamilyUnitDto FamilyUnit,
-        List<RoleEnum> CurrentUserRoles) : IWeddingCommand;
+        FamilyUnitDto FamilyUnit, AuthContext AuthContext) : IWeddingCommand;
 }
