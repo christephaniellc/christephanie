@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
@@ -13,7 +13,8 @@ import { Themes } from '@/theme/types';
 import { Link } from 'react-router-dom';
 
 export const BottomNav = () => {
-  const { navValue, setNavValue } = useAppStateContext();
+  // const { navValue, setNavValue } = useAppStateContext();
+  const [navValue, setNavValue] = useState();
   const { user, loginWithPopup, logout  } = useAuth0();
 
   const [themes, themeActions] = useTheme();

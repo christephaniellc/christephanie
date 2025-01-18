@@ -63,7 +63,7 @@ export interface FamilyUnitDto {
   unitName?: string | null;
   tier?: string | null;
   guests?: GuestDto[] | null;
-  mailingAddress?: string | null;
+  mailingAddress?: AddressDto | null;
   additionalAddresses?: string[] | null;
   invitationResponseNotes?: string | null;
   /** @format int32 */
