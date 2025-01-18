@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Wedding.Common.Serialization;
 
 namespace Wedding.Common.Helpers.AWS.Frontend
@@ -7,6 +8,9 @@ namespace Wedding.Common.Helpers.AWS.Frontend
     {
         public static string ToFrontendResponseBody<T>(this T body)
         {
+            // var serializerOptions = new JsonSerializerOptions();
+            // _ = _builder.Services
+            //     .Configure<JsonOptions>(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             return JsonSerializer.Serialize(body, JsonSerializationHelper.CamelCaseJsonSerializerOptions);
         }
         // public static string ToFrontendResponseBody(this FrontendApiData data)

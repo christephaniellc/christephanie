@@ -12,6 +12,7 @@ namespace Wedding.Common.Helpers.AWS
     {
         public static APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect,
             string methodArn,
+            string audience = null,
             string token = null,
             GuestDto? authenticatedUser = null,
             string? error = null)
@@ -26,6 +27,7 @@ namespace Wedding.Common.Helpers.AWS
             {
 
                 context["token"] = token;
+                context["audience"] = audience ?? null;
                 context["guestId"] = authenticatedUser?.GuestId ?? null;
                 context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
                 context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
@@ -73,6 +75,11 @@ namespace Wedding.Common.Helpers.AWS
         {
             //return response.Context["principalId"]?.ToString();
             return response.Context["guestId"]?.ToString();
+        }
+
+        public static string? GetAudienceFromAuth(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["audience"]?.ToString();
         }
 
         public static string? GetInvitationCodeFromAuth(this APIGatewayCustomAuthorizerResponse response)

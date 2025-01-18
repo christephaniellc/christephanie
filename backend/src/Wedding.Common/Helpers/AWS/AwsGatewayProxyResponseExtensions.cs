@@ -4,6 +4,7 @@ using System;
 using Wedding.Common.Helpers.AWS.Frontend;
 using System.Collections.Generic;
 using System.Net;
+using Wedding.Common.Serialization;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -11,7 +12,7 @@ namespace Wedding.Common.Helpers.AWS
     {
         public static T GetResponseBodyData<T>(this APIGatewayProxyResponse response)
         {
-            return JsonSerializer.Deserialize<T>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            return JsonSerializer.Deserialize<T>(response.Body, JsonSerializationHelper.CamelCaseJsonSerializerOptions)
                    ?? throw new InvalidOperationException("Deserialization returned null.");
         }
 
@@ -35,7 +36,7 @@ namespace Wedding.Common.Helpers.AWS
             };
         }
 
-        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType)
+        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType, Dictionary<string, string>? meta = null)
         {
             return new APIGatewayProxyResponse
             {
@@ -49,8 +50,9 @@ namespace Wedding.Common.Helpers.AWS
                 {
                     Status = errorStatusCode,
                     Error = errorType,
-                    Description = errorDescription
-                }.ToFrontendResponseBody()
+                    Description = errorDescription,
+                    Meta = meta
+                }.ToFrontendResponseBody(),
             };
         }
     }

@@ -23,6 +23,7 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Multitenancy;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -70,7 +71,7 @@ namespace Wedding.Lambdas.UnitTests
                 .Setup(provider => provider.GetAudience())
                 .ReturnsAsync(_testTokenHelper.JwtAudience);
 
-            var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, dynamoDBProvider.Object, mockAuthenticationProvider.Object);
+            var authProvider = new DatabaseRoleProvider(new Mock<ILogger<DatabaseRoleProvider>>().Object, _mapper, dynamoDBProvider.Object, mockAuthenticationProvider.Object, new Mock<MultitenancySettingsProvider>().Object);
 
             _findUserHandler = new FindUserHandler(Mock.Of<ILogger<FindUserHandler>>(), dynamoDBProvider.Object, _mapper);
             _authHandler = new AuthHandler(mockLogger.Object, authProvider);
@@ -111,19 +112,19 @@ namespace Wedding.Lambdas.UnitTests
             //     .ReturnsAsync(familySearchResult);
 
             //var partitionKey = DynamoKeys.GetPartitionKey(TestDataHelper.TEST_INVITATION_CODE);
-            dynamoDBProvider.Setup(x => x.QueryAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.QueryAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(familySearchResult);
 
-            dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
-            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(TestDataHelper.GUEST_JOHN.GuestId,  It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(_testTokenHelper.JwtAudience, TestDataHelper.GUEST_JOHN.GuestId,  It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> {_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN) });
-            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.QueryByGuestIdIndex(_testTokenHelper.JwtAudience, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE) });
             dynamoDBProvider.Setup(x =>
-                    x.GetFamilyUnitAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                    x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestDataHelper.FAMILY_DOE);
-            dynamoDBProvider.Setup(x => x.FromQueryAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            dynamoDBProvider.Setup(x => x.FromQueryAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(familySearchResult);
 
         }
@@ -167,10 +168,14 @@ namespace Wedding.Lambdas.UnitTests
         {
             // Step 1. Find user first by invitation code and first name
             var context = new TestLambdaContext();
-            var command = new FindUserQuery(TestDataHelper.TEST_INVITATION_CODE, "John");
+            var command = new FindUserQuery(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, "John");
             var request = new APIGatewayProxyRequest
             {
-                QueryStringParameters = QueryStringHelper.ConvertToQueryStringParameters(command)
+                QueryStringParameters = QueryStringHelper.ConvertToQueryStringParameters(command),
+                Headers = new Dictionary<string, string>()
+                {
+                    {"Origin", _testTokenHelper.JwtAudience}
+                }
             };
 
             var response = await _userFindFunction.FunctionHandler(request, context);
@@ -238,8 +243,13 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
+                    { "audience", _testTokenHelper.JwtAudience},
                     { "invitationCode", "ABAAB" },
                     { "firstName", "John" }
+                },
+                Headers = new Dictionary<string, string>()
+                {
+                    { "Origin", $"{_testTokenHelper.JwtAudience}"}
                 }
             };
 
@@ -262,8 +272,13 @@ namespace Wedding.Lambdas.UnitTests
             {
                 QueryStringParameters = new Dictionary<string, string>
                 {
+                    { "audience", _testTokenHelper.JwtAudience},
                     { "invitationCode", TestDataHelper.TEST_INVITATION_CODE },
                     { "firstName", "Jane" }
+                },
+                Headers = new Dictionary<string, string>()
+                {
+                    { "Origin", $"{_testTokenHelper.JwtAudience}"}
                 }
             };
 
