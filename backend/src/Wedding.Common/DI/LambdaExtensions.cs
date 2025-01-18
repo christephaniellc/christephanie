@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Multitenancy;
 
 namespace Wedding.Common.DI
 {
@@ -28,12 +29,19 @@ namespace Wedding.Common.DI
             services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
             services.AddScoped<IDynamoDBContext, DynamoDBContext>();
             services.AddScoped<IDynamoDBProvider, DynamoDBProvider>();
+            services.AddScoped<IMultitenancySettingsProvider, MultitenancySettingsProvider>();
             services.AddLogging(logging => logging.AddConsole());
 
             services.AddWeddingAutomapper();
 
             services.Add(containerBuilder =>
-                LambdaExtensions.LoadHandlers(containerBuilder, registrationHook));
+            {
+                // containerBuilder.RegisterType<MultitenancySettingsProvider>()
+                //     .As<IMultitenancySettingsProvider>()
+                //     .InstancePerDependency();
+                
+                LambdaExtensions.LoadHandlers(containerBuilder, registrationHook);
+            });
             return services;
         }
 
@@ -72,6 +80,36 @@ namespace Wedding.Common.DI
                     .Where(t => t.IsClosedTypeOf(type))
                     .AsImplementedInterfaces() //all other resolution
                     .InstancePerDependency();
+            }
+        }
+
+        public static void PrintRegisteredServices(this IServiceCollection services)
+        {
+            Console.WriteLine("Registered Services:");
+            foreach (var service in services)
+            {
+                Console.WriteLine($"Service: {service.ServiceType.FullName}, " +
+                                  $"Implementation: {service.ImplementationType?.FullName ?? "Factory/Instance"}, " +
+                                  $"Lifetime: {service.Lifetime}");
+            }
+        }
+
+        public static void PrintScopeServices(this IServiceScope scope, params Type[] serviceTypes)
+        {
+            var scopedProvider = scope.ServiceProvider;
+            Console.WriteLine("Checking services in the scope:");
+
+            foreach (var serviceType in serviceTypes)
+            {
+                var service = scopedProvider.GetService(serviceType);
+                if (service != null)
+                {
+                    Console.WriteLine($"{serviceType.FullName} is registered and resolvable.");
+                }
+                else
+                {
+                    Console.WriteLine($"{serviceType.FullName} is NOT registered in this scope.");
+                }
             }
         }
     }

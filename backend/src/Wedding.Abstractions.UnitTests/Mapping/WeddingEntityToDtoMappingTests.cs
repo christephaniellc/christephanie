@@ -45,8 +45,22 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 UnitName = "Smith Family",
                 Tier = "A",
                 InvitationResponseNotes = "Looking forward to it!",
-                MailingAddress = "123 Main St",
-                AdditionalAddresses = new List<string> { "456 Elm St" },
+                MailingAddress = new AddressDto
+                {
+                    StreetAddress = "123 Main St.",
+                    City = "Seattle",
+                    State = "WA"
+                }.ToString(),
+                AdditionalAddresses = new List<string>
+                {
+                    new AddressDto
+                    {
+                        StreetAddress = "456 Elm St",
+                        City = "Washington",
+                        State = "DC"
+                    }.ToString()
+
+                },
                 PotentialHeadCount = 5,
                 FamilyUnitLastLogin = DateTime.Now
             };
@@ -57,8 +71,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.UnitName.Should().Be(entity.UnitName);
             dto.Tier.Should().Be(entity.Tier);
             dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
-            dto.MailingAddress.Should().Be(entity.MailingAddress);
-            dto.AdditionalAddresses.Should().BeEquivalentTo(entity.AdditionalAddresses);
+            dto.MailingAddress.ToString().Should().Be(entity.MailingAddress);
+            dto.AdditionalAddresses[0].ToString().Should().BeEquivalentTo(entity.AdditionalAddresses[0]);
             dto.PotentialHeadCount.Should().Be(entity.PotentialHeadCount);
             dto.FamilyUnitLastLogin.Should().Be(entity.FamilyUnitLastLogin);
             dto.Guests.Should().BeNull();
@@ -155,8 +169,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 UnitName = "Smith Family",
                 Tier = "Gold",
                 InvitationResponseNotes = "Looking forward to it!",
-                MailingAddress = "123 Main St",
-                AdditionalAddresses = new List<string> { "456 Elm St" },
+                MailingAddress = new AddressDto { StreetAddress = "123 Main St"},
+                AdditionalAddresses = new List<AddressDto> { new AddressDto { StreetAddress = "456 Elm St" }},
                 Guests = new List<GuestDto>
                 {
                     new GuestDto
@@ -191,8 +205,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.UnitName.Should().Be(dto.UnitName);
             entity.Tier.Should().Be(dto.Tier);
             entity.InvitationResponseNotes.Should().Be(dto.InvitationResponseNotes);
-            entity.MailingAddress.Should().Be(dto.MailingAddress);
-            entity.AdditionalAddresses.Should().BeEquivalentTo(dto.AdditionalAddresses);
+            entity.MailingAddress.Should().Be(dto.MailingAddress.ToString());
+            entity.AdditionalAddresses[0].Should().BeEquivalentTo(dto.AdditionalAddresses[0].ToString());
             entity.PotentialHeadCount.Should().Be(dto.Guests.Count);
             entity.FamilyUnitLastLogin.Should().Be(dto.FamilyUnitLastLogin);
         }

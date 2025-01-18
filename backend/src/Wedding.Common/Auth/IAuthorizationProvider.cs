@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
-using Wedding.Lambdas.Authorize.Commands;
+using Wedding.Common.Auth.Commands;
 
-namespace Wedding.Lambdas.Authorize.Providers
+namespace Wedding.Common.Auth
 {
     public interface IAuthorizationProvider
     {

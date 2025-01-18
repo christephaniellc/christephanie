@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Threading;
-using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Auth.Commands;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
 {

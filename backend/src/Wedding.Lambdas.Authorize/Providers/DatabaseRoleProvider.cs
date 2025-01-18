@@ -9,8 +9,11 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
+using Wedding.Common.Multitenancy;
 using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Providers
@@ -21,13 +24,15 @@ namespace Wedding.Lambdas.Authorize.Providers
         private readonly IMapper _mapper;
         private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IAuthenticationProvider _authenticationProvider;
+        private readonly IMultitenancySettingsProvider _multitenancySettingsProvider;
 
-        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider)
+        public DatabaseRoleProvider(ILogger<DatabaseRoleProvider> logger, IMapper mapper, IDynamoDBProvider dynamoDBProvider, IAuthenticationProvider authenticationProvider, IMultitenancySettingsProvider multitenancySettingsProvider)
         {
             _logger = logger;
             _mapper = mapper;
             _dynamoDBProvider = dynamoDBProvider;
             _authenticationProvider = authenticationProvider;
+            _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
         private string GetRequiredPermissionByEndpoint(string methodArn)
@@ -81,7 +86,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                 _logger.LogInformation($"RoleProvider guestId: {guestId}");
                 _logger.LogInformation($"RoleProvider audience: {audience}");
                 
-                var results = await _dynamoDBProvider.QueryByGuestIdIndex(guestId);
+                var results = await _dynamoDBProvider.QueryByGuestIdIndex(audience, guestId);
 
                 _logger.LogInformation($"RoleProvider query guest result: {results}");
 
@@ -93,35 +98,23 @@ namespace Wedding.Lambdas.Authorize.Providers
 
                 entity = results.FirstOrDefault();
 
-                if (string.IsNullOrEmpty(entity.Auth0Id))
-                {
-                    _logger.LogInformation("Auth0Id is null, updating...");
-                    var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
-                    _logger.LogInformation(
-                        $"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
-                    authenticatedUser.InvitationCode = entity.InvitationCode;
-                    await TryUpdateUser(entity, authenticatedUser);
-                }
+                var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
+                _logger.LogInformation($"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
 
-                await TryUpdateFamilyUnit(entity.InvitationCode);
-
-                user = _mapper.Map<GuestDto>(entity);
+                await TryUpdateUser(entity, authenticatedUser);
+                await TryUpdateFamilyUnit(query.JwtAudience, entity.InvitationCode);
 
                 entity.LastActivity = DateTime.UtcNow;
+                user = _mapper.Map<GuestDto>(entity);
 
-                // var permissions = user.Roles.Select(r => r.ToString().ToUpper());
-                // var requestedPermission = GetRequiredPermissionByEndpoint(methodArn).ToUpper();
-                //
-                // // TODO think about this
-                // if (!permissions.Contains(requestedPermission) && !user.IsAdmin())
-                //     //!IsAuthorizedToViewThisPage(user, true, methodInvitationCode))
-                // {
-                //     throw new UnauthorizedAccessException("Access denied");
-                // }
-
-                await _dynamoDBProvider.SaveAsync(entity);
+                await _dynamoDBProvider.SaveAsync(query.JwtAudience, entity);
 
                 return user;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, $"InvalidOperationException {ex.Message}");
+                throw ex;
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -147,24 +140,32 @@ namespace Wedding.Lambdas.Authorize.Providers
                 matchingGuest.AdditionalFirstNames = new List<string>();
             }
 
-            if (!string.IsNullOrEmpty(user.Nickname))
+            if (!string.IsNullOrEmpty(user.Nickname) && !matchingGuest.AdditionalFirstNames.Contains(user.Nickname))
             {
                 matchingGuest.AdditionalFirstNames.Add(user.Nickname);
             }
-            
+
+            if (!string.IsNullOrEmpty(matchingGuest.Auth0Id) && !matchingGuest.Auth0Id.Equals(user.UserId))
+            {
+                var message = $"Invalid operation: Account already created for this guest. Please login with {matchingGuest.Email}.";
+                throw new InvalidOperationException(message);
+            }
+
+            //matchingGuest.InvitationCode = entity.InvitationCode;
+
             matchingGuest.Auth0Id = user.UserId;
             matchingGuest.Email = user.Email;
             matchingGuest.EmailVerified = user.EmailVerified ?? false;
         }
 
-        public async Task TryUpdateFamilyUnit(string invitationCode)
+        public async Task TryUpdateFamilyUnit(string audience, string invitationCode)
         {
             try
             {
-                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(invitationCode);
+                var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(audience, invitationCode);
 
                 familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
-                _dynamoDBProvider.SaveAsync(familyUnit);
+                _dynamoDBProvider.SaveAsync(audience, familyUnit);
             }
             catch (Exception ex)
             {

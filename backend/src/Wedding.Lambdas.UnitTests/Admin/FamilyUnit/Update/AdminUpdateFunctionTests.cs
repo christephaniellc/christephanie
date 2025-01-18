@@ -25,6 +25,7 @@ public class GetFunctionTests
 {
     private IMapper _mapper;
     private TestAuthorizer _testAuthorizer;
+    private TestTokenHelper _testTokenHelper;
     private Wedding.Lambdas.Admin.FamilyUnit.Update.Function _function;
 
     [SetUp]
@@ -33,6 +34,7 @@ public class GetFunctionTests
         var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json")
             .Build();
+        _testTokenHelper = new TestTokenHelper(configuration);
         var serviceCollection = new ServiceCollection();
         var dynamoDBProvider = new Mock<IDynamoDBProvider>();
 
@@ -47,20 +49,20 @@ public class GetFunctionTests
             _mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE),
         };
 
-        dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+        dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
 
-        dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(TestDataHelper.TEST_INVITATION_CODE_NEW, It.IsAny<CancellationToken>()))
+        dynamoDBProvider.Setup(x => x.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE_NEW, It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as WeddingEntity);
 
-        dynamoDBProvider.Setup(x => x.LoadGuestByGuestIdAsync(TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
+        dynamoDBProvider.Setup(x => x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
 
-        dynamoDBProvider.Setup(x => x.LoadGuestByGuestIdAsync(TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
+        dynamoDBProvider.Setup(x => x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE));
 
         dynamoDBProvider
-            .Setup(x => x.FromQueryAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FromQueryAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
             .ReturnsAsync(familyUnit);
 
         var adminUpdateFamilyUnitHandler = new AdminUpdateFamilyUnitHandler(Mock.Of<ILogger<AdminUpdateFamilyUnitHandler>>(), dynamoDBProvider.Object, _mapper);

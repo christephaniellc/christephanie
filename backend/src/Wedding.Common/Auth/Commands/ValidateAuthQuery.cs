@@ -1,6 +1,6 @@
 ﻿using Wedding.Common.Dispatchers;
 
-namespace Wedding.Lambdas.Authorize.Commands
+namespace Wedding.Common.Auth.Commands
 {
     public record ValidateAuthQuery(
         string JwtAuthority,

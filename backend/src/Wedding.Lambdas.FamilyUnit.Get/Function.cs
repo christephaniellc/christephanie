@@ -17,6 +17,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
+    private Dictionary<string, string> _metaData { get; set; }
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -51,12 +52,20 @@ public class Function
             context.Logger.LogInformation($"Raw Lambda Context: {JsonSerializer.Serialize(context)}");
 
             var authContext = request.GetAuthContext();
+            _metaData = new Dictionary<string, string>
+            {
+                {"audience", authContext?.Audience ?? "unknown"},
+                {"invitationCode", authContext?.InvitationCode ?? "unknown"},
+                {"guestId", authContext?.GuestId ?? "unknown"},
+                {"roles", authContext?.Roles ?? "unknown"}
+            };
 
+            context.Logger.LogInformation($"audience: {authContext.Audience}");
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
 
-            var query = new GetFamilyUnitQuery(authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            var query = new GetFamilyUnitQuery(authContext);
             
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetFamilyUnitHandler>();
@@ -69,14 +78,14 @@ public class Function
             var error = $"Authorization exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return error.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString());
+            return error.ErrorResponse((int)HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException).ToString(), _metaData);
         }
         catch (ValidationException ex)
         {
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return error.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString());
+            return error.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
         }
         catch (KeyNotFoundException ex)
         {
@@ -84,14 +93,14 @@ public class Function
             var error = $"KeyNotFoundException exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.NoContent, typeof(KeyNotFoundException).ToString());
+            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString(), _metaData);
         }
         catch (Exception ex)
         {
             var error = $"Error occurred: {ex.Message}";
             context.Logger.LogError(error);
 
-            return error.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString());
+            return error.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString(), _metaData);
         }
     }
 }

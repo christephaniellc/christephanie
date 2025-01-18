@@ -3,8 +3,10 @@ using Autofac;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
+using Wedding.Common.Auth;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Multitenancy;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.PublicApi.Logic.Services.Auth;
 
@@ -59,7 +61,8 @@ namespace Wedding.PublicApi.Logic.DI
                         var mapper = context.Resolve<IMapper>();
                         var dynamoDBProvider = context.Resolve<IDynamoDBProvider>();
                         var authenticationProvider = context.Resolve<IAuthenticationProvider>();
-                        return new DatabaseRoleProvider(logger, mapper, dynamoDBProvider, authenticationProvider);
+                        var multitenancySettingsProvider = context.Resolve<IMultitenancySettingsProvider>();
+                        return new DatabaseRoleProvider(logger, mapper, dynamoDBProvider, authenticationProvider, multitenancySettingsProvider);
                     })
                     .AsImplementedInterfaces()
                     .AsSelf()

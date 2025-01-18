@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Common.Helpers;
@@ -35,7 +36,7 @@ namespace Wedding.PublicApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
@@ -44,7 +45,7 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
-            var query = new GetFamilyUnitQuery(authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            var query = new GetFamilyUnitQuery(authContext);
             query.Validate();
             var result = await _dispatcher.GetAsync<GetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
@@ -65,7 +66,7 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
-            var command = new UpdateFamilyUnitCommand(familyUnit, authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            var command = new UpdateFamilyUnitCommand(familyUnit, authContext);
             command.Validate();
             var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 

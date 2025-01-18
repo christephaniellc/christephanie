@@ -57,7 +57,7 @@ public class Function
 
             context.Logger.LogInformation($"invitationCode: {invitationCode}");
 
-            var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext.ParseRoles());
+            var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext);
 
             context.Logger.LogInformation($"Command: {JsonSerializer.Serialize(command)}");
             context.Logger.LogInformation($"FamilyUnit: {JsonSerializer.Serialize(command.InvitationCode)}");

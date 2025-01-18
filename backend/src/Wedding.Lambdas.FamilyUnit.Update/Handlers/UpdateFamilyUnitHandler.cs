@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -51,7 +52,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
             try
             {
-                var existingFamilyUnitEntity = await _dynamoDbProvider.LoadFamilyUnitOnlyAsync(command.FamilyUnit.InvitationCode, cancellationToken);
+                var existingFamilyUnitEntity = await _dynamoDbProvider.LoadFamilyUnitOnlyAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode, cancellationToken);
                 if (existingFamilyUnitEntity == null)
                 {
                     throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
@@ -65,7 +66,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     {
                         guest.InvitationCode = command.FamilyUnit.InvitationCode;
                         
-                        var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.FamilyUnit.InvitationCode, guest.GuestId, cancellationToken);
+                        var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
+                            command.FamilyUnit.InvitationCode, 
+                            guest.GuestId, 
+                            cancellationToken);
                         
                         existingGuestEntity.AgeGroup = guest.AgeGroup;
 
@@ -91,13 +95,15 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
                         //_mapper.Map(guest, existingGuest);
 
-                        await _dynamoDbProvider.SaveAsync(existingGuestEntity, cancellationToken);
+                        await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
                         allGuests.Add(_mapper.Map<GuestDto>(existingGuestEntity));
                     }
                 }
 
-                existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress;
-                existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses;
+                existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress.ToString();
+                existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses?
+                    .Select(address => address.ToString())
+                    .ToList() ?? null;
                 existingFamilyUnitEntity.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
 
 
@@ -106,9 +112,9 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 familyUnit.Guests = allGuests;
                 existingFamilyUnitEntity.PotentialHeadCount = familyUnit.CalculateHeadcount();
                 
-                await _dynamoDbProvider.SaveAsync(existingFamilyUnitEntity, cancellationToken);
+                await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
 
-                return await _dynamoDbProvider.GetFamilyUnitAsync(command.FamilyUnit.InvitationCode);
+                return await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
             }
             catch (Exception ex)
             {

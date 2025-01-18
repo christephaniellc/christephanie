@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Common.Serialization
@@ -31,6 +32,9 @@ namespace Wedding.Common.Serialization
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                Converters = {
+                    new JsonStringEnumConverter()
+                }
             };
         }
 

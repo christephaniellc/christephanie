@@ -37,25 +37,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
             try
             {
-                // var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode);
-                // var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-
-                // // var existingFamilyUnit = await _repository.LoadAsync<WeddingEntity>(
-                // //     familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
-                //
-                // var dynamoQuery = new QueryOperationConfig()
-                // {
-                //     KeyExpression = new Expression
-                //     {
-                //         ExpressionStatement = "PartitionKey = :pk",
-                //         ExpressionAttributeValues =
-                //         {
-                //             { ":pk", familyInfoPartitionKey },
-                //         }
-                //     }
-                // };
-
-                var results = await _dynamoDBProvider.FromQueryAsync(command.FamilyUnit.InvitationCode);
+                var results = await _dynamoDBProvider.FromQueryAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
 
                 var existingFamilyUnitEntity = results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
                 var existingFamilyUnit = _mapper.Map<FamilyUnitDto>(existingFamilyUnitEntity);
@@ -95,19 +77,21 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 foreach (var guest in guestsToDelete)
                 {
                     var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                    await _dynamoDBProvider.DeleteAsync(command.FamilyUnit.InvitationCode, guestSortKey, cancellationToken);
+                    await _dynamoDBProvider.DeleteAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode, guestSortKey, cancellationToken);
                 }
 
                 foreach (var guest in guestsToUpdate)
                 {
                     guest.InvitationCode = command.FamilyUnit.InvitationCode;
 
-                    var existingGuest = await _dynamoDBProvider.LoadGuestByGuestIdAsync(guest.InvitationCode,
-                        guest.GuestId, cancellationToken);
+                    var existingGuest = await _dynamoDBProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, 
+                        guest.InvitationCode,
+                        guest.GuestId, 
+                        cancellationToken);
 
                     _mapper.Map(guest, existingGuest);
                     //_mapper.Map(existingGuest, guest);
-                    await _dynamoDBProvider.SaveAsync(existingGuest, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuest, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
 
@@ -117,7 +101,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                     guest.GuestNumber = addedGuests.Count + 1;
 
                     var entity = _mapper.Map<WeddingEntity>(guest);
-                    await _dynamoDBProvider.SaveAsync(entity, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, entity, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
 
@@ -131,7 +115,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
                 existingFamilyUnitEntity.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
 
-                await _dynamoDBProvider.SaveAsync(existingFamilyUnitEntity, cancellationToken);
+                await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
             }
             catch (Exception ex)
             {
