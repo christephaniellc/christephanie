@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.PublicApi.Logic.Services.Auth
 {
@@ -23,6 +23,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
 
             return new AuthContext
             {
+                Audience = authResult.GetAudienceFromAuth(),
                 InvitationCode = authResult.GetInvitationCodeFromAuth(),
                 GuestId = authResult.GetGuestIdFromAuth(),
                 Roles = string.Join(',', authResult.GetRolesFromAuth())

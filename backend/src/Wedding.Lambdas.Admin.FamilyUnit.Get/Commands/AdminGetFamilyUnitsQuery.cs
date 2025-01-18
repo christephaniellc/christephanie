@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Wedding.Abstractions.Enums;
+﻿using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Get.Commands
@@ -9,6 +8,6 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Get.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="CurrentUserRoles">Roles of current logged in user</param>
-    public record AdminGetFamilyUnitsQuery(List<RoleEnum> CurrentUserRoles) : IWeddingQuery;
+    /// <param name="AuthContext">AuthContext of current logged in user</param>
+    public record AdminGetFamilyUnitsQuery(AuthContext AuthContext) : IWeddingQuery;
 }

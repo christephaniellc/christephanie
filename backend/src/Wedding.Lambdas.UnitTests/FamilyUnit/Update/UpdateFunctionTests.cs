@@ -3,6 +3,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -26,6 +27,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
     {
         private IMapper _mapper;
         private Mock<IDynamoDBProvider> _mockDynamoDbProvider;
+        private TestTokenHelper _testTokenHelper;
         private Wedding.Lambdas.FamilyUnit.Update.Function _function;
 
         [SetUp]
@@ -34,18 +36,24 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             var serviceCollection = new ServiceCollection();
             _mockDynamoDbProvider = new Mock<IDynamoDBProvider>();
 
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
+
             var config = new MapperConfiguration(cfg =>
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             _mapper = config.CreateMapper();
 
             _mockDynamoDbProvider.Setup(x =>
-                    x.LoadFamilyUnitOnlyAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                    x.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE));
             _mockDynamoDbProvider.Setup(x =>
-                    x.LoadGuestByGuestIdAsync(TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
+                    x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
             _mockDynamoDbProvider.Setup(x =>
-                    x.LoadGuestByGuestIdAsync(TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
+                    x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE));
 
             var updateFamilyUnitHandler = new UpdateFamilyUnitHandler(Mock.Of<ILogger<UpdateFamilyUnitHandler>>(), _mockDynamoDbProvider.Object, _mapper);
@@ -62,7 +70,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             try
             {
                 var dto = TestDataHelper.FAMILY_DOE;
-                dto.MailingAddress = "123 Main St.";
+                dto.MailingAddress = new AddressDto { StreetAddress = "123 Main St." };
                 dto.Guests[0].AgeGroup = AgeGroupEnum.Child;
                 dto.Guests[0].Rsvp = new RsvpDto
                 {
@@ -74,13 +82,14 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 };
 
                 _mockDynamoDbProvider.Setup(x =>
-                        x.GetFamilyUnitAsync(TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                        x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(dto);
 
                 var context = new TestLambdaContext();
 
                 var fakeAuthContext = new AuthContext
                 {
+                    Audience = _testTokenHelper.JwtAudience,
                     GuestId = TestDataHelper.GUEST_JOHN.GuestId,
                     InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                     Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles)
@@ -107,7 +116,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Child);
                 result.Guests![0].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
                 result.Guests![1].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
-                result.MailingAddress.Should().Be("123 Main St.");
+                result.MailingAddress.StreetAddress.Should().Be("123 Main St.");
                 result.CalculateHeadcount().Should().Be(1);
             }
             catch (Exception ex)

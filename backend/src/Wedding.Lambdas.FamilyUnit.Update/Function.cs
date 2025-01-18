@@ -67,7 +67,7 @@ public class Function
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
 
-            var command = new UpdateFamilyUnitCommand(familyUnitDto, authContext.InvitationCode, authContext.GuestId, authContext.ParseRoles());
+            var command = new UpdateFamilyUnitCommand(familyUnitDto, authContext);
 
             if (command.FamilyUnit == null)
             {

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.USPS;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -35,8 +37,17 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
-                    .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress))
-                    .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses))
+                    .ForMember(dest => dest.MailingAddress, opt =>
+                        opt.MapFrom((src, dest, destMember, context) => 
+                            context.Mapper.Map<AddressDto>(src.MailingAddress)))
+                    .ForMember(dest => dest.AdditionalAddresses, opt =>
+                        opt.MapFrom((src, dest, destMember, context) =>
+                                src.AdditionalAddresses
+                                    .Select(address => context.Mapper.Map<AddressDto>(address))
+                                    .ToList()
+                            ))
+                    //.ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToAddress()))
+                    //.ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToAddress()).ToList()))
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.PotentialHeadCount ?? 0))
                     .ForMember(dest => dest.FamilyUnitLastLogin, opt => opt.MapFrom(src => src.FamilyUnitLastLogin))
                     .ForMember(dest => dest.Guests, opt => opt.Ignore()) // We'll manually map Guests
@@ -53,8 +64,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
-                    .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress))
-                    .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses))
+                    .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToString()))
+                    .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToString()).ToList()))
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.Guests != null ? src.Guests.Count : 0))
                     .ForMember(dest => dest.FamilyUnitLastLogin, opt => opt.MapFrom(src => src.FamilyUnitLastLogin))
                     ;

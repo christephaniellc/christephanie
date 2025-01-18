@@ -81,6 +81,7 @@ namespace Wedding.Abstractions.Validation.Utility
                         Console.WriteLine($"JwtTokenValidator authority: {authority}");
                         var keys = client.GetStringAsync($"{authority}/.well-known/jwks.json").Result;
                         Console.WriteLine($"JwtTokenValidator keys: {keys}");
+                        //Console
                         var jsonWebKeySet = new JsonWebKeySet(keys);
                         return jsonWebKeySet.GetSigningKeys();
                     }

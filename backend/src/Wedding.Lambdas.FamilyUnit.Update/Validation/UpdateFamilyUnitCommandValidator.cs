@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Validation;
 using Wedding.Abstractions.Validation.Common;
+using Wedding.Abstractions.Validation.Utility;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 
 namespace Wedding.Lambdas.FamilyUnit.Update.Validation
@@ -22,19 +24,20 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
         /// </summary>
         public UpdateFamilyUnitCommandValidator()
         {
+            RuleFor(query => query.FamilyUnit)
+                .NotNull()
+                .NotEmpty()
+                .SetValidator(new UpdateFamilyUnitDtoValidator());
+            RuleFor(cmd => cmd.AuthContext)
+                .NotNull()
+                .SetValidator(new AuthContextValidator(false));
             RuleFor(query => query)
                 .NotNull()
                 .NotEmpty()
                 .Must(query => 
                     HavePermissionToUpdate(
-                        query.FamilyUnit, 
-                        query.UserInvitationCode, 
-                        query.UserGuestId, 
-                        query.UserRoles));
-            RuleFor(query => query.FamilyUnit)
-                .NotNull()
-                .NotEmpty()
-                .SetValidator(new UpdateFamilyUnitDtoValidator());
+                        query.FamilyUnit,
+                        query.AuthContext));
         }
 
         public void IsValid(UpdateFamilyUnitCommand obj, object? _ = null)
@@ -45,19 +48,22 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
             return userRoles.Contains(RoleEnum.Admin);
         }
 
-        public bool HavePermissionToUpdate(FamilyUnitDto familyUnit, string userInvitationCode, string userGuestId, List<RoleEnum> userRoles)
+        public bool HavePermissionToUpdate(FamilyUnitDto familyUnit, AuthContext authContext)
         {
-            if (familyUnit.InvitationCode.ToUpper() != userInvitationCode.ToUpper() && !UserIsAdmin(userRoles))
+            if (familyUnit == null || authContext == null)
             {
-                Console.WriteLine($"Permission error. User invitation code: {userInvitationCode}, expected invitation code: {familyUnit.InvitationCode}");
                 return false;
-                //throw new UnauthorizedAccessException("Family unit update exception: Invitation code mismatch.");
             }
-            if (!familyUnit.Guests.Any(g => g.GuestId.ToUpper().Equals(userGuestId.ToUpper())) && !UserIsAdmin(userRoles))
+            var userRoles = authContext.ParseRoles();
+            if (familyUnit.InvitationCode.ToUpper() != authContext.InvitationCode.ToUpper() && !UserIsAdmin(userRoles))
             {
-                Console.WriteLine($"Permission error. Guest not found: {userGuestId}, in family unit: {familyUnit.InvitationCode}");
+                Console.WriteLine($"Permission error. User invitation code: {authContext.InvitationCode}, expected invitation code: {familyUnit.InvitationCode}");
                 return false;
-                // throw new UnauthorizedAccessException("Family unit update exception: Guest permission error.");
+            }
+            if (!familyUnit.Guests.Any(g => g.GuestId.ToUpper().Equals(authContext.GuestId.ToUpper())) && !UserIsAdmin(userRoles))
+            {
+                Console.WriteLine($"Permission error. Guest not found: {authContext.GuestId}, in family unit: {familyUnit.InvitationCode}");
+                return false;
             }
 
             return true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Abstractions.Dtos
@@ -15,9 +16,9 @@ namespace Wedding.Abstractions.Dtos
 
         public List<GuestDto>? Guests { get; set; }
 
-        public string? MailingAddress { get; set; }
+        public AddressDto? MailingAddress { get; set; }
 
-        public List<string>? AdditionalAddresses { get; set; }
+        public List<AddressDto>? AdditionalAddresses { get; set; }
 
         public string? InvitationResponseNotes { get; set; }
 

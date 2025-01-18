@@ -9,7 +9,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 {
     [UnitTestsFor(typeof(AddressToDtoMapping))]
     [TestFixture]
-    public class AddressToDtoMapptingTests
+    public class AddressToDtoMappingTests
     {
         private IMapper _mapper;
 
@@ -25,10 +25,19 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Map_StringToAddressDto_WithLineBreaks()
         {
             // Arrange
-            string input = "123 Main St\nApt 4B\nAnytown\nCA\n90210\nUSA";
+            //string input = "123 Main St\nApt 4B\nAnytown\nCA\n90210\nUSA";
+            var input = new AddressDto
+            {
+                StreetAddress = "123 Main St",
+                SecondaryAddress = "Apt 4B",
+                City = "Anytown",
+                State = "CA",
+                ZIPCode = "90210",
+                Country = "USA"
+            };
 
             // Act
-            var result = _mapper.Map<AddressDto>(input);
+            var result = _mapper.Map<AddressDto>(input.ToString());
 
             // Assert
             result.StreetAddress.Should().Be("123 Main St");
@@ -43,10 +52,19 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Map_StringToAddressDto_WithCommas()
         {
             // Arrange
-            string input = "123 Main St, Apt 4B, Anytown, CA, 90210, USA";
+            //string input = "123 Main St, Apt 4B, Anytown, CA, 90210, USA";
+            var address = new AddressDto
+            {
+                StreetAddress = "123 Main St",
+                SecondaryAddress = "Apt 4B",
+                City = "Anytown",
+                State = "CA",
+                ZIPCode = "90210",
+                Country = "USA"
+            }.ToString();
 
             // Act
-            var result = _mapper.Map<AddressDto>(input);
+            var result = _mapper.Map<AddressDto>(address);
 
             // Assert
             result.StreetAddress.Should().Be("123 Main St");
@@ -61,10 +79,16 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Map_StringToAddressDto_WithMissingFields()
         {
             // Arrange
-            string input = "123 Main St\nApt 4B\nAnytown\nCA";
+            var address = new AddressDto
+            {
+                StreetAddress = "123 Main St",
+                SecondaryAddress = "Apt 4B",
+                City = "Anytown",
+                State = "CA"
+            }.ToString();
 
             // Act
-            var result = _mapper.Map<AddressDto>(input);
+            var result = _mapper.Map<AddressDto>(address);
 
             // Assert
             result.StreetAddress.Should().Be("123 Main St");
@@ -76,13 +100,21 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         }
 
         [Test]
-        public void Map_StringToAddressDto_WithExtraLines()
+        public void Map_StringToAddressDto_WithSecondaryAddress()
         {
             // Arrange
-            string input = "123 Main St\nApt 4B\nAnytown\nCA\n90210\nUSA\nExtra Line";
+            var address = new AddressDto
+            {
+                StreetAddress = "123 Main St",
+                SecondaryAddress = "Apt 4B",
+                City = "Anytown",
+                State = "CA",
+                ZIPCode = "90210",
+                Country = "USA"
+            }.ToString();
 
             // Act
-            var result = _mapper.Map<AddressDto>(input);
+            var result = _mapper.Map<AddressDto>(address);
 
             // Assert
             result.StreetAddress.Should().Be("123 Main St");

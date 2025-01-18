@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 

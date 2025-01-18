@@ -33,14 +33,14 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
 
             try
             {
-                var results = await _dynamoDbProvider.GetFamilyUnitAsync(query.InvitationCode, cancellationToken);
+                var results = await _dynamoDbProvider.GetFamilyUnitAsync(query.AuthContext.Audience, query.AuthContext.InvitationCode, cancellationToken);
                 
                 if (results == null)
                 {
-                    throw new KeyNotFoundException($"Family unit with invitation code '{query.InvitationCode}' not found.");
+                    throw new KeyNotFoundException($"Family unit with invitation code '{query.AuthContext.InvitationCode}' not found.");
                 }
 
-                if (results.Guests.Any(result => result.GuestId == query.GuestId) == null && !query.Roles.Contains(RoleEnum.Admin))
+                if (results.Guests.Any(result => result.GuestId == query.AuthContext.GuestId) == null && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
                 {
                     throw new UnauthorizedAccessException("Access denied");
                 }

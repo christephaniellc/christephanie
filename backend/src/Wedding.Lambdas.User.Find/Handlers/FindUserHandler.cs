@@ -29,7 +29,7 @@ namespace Wedding.Lambdas.User.Find.Handlers
 
             try
             {
-                var items = await _dynamoDBProvider.QueryAsync(query.InvitationCode);
+                var items = await _dynamoDBProvider.QueryAsync(query.Audience, query.InvitationCode);
                 if (items == null || items.Count == 0)
                 {
                     throw new KeyNotFoundException($"Could not find invitation {query.InvitationCode} with first name {query.FirstName}. No items.");

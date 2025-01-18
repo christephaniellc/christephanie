@@ -68,8 +68,8 @@ public class AdminCreateFunctionTests
             {
                 new GuestDto
                 {
-                    FirstName = "John",
-                    LastName = "Doe",
+                    FirstName = TestDataHelper.GUEST_JOHN.FirstName,
+                    LastName = TestDataHelper.GUEST_JOHN.LastName,
                     GuestNumber = 1,
                     Roles = new List<RoleEnum> { RoleEnum.Guest }
                 }
@@ -87,7 +87,7 @@ public class AdminCreateFunctionTests
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
         errorResult.Status.Should().Be((int)HttpStatusCode.BadRequest);
         errorResult.Error.Should().Be("FluentValidation.ValidationException");
-        errorResult.Description.Should().Contain("CurrentUserRoles: No admin permissions");
+        errorResult.Description.Should().Contain("AuthContext: No admin permissions.");
     }
 
     [Test]
@@ -102,10 +102,10 @@ public class AdminCreateFunctionTests
             {
                 new GuestDto
                 {
-                    FirstName = "John",
-                    LastName = "Doe",
+                    FirstName = TestDataHelper.GUEST_JOHN.FirstName,
+                    LastName = TestDataHelper.GUEST_JOHN.LastName,
                     GuestNumber = 1,
-                    Roles = new List<RoleEnum> { RoleEnum.Guest }
+                    Roles = TestDataHelper.GUEST_JOHN.Roles
                 }
             }
         };

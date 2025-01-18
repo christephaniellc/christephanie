@@ -6,9 +6,9 @@ using Amazon.Lambda.APIGatewayEvents;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Lambdas.Authorize.Commands;
-using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Lambdas.Authorize.Validation;
 
 namespace Wedding.Lambdas.Authorize.Handlers
@@ -41,35 +41,48 @@ namespace Wedding.Lambdas.Authorize.Handlers
             Console.WriteLine($"CONSOLE: AuthHandler token: {query.Token}");
 
             query.Validate(nameof(query));
-            
+
             try
             {
                 var token = query.Token.Replace("Bearer ", "");
-
-                //var isAuthenticated = await _authProvider.GetGuestIdFromToken(token);
                 var authorizedUser = await _databaseRoleProvider.Authorize(query);
-
-                //var isAuthenticated = authenticatedUser != null;
                 var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
-                _logger.LogInformation($"AuthHandler authorized user (authorized? {isAuthorized}): {JsonSerializer.Serialize(authorizedUser)}");
 
-                var policy = APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(//isAuthenticated & 
+                _logger.LogInformation($"AuthHandler authorized user [audience: {query.JwtAudience}] (authorized? {isAuthorized}): {JsonSerializer.Serialize(authorizedUser)}");
+
+                var policy = APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy( //isAuthenticated & 
                     isAuthorized
-                        ? PolicyEffectEnum.Allow 
-                        : PolicyEffectEnum.Deny, 
-                    query.MethodArn, token, authorizedUser);
+                        ? PolicyEffectEnum.Allow
+                        : PolicyEffectEnum.Deny,
+                    query.MethodArn, 
+                    audience: query.JwtAudience,
+                    token, 
+                    authorizedUser);
 
                 _logger.LogInformation($"Policy: {JsonSerializer.Serialize(policy)}");
 
                 return policy;
             }
+            catch (InvalidOperationException ex)
+            {
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                    query.MethodArn,
+                    audience: query.JwtAudience, 
+                    error: ex.Message);
+            }
             catch (UnauthorizedAccessException ex)
             {
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: ex.Message);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                    query.MethodArn,
+                    audience: query.JwtAudience, 
+                    error: ex.Message);
             }
             catch (Exception ex)
             {
-                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn, error: ex.Message);
+                return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                    query.MethodArn,
+                    audience: query.JwtAudience, 
+                    error: ex.Message);
             }
         }
     }
