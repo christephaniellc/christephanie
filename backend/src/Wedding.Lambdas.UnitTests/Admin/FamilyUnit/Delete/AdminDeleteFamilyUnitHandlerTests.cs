@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 {
@@ -19,6 +21,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         private Mock<ILogger<AdminDeleteFamilyUnitHandler>> _mockLogger;
         private Mock<IDynamoDBProvider> _mockDynamoDBProvider;
         private Mock<IMapper> _mockMapper;
+        private TestTokenHelper _testTokenHelper;
         private AdminDeleteFamilyUnitHandler _handler;
 
         [SetUp]
@@ -27,6 +30,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             _mockLogger = new Mock<ILogger<AdminDeleteFamilyUnitHandler>>();
             _mockDynamoDBProvider = new Mock<IDynamoDBProvider>();
             _mockMapper = new Mock<IMapper>();
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+            .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
 
             _handler = new AdminDeleteFamilyUnitHandler(_mockLogger.Object, _mockDynamoDBProvider.Object, _mockMapper.Object);
         }
@@ -35,7 +43,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public async Task ExecuteAsync_DeletesFamilyUnit_ReturnsTrue()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
             var cancellationToken = CancellationToken.None;
 
             var weddingEntities = new List<WeddingEntity>
@@ -45,11 +60,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             };
 
             _mockDynamoDBProvider
-                .Setup(r => r.QueryAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.QueryAsync(authContext.Audience, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(weddingEntities);
 
             _mockDynamoDBProvider
-                .Setup(r => r.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), cancellationToken))
+                .Setup(r => r.DeleteAsync(authContext.Audience, It.IsAny<string>(), It.IsAny<string>(), cancellationToken))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -57,20 +72,27 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
 
             // Assert
             Assert.IsTrue(result);
-            _mockDynamoDBProvider.Verify(r => r.QueryAsync("ABCDE", cancellationToken), Times.Once);
-            _mockDynamoDBProvider.Verify(r => r.DeleteAsync("ABCDE", "SK1", cancellationToken), Times.Once);
-            _mockDynamoDBProvider.Verify(r => r.DeleteAsync("ABCDE", "SK2", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.QueryAsync(authContext.Audience, "ABCDE", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.DeleteAsync(authContext.Audience, "ABCDE", "SK1", cancellationToken), Times.Once);
+            _mockDynamoDBProvider.Verify(r => r.DeleteAsync(authContext.Audience, "ABCDE", "SK2", cancellationToken), Times.Once);
         }
 
         [Test]
         public void ExecuteAsync_WhenRepositoryThrowsException_ThrowsApplicationException()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand("ABCDE", new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
             var cancellationToken = CancellationToken.None;
 
             _mockDynamoDBProvider
-                .Setup(r => r.QueryAsync("ABCDE", It.IsAny<CancellationToken>()))
+                .Setup(r => r.QueryAsync(authContext.Audience, "ABCDE", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Repository failure"));
 
             // Act & Assert
@@ -84,7 +106,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
         public void ExecuteAsync_InvalidCommand_ThrowsArgumentException()
         {
             // Arrange
-            var command = new AdminDeleteFamilyUnitCommand(null, new List<RoleEnum> { RoleEnum.Admin });
+            var authContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
+                GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+            };
+            var command = new AdminDeleteFamilyUnitCommand(null, authContext);
             var cancellationToken = CancellationToken.None;
 
             // Act & Assert

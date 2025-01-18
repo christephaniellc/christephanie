@@ -33,7 +33,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Get.Handlers
 
             try
             {
-                var result = await _dynamoDBProvider.GetFamilyUnitAsync(query.InvitationCode, cancellationToken);
+                var result = await _dynamoDBProvider.GetFamilyUnitAsync(query.AuthContext.Audience, query.InvitationCode, cancellationToken);
 
                 if (result == null)
                 {
@@ -55,7 +55,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Get.Handlers
 
             try
             {
-                var result = await _dynamoDBProvider.GetFamilyUnitsAsync(cancellationToken);
+                var result = await _dynamoDBProvider.GetFamilyUnitsAsync(query.AuthContext.Audience, cancellationToken);
 
                 if (result == null)
                 {

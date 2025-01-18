@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Wedding.Abstractions.Validation.Common;
 using Wedding.Abstractions.Validation.Utility;
+using Wedding.Common.Auth.Commands;
 using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Validation
@@ -18,6 +19,7 @@ namespace Wedding.Lambdas.Authorize.Validation
         public ValidateAuthQueryValidator()
         {
             RuleFor(cmd => cmd.Token)
+                .NotNull()
                 .SetValidator(cmd => new JwtTokenValidator(cmd.JwtAuthority, cmd.JwtAudience));
             RuleFor(cmd => cmd.MethodArn)
                 .NotEmpty();

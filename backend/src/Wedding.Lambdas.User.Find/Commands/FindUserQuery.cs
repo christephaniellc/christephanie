@@ -7,8 +7,9 @@ namespace Wedding.Lambdas.User.Find.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
+    /// <param name="Audience">API audience</param>
     /// <param name="InvitationCode">Invitation Code</param>
     /// <param name="FirstName">FirstName</param>
     public record FindUserQuery(
-        string InvitationCode, string FirstName) : IWeddingQuery;
+        string Audience, string InvitationCode, string FirstName) : IWeddingQuery;
 }

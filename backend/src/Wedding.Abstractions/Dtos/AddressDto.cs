@@ -1,4 +1,6 @@
-﻿namespace Wedding.Abstractions.Dtos
+﻿using System.Text.Json;
+
+namespace Wedding.Abstractions.Dtos
 {
     public class AddressDto
     {
@@ -15,5 +17,9 @@
         public string? Urbanization { get; set; }
         public string? Country { get; set; }
         public string? CountryISOCode { get; set; }
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }

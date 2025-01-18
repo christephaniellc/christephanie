@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Wedding.Abstractions.Enums;
+﻿using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.User.Get.Commands
@@ -9,7 +8,6 @@ namespace Wedding.Lambdas.User.Get.Commands
     /// Implements the <see cref="IWeddingQuery" />
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
-    /// <param name="GuestId">Auth0 id</param>
-    public record GetUserQuery(
-        string GuestId, string InvitationCode, List<RoleEnum> Roles) : IWeddingQuery;
+    /// <param name="AuthContext">Auth Context for guest</param>
+    public record GetUserQuery(AuthContext AuthContext) : IWeddingQuery;
 }

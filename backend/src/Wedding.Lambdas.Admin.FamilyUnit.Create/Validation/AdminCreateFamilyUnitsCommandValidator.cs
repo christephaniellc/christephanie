@@ -27,9 +27,9 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Validation
                         .WithMessage("Each FamilyUnit must not be null.")
                         .SetValidator(new CreateFamilyUnitDtoValidator());
                 });
-            RuleFor(cmd => cmd.CurrentUserRoles)
+            RuleFor(cmd => cmd.AuthContext)
                 .NotNull()
-                .SetValidator(new AdminValidator());
+                .SetValidator(new AuthContextValidator(true));
         }
 
         public void IsValid(AdminCreateFamilyUnitsCommand obj, object? _ = null)

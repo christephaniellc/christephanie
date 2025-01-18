@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Wedding.Abstractions.Enums;
+﻿using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.FamilyUnit.Get.Commands
@@ -10,6 +9,5 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Commands
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
     /// <param name="GuestId">The user's guest id</param>
-    public record GetFamilyUnitQuery(
-        string InvitationCode, string GuestId, List<RoleEnum> Roles) : IWeddingQuery;
+    public record GetFamilyUnitQuery(AuthContext AuthContext) : IWeddingQuery;
 }

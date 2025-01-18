@@ -10,6 +10,7 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using AutoMapper;
+using Wedding.Common.Multitenancy;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -18,20 +19,34 @@ namespace Wedding.Common.Helpers.AWS
         private readonly ILogger<DynamoDBProvider> _logger;
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
+        private readonly IMultitenancySettingsProvider _multitenancySettingsProvider;
 
-        public DynamoDBProvider(ILogger<DynamoDBProvider> logger, IDynamoDBContext repository, IMapper mapper)
+        public DynamoDBProvider(ILogger<DynamoDBProvider> logger, 
+            IDynamoDBContext repository, 
+            IMapper mapper, 
+            IMultitenancySettingsProvider multitenancySettingsProvider)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
+            _multitenancySettingsProvider = multitenancySettingsProvider;
         }
-        public async Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string invitationCode, CancellationToken cancellationToken = default)
+
+        public DynamoDBOperationConfig GetTableConfig(string audience)
+        {
+            return new DynamoDBOperationConfig
+            {
+                OverrideTableName = _multitenancySettingsProvider.GetTableName(audience)
+            };
+        }
+
+        public async Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string audience, string invitationCode, CancellationToken cancellationToken = default)
         {
             var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
 
             return await _repository.LoadAsync<WeddingEntity>(
-                familyInfoPartitionKey, familyInfoSortKey, cancellationToken);
+                familyInfoPartitionKey, familyInfoSortKey, GetTableConfig(audience), cancellationToken);
         }
 
         /// <summary>
@@ -41,40 +56,36 @@ namespace Wedding.Common.Helpers.AWS
         /// <param name="guestId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<WeddingEntity?> LoadGuestByGuestIdAsync(string invitationCode, string guestId,
+        public async Task<WeddingEntity?> LoadGuestByGuestIdAsync(string audience, string invitationCode, string guestId,
             CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var guestSortKey = DynamoKeys.GetGuestSortKey(guestId);
-
+        
             return await _repository.LoadAsync<WeddingEntity>(
-                partitionKey, guestSortKey, cancellationToken);
+                partitionKey, guestSortKey, GetTableConfig(audience), cancellationToken);
         }
 
-        public async Task<List<WeddingEntity>?> QueryAsync(string invitationCode, CancellationToken cancellationToken = default)
+        public async Task<List<WeddingEntity>?> QueryAsync(string audience, string invitationCode, CancellationToken cancellationToken = default)
         {
-            var familyUnitPartitionKey = DynamoKeys.GetPartitionKey(invitationCode);
-            return await _repository.QueryAsync<WeddingEntity>(familyUnitPartitionKey).GetRemainingAsync();
+            return await FromQueryAsync(audience, invitationCode, cancellationToken);
         }
 
-        public async Task<List<WeddingEntity>?> QueryByGuestIdIndex(string guestId, CancellationToken cancellationToken = default)
+        public async Task<List<WeddingEntity>?> QueryByGuestIdIndex(string audience, string guestId, CancellationToken cancellationToken = default)
         {
-            var queryConfig = new DynamoDBOperationConfig
-            {
-                IndexName = DynamoKeys.GuestIdIndex
-            };
-
+            var queryConfig = GetTableConfig(audience);
+            queryConfig.IndexName = DynamoKeys.GuestIdIndex;
             return await _repository.QueryAsync<WeddingEntity>(guestId, queryConfig).GetRemainingAsync();
         }
 
         /// <summary>
-        /// TODO: Is this a duplicate of the QueryAsync?
+        /// Returns a family unit
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="invitationCode"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<List<WeddingEntity>?> FromQueryAsync(string invitationCode, CancellationToken cancellationToken = default)
+        public async Task<List<WeddingEntity>?> FromQueryAsync(string audience, string invitationCode, CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var dynamoQuery = new QueryOperationConfig()
@@ -89,10 +100,10 @@ namespace Wedding.Common.Helpers.AWS
                 }
             };
 
-            return await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
+            return await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery, GetTableConfig(audience)).GetRemainingAsync();
         }
 
-        public async Task<FamilyUnitDto?> GetFamilyUnitAsync(string invitationCode,
+        public async Task<FamilyUnitDto?> GetFamilyUnitAsync(string audience, string invitationCode,
             CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
@@ -108,7 +119,7 @@ namespace Wedding.Common.Helpers.AWS
                 }
             };
 
-            var results = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
+            var results = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery, GetTableConfig(audience)).GetRemainingAsync();
 
             var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
             if (numFamilies.Count > 1)
@@ -134,15 +145,15 @@ namespace Wedding.Common.Helpers.AWS
             return familyUnit;
         }
 
-        public async Task<List<FamilyUnitDto>?> GetFamilyUnitsAsync(CancellationToken cancellationToken = default)
+        public async Task<List<FamilyUnitDto>?> GetFamilyUnitsAsync(string audience, CancellationToken cancellationToken = default)
         {
             var familyUnits = new List<FamilyUnitDto>();
             var scanConfig = new ScanOperationConfig
             {
                 // Add any optional filters here, if needed
-            };
+            }; 
 
-            var results = await _repository.FromScanAsync<WeddingEntity>(scanConfig).GetRemainingAsync();
+            var results = await _repository.FromScanAsync<WeddingEntity>(scanConfig, GetTableConfig(audience)).GetRemainingAsync();
 
             //var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
 
@@ -170,15 +181,15 @@ namespace Wedding.Common.Helpers.AWS
             return familyUnits;
         }
 
-        public async Task SaveAsync(WeddingEntity entity, CancellationToken cancellationToken = default)
+        public async Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default)
         {
-            await _repository.SaveAsync(entity, cancellationToken);
+            await _repository.SaveAsync(entity, GetTableConfig(audience), cancellationToken);
         }
 
-        public async Task DeleteAsync(string invitationCode, string sortKey, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string audience, string invitationCode, string sortKey, CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
-            await _repository.DeleteAsync<WeddingEntity>(partitionKey, sortKey, cancellationToken);
+            await _repository.DeleteAsync<WeddingEntity>(partitionKey, sortKey, GetTableConfig(audience), cancellationToken);
         }
     }
 }

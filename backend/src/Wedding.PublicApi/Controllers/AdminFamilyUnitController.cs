@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -74,7 +75,7 @@ namespace Wedding.PublicApi.Controllers
                     LambdaArns.AdminFamilyUnitCreate, token);
                 var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-                var command = new AdminCreateFamilyUnitsCommand(familyUnits, authContext.ParseRoles());
+                var command = new AdminCreateFamilyUnitsCommand(familyUnits, authContext);
                 command.Validate();
                 var result = await _dispatcher.ExecuteAsync<AdminCreateFamilyUnitsCommand, FamilyUnitDto>(command, cancellationToken);
 
@@ -138,7 +139,7 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-            var query = new AdminGetFamilyUnitQuery(invitationCode, authContext.ParseRoles());
+            var query = new AdminGetFamilyUnitQuery(invitationCode, authContext);
             query.Validate();
             var result = await _dispatcher.GetAsync<AdminGetFamilyUnitQuery, FamilyUnitDto>(query, cancellationToken);
 
@@ -158,7 +159,7 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-            var query = new AdminGetFamilyUnitsQuery(authContext.ParseRoles());
+            var query = new AdminGetFamilyUnitsQuery(authContext);
             query.Validate();
             var result = await _dispatcher.GetAsync<AdminGetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
 
@@ -196,7 +197,7 @@ namespace Wedding.PublicApi.Controllers
                 var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
                 //#endif
 
-                var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext.ParseRoles());
+                var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext);
                 command.Validate();
                 var result = await _dispatcher.ExecuteAsync<AdminUpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
 
@@ -231,7 +232,7 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-            var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext.ParseRoles());
+            var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext);
             command.Validate();
             var result = await _dispatcher.ExecuteAsync<AdminDeleteFamilyUnitCommand, bool>(command, cancellationToken);
             

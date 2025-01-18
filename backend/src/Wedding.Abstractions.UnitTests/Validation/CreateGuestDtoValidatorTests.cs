@@ -31,7 +31,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
         }
 
         [Test]
-        public void Should_Have_Error_When_LastName_Is_Empty()
+        public void Should_Have_Error_When_LastName_Is_Empty_And_Not_Plus1()
         {
             // Arrange
             var guest = new GuestDto { LastName = string.Empty };
@@ -40,6 +40,21 @@ namespace Wedding.Abstractions.UnitTests.Validation
             var result = _validator.TestValidate(guest);
             result.ShouldHaveValidationErrorFor(g => g.LastName)
                 .WithErrorMessage("Last name cannot be null, empty or consist of only whitespace characters.");
+        }
+
+        [Test]
+        public void Should_Not_Have_Error_When_LastName_Is_Empty_And_Is_Plus1()
+        {
+            // Arrange
+            var guest = new GuestDto
+            {
+                FirstName = "+1",
+                LastName = string.Empty
+            };
+
+            // Act & Assert
+            var result = _validator.TestValidate(guest);
+            result.ShouldNotHaveAnyValidationErrors();
         }
 
         [Test]
