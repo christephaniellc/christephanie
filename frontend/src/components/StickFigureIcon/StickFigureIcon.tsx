@@ -23,8 +23,9 @@ import {
   SportsMartialArts,
 } from '@mui/icons-material';
 import {StickFigureIconProps} from "@/components/StickFigureIcon/types";
+import { useEffect, useRef, useState } from 'react';
 
-const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color }: StickFigureIconProps) => {
+const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color, loading }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
     DirectionsWalk,
@@ -50,12 +51,50 @@ const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color }: StickF
     AirlineSeatLegroomExtra,
     AirlineSeatReclineExtra,
   ];
-  const randomRotationTransformationAngle = Math.floor(Math.random() * 360);
-  const RandomStickFigure = StickFigureAdults[Math.floor(Math.random() * StickFigureAdults.length)];
+
+  const [stickFigureIndex] = useState(Math.floor(Math.random() * StickFigureAdults.length));
+
+  const RandomStickFigure = StickFigureAdults[stickFigureIndex];
+  const [rotation, setRotation] = useState(Math.floor(Math.random() * 360));
+
+  // We'll use a ref to store the timer ID so we can cancel it on unmount or
+  // when `loading` changes.
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (loading) {
+      // Schedule rotation updates on the exact second boundary.
+      const scheduleNextRotation = () => {
+
+        timerRef.current = window.setTimeout(() => {
+          console.log('setting rotation');
+          // Update rotation on the exact second
+          setRotation((prevRotation) => (prevRotation - 30) % 360);
+
+          // Schedule the next rotation update
+          scheduleNextRotation();
+        }, 100);
+      };
+
+      scheduleNextRotation();
+    } else {
+      // If not loading, clear any scheduled timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current!);
+      }
+    }
+
+    // Cleanup: clear timer on unmount or when dependencies change
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current!);
+      }
+    };
+  }, [loading]);
 
   return <RandomStickFigure fontSize={fontSize}
                             color={color} sx={{ width: hidden ? 0 : 'auto',
-    transform: `rotate(${randomRotationTransformationAngle}deg)`,
+    transform: `rotate(${rotation}deg)`,
     transition: 'all 1s ease-in-out',
     opacity: hidden ? 0 : 1,
     visibility: hidden ? 'hidden' : 'visible'
