@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using FluentValidation;
 using Wedding.Abstractions.Dtos;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -17,6 +18,7 @@ using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Get.Validation;
 using Wedding.PublicApi.Logic.Services.Auth;
+using System.Linq;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -53,7 +55,13 @@ namespace Wedding.PublicApi.Controllers
         {
             try
             {
-                var query = new FindUserQuery(invitationCode, firstName);
+                var audience = Request.Headers["Host"].FirstOrDefault().ToLower();
+                if (string.IsNullOrEmpty(audience))
+                {
+                    return BadRequest(new { message = "Origin header is missing." });
+                }
+
+                var query = new FindUserQuery(audience, invitationCode, firstName);
                 var result = await _dispatcher.GetAsync<FindUserQuery, string>(query, cancellationToken);
                 if (string.IsNullOrEmpty(result))
                 {
@@ -83,7 +91,7 @@ namespace Wedding.PublicApi.Controllers
 
             try
             {
-                var query = new GetUserQuery(authContext.GuestId, authContext.InvitationCode, authContext.ParseRoles());
+                var query = new GetUserQuery(authContext);
                 query.Validate();
                 var result = await _dispatcher.GetAsync<GetUserQuery, GuestDto>(query, cancellationToken);
 

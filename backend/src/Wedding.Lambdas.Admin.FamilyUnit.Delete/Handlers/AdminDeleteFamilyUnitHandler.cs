@@ -29,7 +29,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers
 
             try
             {
-                var items = await _dynamoDBProvider.QueryAsync(command.InvitationCode);
+                var items = await _dynamoDBProvider.QueryAsync(command.AuthContext.Audience, command.InvitationCode);
 
                 if (items == null)
                 {
@@ -39,7 +39,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Handlers
 
                 foreach (var item in items)
                 {
-                    await _dynamoDBProvider.DeleteAsync(command.InvitationCode, item.SortKey, cancellationToken);
+                    await _dynamoDBProvider.DeleteAsync(command.AuthContext.Audience, command.InvitationCode, item.SortKey, cancellationToken);
                 }
             }
             catch (Exception ex)

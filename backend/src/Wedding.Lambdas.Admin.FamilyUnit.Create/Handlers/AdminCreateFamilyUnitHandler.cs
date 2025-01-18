@@ -44,7 +44,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                     var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
                     familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
 
-                    var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(familyUnit.InvitationCode);
+                    var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(command.AuthContext.Audience, familyUnit.InvitationCode);
 
                     if (existingFamilyUnit != null)
                     {
@@ -61,7 +61,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                         Tier = familyUnit.Tier,
                         PotentialHeadCount = familyUnit.CalculateHeadcount()
                     };
-                    await _dynamoDBProvider.SaveAsync(familyInfo, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, familyInfo, cancellationToken);
 
                     var addedGuests = new List<GuestDto>();
                     var guestNumber = 1;
@@ -91,7 +91,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                                 AgeGroup = guest.AgeGroup,
                                 InvitationResponse = InvitationResponseEnum.Pending
                             };
-                            await _dynamoDBProvider.SaveAsync(guestEntity, cancellationToken);
+                            await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, guestEntity, cancellationToken);
                             addedGuests.Add(_mapper.Map<GuestDto>(guestEntity));
                         }
                     }

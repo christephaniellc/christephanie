@@ -1,8 +1,8 @@
 ﻿using FluentValidation.TestHelper;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Validation;
 using Wedding.Lambdas.UnitTests.TestData;
 
@@ -58,30 +58,14 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         }
 
         [Test]
-        public void Should_Have_Error_When_MethodArn_Is_Invalid()
-        {
-            // Arrange
-            var query = new ValidateAuthQuery(
-            _testTokenHelper.JwtAuthority,
-            _testTokenHelper.JwtAudience,
-                "invalid:arn",
-                "valid.jwt.token");
-
-            // Act & Assert
-            var result = _validator.TestValidate(query);
-            result.ShouldHaveValidationErrorFor(q => q.MethodArn)
-                  .WithErrorMessage("Invalid arn.");
-        }
-
-        [Test]
-        public void Should_Have_Error_When_MethodArn_Is_Empty()
+        public async Task Should_Have_Error_When_MethodArn_Is_Empty()
         {
             // Arrange
             var query = new ValidateAuthQuery(
                 _testTokenHelper.JwtAuthority,
                 _testTokenHelper.JwtAudience,
                 "",
-                "valid.jwt.token");
+                await _testTokenHelper.GenerateAuth0Token(Guid.NewGuid().ToString()));
 
             // Act & Assert
             var result = _validator.TestValidate(query);

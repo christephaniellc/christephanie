@@ -20,9 +20,9 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Get.Validation
             RuleFor(cmd => cmd.InvitationCode)
                 .NotEmpty()
                 .SetValidator(new InvitationCodeValidator());
-            RuleFor(cmd => cmd.CurrentUserRoles)
+            RuleFor(cmd => cmd.AuthContext)
                 .NotNull()
-                .SetValidator(new AdminValidator());
+                .SetValidator(new AuthContextValidator(true));
         }
 
         public void IsValid(AdminGetFamilyUnitQuery obj, object? _ = null)

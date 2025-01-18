@@ -1,5 +1,4 @@
-﻿using Amazon.SimpleSystemsManagement.Model;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -9,9 +8,11 @@ using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using Wedding.Abstractions.Mapping;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Multitenancy;
 using Wedding.Common.Utility.Testing.TestChain;
-using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Lambdas.UnitTests.TestData;
 
@@ -25,6 +26,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         private IAuthorizationProvider _databaseRoleProvider;
         private Mock<IDynamoDBProvider> _dynamoProviderMock;
         private Mock<IAuthenticationProvider> _authenticationProviderMock;
+        private Mock<IMultitenancySettingsProvider> _multitenancySettingsProviderMock;
         private TestTokenHelper _testTokenHelper;
 
         [SetUp]
@@ -37,14 +39,15 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             _loggerMock = new Mock<ILogger<DatabaseRoleProvider>>();
             _dynamoProviderMock = new Mock<IDynamoDBProvider>();
             _authenticationProviderMock = new Mock<IAuthenticationProvider>();
-            
+            _multitenancySettingsProviderMock = new Mock<IMultitenancySettingsProvider>();
+
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
                 .Build();
             _testTokenHelper = new TestTokenHelper(configuration);
 
             _databaseRoleProvider =
-                new DatabaseRoleProvider(_loggerMock.Object, mapper, _dynamoProviderMock.Object, _authenticationProviderMock.Object);
+                new DatabaseRoleProvider(_loggerMock.Object, mapper, _dynamoProviderMock.Object, _authenticationProviderMock.Object, _multitenancySettingsProviderMock.Object);
         }
 
         [Test]
@@ -82,9 +85,9 @@ namespace Wedding.Lambdas.UnitTests.Authorize
                 Email = "otheremail@gmail.com"
             };
 
-            _dynamoProviderMock.Setup(r => r.QueryByGuestIdIndex(guestId, It.IsAny<CancellationToken>()))
+            _dynamoProviderMock.Setup(r => r.QueryByGuestIdIndex(_testTokenHelper.JwtAudience, guestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { existingGuest });
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(invitationCode, It.IsAny<CancellationToken>()))
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamily);
             _authenticationProviderMock.Setup(a => a.GetUserInfo(query.Token))
                 .ReturnsAsync(auth0User);

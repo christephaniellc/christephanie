@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -13,6 +15,7 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
 {
@@ -24,6 +27,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         private Mock<IDynamoDBProvider> _dynamoProviderMock;
         private AdminCreateFamilyUnitHandler _handler;
         private IMapper _mapper;
+        private TestTokenHelper _testTokenHelper;
 
         [SetUp]
         public void SetUp()
@@ -31,6 +35,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var config = new MapperConfiguration(
                 cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
             _mapper = config.CreateMapper();
+
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
 
             _loggerMock = new Mock<ILogger<AdminCreateFamilyUnitHandler>>();
             _dynamoProviderMock = new Mock<IDynamoDBProvider>();
@@ -57,7 +67,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             }
                         }
                     }},
-                new List<RoleEnum> { RoleEnum.Admin }
+                    new AuthContext
+                    {
+                        Audience = _testTokenHelper.JwtAudience,
+                        GuestId = Guid.NewGuid().ToString(),
+                        InvitationCode = "CCCCC",
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                    }
             );
 
             var existingFamilyUnit = new WeddingEntity
@@ -66,12 +82,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 SortKey = DynamoKeys.FamilyInfo
             };
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(command.FamilyUnits[0].InvitationCode,It.IsAny<CancellationToken>()))
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, command.FamilyUnits[0].InvitationCode,It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamilyUnit);
 
             // Act & Assert
             Assert.DoesNotThrowAsync(async () => await _handler.ExecuteAsync(command));
-            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(0));
+            _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(0));
         }
 
         [Test]
@@ -94,12 +110,18 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                         }
                     }
                 }},
-                new List<RoleEnum> { RoleEnum.Guest }
+                new AuthContext
+                {
+                    Audience = _testTokenHelper.JwtAudience,
+                    GuestId = Guid.NewGuid().ToString(),
+                    InvitationCode = "ABCDE",
+                    Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Guest })
+                }
             );
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<ValidationException>(async () => await _handler.ExecuteAsync(command));
-            Assert.That(ex!.Message, Does.Contain("CurrentUserRoles: No admin permissions"));
+            Assert.That(ex!.Message, Does.Contain("AuthContext: No admin permissions."));
         }
 
         [Test]
@@ -119,10 +141,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                                 new GuestDto { FirstName = "Jane", LastName = "Doe" }
                             }
                         }},
-                new List<RoleEnum> { RoleEnum.Admin }
+                        new AuthContext
+                        {
+                            Audience = _testTokenHelper.JwtAudience,
+                            GuestId = Guid.NewGuid().ToString(),
+                            InvitationCode = "CCCCC",
+                            Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                        }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
@@ -130,7 +158,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var result = await _handler.ExecuteAsync(command);
 
             // Assert
-            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+            _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
             Assert.AreEqual("ABCDE", result[0].InvitationCode);
             Assert.AreEqual("Doe_John Family", result[0].UnitName);
             Assert.AreEqual(2, result[0].Guests!.Count);
@@ -153,10 +181,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             new GuestDto { FirstName = "Barney", LastName = "Doe", GuestId = guestId.ToString()},
                         }
                     }},
-                new List<RoleEnum> { RoleEnum.Admin }
+                    new AuthContext
+                    {
+                        Audience = _testTokenHelper.JwtAudience,
+                        GuestId = Guid.NewGuid().ToString(),
+                        InvitationCode = "CCCCC",
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                    }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
@@ -164,7 +198,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var result = await _handler.ExecuteAsync(command);
 
             // Assert
-            _dynamoProviderMock.Verify(r => r.SaveAsync(It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             Assert.AreEqual("ABCDE", result[0].InvitationCode);
             Assert.AreEqual("Doe_Barney Family", result[0].UnitName);
             Assert.AreEqual(1, result[0].Guests!.Count);
@@ -187,14 +221,21 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             new GuestDto { FirstName = "John", LastName = "Doe", Roles = null! }
                         }
                      }},
-                 new List<RoleEnum> { RoleEnum.Admin }
+                    new AuthContext
+                    {
+                        Audience = _testTokenHelper.JwtAudience,
+                        GuestId = Guid.NewGuid().ToString(),
+                        InvitationCode = "CCCCC",
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                    }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(
+            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
+
             var result = await _handler.ExecuteAsync(command);
 
             // Assert

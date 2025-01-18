@@ -13,6 +13,9 @@ using AutoMapper;
 using Wedding.Abstractions.Enums;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Wedding.Common.Auth;
+using Wedding.Common.Auth.Commands;
+using Wedding.Common.Multitenancy;
 
 namespace Wedding.Lambdas.Authorize;
 
@@ -29,6 +32,7 @@ public class Function
     public Function(ServiceProvider serviceProvider, string? authority = null, string? audience = null)
     {
         _serviceProvider = serviceProvider;
+        Console.WriteLine("ServiceProvider set.");
 
         if (!string.IsNullOrEmpty(authority))
         {
@@ -43,6 +47,7 @@ public class Function
 
     private static ServiceProvider BuildDefaultServiceProvider()
     {
+        Console.WriteLine("Building ServiceProvider...");
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
@@ -55,9 +60,13 @@ public class Function
             var mapper = sc.GetRequiredService<IMapper>();
             var dynamoDbProvider= sc.GetRequiredService<IDynamoDBProvider>();
             var authenticationProvider = sc.GetRequiredService<IAuthenticationProvider>();
+            var multitenancySettingsProvider = sc.GetRequiredService<IMultitenancySettingsProvider>();
 
-            return new DatabaseRoleProvider(logger, mapper, dynamoDbProvider, authenticationProvider);
+            return new DatabaseRoleProvider(logger, mapper, dynamoDbProvider, authenticationProvider, multitenancySettingsProvider);
         });
+        
+        // Console.WriteLine("BuildDefaultServiceProvider:");
+        // serviceCollection.PrintRegisteredServices();
 
         return serviceCollection.BuildServiceProvider();
     }
@@ -85,13 +94,24 @@ public class Function
 
         var routeKey = request.RequestContext.RouteKey;
 
-        if (string.IsNullOrEmpty(_authority) || string.IsNullOrEmpty(_audience))
+        if (string.IsNullOrEmpty(_authority))
         {
             //AwsParameterCache.ClearCache();
             var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
             var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
             _authority = authConfig.Authority ?? throw new InvalidOperationException();
-            _audience = authConfig.Audience ?? throw new InvalidOperationException();
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        // scope.PrintScopeServices(
+        //     typeof(IMultitenancySettingsProvider),
+        //     typeof(IDynamoDBProvider)); 
+
+        if (string.IsNullOrEmpty(_audience))
+        {
+            var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
+            var origin = request.GetOriginFromRequest();
+            _audience =  multitenancySettingsProvider.GetAudience(origin) ?? throw new InvalidOperationException();
         }
 
         context.Logger.LogDebug($"Authorization header: {authorizationHeader}");
@@ -108,7 +128,6 @@ public class Function
 
         try
         {
-            using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
             var result = await handler.GetAsync(query);
 
@@ -117,19 +136,25 @@ public class Function
         catch (InvalidOperationException ex)
         {
             context.Logger.LogError($"InvalidOperationException: {ex.Message}");
-            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                query.MethodArn,
+                query.JwtAudience,
                 error: $"Auth InvalidOperationException exception: {ex.Message}");
         }
         catch (UnauthorizedAccessException ex)
         {
             context.Logger.LogError($"UnauthorizedAccessException: {ex.Message}");
-            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                query.MethodArn,
+                query.JwtAudience,
                 error: $"Auth UnauthorizedAccessException exception: {ex.Message}");
         }
         catch (Exception ex)
         {
             context.Logger.LogError($"Function Exception Message: {ex.Message}");
-            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, query.MethodArn,
+            return APIGatewayCustomAuthorizerResponseExtensions.GeneratePolicy(PolicyEffectEnum.Deny, 
+                query.MethodArn,
+                query.JwtAudience,
                 error: $"Auth Exception: {ex.Message}");
         }
     }

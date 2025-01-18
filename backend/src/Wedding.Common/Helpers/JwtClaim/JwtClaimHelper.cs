@@ -13,7 +13,7 @@ namespace Wedding.Common.Helpers.JwtClaim
         }
         public static string? GetGuestId(this JwtSecurityToken token, string audience)
         {
-            Console.WriteLine($"Claims: {token.Claims}");
+            Console.WriteLine($"Claims: {JsonSerializer.Serialize(token.Claims)}");
             Console.WriteLine($"Looking for: {audience}/guest_id");
             Console.WriteLine($"Found?: {token.Claims.FirstOrDefault(c => c.Type == $"{audience}/guest_id")?.Value}");
             return token.Claims.FirstOrDefault(c => c.Type == $"{audience}/guest_id")?.Value;

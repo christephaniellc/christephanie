@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands
@@ -12,7 +11,8 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Delete.Commands
     /// </summary>
     /// <seealso cref="IWeddingCommand" />
     /// <seealso cref="IEquatable{DeleteSiteCommand}" />
-    /// <param name="Id">The Id of the Site</param>
+    /// <param name="InvitationCode">InvitationCode to delete</param>
+    /// <param name="AuthContext">AuthContext of current logged in user</param>
     public record AdminDeleteFamilyUnitCommand(
-        string InvitationCode, List<RoleEnum> CurrentUserRoles) : IWeddingCommand;
+        string InvitationCode, AuthContext AuthContext) : IWeddingCommand;
 }
