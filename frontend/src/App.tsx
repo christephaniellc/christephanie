@@ -10,6 +10,7 @@ import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
+import Timeline from '@/components/Timeline';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <SW />
 
       <Sidebar />
+      <Timeline />
       <Pages />
       <BottomNav />
 
