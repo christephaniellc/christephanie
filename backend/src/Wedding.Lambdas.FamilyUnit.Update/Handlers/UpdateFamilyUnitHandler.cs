@@ -83,13 +83,13 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             if (guest.Rsvp.InvitationResponse != null)
                             {
                                 existingGuestEntity.InvitationResponseAuditLastUpdated = DateTime.UtcNow;
-                                existingGuestEntity.InvitationResponseAuditUsername = command.AuthContext.;
+                                existingGuestEntity.InvitationResponseAuditUsername = command.AuthContext.Name;
                             }
 
                             if (guest.Rsvp.Wedding != null)
                             {
                                 existingGuestEntity.RsvpAuditLastUpdated = DateTime.UtcNow;
-                                existingGuestEntity.RsvpAuditUsername = guest.Rsvp.RsvpAudit.Username;
+                                existingGuestEntity.RsvpAuditUsername = command.AuthContext.Name;
                             }
                             existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
                         }
