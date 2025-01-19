@@ -24,6 +24,7 @@ using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Multitenancy;
+using FluentAssertions.Common;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -131,6 +132,7 @@ namespace Wedding.Lambdas.UnitTests
 
         public void SetUpFunctions(ServiceCollection serviceCollection)
         {
+            serviceCollection.AddScoped<IMultitenancySettingsProvider, MultitenancySettingsProvider>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             _userFindFunction = new Wedding.Lambdas.User.Find.Function(serviceProvider);
@@ -156,6 +158,7 @@ namespace Wedding.Lambdas.UnitTests
 
             var serviceCollection = new ServiceCollection();
             var dynamoDBProvider = new Mock<IDynamoDBProvider>();
+            var multitenancyProvider = new MultitenancySettingsProvider();
 
             SetUpRepository(dynamoDBProvider);
             SetUpHandlers(dynamoDBProvider, serviceCollection);
