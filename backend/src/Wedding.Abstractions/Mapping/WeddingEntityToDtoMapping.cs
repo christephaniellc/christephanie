@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using AutoMapper;
@@ -106,14 +107,24 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
                     .ForMember(dest => dest.Rsvp, opt => 
                         opt.MapFrom(src => new RsvpDto
-                    {
-                        InvitationResponse = src.InvitationResponse,
-                        Wedding = src.RsvpWedding,
-                        SleepPreference = src.SleepPreference,
-                        RehearsalDinner = src.RsvpRehearsalDinner,
-                        FourthOfJuly = src.RsvpFourthOfJuly,
-                        BuildWeek = src.RsvpBuildWeek,
-                        ArrivalDate = src.ArrivalDate,
+                        {
+                            InvitationResponse = src.InvitationResponse,
+                            Wedding = src.RsvpWedding,
+                            SleepPreference = src.SleepPreference,
+                            RehearsalDinner = src.RsvpRehearsalDinner,
+                            FourthOfJuly = src.RsvpFourthOfJuly,
+                            InvitationResponseAudit = src.InvitationResponseAuditLastUpdated != null 
+                            ? new LastUpdateAuditDto
+                            {
+                                LastUpdate = (DateTime) src.InvitationResponseAuditLastUpdated,
+                                Username = src.InvitationResponseAuditUsername
+                            } : null,
+                        RsvpAudit = src.RsvpAuditLastUpdated != null 
+                        ? new LastUpdateAuditDto
+                        {
+                            LastUpdate = (DateTime) src.RsvpAuditLastUpdated,
+                            Username = src.RsvpAuditUsername
+                        } : null,
                         RsvpNotes = src.RsvpNotes
                     }))
                     .ForMember(dest => dest.Preferences, opt => 
@@ -150,9 +161,11 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.SleepPreference : null))
                     .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.RehearsalDinner : null))
                     .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.FourthOfJuly : null))
-                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.BuildWeek : null))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.ArrivalDate : null))
-                    
+                    .ForMember(dest => dest.InvitationResponseAuditLastUpdated, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.InvitationResponseAudit != null ? src.Rsvp.InvitationResponseAudit.LastUpdate : (DateTime?) null))
+                    .ForMember(dest => dest.InvitationResponseAuditUsername, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.InvitationResponseAudit != null ? src.Rsvp.InvitationResponseAudit.Username : null))
+                    .ForMember(dest => dest.RsvpAuditLastUpdated, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.RsvpAudit != null ? src.Rsvp.RsvpAudit.LastUpdate : (DateTime?)null))
+                    .ForMember(dest => dest.RsvpAuditUsername, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.RsvpAudit != null ? src.Rsvp.RsvpAudit.Username : null))
+
                     .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.Meal : null))
                     .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.KidsPortion : null))
                     .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.FoodAllergies : null))
@@ -171,9 +184,19 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
                     .ForMember(dest => dest.RehearsalDinner, opt => opt.MapFrom(src => src.RsvpRehearsalDinner))
                     .ForMember(dest => dest.FourthOfJuly, opt => opt.MapFrom(src => src.RsvpFourthOfJuly))
-                    .ForMember(dest => dest.BuildWeek, opt => opt.MapFrom(src => src.RsvpBuildWeek))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.ArrivalDate))
                     .ForMember(dest => dest.RsvpNotes, opt => opt.MapFrom(src => src.RsvpNotes))
+                    .ForMember(dest => dest.InvitationResponseAudit, opt => opt.MapFrom(src =>
+                        src.InvitationResponseAuditLastUpdated.HasValue ? new LastUpdateAuditDto
+                        {
+                            LastUpdate = (DateTime)src.InvitationResponseAuditLastUpdated,
+                            Username = src.InvitationResponseAuditUsername
+                        }: null))
+                    .ForMember(dest => dest.RsvpAudit, opt => opt.MapFrom(src =>
+                        src.RsvpAuditLastUpdated.HasValue ? new LastUpdateAuditDto
+                        {
+                            LastUpdate = (DateTime)src.RsvpAuditLastUpdated,
+                            Username = src.RsvpAuditUsername
+                        } : null))
                     ;
 
                 CreateMap<RsvpDto, WeddingEntity>()
@@ -182,9 +205,11 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
                     .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.RehearsalDinner))
                     .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.FourthOfJuly))
-                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.BuildWeek))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.ArrivalDate))
                     .ForMember(dest => dest.RsvpNotes, opt => opt.MapFrom(src => src.RsvpNotes))
+                    .ForMember(dest => dest.InvitationResponseAuditLastUpdated, opt => opt.MapFrom(src => src.InvitationResponseAudit != null ? src.InvitationResponseAudit.LastUpdate : (DateTime?)null))
+                    .ForMember(dest => dest.InvitationResponseAuditUsername, opt => opt.MapFrom(src => src.InvitationResponseAudit != null ? src.InvitationResponseAudit.Username : null))
+                    .ForMember(dest => dest.RsvpAuditLastUpdated, opt => opt.MapFrom(src =>src.RsvpAudit != null ? src.RsvpAudit.LastUpdate : (DateTime?)null))
+                    .ForMember(dest => dest.RsvpAuditUsername, opt => opt.MapFrom(src => src.RsvpAudit != null ? src.RsvpAudit.Username : null))
                     ;
             }
         }
