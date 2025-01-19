@@ -80,9 +80,18 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             existingGuestEntity.RsvpWedding = guest.Rsvp.Wedding;
                             existingGuestEntity.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
                             existingGuestEntity.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
-                            existingGuestEntity.RsvpBuildWeek = guest.Rsvp.BuildWeek;
+                            if (guest.Rsvp.InvitationResponse != null)
+                            {
+                                existingGuestEntity.InvitationResponseAuditLastUpdated = DateTime.UtcNow;
+                                existingGuestEntity.InvitationResponseAuditUsername = command.AuthContext.;
+                            }
+
+                            if (guest.Rsvp.Wedding != null)
+                            {
+                                existingGuestEntity.RsvpAuditLastUpdated = DateTime.UtcNow;
+                                existingGuestEntity.RsvpAuditUsername = guest.Rsvp.RsvpAudit.Username;
+                            }
                             existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
-                            existingGuestEntity.ArrivalDate = guest.Rsvp.ArrivalDate;
                         }
 
                         if (guest.Preferences != null)

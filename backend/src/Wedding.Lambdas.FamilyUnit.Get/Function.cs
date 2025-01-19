@@ -57,12 +57,14 @@ public class Function
                 {"audience", authContext?.Audience ?? "unknown"},
                 {"invitationCode", authContext?.InvitationCode ?? "unknown"},
                 {"guestId", authContext?.GuestId ?? "unknown"},
+                {"name", authContext?.Name ?? "unknown"},
                 {"roles", authContext?.Roles ?? "unknown"}
             };
 
             context.Logger.LogInformation($"audience: {authContext.Audience}");
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
+            context.Logger.LogInformation($"name: {authContext.Name}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
 
             var query = new GetFamilyUnitQuery(authContext);

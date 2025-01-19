@@ -11,6 +11,8 @@ namespace Wedding.Abstractions.Dtos.Auth
         [JsonPropertyName("guestId")]
         public string GuestId { get; set; }
 
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
         [JsonPropertyName("audience")]
         public string Audience { get; set; }
 

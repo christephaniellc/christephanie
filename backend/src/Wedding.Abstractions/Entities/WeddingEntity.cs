@@ -92,6 +92,12 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty(typeof(EnumToStringConverter<InvitationResponseEnum>))]
         public InvitationResponseEnum InvitationResponse { get; set; }
 
+        [DynamoDBProperty]
+        public DateTime? InvitationResponseAuditLastUpdated { get; set; }
+
+        [DynamoDBProperty]
+        public string? InvitationResponseAuditUsername { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpWedding { get; set; }
 
@@ -107,11 +113,11 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpFourthOfJuly { get; set; }
 
-        [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
-        public RsvpEnum? RsvpBuildWeek { get; set; }
+        [DynamoDBProperty]
+        public DateTime? RsvpAuditLastUpdated { get; set; }
 
         [DynamoDBProperty]
-        public DateTime? ArrivalDate { get; set; }
+        public string? RsvpAuditUsername { get; set; }
         #endregion
 
         #region Preferences-specific fields

@@ -123,8 +123,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 SleepPreference = SleepPreferenceEnum.Camping,
                 RsvpRehearsalDinner = null,
                 RsvpFourthOfJuly = RsvpEnum.Attending,
-                RsvpBuildWeek = RsvpEnum.Declined,
-                ArrivalDate = DateTime.Now
+                RsvpAuditLastUpdated = DateTime.UtcNow,
+                RsvpAuditUsername = "me",
             };
 
             var dto = _mapper.Map<RsvpDto>(entity);
@@ -134,8 +134,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.SleepPreference.Should().Be(entity.SleepPreference);
             dto.RehearsalDinner.Should().Be(entity.RsvpRehearsalDinner);
             dto.FourthOfJuly.Should().Be(entity.RsvpFourthOfJuly);
-            dto.BuildWeek.Should().Be(entity.RsvpBuildWeek);
-            dto.ArrivalDate.Should().Be(entity.ArrivalDate);
+            dto.RsvpAudit.LastUpdate.Should().Be(entity.RsvpAuditLastUpdated);
+            dto.RsvpAudit.Username.Should().Be(entity.RsvpAuditUsername);
         }
 
         [Test]
@@ -186,8 +186,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                         {
                             InvitationResponse = InvitationResponseEnum.Interested,
                             Wedding = RsvpEnum.Attending,
-                            SleepPreference = SleepPreferenceEnum.Camping,
-                            ArrivalDate = System.DateTime.Now
+                            SleepPreference = SleepPreferenceEnum.Camping
                         },
                         LastActivity = System.DateTime.Now,
                     },
@@ -266,8 +265,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 {
                     InvitationResponse = InvitationResponseEnum.Interested,
                     Wedding = RsvpEnum.Attending,
-                    SleepPreference = SleepPreferenceEnum.Camping,
-                    ArrivalDate = System.DateTime.Now
+                    SleepPreference = SleepPreferenceEnum.Camping
                 },
                 Preferences = new PreferencesDto
                 {
@@ -298,7 +296,6 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.RsvpWedding.Should().Be(guestDto.Rsvp.Wedding);
             entity.RsvpRehearsalDinner.Should().Be(guestDto.Rsvp.RehearsalDinner);
             entity.RsvpFourthOfJuly.Should().Be(guestDto.Rsvp.FourthOfJuly);
-            entity.RsvpBuildWeek.Should().Be(guestDto.Rsvp.BuildWeek);
             entity.SleepPreference.Should().Be(guestDto.Rsvp.SleepPreference);
             entity.RsvpNotes.Should().Be(guestDto.Rsvp.RsvpNotes);
 
