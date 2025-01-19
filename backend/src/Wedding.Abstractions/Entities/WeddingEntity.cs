@@ -6,7 +6,6 @@ using Wedding.Abstractions.Keys;
 
 namespace Wedding.Abstractions.Entities
 {
-    [DynamoDBTable("christephanie-wedding")]
     public class WeddingEntity
     {
         [DynamoDBHashKey]

@@ -59,7 +59,6 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                         City = "Washington",
                         State = "DC"
                     }.ToString()
-
                 },
                 PotentialHeadCount = 5,
                 FamilyUnitLastLogin = DateTime.Now

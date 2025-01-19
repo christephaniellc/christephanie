@@ -55,8 +55,7 @@ namespace Wedding.PublicApi.Logic.DI
 
             builder.Register(c =>
                 {
-                    var logger = c.Resolve<ILogger<MultitenancySettingsProvider>>();
-                    return new MultitenancySettingsProvider(logger);
+                    return new MultitenancySettingsProvider();
                 }).As<IMultitenancySettingsProvider>()
                 .AsImplementedInterfaces()
                 .InstancePerDependency();
