@@ -13,6 +13,7 @@ namespace Wedding.Common.Multitenancy
             string? audience = null;
             switch (origin)
             {
+                case ("https://api.christephanie.com"):
                 case ("https://www.christephanie.com"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
@@ -32,6 +33,7 @@ namespace Wedding.Common.Multitenancy
             switch (tenantId)
             {
                 case ("https://api.christephanie.com"):
+                case ("https://www.christephanie.com"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
