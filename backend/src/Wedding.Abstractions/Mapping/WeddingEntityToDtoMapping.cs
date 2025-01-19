@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using AutoMapper;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.USPS;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -38,16 +38,28 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
                     .ForMember(dest => dest.MailingAddress, opt =>
+                    {
+                        opt.Condition(src => src.MailingAddress != null);
                         opt.MapFrom((src, dest, destMember, context) => 
-                            context.Mapper.Map<AddressDto>(src.MailingAddress)))
+                            JsonSerializer.Deserialize<AddressDto>(src.MailingAddress!));
+
+                        // opt.MapFrom((src, dest, destMember, context) =>
+                        //         context.Mapper.Map<AddressDto>(src.MailingAddress));
+                    })
                     .ForMember(dest => dest.AdditionalAddresses, opt =>
-                        opt.MapFrom((src, dest, destMember, context) =>
-                                src.AdditionalAddresses
-                                    .Select(address => context.Mapper.Map<AddressDto>(address))
-                                    .ToList()
-                            ))
-                    //.ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToAddress()))
-                    //.ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToAddress()).ToList()))
+                    {
+                        opt.Condition(src => src.AdditionalAddresses != null);
+                        opt.MapFrom((src, dest, destMember, context) => 
+                            src.AdditionalAddresses?
+                                .Select(address => JsonSerializer.Deserialize<AddressDto>(address))
+                                .ToList()
+                        );
+                        // opt.MapFrom((src, dest, destMember, context) =>
+                        //     src.AdditionalAddresses?
+                        //         .Select(address => context.Mapper.Map<AddressDto>(address))
+                        //         .ToList()
+                        //     );
+                    })
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.PotentialHeadCount ?? 0))
                     .ForMember(dest => dest.FamilyUnitLastLogin, opt => opt.MapFrom(src => src.FamilyUnitLastLogin))
                     .ForMember(dest => dest.Guests, opt => opt.Ignore()) // We'll manually map Guests
