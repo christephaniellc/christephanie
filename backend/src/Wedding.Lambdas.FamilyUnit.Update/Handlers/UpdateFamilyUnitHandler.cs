@@ -98,7 +98,6 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 }
 
                 existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress.ToString();
-                existingFamilyUnitEntity.MailingAddressUspsVerified = familyUnit.MailingAddressUspsVerified;
                 existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses?
                     .Select(address => address.ToString())
                     .ToList() ?? null;

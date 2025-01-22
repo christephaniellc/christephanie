@@ -1,0 +1,39 @@
+{
+    "PartitionKey": "FAMILY#RVMBL",
+    "SortKey": "GUEST#73340000-0000-0000-0000-000000000001",
+    "InvitationCode": "ABAAB",
+    "UnitName": null,
+    "PotentialHeadCount": null,
+    "MailingAddress": null,
+    "AdditionalAddresses": null,
+    "InvitationResponseNotes": null,
+    "FamilyUnitLastLogin": null,
+    "GuestId": "73340000-0000-0000-0000-000000000001",
+    "GuestNumber": 1,
+    "Auth0Id": "placeholder-auth0-id",
+    "FirstName": "John",
+    "LastName": "Doe",
+    "AdditionalFirstNames": [
+        "john.doe"
+    ],
+    "Tier": "Gold",
+    "Roles": [
+        4,
+        2
+    ],
+    "Email": "john.doe@gmail.com",
+    "EmailVerified": true,
+    "Phone": "555-555-5555",
+    "AgeGroup": 0,
+    "LastActivity": "2025-01-22T06:43:55.839+00:00",
+    "InvitationResponse": 0,
+    "InvitationResponseAudit": "{\"LastUpdate\":\"2025-01-20T00:08:01.4350531Z\",\"Username\":\"John Doe\"}",
+    "RsvpWedding": null,
+    "RsvpNotes": null,
+    "RsvpRehearsalDinner": null,
+    "RsvpFourthOfJuly": null,
+    "RsvpAudit": "{\"LastUpdate\":\"2025-01-20T00:40:48.1709722Z\",\"Username\":\"John Doe\"}",
+    "PrefSleep": null,
+    "PrefFood": null,
+    "PrefFoodAllergies": null
+}
