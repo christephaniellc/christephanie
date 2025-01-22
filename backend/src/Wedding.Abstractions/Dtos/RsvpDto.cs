@@ -10,8 +10,6 @@ namespace Wedding.Abstractions.Dtos
         public LastUpdateAuditDto? InvitationResponseAudit { get; set; }
         #endregion
 
-        public SleepPreferenceEnum? SleepPreference { get; set; }
-
         public RsvpEnum? RehearsalDinner { get; set; }
 
         /// <summary>

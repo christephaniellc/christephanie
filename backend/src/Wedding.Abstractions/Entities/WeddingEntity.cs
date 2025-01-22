@@ -31,6 +31,9 @@ namespace Wedding.Abstractions.Entities
         public string? MailingAddress { get; set; }
 
         [DynamoDBProperty]
+        public bool MailingAddressUspsVerified { get; set; }
+
+        [DynamoDBProperty]
         public List<string>? AdditionalAddresses { get; set; }
 
         [DynamoDBProperty]
@@ -93,19 +96,13 @@ namespace Wedding.Abstractions.Entities
         public InvitationResponseEnum InvitationResponse { get; set; }
 
         [DynamoDBProperty]
-        public DateTime? InvitationResponseAuditLastUpdated { get; set; }
-
-        [DynamoDBProperty]
-        public string? InvitationResponseAuditUsername { get; set; }
+        public string? InvitationResponseAudit { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpWedding { get; set; }
 
         [DynamoDBProperty]
         public string? RsvpNotes { get; set; }
-
-        [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
-        public SleepPreferenceEnum? SleepPreference { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpRehearsalDinner { get; set; }
@@ -114,27 +111,21 @@ namespace Wedding.Abstractions.Entities
         public RsvpEnum? RsvpFourthOfJuly { get; set; }
 
         [DynamoDBProperty]
-        public DateTime? RsvpAuditLastUpdated { get; set; }
-
-        [DynamoDBProperty]
-        public string? RsvpAuditUsername { get; set; }
+        public string? RsvpAudit { get; set; }
         #endregion
 
         #region Preferences-specific fields
         /// <summary>
         /// RSVP-specific fields (used when SortKey = "PREFS")
         /// </summary>
-        [DynamoDBProperty(typeof(EnumToStringConverter<MealPreferenceEnum>))]
-        public MealPreferenceEnum? PrefMeal { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
+        public SleepPreferenceEnum? PrefSleep { get; set; }
 
-        [DynamoDBProperty]
-        public bool? PrefKidsPortion { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<FoodPreferenceEnum>))]
+        public FoodPreferenceEnum? PrefFood { get; set; }
 
         [DynamoDBProperty]
         public string? PrefFoodAllergies { get; set; }
-
-        [DynamoDBProperty]
-        public string? PrefSpecialAlcoholRequests { get; set; }
         #endregion
     }
 

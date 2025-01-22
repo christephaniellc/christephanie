@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
@@ -32,23 +33,6 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
         {
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
-            
-            // TODO where is auth occurring?
-
-            // var partitionKey = DynamoKeys.GetPartitionKey(command.FamilyUnit.UserInvitationCode.ToUpper());
-
-            //TODO
-            // if (command.FamilyUnit.MailingAddress != null && !command.AddressesConfirmed)
-            // {
-            //     var address = _mapper.Map<AddressDto>(command.FamilyUnit.MailingAddress);
-            //     var correctedAddress = await _uspsMailingAddressValidationProvider.Value.ValidateAddress(address);
-            //     if (correctedAddress != null)
-            //     {
-            //         command.FamilyUnit.MailingAddress = correctedAddress;
-            //         return familyUnit;
-            //         // TODO more thought on validation here
-            //     }
-            // }
 
             try
             {
@@ -76,30 +60,34 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                         if (guest.Rsvp != null)
                         {
                             existingGuestEntity.InvitationResponse = guest.Rsvp.InvitationResponse;
-                            existingGuestEntity.SleepPreference = guest.Rsvp.SleepPreference;
                             existingGuestEntity.RsvpWedding = guest.Rsvp.Wedding;
                             existingGuestEntity.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
                             existingGuestEntity.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
-                            if (guest.Rsvp.InvitationResponse != null)
+                            if (guest.Rsvp.InvitationResponse != InvitationResponseEnum.Pending)
                             {
-                                existingGuestEntity.InvitationResponseAuditLastUpdated = DateTime.UtcNow;
-                                existingGuestEntity.InvitationResponseAuditUsername = command.AuthContext.Name;
+                                existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
+                                {
+                                    LastUpdate = DateTime.UtcNow,
+                                    Username = command.AuthContext.Name
+                                }.ToString();
                             }
 
-                            if (guest.Rsvp.Wedding != null)
+                            if (guest.Rsvp.Wedding != RsvpEnum.Pending)
                             {
-                                existingGuestEntity.RsvpAuditLastUpdated = DateTime.UtcNow;
-                                existingGuestEntity.RsvpAuditUsername = command.AuthContext.Name;
+                                existingGuestEntity.RsvpAudit = new LastUpdateAuditDto
+                                {
+                                    LastUpdate = DateTime.UtcNow,
+                                    Username = command.AuthContext.Name
+                                }.ToString();
                             }
                             existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
                         }
 
                         if (guest.Preferences != null)
                         {
-                            existingGuestEntity.PrefMeal = guest.Preferences.Meal;
-                            existingGuestEntity.PrefKidsPortion = guest.Preferences.KidsPortion;
+                            existingGuestEntity.PrefSleep = guest.Preferences.SleepPreference;
+                            existingGuestEntity.PrefFood = guest.Preferences.FoodPreference;
                             existingGuestEntity.PrefFoodAllergies = guest.Preferences.FoodAllergies;
-                            existingGuestEntity.PrefSpecialAlcoholRequests = guest.Preferences.SpecialAlcoholRequests;
                         }
 
                         //_mapper.Map(guest, existingGuest);
@@ -110,6 +98,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 }
 
                 existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress.ToString();
+                existingFamilyUnitEntity.MailingAddressUspsVerified = familyUnit.MailingAddressUspsVerified;
                 existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses?
                     .Select(address => address.ToString())
                     .ToList() ?? null;

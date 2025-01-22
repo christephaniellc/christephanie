@@ -76,7 +76,7 @@ public class GetFunctionTests
     }
 
     [Test]
-    public async Task TestUpdateFunction()
+    public async Task TestAdminUpdateFunction()
     {
         try
         {
