@@ -21,7 +21,7 @@ namespace Wedding.Common.Helpers.AWS
             var response = await client.GetParameterAsync(request);
 
             return JsonSerializer.Deserialize<T>(response.Parameter.Value)
-                   ?? throw new InvalidOperationException("Unable to find AWS parameter");
+                   ?? throw new InvalidOperationException($"Unable to find AWS parameter: {parameterName}");
         }
     }
 }
