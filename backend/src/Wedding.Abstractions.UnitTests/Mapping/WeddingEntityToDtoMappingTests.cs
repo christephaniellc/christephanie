@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using FluentAssertions;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
@@ -55,27 +56,29 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntity_To_FamilyUnitDto()
         {
+            var address = new AddressDto
+            {
+                StreetAddress = "123 Main St.",
+                City = "Seattle",
+                State = "WA",
+                UspsVerified = true
+            };
+            var address2 = new AddressDto
+            {
+                StreetAddress = "456 Elm St",
+                City = "Washington",
+                State = "DC"
+            };
             var entity = new WeddingEntity
             {
                 InvitationCode = "RSVP123",
                 UnitName = "Smith Family",
                 Tier = "A",
                 InvitationResponseNotes = "Looking forward to it!",
-                MailingAddress = new AddressDto
-                {
-                    StreetAddress = "123 Main St.",
-                    City = "Seattle",
-                    State = "WA"
-                }.ToString(),
-                MailingAddressUspsVerified = true,
+                MailingAddress = address.ToString(),
                 AdditionalAddresses = new List<string>
                 {
-                    new AddressDto
-                    {
-                        StreetAddress = "456 Elm St",
-                        City = "Washington",
-                        State = "DC"
-                    }.ToString()
+                    address2.ToString()
                 },
                 PotentialHeadCount = 5,
                 FamilyUnitLastLogin = DateTime.Now
@@ -87,9 +90,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.UnitName.Should().Be(entity.UnitName);
             dto.Tier.Should().Be(entity.Tier);
             dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
-            dto.MailingAddress.ToString().Should().Be(entity.MailingAddress);
-            dto.MailingAddressUspsVerified.Should().BeTrue();
-            dto.AdditionalAddresses[0].ToString().Should().BeEquivalentTo(entity.AdditionalAddresses[0]);
+            dto.MailingAddress.Should().BeEquivalentTo(address);
+            dto.MailingAddress.UspsVerified.Should().BeTrue();
+            dto.AdditionalAddresses[0].Should().BeEquivalentTo(address2);
+            dto.AdditionalAddresses[0].UspsVerified.Should().BeFalse();
             dto.PotentialHeadCount.Should().Be(entity.PotentialHeadCount);
             dto.FamilyUnitLastLogin.Should().Be(entity.FamilyUnitLastLogin);
             dto.Guests.Should().BeNull();
@@ -110,8 +114,32 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
                 InvitationResponseNotes = "Can't wait!",
-                LastActivity = System.DateTime.Now 
+                LastActivity = System.DateTime.Now
             };
+
+            var dto = _mapper.Map<GuestDto>(entity);
+
+            dto.GuestId.Should().Be(entity.GuestId);
+            dto.Auth0Id.Should().Be(entity.Auth0Id);
+            dto.FirstName.Should().Be(entity.FirstName);
+            dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
+            dto.LastName.Should().Be(entity.LastName);
+            dto.Roles.Should().BeEquivalentTo(entity.Roles);
+            dto.Email.Should().Be(entity.Email);
+            dto.Phone.Should().Be(entity.Phone);
+            dto.AgeGroup.Should().Be(entity.AgeGroup);
+            dto.LastActivity.Should().Be(entity.LastActivity);
+            dto.Rsvp.Should().NotBeNull();
+            dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
+            EmptyObjectHelper.ObjectPropertiesAreNullOrEmpty(dto.Preferences!).Should().BeTrue();
+        }
+
+        [Test]
+        public void Should_Map_WeddingEntityJson_To_GuestDto()
+        {
+            var filePath = @"..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
+            var entityJson = File.ReadAllText(filePath);
+            var entity = JsonSerializer.Deserialize<WeddingEntity>(entityJson);
 
             var dto = _mapper.Map<GuestDto>(entity);
 
@@ -222,7 +250,6 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.Tier.Should().Be(dto.Tier);
             entity.InvitationResponseNotes.Should().Be(dto.InvitationResponseNotes);
             entity.MailingAddress.Should().Be(dto.MailingAddress.ToString());
-            entity.MailingAddressUspsVerified.Should().BeFalse();
             entity.AdditionalAddresses[0].Should().BeEquivalentTo(dto.AdditionalAddresses[0].ToString());
             entity.PotentialHeadCount.Should().Be(dto.Guests.Count);
             entity.PrefFood.Should().BeNull();

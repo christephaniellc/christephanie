@@ -31,9 +31,6 @@ namespace Wedding.Abstractions.Entities
         public string? MailingAddress { get; set; }
 
         [DynamoDBProperty]
-        public bool MailingAddressUspsVerified { get; set; }
-
-        [DynamoDBProperty]
         public List<string>? AdditionalAddresses { get; set; }
 
         [DynamoDBProperty]
