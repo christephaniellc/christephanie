@@ -1,4 +1,4 @@
-import { FamilyUnitDto, GuestDto } from '@/types/api';
+import { AddressDto, FamilyUnitDto, GuestDto } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -18,7 +18,7 @@ export default class Api {
   };
 
   async getMe(): Promise<GuestDto> {
-    return this.get('/GuestDtos/me');
+    return this.get('/user/me');
   }
 
   async findUserId(queryKey: string): Promise<string> {
@@ -49,7 +49,12 @@ export default class Api {
     return this.delete(`/GuestDtos/${id}/change-password`);
   }
 
+  validateAddress(address: AddressDto): Promise<AddressDto> {
+    return this.post(`/validate/address`, address);
+  }
+
   private async handleResponse<T>(response: Response): Promise<T> {
+    console.log('response', response);
     switch (response.status) {
       case 200:
         return Promise.resolve(response.json());
@@ -58,18 +63,10 @@ export default class Api {
         return this.handleRecoverableError(response);
 
       case 401:
-        return this.handleUnRecoverableError(response, () => {
-          // TODO solve what to do if unauthed
-          // if auth0 enabled, just redirect back to login page
-          // const redirectUri = this.history.location.pathname;
-          // this.history.replace(AppPaths.login(redirectUri));
-        });
+        return this.handleUnRecoverableError(response);
 
       case 403:
-        return this.handleUnRecoverableError(response, () => {
-          console.log('user not found in db, redirect to /403');
-          // this.history.replace(AppPaths.userNotFound());
-        });
+        return this.handleUnRecoverableError(response);
 
       case 404:
         return this.handleRecoverableError(response);
@@ -81,7 +78,7 @@ export default class Api {
       case 409: // TODO/TO NOTE http conflict, the error thrown if your api is accidentally concurrently trying to make a user with the same keys and they clash in sql.
         // if this happens to you, make your app only load the user once, when the app loads and don't allow it to call whatever endpoint you have to create a user in parallel.
         // window.location.reload();
-        return this.handleUnRecoverableError(response, () => console.log('409')); // refreshing the page works for this error as it typically occurs during first page load when user creates account.
+        return this.handleUnRecoverableError(response); // refreshing the page works for this error as it typically occurs during first page load when user creates account.
 
       case 500:
       default:
@@ -94,8 +91,7 @@ export default class Api {
           // TODO return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => this.history.replace(AppPaths.internalError()));
 
         } else {
-          return this.handleUnRecoverableError(response, (_error: ApiError) => {
-          });
+          return this.handleUnRecoverableError(response)
         }
     }
   }
@@ -110,19 +106,8 @@ export default class Api {
 
   private async handleUnRecoverableError<T>(
     response: Response,
-    errorAction: (_error: ApiError) => void
   ): Promise<T> {
-    return response
-      .json()
-      .then((response: T) => {
-        const error: ApiError = response.error;
-        // TODO NotificationService.error(error);
-        // ok, so if we do encounter an unrecoverable error, call the errorAction()
-        if (errorAction) {
-          errorAction(error);
-        }
-        Promise.reject(response);
-      });
+    return Promise.reject(response);
   }
 
   private async handleUnRecoverableErrorWithoutErrorMessage<T>(
@@ -213,6 +198,7 @@ export default class Api {
       }
       return result;
     } catch (reason) {
+      console.log('I rejected this');
       return this.handleRejected<T>(reason);
     }
   }

@@ -33,10 +33,10 @@ export const invitationButtonSelectorState = selector<string>({
       if (!firstName) pleaseEnter.push('first name');
       if (!invitationCode) pleaseEnter.push('invitation code');
       if (!(firstName && invitationCode)) return `Please enter your ${pleaseEnter.join(' and ')}`;
-      return "Create Account";
+      return "Check Guest List";
     }
     if (!userIdQuery) return 'Check Guest List';
-    if (user.guestId) return "Guest Found! Please Create Account";
+    if (user.guestId) return `Guest Found! Login or Create Acct`;
 
     if (user?.guestId && !user?.auth0Id) {
       if (user.auth0Id) return 'Account Created!';

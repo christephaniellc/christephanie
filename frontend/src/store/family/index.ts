@@ -1,6 +1,6 @@
 import {
   atom, selector,
-  selectorFamily, useRecoilState,
+  selectorFamily, useRecoilState, useRecoilValue,
   useSetRecoilState,
 } from 'recoil';
 import { AddressDto, FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
@@ -10,6 +10,7 @@ import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
+import { addressState } from '@/store/address';
 
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
@@ -22,16 +23,33 @@ export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
 });
 
 
-export const familyGuestsStates = selector<FamilyGuestsStates>({
+export const familyGuestsStates = selector<FamilyGuestsStates | null>({
   key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
-    const guests = familyUnit?.guests || [];
+    const mailingAddressUspsVerified = get(addressState)?.uspsVerified;
+    if (!familyUnit) {
+      return null;
+    }
+
+    const guests = familyUnit.guests || [];
     const nobodyComing = guests.every((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
     const attendingLastNames = guests.filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested).map((user) => user.lastName);
+    const allUsersResponded = !guests.some((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending);
+    const mailingAddressEntered = !!familyUnit.mailingAddress;
     const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName))).map((lastName) => `${lastName}s`).join(' & ');
+    const saveTheDateComplete = mailingAddressUspsVerified && allUsersResponded;
 
-    return { callByLastNames, attendingLastNames, guests, nobodyComing };
+    return {
+      allUsersResponded,
+      attendingLastNames,
+      callByLastNames,
+      guests,
+      mailingAddressEntered,
+      mailingAddressUspsVerified,
+      nobodyComing,
+      saveTheDateComplete,
+    } as FamilyGuestsStates;
   },
 });
 
@@ -86,6 +104,7 @@ export const useUpdateFamilyGuest = (guestId: string) => {
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
+  const address = useRecoilValue(addressState);
   const { auth0User } = useAuth0();
   const api = useApiContext();
 
@@ -102,6 +121,15 @@ export const useFamily = () => {
     onSuccess: data => setFamily(data)
   });
 
+  const validateFamilyAddress = useMutation({
+    mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
+    mutationFn: (newAddress: AddressDto) => api.validateAddress(newAddress),
+    onSuccess: data => {
+      updateFamilyAddress(data)
+    },
+    onError: (error) => console.error('Failed to validate address', error)
+  })
+
   const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
     .then((res) => {
       if (!res.data || !res.data.guests) return;
@@ -113,6 +141,7 @@ export const useFamily = () => {
         setUser(matchingUser);
       }
     }), []);
+
   const updateFamilyGuest = useCallback((guestId: string, interested: InvitationResponseEnum) => {
     const updatedGuests = family?.guests?.map((prevGuest) => {
       if (prevGuest.guestId === guestId) {
@@ -132,11 +161,18 @@ export const useFamily = () => {
 
   useEffect(() => {
     if (getFamilyUnitQuery.data) {
+      console.log('setting family', getFamilyUnitQuery.data);
       setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
     }
   }, [getFamilyUnitQuery.data, setFamily]);
 
-  const familyActions = useMemo(() => ({ getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, setFamily }), [getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, setFamily]);
+  useEffect(() => {
+    if (auth0User && !family) {
+      getFamily();
+    }
+  }, [family, auth0User]);
+
+  const familyActions = useMemo(() => ({ getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, setFamily }), [getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, setFamily]);
 
   return [family, familyActions] as const;
 };

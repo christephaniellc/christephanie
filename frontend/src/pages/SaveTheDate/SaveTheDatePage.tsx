@@ -11,52 +11,43 @@ import { useRecoilValue } from 'recoil';
 import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
 import React from 'react';
 import Countdowns from '@/components/Countdowns';
+import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
+import { FullSizeCenteredFlexBox } from '@/components/styled';
+import SaveTheDateStepper from '@/components/VerticalStepper/SaveTheDateStepper';
 
 function SaveTheDatePage() {
   // const { matchingUsers, allLastNames, lastNames, nobodyComing } = useInvitation();
   const [family, familyActions] = useFamily();
   const { user: auth0User } = useAuth0();
-  const { callByLastNames, attendingLastNames, guests, nobodyComing } = useRecoilValue(familyGuestsStates);
+  const saveTheDateGuestStates = useRecoilValue(familyGuestsStates);
+
+  if (!saveTheDateGuestStates) {
+    familyActions.getFamily();
+    return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
+  }
+  const queryParams = new URLSearchParams(window.location.search);
+  const { callByLastNames, attendingLastNames, guests, nobodyComing } = saveTheDateGuestStates;
 
 
   return (
-    <Box display="flex" flexDirection="column" justifyContent="" pb={10}>
-      <Box display="flex" flexDirection="column" width="100%" maxWidth={'600px'} mx="auto" textAlign="center">
-        <Typography variant="h4" color="text.primary" gutterBottom mt={4} width="100%">
-          Steph & Topher
-        </Typography>
-        <Box mx="auto">
-          <EightBitWeddingLogo />
-        </Box>
-        <Typography variant="caption" color="text.secondary" mt={-4}>
-          We're gettin' hitched{auth0User ? ' on' : '!'}
-        </Typography>
-        <Countdowns event={'Wedding'} interested={InvitationResponseEnum.Pending} />
-      </Box>
+    <Box display="flex" flexDirection="column" justifyContent="" pb={10} positon={'relative'} pt={2}>
       {(!guests || !guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
-      {guests && !!guests.length && (
-        <Box>
-          {!nobodyComing && <Typography sx={{ mx: 'auto', textAlign: 'center', mb: 2 }}>
-            {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you, {attendingLastNames}!
-          </Typography>}
-          {nobodyComing && <Typography sx={{ mx: 'auto', textAlign: 'center', mb: 2 }}>
-            {guests.length === 1 ? 'I' : 'We'} hope you can make it, {callByLastNames}!
-          </Typography>}
-          <ButtonsContainer>
-            {guests.map((guest: GuestDto) => (
-              <AttendanceButton guestId={guest.guestId!} key={guest.guestId} />
-            ))}
-          </ButtonsContainer>
-          {auth0User && !nobodyComing && <Box mt={15} display="flex" justifyContent="center"><AddressEnvelope /></Box>}
-        </Box>
-      )}
+      <SaveTheDateStepper />
+      <Box position='absolute' bottom={0} left={0} right={0} sx={{
+        backgroundImage: `url(${ElPulpo})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'top',
+        height: 400,
+        zIndex: -1,
+      }}>
+      </Box>
     </Box>
   );
 }
 
 export default SaveTheDatePage;
 
-const ButtonsContainer = styled(Box)(({ theme }) => ({
+export const ButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',

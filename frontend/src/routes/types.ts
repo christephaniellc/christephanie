@@ -7,6 +7,7 @@ enum Pages {
   Welcome,
   SaveTheDate,
   Profile,
+  FoodPreferences,
   NotFound,
 }
 

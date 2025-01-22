@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
 import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
@@ -12,12 +12,23 @@ import Button from '@mui/material/Button';
 import { ArrowRightAlt } from '@mui/icons-material';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
+import { unstable_useLazyRef } from '@mui/utils';
+import { useRecoilValue } from 'recoil';
+import { familyGuestsStates, useFamily } from '@/store/family';
+import WelcomePageStepper from '@/components/VerticalStepper/WelcomePageStepper';
 
 
 const Welcome = () => {
   const [user, _] = useUser();
+  const familyStates = useRecoilValue(familyGuestsStates);
+  const [family, familyActions] = useFamily();
   const { user: auth0User } = useAuth0();
 
+  useEffect(() => {
+    if (user.auth0Id && family === null) {
+      familyActions.getFamily();
+    }
+  }, [user, family, familyActions]);
   return (
     <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center"
          flexWrap="wrap">
@@ -35,13 +46,11 @@ const Welcome = () => {
       <Box maxWidth={600} mx="auto" mb={2}>
         {!auth0User && <InvitationCodeInputs /> || (
           <>
-          <Countdowns event={'Wedding'} interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending} />
-            <Button component={Link} variant="contained" color="primary" fullWidth to={routes[Pages.SaveTheDate].path!}>
-              We need your RSVP Info <ArrowRightAlt />
-            </Button>
+            <Countdowns event={'Wedding'}
+                        interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending} />
+            <WelcomePageStepper />
           </>
         )}
-
       </Box>
     </Box>
   );

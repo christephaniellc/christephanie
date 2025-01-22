@@ -47,6 +47,13 @@ export const useUser = () => {
     enabled: false,
   });
 
+  const getMeQuery = useQuery({
+    queryKey: ['getMeQuery'],
+    queryFn: () => api.getMe(),
+    retry: false,
+    enabled: false,
+  });
+
   useEffect(() => {
     if (findUserIdQuery.isLoading) {
       setUserIdQuery(findUserIdQuery);
@@ -78,22 +85,25 @@ export const useUser = () => {
 
   useEffect(() => {
     if (auth0User) {
-      setUser({ ...user, auth0Id: auth0User.sub } as GuestDto);
+      getMeQuery.refetch()
+        .then((res) => {
+          if (res.data) {
+            setUser(res.data);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to get user', err);
+        })
     }
-
   }, [auth0User]);
 
   useEffect(() => {
-    setUserIdQuery({...userIdQuery, error: null} as UseQueryResult<string | null>);
+    setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<string | null>);
     queryClient.resetQueries({ queryKey: [`findUserIdQuery`] });
   }, [user.firstName, user.invitationCode]);
 
 
-  useEffect(() => {
-    console.log(user)
-  }, [user]);
-
-  const userActions = useMemo(() => ({findUserIdQuery, setUser}), [findUserIdQuery, setUser]);
+  const userActions = useMemo(() => ({ findUserIdQuery, setUser }), [findUserIdQuery, setUser]);
 
   return [user, userActions] as const;
-}
+};

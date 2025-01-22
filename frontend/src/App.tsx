@@ -21,7 +21,6 @@ function App() {
       <SW />
 
       <Sidebar />
-      <Timeline />
       <Pages />
       <BottomNav />
 
