@@ -6,7 +6,6 @@ using Wedding.Abstractions.Keys;
 
 namespace Wedding.Abstractions.Entities
 {
-    [DynamoDBTable("christephanie-wedding")]
     public class WeddingEntity
     {
         [DynamoDBHashKey]
@@ -30,6 +29,9 @@ namespace Wedding.Abstractions.Entities
 
         [DynamoDBProperty]
         public string? MailingAddress { get; set; }
+
+        [DynamoDBProperty]
+        public bool MailingAddressUspsVerified { get; set; }
 
         [DynamoDBProperty]
         public List<string>? AdditionalAddresses { get; set; }
@@ -93,14 +95,14 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty(typeof(EnumToStringConverter<InvitationResponseEnum>))]
         public InvitationResponseEnum InvitationResponse { get; set; }
 
+        [DynamoDBProperty]
+        public string? InvitationResponseAudit { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpWedding { get; set; }
 
         [DynamoDBProperty]
         public string? RsvpNotes { get; set; }
-
-        [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
-        public SleepPreferenceEnum? SleepPreference { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpRehearsalDinner { get; set; }
@@ -108,28 +110,22 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
         public RsvpEnum? RsvpFourthOfJuly { get; set; }
 
-        [DynamoDBProperty(typeof(EnumToStringConverter<RsvpEnum>))]
-        public RsvpEnum? RsvpBuildWeek { get; set; }
-
         [DynamoDBProperty]
-        public DateTime? ArrivalDate { get; set; }
+        public string? RsvpAudit { get; set; }
         #endregion
 
         #region Preferences-specific fields
         /// <summary>
         /// RSVP-specific fields (used when SortKey = "PREFS")
         /// </summary>
-        [DynamoDBProperty(typeof(EnumToStringConverter<MealPreferenceEnum>))]
-        public MealPreferenceEnum? PrefMeal { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
+        public SleepPreferenceEnum? PrefSleep { get; set; }
 
-        [DynamoDBProperty]
-        public bool? PrefKidsPortion { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<FoodPreferenceEnum>))]
+        public FoodPreferenceEnum? PrefFood { get; set; }
 
         [DynamoDBProperty]
         public string? PrefFoodAllergies { get; set; }
-
-        [DynamoDBProperty]
-        public string? PrefSpecialAlcoholRequests { get; set; }
         #endregion
     }
 
