@@ -36,7 +36,7 @@ namespace Wedding.Common.Helpers.AWS
         {
             return new DynamoDBOperationConfig
             {
-                OverrideTableName = _multitenancySettingsProvider.GetTableName(audience)
+                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience)
             };
         }
 
