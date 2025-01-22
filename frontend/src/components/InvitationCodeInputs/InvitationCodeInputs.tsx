@@ -21,7 +21,7 @@ import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 
 export const InvitationCodeInputs = () => {
-  const  api = useApiContext();
+  const api = useApiContext();
   const [user, userActions] = useUser();
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
 
@@ -30,8 +30,7 @@ export const InvitationCodeInputs = () => {
     userActions.findUserIdQuery?.refetch();
   };
 
-  const { user: auth0User } = useAuth0();
-  const { getAccessTokenPleasePleasePlease, logOutFromAuth0 } = useAuth0Queries();
+  const { user: auth0User, loginWithPopup, logout } = useAuth0();
 
   useEffect(() => {
     console.log('user', user);
@@ -40,79 +39,86 @@ export const InvitationCodeInputs = () => {
   if (!user) return null;
 
   return (
-    <Card padding={3}>
-      <CardHeader
-        title={!user?.guestId ? 'Please enter your invitation to get started.' : `Welcome back ${user?.firstName}`}
-        subheader={!api.getJwt() ? 'Please finish creating your account to get started' : ''} />
-      <CardContent>
-        <>
-          {!user?.auth0Id &&
-            <>
-              <TextField
-                autoComplete={'off'}
-                disabled={false}
-                fullWidth
-                value={user?.invitationCode}
-                label="Enter your Invitation Code"
-                onChange={(e) => userActions.setUser({ ...user , invitationCode: e.target.value })}
-                variant="outlined"
-                sx={{
-                  mb: 2,
-                  '& .MuiInputBase-input': {
-                    fontSize: 'h4.fontSize',
-                    textAlign: 'center',
-                    color: 'text.secondary !important',
-                  },
-                }}
-              />
+    <Box display="flex" flexWrap="wrap">
+      <Card padding={3} width={'100%'} mb={2} component={Box}>
+        <CardHeader
+          title={!user?.guestId ? 'Please enter your invitation to get started.' : `Welcome back ${user?.firstName}`}
+          subheader={!api.getJwt() ? 'Please login or finish creating your account to get started' : ''} />
+        <CardContent>
+          <>
+            {!user?.auth0Id &&
+              <>
+                <TextField
+                  autoComplete={'off'}
+                  disabled={false}
+                  fullWidth
+                  value={user?.invitationCode}
+                  label="Enter your Invitation Code"
+                  onChange={(e) => userActions.setUser({ ...user, invitationCode: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    mb: 2,
+                    '& .MuiInputBase-input': {
+                      fontSize: 'h4.fontSize',
+                      textAlign: 'center',
+                      color: 'text.secondary !important',
+                    },
+                  }}
+                />
 
-              <TextField
-                fullWidth
-                disabled={false}
-                autoComplete={'off'}
-                value={user?.firstName}
-                label="First Name"
-                onChange={(e) => userActions.setUser({ ...user, firstName: e.target.value })}
-                variant="outlined"
-                sx={{
-                  marginBottom: 2,
-                  '& .MuiInputBase-input': {
-                    fontSize: 'h4.fontSize',
-                    textAlign: 'center',
-                    color: 'text.secondary !important',
-                  },
-                }}
-              />
-            </>
-          }
-        </>
-      </CardContent>
-      <CardActions>
-        <Box display="flex" flexDirection="column" width="100%" px={1}>
-          {!user?.auth0Id && <Button sx={{ width: '100%', mb: 2 }}
-                                 disabled={!user?.firstName || !user?.invitationCode}
-                                 fullWidth
-                                 variant="contained" onClick={() =>
+                <TextField
+                  fullWidth
+                  disabled={false}
+                  autoComplete={'off'}
+                  value={user?.firstName}
+                  label="First Name"
+                  onChange={(e) => userActions.setUser({ ...user, firstName: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    marginBottom: 2,
+                    '& .MuiInputBase-input': {
+                      fontSize: 'h4.fontSize',
+                      textAlign: 'center',
+                      color: 'text.secondary !important',
+                    },
+                  }}
+                />
+              </>
+            }
+          </>
+        </CardContent>
+        <CardActions>
+          <Box display="flex" flexDirection="column" width="100%" px={1}>
+            {!user?.auth0Id && <Button sx={{ width: '100%' }}
+                                       disabled={!user?.firstName || !user?.invitationCode}
+                                       fullWidth
+                                       variant="contained" onClick={() =>
 
-            user?.guestId ? getAccessTokenPleasePleasePlease() : handleFindUser()}
-          >
-            {invitationButtonText}
-          </Button>}
-          {api.getJwt() && (
+              user?.guestId ? loginWithPopup() : handleFindUser()}
+            >
+              {invitationButtonText || 'Login With your Existing Account'}
+            </Button>}
+          </Box>
+        </CardActions>
+      </Card>
+      {api.getJwt() && !user.guestId && (
+        <Card mt={2} sx={{ width: '100%' }} pb={2}>
+          <CardHeader subheader="Login with your existing account" />
+          <CardActions>
             <Button
               fullWidth
               color="primary"
               variant="contained"
               onClick={() => {
-                auth0User ? logOutFromAuth0() : getAccessTokenPleasePleasePlease();
+                auth0User ? logout() : loginWithPopup();
               }}
             >
               {auth0User ? 'Logout' : 'Login'}
             </Button>
-          )}
-        </Box>
-      </CardActions>
-    </Card>
+          </CardActions>
+        </Card>
+      )}
+    </Box>
   )
     ;
 };

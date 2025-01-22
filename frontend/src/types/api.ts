@@ -44,13 +44,13 @@ export interface AddressDto {
   urbanization?: string | null;
   country?: string | null;
   countryISOCode?: string | null;
+  uspsVerified?: boolean;
 }
 
 export enum AgeGroupEnum {
   Adult = 'Adult',
-  Teenager = 'Teenager',
-  Child = 'Child',
-  Toddler = 'Toddler',
+  Under21 = 'Under21',
+  Under13 = 'Under13',
   Baby = 'Baby',
 }
 
@@ -63,8 +63,8 @@ export interface FamilyUnitDto {
   unitName?: string | null;
   tier?: string | null;
   guests?: GuestDto[] | null;
-  mailingAddress?: AddressDto | null;
-  additionalAddresses?: string[] | null;
+  mailingAddress?: AddressDto;
+  additionalAddresses?: AddressDto[] | null;
   invitationResponseNotes?: string | null;
   /** @format int32 */
   potentialHeadCount?: number;
@@ -72,19 +72,10 @@ export interface FamilyUnitDto {
   familyUnitLastLogin?: string | null;
 }
 
-
-export interface GuestInterface {
-  invitationCode?: string | null;
-  guestId?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  roles?: RoleEnum[] | null;
-  email?: string | null;
-  emailVerified?: boolean;
-  phone?: string | null;
-  rsvp?: RsvpDto;
-  preferences?: PreferencesDto;
-  ageGroup?: AgeGroupEnum;
+export enum FoodPreferenceEnum {
+  Omnivore = 'Omnivore',
+  Vegetarian = 'Vegetarian',
+  Vegan = 'Vegan',
 }
 
 export interface GuestDto {
@@ -103,7 +94,8 @@ export interface GuestDto {
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
   ageGroup?: AgeGroupEnum;
-  guestLogins?: string[] | null;
+  /** @format date-time */
+  lastActivity?: string | null;
 }
 
 export interface IAMPolicyStatement {
@@ -121,18 +113,16 @@ export enum InvitationResponseEnum {
   Declined = 'Declined',
 }
 
-export enum MealPreferenceEnum {
-  Omnivore = 'Omnivore',
-  Vegetarian = 'Vegetarian',
-  Vegan = 'Vegan',
+export interface LastUpdateAuditDto {
+  /** @format date-time */
+  lastUpdate?: string;
+  username?: string | null;
 }
 
 export interface PreferencesDto {
-  guestId?: string | null;
-  meal?: MealPreferenceEnum;
-  kidsPortion?: boolean | null;
+  sleepPreference?: SleepPreferenceEnum;
+  foodPreference?: FoodPreferenceEnum;
   foodAllergies?: string | null;
-  specialAlcoholRequests?: string | null;
 }
 
 export interface ProblemDetails {
@@ -149,21 +139,17 @@ export enum RoleEnum {
   Guest = 'Guest',
   Party = 'Party',
   Rehearsal = 'Rehearsal',
-  Builder = 'Builder',
   Staff = 'Staff',
   Admin = 'Admin',
 }
 
 export interface RsvpDto {
-  guestId?: string | null;
   invitationResponse?: InvitationResponseEnum;
-  wedding?: RsvpEnum;
-  sleepPreference?: SleepPreferenceEnum;
+  invitationResponseAudit?: LastUpdateAuditDto;
   rehearsalDinner?: RsvpEnum;
   fourthOfJuly?: RsvpEnum;
-  buildWeek?: RsvpEnum;
-  /** @format date-time */
-  arrivalDate?: string | null;
+  wedding?: RsvpEnum;
+  rsvpAudit?: LastUpdateAuditDto;
   rsvpNotes?: string | null;
 }
 
@@ -416,7 +402,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     adminFamilyunitCreateUpdate: (data: FamilyUnitDto[], params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails>({
+      this.request<FamilyUnitDto[], ProblemDetails | void>({
         path: `/api/admin/familyunit/create`,
         method: 'PUT',
         body: data,
@@ -430,12 +416,52 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags AdminFamilyUnit
+     * @name AdminFamilyunitInvitationCodeList
+     * @request GET:/api/admin/familyunit/invitationCode
+     * @secure
+     */
+    adminFamilyunitInvitationCodeList: (
+      query?: {
+        invitationCode?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<FamilyUnitDto, ProblemDetails | void>({
+        path: `/api/admin/familyunit/invitationCode`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminFamilyUnit
+     * @name AdminFamilyunitList
+     * @request GET:/api/admin/familyunit
+     * @secure
+     */
+    adminFamilyunitList: (params: RequestParams = {}) =>
+      this.request<FamilyUnitDto[], ProblemDetails | void>({
+        path: `/api/admin/familyunit`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminFamilyUnit
      * @name AdminFamilyunitCreate
      * @request POST:/api/admin/familyunit
      * @secure
      */
     adminFamilyunitCreate: (data: FamilyUnitDto, params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails>({
+      this.request<FamilyUnitDto, ProblemDetails | void>({
         path: `/api/admin/familyunit`,
         method: 'POST',
         body: data,
@@ -450,13 +476,19 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags AdminFamilyUnit
      * @name AdminFamilyunitDelete
-     * @request DELETE:/api/admin/familyunit/{InvitationCode}
+     * @request DELETE:/api/admin/familyunit
      * @secure
      */
-    adminFamilyunitDelete: (invitationCode: string, params: RequestParams = {}) =>
-      this.request<DeleteResponse, ProblemDetails>({
-        path: `/api/admin/familyunit/${invitationCode}`,
+    adminFamilyunitDelete: (
+      query?: {
+        invitationCode?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteResponse, ProblemDetails | void>({
+        path: `/api/admin/familyunit`,
         method: 'DELETE',
+        query: query,
         secure: true,
         format: 'json',
         ...params,
@@ -478,7 +510,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<APIGatewayCustomAuthorizerResponse, ProblemDetails>({
+      this.request<APIGatewayCustomAuthorizerResponse, ProblemDetails | void>({
         path: `/api/authorize`,
         method: 'GET',
         query: query,
@@ -496,7 +528,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitList: (params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, void>({
+      this.request<FamilyUnitDto, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'GET',
         secure: true,
@@ -513,7 +545,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitCreate: (data: FamilyUnitDto, params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails>({
+      this.request<FamilyUnitDto, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'POST',
         body: data,
@@ -549,7 +581,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     addressValidateCreate: (data: AddressDto, params: RequestParams = {}) =>
-      this.request<AddressDto, ProblemDetails>({
+      this.request<AddressDto, ProblemDetails | void>({
         path: `/api/address-validate`,
         method: 'POST',
         body: data,
@@ -590,7 +622,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<string, ProblemDetails>({
+      this.request<string, ProblemDetails | void>({
         path: `/api/user/find`,
         method: 'GET',
         query: query,
@@ -608,7 +640,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     userMeList: (params: RequestParams = {}) =>
-      this.request<GuestDto, ProblemDetails>({
+      this.request<GuestDto, ProblemDetails | void>({
         path: `/api/user/me`,
         method: 'GET',
         secure: true,

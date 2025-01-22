@@ -9,7 +9,7 @@ const configJson: { [key: string]: Config} = {
   "development": {
     "domain": "christephanie.us.auth0.com",
     "clientId": "sAJY1fIiPwOLa0z1SUzXZzD3Hp1vjuV5",
-    "audience": "https://api.christephanie.com",
+    "audience": "https://wedding.christephanie.com/api",
     "webserviceUrl": "https://fpo6t7lub7.execute-api.us-east-1.amazonaws.com/proto/api"
   },
   "production": {

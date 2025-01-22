@@ -36,7 +36,7 @@ export const BottomNav = () => {
         />
         <BottomNavigationAction
           disabled={!user}
-          label="Invitation"
+          label="Save the Date"
           component={Link}
           showLabel={true}
           to={routes[Pages.SaveTheDate].path!}

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Box, TextField, Typography, useTheme } from '@mui/material';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { familyGuestsStates, familyState, useFamily } from '@/store/family';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { familyGuestsStates, useFamily } from '@/store/family';
 import {
   addressState,
   cityAddressState,
@@ -11,20 +11,7 @@ import {
 } from '@/store/address';
 import Button from '@mui/material/Button';
 
-const cityStateZipRegex = /^([\p{L}\p{N}\s'.-]+)\s*,\s*([A-Za-z]{2})\s*,\s*(\d{5})$/u;
-// Explanation of the pattern:
-//   ^ Start of string
-//   ([\p{L}\p{N}\s'.-]+)  -> capture "city" portion (letters, digits, spaces, apostrophes, periods, dashes, etc.)
-//   \s*,\s*               -> comma (with optional spaces around it)
-//   ([A-Za-z]{2})         -> capture 2 letters for the state
-//   \s*,\s*               -> comma (with optional spaces around it)
-//   (\d{5})               -> capture 5 digits for the zip
-//   $ End of string
-//
-// The "u" flag allows matching full Unicode (helpful for \p{L}).
-
 const AddressEnvelope: React.FC = () => {
-  // const { lastNames, setFamilyUnitAddress, familyUnit } = useInvitation();
   const [familyUnit, familyActions] = useFamily();
   const { callByLastNames } = useRecoilValue(familyGuestsStates);
   const address = useRecoilValue(addressState);
@@ -48,8 +35,14 @@ const AddressEnvelope: React.FC = () => {
   `;
 
   useEffect(() => {
-    familyActions.setFamily({...familyUnit, mailingAddress: address});
-  }, [address]);
+    if (familyUnit && familyUnit.mailingAddress) {
+      setStreetAddress(familyUnit.mailingAddress.streetAddress);
+      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress);
+      setCity(familyUnit.mailingAddress.city);
+      setState(familyUnit.mailingAddress.state);
+      setZipCode(familyUnit.mailingAddress.zipCode);
+    }
+  }, [familyUnit]);
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
@@ -69,6 +62,8 @@ const AddressEnvelope: React.FC = () => {
           borderImageSlice: 1,
           padding: '16px',
           textAlign: 'center',
+          // add blur to the background
+          backdropFilter: 'blur(16px)',
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: '16px' }}>
@@ -86,24 +81,25 @@ const AddressEnvelope: React.FC = () => {
                      label="Street Address"
                      variant="standard"
                      fullWidth
-                     value={familyUnit?.mailingAddress?.streetAddress}
+                     value={address.streetAddress}
                      onChange={(e) => {
                        console.log('setting street address', e.target.value);
                        setStreetAddress(e.target.value);
                      }}
+                     error={!!familyActions.validateFamilyAddress.error}
                      size="small"
           />
           <TextField
-            value={familyUnit?.mailingAddress?.secondaryAddress}
+            value={address.secondaryAddress}
             color="secondary" label="Apt/Unit" variant="standard" fullWidth size="small"
             onChange={(e) => setSecondaryAddress(e.target.value)} />
           <TextField
-            value={familyUnit?.mailingAddress?.city}
+            value={address.city}
             color="secondary" label="City" variant="standard" fullWidth size="small"
             onChange={(e) => setCity(e.target.value)} />
-          <Box width='100%' textAlign='start'>
+          <Box width="100%" textAlign="start">
             <TextField
-              value={familyUnit?.mailingAddress?.state}
+              value={address?.state}
 
               sx={{ width: '100px', display: 'inline-flex' }}
               color="secondary" label="State" variant="standard" size="small"
@@ -114,14 +110,16 @@ const AddressEnvelope: React.FC = () => {
             <TextField
               sx={{ width: '100px', display: 'inline-flex' }}
 
-              value={familyUnit?.mailingAddress?.zipCode}
+              value={address.zipCode}
               color="secondary" label="Zip Code" variant="standard" size="small"
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, '').slice(0, 5);
                 setZipCode(value);
               }} />
           </Box>
-          <Button onClick={() => familyActions.updateFamilyAddress(address)}>Update Address</Button>
+          <Button variant='contained' color='secondary' onClick={() => {
+            if (address !== null) familyActions.validateFamilyAddress.mutate(address)
+          }}>Update Address</Button>
         </Box>
       </Box>
     </Box>

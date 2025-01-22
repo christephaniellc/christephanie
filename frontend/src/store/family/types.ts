@@ -1,8 +1,12 @@
 import {GuestDto} from "@/types/api";
 
-export type FamilyGuestsStates = {
+export interface FamilyGuestsStates {
+  allUsersResponded: boolean;
+  attendingLastNames: string[];
   callByLastNames: string;
-  attendingLastNames: (string | null | undefined)[];
+  guests: GuestDto[];
+  mailingAddressEntered: boolean;
+  mailingAddressUspsVerified: boolean;
   nobodyComing: boolean;
-  guests: GuestDto[]
-};
+  saveTheDateComplete: boolean;
+}

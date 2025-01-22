@@ -62,7 +62,7 @@ const themes: Record<Themes, ThemeOptions> = {
         main: "#E9950C",
       },
       background: {
-        default: '#111',
+        default: '#0E080F',
         paper: '#171717',
       },
     },

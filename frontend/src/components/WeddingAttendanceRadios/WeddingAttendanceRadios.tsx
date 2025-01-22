@@ -12,7 +12,7 @@ interface WeddingAttendanceRadiosProps {
 
 const WeddingAttendanceRadios = ({ interested, isMe }: WeddingAttendanceRadiosProps) => {
   const response = useMemo(() => {
-      return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? 'not attending!' : 'still thinking about it.';
+      return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? "unable to attend" : 'still thinking about it.';
     }, [interested])
 
   const queryKey = ['updateFamilyUnit'];
