@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos.Auth;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Validation;

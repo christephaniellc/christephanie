@@ -37,7 +37,6 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
-                    .ForMember(dest => dest.MailingAddressUspsVerified, opt => opt.MapFrom(src => src.MailingAddressUspsVerified))
                     .ForMember(dest => dest.MailingAddress, opt =>
                     {
                         opt.Condition(src => !string.IsNullOrEmpty(src.MailingAddress));
@@ -72,7 +71,6 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
-                    .ForMember(dest => dest.MailingAddressUspsVerified, opt => opt.MapFrom(src => src.MailingAddressUspsVerified))
                     .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToString()))
                     .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToString()).ToList()))
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.Guests != null ? src.Guests.Count : 0))
