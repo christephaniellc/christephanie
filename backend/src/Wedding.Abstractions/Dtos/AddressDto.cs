@@ -17,6 +17,7 @@ namespace Wedding.Abstractions.Dtos
         public string? Urbanization { get; set; }
         public string? Country { get; set; }
         public string? CountryISOCode { get; set; }
+        public bool UspsVerified { get; set; }
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);
