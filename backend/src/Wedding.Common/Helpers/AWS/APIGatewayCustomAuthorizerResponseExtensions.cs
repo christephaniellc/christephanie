@@ -29,6 +29,7 @@ namespace Wedding.Common.Helpers.AWS
                 context["token"] = token;
                 context["audience"] = audience ?? null;
                 context["guestId"] = authenticatedUser?.GuestId ?? null;
+                context["name"] = authenticatedUser?.FirstName + " " + authenticatedUser?.LastName;
                 context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
                 context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
             }
@@ -75,6 +76,11 @@ namespace Wedding.Common.Helpers.AWS
         {
             //return response.Context["principalId"]?.ToString();
             return response.Context["guestId"]?.ToString();
+        }
+
+        public static string? GetNameFromAuth(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["name"]?.ToString();
         }
 
         public static string? GetAudienceFromAuth(this APIGatewayCustomAuthorizerResponse response)

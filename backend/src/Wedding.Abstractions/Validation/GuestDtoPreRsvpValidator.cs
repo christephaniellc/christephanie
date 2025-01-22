@@ -22,9 +22,12 @@ namespace Wedding.Abstractions.Validation
                 .WithMessage(ValidationMessages.MustNotBeNullOrWhitespace("Last name"))
                 ;
             RuleFor(e => e.AgeGroup).IsInEnum();
-            RuleFor(p => p.Rsvp)
-                .Must(rsvp => rsvp == null 
-                              || Enum.IsDefined(typeof(SleepPreferenceEnum), rsvp.SleepPreference!))
+            RuleFor(p => p.Preferences)
+                .Must(prefs => prefs == null 
+                               || (
+                                   Enum.IsDefined(typeof(SleepPreferenceEnum), prefs.SleepPreference!)
+                                   && Enum.IsDefined(typeof(FoodPreferenceEnum), prefs.FoodPreference!)
+                                   ))
                 ;
         }
 

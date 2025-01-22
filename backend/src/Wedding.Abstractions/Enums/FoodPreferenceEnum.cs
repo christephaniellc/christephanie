@@ -1,6 +1,6 @@
 ﻿namespace Wedding.Abstractions.Enums
 {
-    public enum MealPreferenceEnum
+    public enum FoodPreferenceEnum
     {
         Omnivore,
         Vegetarian,

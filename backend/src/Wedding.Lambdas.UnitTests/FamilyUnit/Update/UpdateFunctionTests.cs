@@ -71,7 +71,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             {
                 var dto = TestDataHelper.FAMILY_DOE;
                 dto.MailingAddress = new AddressDto { StreetAddress = "123 Main St." };
-                dto.Guests[0].AgeGroup = AgeGroupEnum.Child;
+                dto.Guests[0].AgeGroup = AgeGroupEnum.Under13;
                 dto.Guests[0].Rsvp = new RsvpDto
                 {
                     InvitationResponse = InvitationResponseEnum.Interested
@@ -113,7 +113,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 result.Guests.Should().NotBeNull();
                 result.Guests!.Count.Should().BeGreaterThan(0);
                 result.Guests![0].FirstName.Should().Be("John");
-                result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Child);
+                result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Under13);
                 result.Guests![0].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
                 result.Guests![1].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
                 result.MailingAddress.StreetAddress.Should().Be("123 Main St.");

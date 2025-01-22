@@ -18,8 +18,10 @@ namespace Wedding.Abstractions.Dtos
 
         public AddressDto? MailingAddress { get; set; }
 
-        public List<AddressDto>? AdditionalAddresses { get; set; }
+        public bool MailingAddressUspsVerified { get; set; }
 
+        public List<AddressDto>? AdditionalAddresses { get; set; }
+        
         public string? InvitationResponseNotes { get; set; }
 
         public int PotentialHeadCount { get; set; }

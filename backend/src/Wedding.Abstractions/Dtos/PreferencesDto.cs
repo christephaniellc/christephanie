@@ -4,12 +4,10 @@ namespace Wedding.Abstractions.Dtos
 {
     public class PreferencesDto
     {
-        public MealPreferenceEnum? Meal { get; set; }
+        public SleepPreferenceEnum? SleepPreference { get; set; }
 
-        public bool? KidsPortion { get; set; }
+        public FoodPreferenceEnum? FoodPreference { get; set; }
 
         public string? FoodAllergies { get; set; }
-
-        public string? SpecialAlcoholRequests { get; set; }
     }
 }
