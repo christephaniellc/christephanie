@@ -16,8 +16,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
         public async Task<Auth0Configuration> GetConfig()
         {
-            var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
-            return await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
+            return await AwsParameterCache.GetConfigAsync<Auth0Configuration>();
         }
 
         public async Task<string> GetAuthority()
