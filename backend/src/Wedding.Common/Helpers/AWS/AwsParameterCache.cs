@@ -1,48 +1,54 @@
-﻿using Amazon.SimpleSystemsManagement.Model;
-using Amazon.SimpleSystemsManagement;
-using System;
-using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon;
+using Microsoft.Extensions.Caching.Memory;
+using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
+using Wedding.Common.Configuration.Multitenancy;
 
 namespace Wedding.Common.Helpers.AWS
 {
     public class AwsParameterCache
     {
-        private static Auth0Configuration? _cachedAuthConfig; // Static cache
-        private static DateTime _cacheExpirationTime = DateTime.MinValue; // Expiration timestamp
-        private const int CacheDurationInSeconds = 300; // Cache duration (e.g., 5 minutes)
-
-        public static async Task<Auth0Configuration> GetAuthConfigAsync(string parameterName, RegionEndpoint region)
+        /// <summary>
+        /// 300 seconds = 5 minutes
+        /// </summary>
+        private const int _defaultCacheDurationInSeconds = 300;
+        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
+        
+        private static readonly Dictionary<Type, string> _configParameterMap = new Dictionary<Type, string>
         {
-            // Return cached value if valid
-            if (_cachedAuthConfig != null && DateTime.UtcNow < _cacheExpirationTime)
+            { typeof(Auth0Configuration), "/auth0/api/credentials" },
+            { typeof(UspsConfiguration), "/usps/api/credentials" },
+        };
+
+        public static async Task<T> GetConfigAsync<T>(int? cacheDurationInSeconds = null, bool forceRefresh = false)
+        {
+            if (!_configParameterMap.TryGetValue(typeof(T), out var parameterName))
             {
-                return _cachedAuthConfig;
+                throw new InvalidOperationException($"No parameter mapping found for type {typeof(T).Name}");
             }
 
-            using var client = new AmazonSimpleSystemsManagementClient(region);
+            var cacheKey = GetCacheKey<T>(parameterName);
 
-            var request = new GetParameterRequest
+            if (forceRefresh)
             {
-                Name = parameterName,
-                WithDecryption = true
-            };
+                InvalidateCache<T>(parameterName);
+            }
 
+            if (_cache.TryGetValue(parameterName, out T cachedValue))
+            {
+                return cachedValue;
+            }
+            
             try
             {
-                var response = await client.GetParameterAsync(request);
+                var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
+                var config = await AwsParameterStoreHelper.GetParameterAsync<T>(parameterName, region);
 
-                // Deserialize JSON value into MyAuthConfig
-                var authConfig = JsonSerializer.Deserialize<Auth0Configuration>(response.Parameter.Value)
-                                 ?? throw new InvalidOperationException($"Failed to deserialize parameter: {parameterName}");
+                SetCache(cacheKey, config, cacheDurationInSeconds);
 
-                // Cache the result
-                _cachedAuthConfig = authConfig;
-                _cacheExpirationTime = DateTime.UtcNow.AddSeconds(CacheDurationInSeconds);
-
-                return authConfig;
+                return config;
             }
             catch (Exception ex)
             {
@@ -50,10 +56,22 @@ namespace Wedding.Common.Helpers.AWS
             }
         }
 
-        public static void ClearCache()
+        private static string GetCacheKey<T>(string parameterName)
         {
-            _cachedAuthConfig = null;
-            _cacheExpirationTime = DateTime.MinValue;
+            return $"{parameterName}_{typeof(T).FullName}";
+        }
+
+        private static void SetCache<T>(string cacheKey, T cacheValue, int? cacheDurationInSeconds)
+        {
+            var cacheTimeSpan = cacheDurationInSeconds.HasValue ? cacheDurationInSeconds.Value : _defaultCacheDurationInSeconds;
+            var cacheDuration = TimeSpan.FromSeconds(cacheTimeSpan);
+            _cache.Set(cacheKey, cacheValue, cacheDuration);
+        }
+
+        public static void InvalidateCache<T>(string parameterName)
+        {
+            var cacheKey = GetCacheKey<T>(parameterName);
+            _cache.Remove(cacheKey);
         }
     }
 }
