@@ -18,8 +18,8 @@ namespace Wedding.Lambdas.UnitTests.TestData
         {
             JwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority];
             JwtAudience = configuration[ConfigurationKeys.AuthenticationAudience];
-            ClientId = configuration[ConfigurationKeys.AuthenticationClientId];
-            ClientSecret = configuration[ConfigurationKeys.AuthenticationClientSecret];
+            ClientId = configuration[ConfigurationKeys.AuthenticationClientIdM2M];
+            ClientSecret = configuration[ConfigurationKeys.AuthenticationClientSecretM2M];
             TokenEndpoint = JwtAuthority + "/oauth/token";
         }
 

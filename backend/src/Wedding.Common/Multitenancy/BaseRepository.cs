@@ -19,7 +19,7 @@ namespace Wedding.Common.Multitenancy
 
         public async Task SaveAsync(T entity, string tenantId)
         {
-            var tableName = _multitenancySettingsProvider.GetTableName(tenantId);
+            var tableName = _multitenancySettingsProvider.GetMappedTableName(tenantId);
             var config = new DynamoDBOperationConfig
             {
                 OverrideTableName = tableName
