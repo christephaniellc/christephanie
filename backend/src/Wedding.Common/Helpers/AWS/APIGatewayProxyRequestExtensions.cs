@@ -25,6 +25,7 @@ namespace Wedding.Common.Helpers.AWS
                 Audience = request.GetAudienceFromAuthContext(),
                 InvitationCode = request.GetInvitationCodeFromAuthContext(),
                 GuestId = request.GetGuestIdFromAuthContext(),
+                Name = request.GetNameFromAuthContext(),
                 Roles = request.GetRoleStringFromAuthContext()
             };
         }
@@ -86,6 +87,7 @@ namespace Wedding.Common.Helpers.AWS
                         "audience" => context.Audience,
                         "guestId" => context.GuestId,
                         "invitationCode" => context.InvitationCode,
+                        "name" => context.Name,
                         "roles" => context.Roles,
                         _ => null // Return null if key does not match any property
                     };
@@ -107,6 +109,11 @@ namespace Wedding.Common.Helpers.AWS
         public static string? GetGuestIdFromAuthContext(this APIGatewayProxyRequest request)
         {
             return request.RequestLambdaData("guestId");
+        }
+
+        public static string? GetNameFromAuthContext(this APIGatewayProxyRequest request)
+        {
+            return request.RequestLambdaData("name");
         }
 
         public static string? GetInvitationCodeFromAuthContext(this APIGatewayProxyRequest request)

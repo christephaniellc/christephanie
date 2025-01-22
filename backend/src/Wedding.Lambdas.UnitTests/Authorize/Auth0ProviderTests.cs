@@ -1,21 +1,14 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using Amazon.DynamoDBv2.Model;
+﻿using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using Moq;
 using NUnit.Framework;
-using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.JwtClaim;
-using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Lambdas.UnitTests.Authorize

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -30,13 +32,16 @@ namespace Wedding.Lambdas.User.Get.Handlers
 
             try
             {
-                var result = await _dynamoDBProvider.QueryByGuestIdIndex(query.AuthContext.Audience, query.AuthContext.GuestId, cancellationToken);
+                _logger.LogInformation($"GetUserHandler audience: {query.AuthContext.Audience} guestId: {query.AuthContext.GuestId}");
+                var results = await _dynamoDBProvider.QueryByGuestIdIndex(query.AuthContext.Audience, query.AuthContext.GuestId, cancellationToken);
+                _logger.LogInformation($"GuestUserHandler query guest result: {JsonSerializer.Serialize(results)}");
 
-                if (result == null || result.Count == 0)
+                if (results == null || results.Count == 0)
                 {
                     throw new UnauthorizedAccessException("User not found.");
                 }
 
+                var result = results.FirstOrDefault();
                 return _mapper.Map<GuestDto>(result);
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using FluentAssertions;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
@@ -37,29 +38,47 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         }
 
         [Test]
+        public void ShouldHandleNullMailingAddressGracefully()
+        {
+            var entity = new WeddingEntity
+            {
+                InvitationCode = "INV123",
+                UnitName = "Doe Family",
+                MailingAddress = null, // Simulating null value
+                AdditionalAddresses = null
+            };
+
+            var result = _mapper.Map<FamilyUnitDto>(entity);
+            Assert.IsNull(result.MailingAddress);
+            Assert.IsNull(result.AdditionalAddresses);
+        }
+
+        [Test]
         public void Should_Map_WeddingEntity_To_FamilyUnitDto()
         {
+            var address = new AddressDto
+            {
+                StreetAddress = "123 Main St.",
+                City = "Seattle",
+                State = "WA",
+                UspsVerified = true
+            };
+            var address2 = new AddressDto
+            {
+                StreetAddress = "456 Elm St",
+                City = "Washington",
+                State = "DC"
+            };
             var entity = new WeddingEntity
             {
                 InvitationCode = "RSVP123",
                 UnitName = "Smith Family",
                 Tier = "A",
                 InvitationResponseNotes = "Looking forward to it!",
-                MailingAddress = new AddressDto
-                {
-                    StreetAddress = "123 Main St.",
-                    City = "Seattle",
-                    State = "WA"
-                }.ToString(),
+                MailingAddress = address.ToString(),
                 AdditionalAddresses = new List<string>
                 {
-                    new AddressDto
-                    {
-                        StreetAddress = "456 Elm St",
-                        City = "Washington",
-                        State = "DC"
-                    }.ToString()
-
+                    address2.ToString()
                 },
                 PotentialHeadCount = 5,
                 FamilyUnitLastLogin = DateTime.Now
@@ -71,8 +90,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.UnitName.Should().Be(entity.UnitName);
             dto.Tier.Should().Be(entity.Tier);
             dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
-            dto.MailingAddress.ToString().Should().Be(entity.MailingAddress);
-            dto.AdditionalAddresses[0].ToString().Should().BeEquivalentTo(entity.AdditionalAddresses[0]);
+            dto.MailingAddress.Should().BeEquivalentTo(address);
+            dto.MailingAddress.UspsVerified.Should().BeTrue();
+            dto.AdditionalAddresses[0].Should().BeEquivalentTo(address2);
+            dto.AdditionalAddresses[0].UspsVerified.Should().BeFalse();
             dto.PotentialHeadCount.Should().Be(entity.PotentialHeadCount);
             dto.FamilyUnitLastLogin.Should().Be(entity.FamilyUnitLastLogin);
             dto.Guests.Should().BeNull();
@@ -93,8 +114,32 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 Phone = "123-456-7890",
                 AgeGroup = AgeGroupEnum.Adult,
                 InvitationResponseNotes = "Can't wait!",
-                LastActivity = System.DateTime.Now 
+                LastActivity = System.DateTime.Now
             };
+
+            var dto = _mapper.Map<GuestDto>(entity);
+
+            dto.GuestId.Should().Be(entity.GuestId);
+            dto.Auth0Id.Should().Be(entity.Auth0Id);
+            dto.FirstName.Should().Be(entity.FirstName);
+            dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
+            dto.LastName.Should().Be(entity.LastName);
+            dto.Roles.Should().BeEquivalentTo(entity.Roles);
+            dto.Email.Should().Be(entity.Email);
+            dto.Phone.Should().Be(entity.Phone);
+            dto.AgeGroup.Should().Be(entity.AgeGroup);
+            dto.LastActivity.Should().Be(entity.LastActivity);
+            dto.Rsvp.Should().NotBeNull();
+            dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
+            EmptyObjectHelper.ObjectPropertiesAreNullOrEmpty(dto.Preferences!).Should().BeTrue();
+        }
+
+        [Test]
+        public void Should_Map_WeddingEntityJson_To_GuestDto()
+        {
+            var filePath = @"..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
+            var entityJson = File.ReadAllText(filePath);
+            var entity = JsonSerializer.Deserialize<WeddingEntity>(entityJson);
 
             var dto = _mapper.Map<GuestDto>(entity);
 
@@ -116,27 +161,30 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntity_To_RsvpDto()
         {
+            var audit = new LastUpdateAuditDto
+            {
+                LastUpdate = DateTime.UtcNow,
+                Username = "me"
+            };
             var entity = new WeddingEntity
             {
                 GuestId = Guid.NewGuid().ToString(),
                 InvitationResponse = InvitationResponseEnum.Pending,
                 RsvpWedding = RsvpEnum.Attending,
-                SleepPreference = SleepPreferenceEnum.Camping,
+                PrefSleep = SleepPreferenceEnum.Camping,
                 RsvpRehearsalDinner = null,
                 RsvpFourthOfJuly = RsvpEnum.Attending,
-                RsvpBuildWeek = RsvpEnum.Declined,
-                ArrivalDate = DateTime.Now
+                RsvpAudit = audit.ToString()
             };
 
             var dto = _mapper.Map<RsvpDto>(entity);
 
             dto.InvitationResponse.Should().Be(entity.InvitationResponse);
             dto.Wedding.Should().Be(entity.RsvpWedding);
-            dto.SleepPreference.Should().Be(entity.SleepPreference);
             dto.RehearsalDinner.Should().Be(entity.RsvpRehearsalDinner);
             dto.FourthOfJuly.Should().Be(entity.RsvpFourthOfJuly);
-            dto.BuildWeek.Should().Be(entity.RsvpBuildWeek);
-            dto.ArrivalDate.Should().Be(entity.ArrivalDate);
+            dto.RsvpAudit.LastUpdate.Should().Be(audit.LastUpdate);
+            dto.RsvpAudit.Username.Should().Be(audit.Username);
         }
 
         [Test]
@@ -145,18 +193,16 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             var entity = new WeddingEntity
             {
                 GuestId = Guid.NewGuid().ToString(),
-                PrefMeal = MealPreferenceEnum.Omnivore,
-                PrefKidsPortion = true,
+                PrefSleep = SleepPreferenceEnum.Camping,
+                PrefFood = FoodPreferenceEnum.Omnivore,
                 PrefFoodAllergies = "Peanuts",
-                PrefSpecialAlcoholRequests = "Non-alcoholic beer"
             };
 
             var dto = _mapper.Map<PreferencesDto>(entity);
 
-            dto.Meal.Should().Be(entity.PrefMeal);
-            dto.KidsPortion.Should().Be(entity.PrefKidsPortion);
+            dto.SleepPreference.Should().Be(entity.PrefSleep);
+            dto.FoodPreference.Should().Be(entity.PrefFood);
             dto.FoodAllergies.Should().Be(entity.PrefFoodAllergies);
-            dto.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
         }
 
         [Test]
@@ -181,14 +227,12 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                         LastName = "Jingleheimer",
                         Email = "jingleheimersmith@gmai.com",
                         Phone = "123-456-7890",
-                        AgeGroup = AgeGroupEnum.Child,
+                        AgeGroup = AgeGroupEnum.Under13,
                         Roles = new List<RoleEnum> { RoleEnum.Staff },
                         Rsvp = new RsvpDto
                         {
                             InvitationResponse = InvitationResponseEnum.Interested,
-                            Wedding = RsvpEnum.Attending,
-                            SleepPreference = SleepPreferenceEnum.Camping,
-                            ArrivalDate = System.DateTime.Now
+                            Wedding = RsvpEnum.Attending
                         },
                         LastActivity = System.DateTime.Now,
                     },
@@ -208,6 +252,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.MailingAddress.Should().Be(dto.MailingAddress.ToString());
             entity.AdditionalAddresses[0].Should().BeEquivalentTo(dto.AdditionalAddresses[0].ToString());
             entity.PotentialHeadCount.Should().Be(dto.Guests.Count);
+            entity.PrefFood.Should().BeNull();
             entity.FamilyUnitLastLogin.Should().Be(dto.FamilyUnitLastLogin);
         }
 
@@ -228,8 +273,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 LastActivity =  System.DateTime.Now,
                 InvitationResponse = InvitationResponseEnum.Interested,
                 RsvpWedding = RsvpEnum.Attending,
-                PrefMeal = MealPreferenceEnum.Vegan,
-                PrefSpecialAlcoholRequests = "Whiskey"
+                PrefFood = FoodPreferenceEnum.Vegan,
             };
 
             var dto = _mapper.Map<GuestDto>(entity);
@@ -245,8 +289,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
             dto.Rsvp.Wedding.Should().Be(entity.RsvpWedding);
             dto.Preferences.Should().NotBeNull();
-            dto.Preferences!.Meal.Should().Be(entity.PrefMeal);
-            dto.Preferences.SpecialAlcoholRequests.Should().Be(entity.PrefSpecialAlcoholRequests);
+            dto.Preferences!.FoodPreference.Should().Be(entity.PrefFood);
         }
 
         [Test]
@@ -261,21 +304,18 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 LastName = "Jingleheimer",
                 Email = "jingleheimersmith@gmail.com",
                 Phone = "123-456-7890",
-                AgeGroup = AgeGroupEnum.Child,
+                AgeGroup = AgeGroupEnum.Under13,
                 Roles = new List<RoleEnum> { RoleEnum.Staff },
                 Rsvp = new RsvpDto
                 {
                     InvitationResponse = InvitationResponseEnum.Interested,
                     Wedding = RsvpEnum.Attending,
-                    SleepPreference = SleepPreferenceEnum.Camping,
-                    ArrivalDate = System.DateTime.Now
                 },
                 Preferences = new PreferencesDto
                 {
-                    Meal = MealPreferenceEnum.Omnivore,
-                    KidsPortion = true,
+                    SleepPreference = SleepPreferenceEnum.Camping,
+                    FoodPreference = FoodPreferenceEnum.Omnivore,
                     FoodAllergies = "Peanuts",
-                    SpecialAlcoholRequests = "Non-alcoholic beer"
                 },
                 LastActivity = System.DateTime.Now,
             };
@@ -299,14 +339,11 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.RsvpWedding.Should().Be(guestDto.Rsvp.Wedding);
             entity.RsvpRehearsalDinner.Should().Be(guestDto.Rsvp.RehearsalDinner);
             entity.RsvpFourthOfJuly.Should().Be(guestDto.Rsvp.FourthOfJuly);
-            entity.RsvpBuildWeek.Should().Be(guestDto.Rsvp.BuildWeek);
-            entity.SleepPreference.Should().Be(guestDto.Rsvp.SleepPreference);
             entity.RsvpNotes.Should().Be(guestDto.Rsvp.RsvpNotes);
 
-            entity.PrefMeal.Should().Be(guestDto.Preferences.Meal);
-            entity.PrefKidsPortion.Should().Be(guestDto.Preferences.KidsPortion);
+            entity.PrefSleep.Should().Be(guestDto.Preferences.SleepPreference);
+            entity.PrefFood.Should().Be(guestDto.Preferences.FoodPreference);
             entity.PrefFoodAllergies.Should().Be(guestDto.Preferences.FoodAllergies);
-            entity.PrefSpecialAlcoholRequests.Should().Be(guestDto.Preferences.SpecialAlcoholRequests);
         }
     }
 }
