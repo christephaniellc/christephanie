@@ -96,7 +96,7 @@ public class Function
 
         if (string.IsNullOrEmpty(_authority))
         {
-            //AwsParameterCache.ClearCache();
+            AwsParameterCache.ClearCache();
             var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
             var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
             _authority = authConfig.Authority ?? throw new InvalidOperationException();
@@ -111,7 +111,7 @@ public class Function
         {
             var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
             var origin = request.GetOriginFromRequest();
-            _audience =  multitenancySettingsProvider.GetAudience(origin) ?? throw new InvalidOperationException();
+            _audience =  multitenancySettingsProvider.GetMappedAudience(origin) ?? throw new InvalidOperationException();
         }
 
         context.Logger.LogDebug($"Authorization header: {authorizationHeader}");

@@ -26,12 +26,12 @@
         /// <summary>
         /// The Auth0 client id
         /// </summary>
-        public const string AuthenticationClientId = Auth0 + ":ClientId";
+        public const string AuthenticationClientIdM2M = Auth0 + ":ClientId";
 
         /// <summary>
         /// The Auth0 client secret
         /// </summary>
-        public const string AuthenticationClientSecret = Auth0 + ":ClientSecret";
+        public const string AuthenticationClientSecretM2M = Auth0 + ":ClientSecret";
         #endregion
 
         #region USPS

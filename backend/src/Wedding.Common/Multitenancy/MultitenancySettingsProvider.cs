@@ -8,18 +8,22 @@ namespace Wedding.Common.Multitenancy
         {
         }
 
-        public string GetAudience(string origin)
+        public string GetMappedAudience(string origin)
         {
-            string? audience = null;
+            string? audience;
             switch (origin)
             {
+                // Unit tests only
                 case ("https://api.christephanie.com"):
+                    audience = $"https://api.christephanie.com";
+                    break;
                 case ("https://www.christephanie.com"):
+                case ("https://wedding.christephanie.com/api"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
                 case ("localhost:5000"):
-                    audience = $"https://api.christephanie.com";
+                    audience = $"https://wedding.christephanie.com/api";
                     break;
                 default:
                     throw new Exception("Invalid audience.");
@@ -27,13 +31,17 @@ namespace Wedding.Common.Multitenancy
             return audience;
         }
 
-        public string GetTableName(string tenantId)
+        public string GetMappedTableName(string tenantId)
         {
-            string? databaseTable = null;
+            string? databaseTable;
             switch (tenantId)
             {
+                // Unit tests only
                 case ("https://api.christephanie.com"):
+                    databaseTable = $"christephanie-wedding-unittests";
+                    break;
                 case ("https://www.christephanie.com"):
+                case ("https://wedding.christephanie.com/api"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
