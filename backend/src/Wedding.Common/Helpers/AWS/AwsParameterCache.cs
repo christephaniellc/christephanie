@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
-using Wedding.Common.Configuration.Multitenancy;
 
 namespace Wedding.Common.Helpers.AWS
 {
