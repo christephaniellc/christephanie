@@ -2,7 +2,7 @@
 {
     public interface IMultitenancySettingsProvider
     {
-        string GetAudience(string origin);
-        string GetTableName(string tenantId);
+        string GetMappedAudience(string origin);
+        string GetMappedTableName(string tenantId);
     }
 }

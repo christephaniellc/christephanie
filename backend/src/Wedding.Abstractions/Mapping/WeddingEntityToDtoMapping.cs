@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using AutoMapper;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.USPS;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -38,16 +38,23 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
                     .ForMember(dest => dest.MailingAddress, opt =>
-                        opt.MapFrom((src, dest, destMember, context) => 
-                            context.Mapper.Map<AddressDto>(src.MailingAddress)))
+                    {
+                        opt.Condition(src => !string.IsNullOrEmpty(src.MailingAddress));
+                        opt.MapFrom((src, dest, destMember, context) => !string.IsNullOrEmpty(src.MailingAddress) ?
+                            JsonSerializer.Deserialize<AddressDto>(src.MailingAddress!, new JsonSerializerOptions()) : null);
+
+                        // opt.MapFrom((src, dest, destMember, context) =>
+                        //         context.Mapper.Map<AddressDto>(src.MailingAddress));
+                    })
                     .ForMember(dest => dest.AdditionalAddresses, opt =>
-                        opt.MapFrom((src, dest, destMember, context) =>
-                                src.AdditionalAddresses
-                                    .Select(address => context.Mapper.Map<AddressDto>(address))
-                                    .ToList()
-                            ))
-                    //.ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToAddress()))
-                    //.ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToAddress()).ToList()))
+                    {
+                        opt.Condition(src => src.AdditionalAddresses != null && src.AdditionalAddresses.Any());
+                        opt.MapFrom((src, dest, destMember, context) => 
+                            src.AdditionalAddresses?
+                                .Select(address => !string.IsNullOrEmpty(address) ? JsonSerializer.Deserialize<AddressDto>(address, new JsonSerializerOptions()): null)
+                                .ToList()
+                        );
+                    })
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.PotentialHeadCount ?? 0))
                     .ForMember(dest => dest.FamilyUnitLastLogin, opt => opt.MapFrom(src => src.FamilyUnitLastLogin))
                     .ForMember(dest => dest.Guests, opt => opt.Ignore()) // We'll manually map Guests
@@ -93,25 +100,9 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
                     .ForMember(dest => dest.Rsvp, opt => 
-                        opt.MapFrom(src => new RsvpDto
-                    {
-                        InvitationResponse = src.InvitationResponse,
-                        Wedding = src.RsvpWedding,
-                        SleepPreference = src.SleepPreference,
-                        RehearsalDinner = src.RsvpRehearsalDinner,
-                        FourthOfJuly = src.RsvpFourthOfJuly,
-                        BuildWeek = src.RsvpBuildWeek,
-                        ArrivalDate = src.ArrivalDate,
-                        RsvpNotes = src.RsvpNotes
-                    }))
-                    .ForMember(dest => dest.Preferences, opt => 
-                        opt.MapFrom(src => new PreferencesDto
-                    {
-                        Meal = src.PrefMeal,
-                        KidsPortion = src.PrefKidsPortion,
-                        FoodAllergies = src.PrefFoodAllergies,
-                        SpecialAlcoholRequests = src.PrefSpecialAlcoholRequests
-                    }))
+                        opt.MapFrom((src, dest, destMember, context) => context.Mapper.Map<RsvpDto>(src)))
+                    .ForMember(dest => dest.Preferences, opt =>
+                        opt.MapFrom((src, dest, destMember, context) => context.Mapper.Map<PreferencesDto>(src)))
                     ;
 
                 /// <summary>
@@ -135,16 +126,14 @@ namespace Wedding.Abstractions.Mapping
 
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.InvitationResponse : InvitationResponseEnum.Pending))
                     .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.Wedding : null))
-                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.SleepPreference : null))
                     .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.RehearsalDinner : null))
                     .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.FourthOfJuly : null))
-                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.BuildWeek : null))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.Rsvp != null ? src.Rsvp.ArrivalDate : null))
-                    
-                    .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.Meal : null))
-                    .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.KidsPortion : null))
+                    .ForMember(dest => dest.InvitationResponseAudit, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.InvitationResponseAudit != null ? src.Rsvp.InvitationResponseAudit.ToString() : null))
+                    .ForMember(dest => dest.RsvpAudit, opt => opt.MapFrom(src => src.Rsvp != null && src.Rsvp.RsvpAudit != null ? src.Rsvp.RsvpAudit.ToString() : null))
+
+                    .ForMember(dest => dest.PrefSleep, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.SleepPreference : null))
+                    .ForMember(dest => dest.PrefFood, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.FoodPreference : null))
                     .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.FoodAllergies : null))
-                    .ForMember(dest => dest.PrefSpecialAlcoholRequests, opt => opt.MapFrom(src => src.Preferences != null ? src.Preferences.SpecialAlcoholRequests : null))
                     ;
             }
         }
@@ -156,23 +145,31 @@ namespace Wedding.Abstractions.Mapping
                 CreateMap<WeddingEntity, RsvpDto>()
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.InvitationResponse))
                     .ForMember(dest => dest.Wedding, opt => opt.MapFrom(src => src.RsvpWedding))
-                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
                     .ForMember(dest => dest.RehearsalDinner, opt => opt.MapFrom(src => src.RsvpRehearsalDinner))
                     .ForMember(dest => dest.FourthOfJuly, opt => opt.MapFrom(src => src.RsvpFourthOfJuly))
-                    .ForMember(dest => dest.BuildWeek, opt => opt.MapFrom(src => src.RsvpBuildWeek))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.ArrivalDate))
                     .ForMember(dest => dest.RsvpNotes, opt => opt.MapFrom(src => src.RsvpNotes))
+                    .ForMember(dest => dest.InvitationResponseAudit, opt =>
+                    {
+                        opt.Condition(src => !string.IsNullOrEmpty(src.InvitationResponseAudit));
+                        opt.MapFrom((src, dest, destMember, context) => !string.IsNullOrEmpty(src.InvitationResponseAudit) ?
+                            JsonSerializer.Deserialize<LastUpdateAuditDto>(src.InvitationResponseAudit!, new JsonSerializerOptions()) : null);
+                    })
+                    .ForMember(dest => dest.RsvpAudit, opt =>
+                    {
+                        opt.Condition(src => !string.IsNullOrEmpty(src.RsvpAudit));
+                        opt.MapFrom((src, dest, destMember, context) => !string.IsNullOrEmpty(src.RsvpAudit) ?
+                            JsonSerializer.Deserialize<LastUpdateAuditDto>(src.RsvpAudit!, new JsonSerializerOptions()) : null);
+                    })
                     ;
 
                 CreateMap<RsvpDto, WeddingEntity>()
                     .ForMember(dest => dest.InvitationResponse, opt => opt.MapFrom(src => src.InvitationResponse))
                     .ForMember(dest => dest.RsvpWedding, opt => opt.MapFrom(src => src.Wedding))
-                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.SleepPreference))
                     .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.RehearsalDinner))
                     .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.FourthOfJuly))
-                    .ForMember(dest => dest.RsvpBuildWeek, opt => opt.MapFrom(src => src.BuildWeek))
-                    .ForMember(dest => dest.ArrivalDate, opt => opt.MapFrom(src => src.ArrivalDate))
                     .ForMember(dest => dest.RsvpNotes, opt => opt.MapFrom(src => src.RsvpNotes))
+                    .ForMember(dest => dest.InvitationResponseAudit, opt => opt.MapFrom(src => src.InvitationResponseAudit.ToString()))
+                    .ForMember(dest => dest.RsvpAudit, opt => opt.MapFrom(src => src.RsvpAudit.ToString()))
                     ;
             }
         }
@@ -182,19 +179,15 @@ namespace Wedding.Abstractions.Mapping
             public PreferencesProfile()
             {
                 CreateMap<WeddingEntity, PreferencesDto>()
-                    .ForMember(dest => dest.Meal, opt => opt.MapFrom(src => src.PrefMeal))
-                    .ForMember(dest => dest.KidsPortion, opt => opt.MapFrom(src => src.PrefKidsPortion))
+                    .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.PrefSleep))
+                    .ForMember(dest => dest.FoodPreference, opt => opt.MapFrom(src => src.PrefFood))
                     .ForMember(dest => dest.FoodAllergies, opt => opt.MapFrom(src => src.PrefFoodAllergies))
-                    .ForMember(dest => dest.SpecialAlcoholRequests,
-                        opt => opt.MapFrom(src => src.PrefSpecialAlcoholRequests))
                     ;
 
                 CreateMap<PreferencesDto, WeddingEntity>()
-                    .ForMember(dest => dest.PrefMeal, opt => opt.MapFrom(src => src.Meal))
-                    .ForMember(dest => dest.PrefKidsPortion, opt => opt.MapFrom(src => src.KidsPortion))
+                    .ForMember(dest => dest.PrefSleep, opt => opt.MapFrom(src => src.SleepPreference))
+                    .ForMember(dest => dest.PrefFood, opt => opt.MapFrom(src => src.FoodPreference))
                     .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.FoodAllergies))
-                    .ForMember(dest => dest.PrefSpecialAlcoholRequests,
-                        opt => opt.MapFrom(src => src.SpecialAlcoholRequests))
                     ;
             }
         }

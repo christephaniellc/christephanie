@@ -61,21 +61,16 @@ public class Function
             var invitationCode = request.GetInvitationCodeFromParams();
             var firstName = request.GetFirstNameFromParams();
             var origin = request.GetOriginFromRequest();
-
-            var audience = request.GetOriginFromRequest();
-
-            using var scope = _serviceProvider.CreateScope();
-            var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
-            audience = multitenancySettingsProvider.GetAudience(origin) ?? throw new InvalidOperationException();
+            var originAudience = request.GetOriginFromRequest();
 
             _metaData = new Dictionary<string, string>
             {
-                {"audience", audience},
+                {"originAudience", originAudience},
                 {"invitationCode", invitationCode},
                 {"firstName", firstName}
             };
 
-            if (string.IsNullOrEmpty(audience))
+            if (string.IsNullOrEmpty(originAudience))
             {
                 var viewError = $"This request looks shifty.";
                 var logError = $"Audience exception: audience empty.";
@@ -84,9 +79,13 @@ public class Function
                 return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
             }
 
+            using var scope = _serviceProvider.CreateScope();
+            var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
+            var mappedAudience = multitenancySettingsProvider.GetMappedAudience(origin) ?? throw new InvalidOperationException();
+
             context.Logger.LogInformation($"Query Input: {invitationCode} {firstName}");
 
-            query = new FindUserQuery(audience, invitationCode, firstName);
+            query = new FindUserQuery(mappedAudience, invitationCode, firstName);
             
             var handler = scope.ServiceProvider.GetRequiredService<FindUserHandler>();
             var result = await handler.GetAsync(query);

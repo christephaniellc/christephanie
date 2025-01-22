@@ -3,9 +3,8 @@
     public enum AgeGroupEnum
     {
         Adult,
-        Teenager,
-        Child,
-        Toddler ,
+        Under21,
+        Under13,
         Baby
     }
 }
