@@ -15,6 +15,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Wedding.Common.Auth;
 using Wedding.Common.Auth.Commands;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Multitenancy;
 
 namespace Wedding.Lambdas.Authorize;
@@ -96,9 +97,7 @@ public class Function
 
         if (string.IsNullOrEmpty(_authority))
         {
-            AwsParameterCache.ClearCache();
-            var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
-            var authConfig = await AwsParameterCache.GetAuthConfigAsync("/auth0/api/credentials", region);
+            var authConfig = await AwsParameterCache.GetConfigAsync<Auth0Configuration>();
             _authority = authConfig.Authority ?? throw new InvalidOperationException();
         }
 
