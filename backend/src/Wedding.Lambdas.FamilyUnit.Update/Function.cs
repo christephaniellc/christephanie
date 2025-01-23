@@ -40,8 +40,7 @@ public class Function
         {
             return new Lazy<Task<IUspsMailingAddressValidationProvider>>(async () =>
             {
-                var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();
-                var uspsConfig = await AwsParameterStoreHelper.GetParameterAsync<UspsConfiguration>("/usps/api/credentials", region);
+                var uspsConfig = await AwsParameterCache.GetConfigAsync<UspsConfiguration>();
                 return new UspsMailingAddressValidationProvider(uspsConfig.ApiUrl, uspsConfig.ConsumerKey, uspsConfig.ConsumerSecret);
             });
         });
