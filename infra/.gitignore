@@ -1,0 +1,60 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# AWS CDK build and deployment artifacts
+cdk.out/
+cdk.context.json
+cdk-assets.json
+
+# Environment and credentials
+.env
+*.env.local
+*.env.development
+*.env.production
+.envrc
+*.pem
+*.key
+
+# TypeScript build artifacts
+dist/
+out/
+build/
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Logs and temporary files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log
+.DS_Store
+Thumbs.db
+
+# Editor and OS-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AWS SAM files (if using locally for testing)
+.aws-sam/
+
+# Virtual environment
+venv/
+.env/
+.venv/
+env/

@@ -405,4 +405,64 @@ e2e.yaml
 /frontend/.github/workflows/tests:e2e.yml
 *.testsession
 
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.venv
+*.egg-info
 
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python egg and distribution
+*.egg-info/
+*.egg
+dist/
+build/
+*.manifest
+*.spec
+
+# CDK generated files
+cdk.out/
+*.asset.*
+cdk.context.json
+cdk.context.lock
+node_modules/
+
+# IntelliJ IDEA / PyCharm
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs and backups
+*.log
+*.bak
+
+# AWS Credentials and environment files
+*.env
+.env.*
+aws-exports.js
+*.pem
+
+.dockerignore
+Dockerfile
