@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { familyGuestsStates, useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { redirect, useNavigate } from 'react-router-dom';
+import { differenceInDays, subDays } from 'date-fns';
 
 const steps = [
   {
@@ -19,16 +20,13 @@ const steps = [
     once we get your interest and mailing address!`,
   },
   {
-    label: 'RSVP',
+    label: 'RSVP (coming soon)!',
     description:
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
   },
   {
-    label: 'Create an ad',
-    description: `Try out different ad text to see what brings in the most customers,
-              and learn how to enhance your ads using features like ad extensions.
-              If you run into any problems with your ads, find out how to tell if
-              they're running and how to resolve approval issues.`,
+    label: 'Wedding Day',
+    description: `July 5th, 2025! See you in ${differenceInDays(new Date("2025-07-05"), new Date())} days!`,
   },
 ];
 
@@ -78,7 +76,7 @@ export default function WelcomePageStepper() {
             <StepLabel
               optional={
                 index === steps.length - 1 ? (
-                  <Typography variant="caption">Last step</Typography>
+                  <Typography variant="caption">In {differenceInDays(new Date("2025-07-05"), new Date())} days</Typography>
                 ) : null
               }
             >
