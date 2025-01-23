@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Tabs, Tab, Typography, LinearProgress, Button, linearProgressClasses } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { useRecoilValue } from 'recoil';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { familyGuestsStates, useFamily } from '@/store/family';
 import { GuestDto } from '@/types/api';
@@ -17,9 +17,22 @@ export default function SaveTheDateTabs() {
   const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
   const navigate = useNavigate();
-
+  const location = useLocation();
   // Local state to track which "tab" (formerly "step") is active
   const [tabIndex, setTabIndex] = React.useState(0);
+  const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null)
+
+  useEffect(() => {
+    if (urlParams?.get('step') === 'attendance') {
+      setTabIndex(0);
+    } else if (urlParams?.get('step') === 'address') {
+      setTabIndex(1);
+    }
+  }, [urlParams]);
+
+  useEffect(() => {
+    setUrlParams(new URLSearchParams(location.search));
+  }, [location]);
 
   // For a determinate progress bar, you can base the percentage on
   // which tab is active vs. the total number of tabs.
@@ -63,6 +76,11 @@ export default function SaveTheDateTabs() {
           <AddressEnvelope />
         ),
       },
+      {
+        label: 'A third step!',
+        description: 'This is a third step.',
+        component: <Typography>Step 3</Typography>,
+      }
     ];
   }, [familyStates]);
 
