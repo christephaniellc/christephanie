@@ -109,7 +109,6 @@ const TimelineSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-markLabel': {
     fontSize: 12,
     fontWeight: 'normal',
-    border: '1px solid gold',
     backgroundColor: 'black',
     padding: '2px 4px',
     zIndex: 10000,

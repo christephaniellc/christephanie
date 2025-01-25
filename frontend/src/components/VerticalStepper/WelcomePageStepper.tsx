@@ -10,36 +10,55 @@ import Typography from '@mui/material/Typography';
 import { familyGuestsStates, useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { redirect, useNavigate } from 'react-router-dom';
-import { differenceInDays, subDays } from 'date-fns';
+import { differenceInDays, format, subDays } from 'date-fns';
+import Tooltip from '@mui/material/Tooltip';
+import { StepIcon } from '@mui/material';
+import StickFigureIcon from '@/components/StickFigureIcon';
+import { useCallback, useEffect } from 'react';
+import routes from '@/routes';
+import { Pages } from '@/routes/types';
 
-const steps = [
-  {
+const steps = {
+  saveTheDate: {
+    id: 0,
     label: 'Save the Date',
     description: `We're getting married on the 5th of July in Lovettsville, VA.  For now,
     we just want to get an idea of who's coming.  We'll send out the official invitations
     once we get your interest and mailing address!`,
+    lastDate: new Date('2025-04-01'),
+    stepCompleted: false,
+    stepUrl: routes[Pages.SaveTheDate].path,
   },
-  {
+  rsvp: {
+    id: 1,
     label: 'RSVP (coming soon)!',
     description:
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
+    lastDate: new Date("2025-05-20"),
+    stepCompleted: false,
+    stepUrl: routes[Pages.FoodPreferences].path,
   },
-  {
+  wedding: {
+    id: 2,
     label: 'Wedding Day',
-    description: `July 5th, 2025! See you in ${differenceInDays(new Date("2025-07-05"), new Date())} days!`,
+    description: `July 5th, 2025! See you in ${differenceInDays(new Date('2025-07-05'), new Date())} days!`,
+    lastDate: new Date('2025-07-06'),
+    stepCompleted: false,
+    stepUrl: routes[Pages.Profile].path,
   },
-];
+};
 
 export default function WelcomePageStepper() {
   const [activeStep, setActiveStep] = React.useState(0);
   const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
+  const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const navigate = useNavigate();
-  const handleNext = () => {
+  const handleNext = useCallback((step: ReturnType<typeof rsvpSteps>) => {
     if (!familyStates?.allUsersResponded) {
-      navigate('/save-the-date?step=attendance');
+      navigate(`${step.stepUrl}?step=attendance`);
     } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      navigate('/save-the-date?step=address');
+      navigate(`${step.stepUrl}?step=address`);
     } else if (familyStates.nobodyComing) {
       console.log('find a way to disable this button');
     } else {
@@ -47,7 +66,7 @@ export default function WelcomePageStepper() {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
     // return setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
+  }, [rsvpSteps, activeStep, familyStates]);
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -64,47 +83,61 @@ export default function WelcomePageStepper() {
     } else if (familyStates.nobodyComing) {
       return 'Let us know if you change your mind';
     } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      return 'Finish entering your address'
+      return 'Finish entering your address';
     }
-  }
+    return 'RSVP';
+  };
+
+  useEffect(() => {
+    setRsvpSteps((prev) => {
+      const newSteps = { ...prev };
+      if (familyStates?.allUsersResponded && familyStates?.mailingAddressEntered && familyStates?.mailingAddressUspsVerified) {
+        newSteps.saveTheDate.stepCompleted = true;
+      } else {
+        newSteps.saveTheDate.stepCompleted = false;
+      }
+      return newSteps;
+    });
+  }, [familyStates]);
 
   return (
     <Box>
-      <Stepper activeStep={activeStep} orientation="vertical">
-        {steps.map((step, index) => (
-          <Step key={step.label}>
+      <Stepper activeStep={activeStep} orientation="vertical" sx={{ pl: 2 }}>
+        {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
+              icon={<StickFigureIcon rotation={0} fontSize={'large'} />}
               optional={
-                index === steps.length - 1 ? (
-                  <Typography variant="caption">In {differenceInDays(new Date("2025-07-05"), new Date())} days</Typography>
-                ) : null
+                <Typography variant="caption">
+                  {step.stepCompleted ? "Thanks for responding!" : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
+                </Typography>
               }
             >
               {step.label}
             </StepLabel>
             <StepContent>
-              <Typography textAlign="start">{step.description}</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  sx={{ mt: 1, mr: 1 }}
-                >
-                  {continueText(steps)}
-                </Button>
-                <Button
-                  disabled={index === 0}
-                  onClick={handleBack}
-                  sx={{ mt: 1, mr: 1 }}
-                >
-                  Back
-                </Button>
-              </Box>
+              <Tooltip textAlign="start" content={step.description}>
+                <Box sx={{ mb: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleNext(step)}
+                    sx={{ mt: 1, mr: 1 }}
+                  >
+                    {continueText()}
+                  </Button>
+                  <Button
+                    disabled={!step.stepCompleted}
+                    onClick={() => step.stepCompleted  ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()}
+                    sx={{ mt: 1, mr: 1 }}
+                  >
+                    {step.stepCompleted ? 'Update Your Response' : 'Back'}
+                  </Button>
+                </Box>
+              </Tooltip>
             </StepContent>
           </Step>
         ))}
       </Stepper>
-      {activeStep === steps.length && (
+      {activeStep === Object.values(rsvpSteps).length && (
         <Paper square elevation={0} sx={{ p: 3 }}>
           <Typography>All steps completed - you&apos;re finished</Typography>
           <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
@@ -115,3 +148,4 @@ export default function WelcomePageStepper() {
     </Box>
   );
 }
+

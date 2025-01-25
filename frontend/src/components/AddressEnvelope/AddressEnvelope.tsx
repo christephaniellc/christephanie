@@ -46,7 +46,7 @@ const AddressEnvelope: React.FC = () => {
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography gutterBottom variant="h4">Where should we send your formal invitation?</Typography>
+      <Typography mb={4} gutterBottom variant="h5">Where should we send your formal invitation?</Typography>
       <Box
         sx={{
           width: '400px',

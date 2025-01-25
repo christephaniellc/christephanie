@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
+import { svelteTesting } from '@testing-library/svelte/types/vite';
 
 export default defineConfig({
   optimizeDeps: {
@@ -11,6 +12,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    svelteTesting(),
     VitePWA({
       manifest,
       includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
