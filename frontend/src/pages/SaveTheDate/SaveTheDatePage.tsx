@@ -30,7 +30,7 @@ function SaveTheDatePage() {
 
 
   return (
-    <Box display="flex" flexDirection="column" justifyContent="" pb={10} positon={'relative'} pt={2}>
+    <Box display="flex" flexDirection="column" justifyContent="" pb={10} positon={'relative'} border={'0px dashed yellow'} pt={2}>
       {(!guests || !guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
       <SaveTheDateStepper />
       <Box position='absolute' bottom={0} left={0} right={0} sx={{

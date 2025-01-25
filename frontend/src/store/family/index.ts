@@ -125,7 +125,7 @@ export const useFamily = () => {
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
     mutationFn: (newAddress: AddressDto) => api.validateAddress(newAddress),
     onSuccess: data => {
-      updateFamilyAddress(data)
+      updateFamilyAddress({...data, uspsVerified: true});
     },
     onError: (error) => console.error('Failed to validate address', error)
   })

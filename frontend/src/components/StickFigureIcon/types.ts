@@ -3,4 +3,5 @@ export interface StickFigureIconProps {
   color?: 'inherit' | 'primary' | 'secondary' | 'action' | 'disabled' | 'error' | 'info' | 'success' | 'warning' | undefined;
   hidden?: boolean;
   loading?: boolean;
+  rotation?: number
 }

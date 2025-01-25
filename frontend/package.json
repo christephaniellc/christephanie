@@ -47,7 +47,9 @@
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.15.3",
     "@playwright/test": "^1.40.1",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@testing-library/dom": "^10.4.0",
+    "@testing-library/svelte": "^5.2.6",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.45",
@@ -59,17 +61,15 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-vitest": "^0.5.4",
     "https-localhost": "^4.7.1",
     "husky": "^8.0.3",
-    "jsdom": "^25.0.1",
+    "jsdom": "^26.0.0",
     "lint-staged": "^15.2.0",
     "prettier": "3.1.1",
     "swagger-typescript-api": "^13.0.23",
     "typescript": "^5.3.3",
     "vite": "^5.0.9",
-    "vite-plugin-pwa": "^0.17.4",
-    "vitest": "^3.0.3"
+    "vite-plugin-pwa": "^0.17.4"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
@@ -80,7 +80,7 @@
     ]
   },
   "author": {
-    "name": "Topher Sikorra",
+    "name": "Toph",
     "email": "dev@bungalowfortress.com",
     "url": "https://christephanie.com"
   }
