@@ -8,3 +8,9 @@ export const lambdaDefaults = {
     timeout: Duration.seconds(30),
  };
  
+export const lambdaAuthDefaults = {
+    runtime: Runtime.DOTNET_8,
+    architecture: Architecture.X86_64,
+    memorySize: 512,
+    timeout: Duration.minutes(15),
+ };

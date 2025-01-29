@@ -1,36 +1,36 @@
-import * as cdk from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
-import { Function, Code } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
-import { lambdaAuthDefaults } from './config/lambda-auth-config';
+import { lambdaAuthDefaults } from './config/lambda-config';
 import { EnvStackProps } from './config/env-config';
-import { PublishProps } from './config/publish-config';
 import { ApplicationProps } from './config/application-config';
+import * as cdk from 'aws-cdk-lib';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 
 export class AuthStack extends cdk.Stack {
-  public readonly httpLambdaAuthorizer: HttpLambdaAuthorizer;
+  public readonly httpLambdaAuthorizer: apigateway.HttpLambdaAuthorizer;
 
   constructor(scope: Construct, id: string, props: EnvStackProps) {
     super(scope, id, props);
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const authorizerName = 'Wedding.Lambdas.Authorize';
-    const { srcFolder, releaseFolder } = PublishProps;
+    const { applicationName, srcFolder, releaseFolder } = ApplicationProps;
     const { apiGatewayName } = ApplicationProps;
+    console.log("------------------------");
+    console.log("AuthStack");
 
-    const authorizerLambda = new Function(this, authorizerName, {
+    const authorizerLambda = new lambda.Function(this, authorizerName, {
       ...lambdaAuthDefaults,
       handler: `${authorizerName}::${authorizerName}.Function::FunctionHandler`,
       functionName: `${apiGatewayName}-${environment}-authorize`,
-      code: Code.fromAsset(`${srcFolder}/${authorizerName}/${releaseFolder}/lambda-deployment.zip`),
+      code: lambda.Code.fromAsset(`${srcFolder}/${authorizerName}/${releaseFolder}/${authorizerName}.zip`),
     });
 
     // Create the HTTP Lambda Authorizer
-    this.httpLambdaAuthorizer = new HttpLambdaAuthorizer(`${apiGatewayName}-${environment}-authorize`, authorizerLambda, {
-      responseTypes: [HttpLambdaResponseType.IAM],
+    this.httpLambdaAuthorizer = new apigateway.HttpLambdaAuthorizer(`${apiGatewayName}-${environment}-authorize`, authorizerLambda, {
+      responseTypes: [apigateway.HttpLambdaResponseType.IAM],
       identitySource: ['$request.header.Authorization'],
-      resultsCacheTtl: Duration.minutes(5),
+      resultsCacheTtl: cdk.Duration.minutes(5),
     });
 
     // Output
