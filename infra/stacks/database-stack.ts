@@ -1,8 +1,8 @@
-import * as cdk from 'aws-cdk-lib';
-import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { EnvStackProps } from './config/env-config';
 import { ApplicationProps } from './config/application-config';
+import * as cdk from 'aws-cdk-lib';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 interface DatabaseStackProps extends EnvStackProps {
 }
@@ -13,18 +13,28 @@ export class DatabaseStack extends cdk.Stack {
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const { applicationName } = ApplicationProps;
+    console.log("------------------------");
+    console.log("DatabaseStack");
 
-    const table = new Table(this, `${applicationName}-table-${environment}`, {
+    console.log(`Environment account: ${props.env.account}`);
+
+    const dynamoTable = new dynamodb.Table(this, `${applicationName}-table-${environment}`, {
       tableName: `${applicationName}-table-${environment}`,
-      partitionKey: { name: 'PartitionKey', type: AttributeType.STRING },
-      sortKey: { name: 'SortKey', type: AttributeType.STRING },
-      billingMode: BillingMode.PROVISIONED,
+      partitionKey: { name: 'PartitionKey', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PROVISIONED
     });
 
-    table.addGlobalSecondaryIndex({
+    dynamoTable.addGlobalSecondaryIndex({
         indexName: 'GuestIdIndex',
-        partitionKey: { name: 'GuestId', type: AttributeType.STRING },
+        partitionKey: { name: 'GuestId', type: dynamodb.AttributeType.STRING },
         projectionType: cdk.aws_dynamodb.ProjectionType.ALL,
+    });
+
+    // Print outputs
+    new cdk.CfnOutput(this, 'DynamoDBTableArn', {
+        value: `${dynamoTable.tableArn}`,
+        description: 'DynamoDBTable ARN',
     });
   }
 }
