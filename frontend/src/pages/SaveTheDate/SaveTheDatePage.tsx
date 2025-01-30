@@ -20,11 +20,17 @@ function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
   const { user: auth0User } = useAuth0();
   const saveTheDateGuestStates = useRecoilValue(familyGuestsStates);
+  const { getFamilyUnitQuery } = familyActions;
 
-  if (!saveTheDateGuestStates) {
+  if (!saveTheDateGuestStates && getFamilyUnitQuery.isPending) {
     familyActions.getFamily();
     return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
   }
+
+  if (!saveTheDateGuestStates && getFamilyUnitQuery.isError) {
+    return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
+  }
+
   const queryParams = new URLSearchParams(window.location.search);
   const { callByLastNames, attendingLastNames, guests, nobodyComing } = saveTheDateGuestStates;
 

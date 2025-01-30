@@ -1,10 +1,10 @@
 import { Box, ButtonBase, darken, Slider, SliderThumb, Typography, useTheme } from '@mui/material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { AgeGroupEnum, GuestDto, InvitationResponseEnum } from '@/types/api';
+import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { BabyChangingStation, Boy, Celebration, ChildCare, Face6, Liquor } from '@mui/icons-material';
+import { BabyChangingStation, Liquor } from '@mui/icons-material';
 import StickFigureIcon from '@/components/StickFigureIcon';
 
 interface AttendanceButtonProps {
@@ -33,8 +33,8 @@ const ageIcons = [
 
 
 export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
-  const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
   const [userAgeGroup, setUserAgeGroup] = useState(guest?.ageGroup || AgeGroupEnum.Adult);
+  const guest = useRecoilValue(guestSelector(guestId));
   const theme = useTheme();
   const [_, familyActions] = useFamily();
 
@@ -51,7 +51,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
   useEffect(() => {
     setUserAgeGroup(guest?.ageGroup || AgeGroupEnum.Adult);
-  }, [guest]);
+  }, [guest, familyActions.updateFamilyGuestAgeGroup]);
 
   const userAgeGroupIndex = useMemo(() => {
     return Object.values(AgeGroupEnum).indexOf(userAgeGroup);

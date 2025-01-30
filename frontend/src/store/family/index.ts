@@ -15,6 +15,25 @@ import { addressState } from '@/store/address';
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
   default: null,
+  effects: [
+    ({ setSelf, onSet }) => {
+      // 1. On atom initialization, check localStorage
+      const savedValue = localStorage.getItem('familyUnit');
+      if (savedValue != null) {
+        try {
+          // Restore the atom's value from localStorage
+          setSelf(JSON.parse(savedValue));
+        } catch (error) {
+          console.error('Error parsing localStorage value', error);
+        }
+      }
+
+      // 2. Whenever the atom's state changes, save it to localStorage
+      onSet((newValue) => {
+        localStorage.setItem('familyUnit', JSON.stringify(newValue));
+      });
+    },
+  ],
 });
 
 export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
@@ -119,6 +138,10 @@ export const useFamily = () => {
     mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
     mutationFn: ({ updatedFamily }) => api.updateFamilyUnit(updatedFamily),
     onSuccess: data => setFamily(data),
+    onError: (error) => {
+      console.error('Failed to update family', error);
+      setFamily(family);
+    }
   });
 
   const validateFamilyAddress = useMutation({
@@ -196,8 +219,9 @@ export const useFamily = () => {
     updateFamilyMutation,
     validateFamilyAddress,
     updateFamilyComment,
+    getFamilyUnitQuery,
     setFamily,
-  }), [getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
+  }), [getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
 
   return [family, familyActions] as const;
 };
