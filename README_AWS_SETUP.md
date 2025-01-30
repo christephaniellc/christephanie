@@ -67,14 +67,16 @@ cdk bootstrap aws://<prod account id>/us-east-1 --profile prod
 # AWS: buy / register domain in Route53, set up Hosted Zone
 
 # ONE TIME CDK DEPLOYMENT (initial deploy)
-cdk deploy HostedzoneStack-dev --context env=dev --profile dev
+cdk deploy HostedzoneStack-create-dev --context env=dev --profile dev
 	add "existingHostedZoneId": "Z07880633EU429771T27L" to dev.json
 	add named entries to prod hosted zone 
 	add named entries to prod.json
 		"delegateHostedNameServers": ["name1","name2"]
-cdk deploy CertificateStack-dev --context env=dev --profile dev
+cdk deploy CertificateStack-create-dev --context env=dev --profile dev
 	add "existingCertificateArn" to dev.json 
 cdk deploy --all --context env=dev --profile dev
+
+# UPDATE parameter values manually in AWS > Systems Manager > Parameters > /config/usps/api-credentials
 
 ## Test but do not deploy:
 	cdk synth --context env=dev
@@ -97,6 +99,15 @@ Prod > Route 53 > Hosted Zones > christephanie.com > Create record
 --------------------------------------	
 DESTROY STEPS:
 cdk destroy --all --context env=dev --profile dev
+
+DESTROY/DEPLOY STEPS:
+cdk destroy AuthStack-dev --context env=dev --profile dev
+
+(Recreate API gateway and lambdas)
+cdk destroy ApiStack-dev --context env=dev --profile dev
+cdk deploy DnsStack-dev --context env=dev --profile dev
+
+cdk deploy ParamsStack-dev --context env=dev --profile dev
 
 If you want to keep backup:
 dynamoTable.addBackup({
