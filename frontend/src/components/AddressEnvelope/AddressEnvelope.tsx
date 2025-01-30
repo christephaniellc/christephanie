@@ -49,7 +49,8 @@ const AddressEnvelope: React.FC = () => {
       <Typography mb={4} gutterBottom variant="h5">Where should we send your formal invitation?</Typography>
       <Box
         sx={{
-          width: '400px',
+          width: '100%',
+          maxWidth: '400px',
           height: '350px',
           // backgroundColor: "#ffffff",
           borderRadius: '10px',
@@ -83,7 +84,6 @@ const AddressEnvelope: React.FC = () => {
                      fullWidth
                      value={address.streetAddress}
                      onChange={(e) => {
-                       console.log('setting street address', e.target.value);
                        setStreetAddress(e.target.value);
                      }}
                      error={!!familyActions.validateFamilyAddress.error}

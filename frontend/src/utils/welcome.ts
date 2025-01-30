@@ -23,7 +23,6 @@ function welcome() {
     'padding: 10px',
   ].join(';');
 
-  console.log(`%c=== ${"Christephanie"} ===`, styles);
 }
 
 export default welcome;

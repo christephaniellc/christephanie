@@ -111,38 +111,38 @@ export const useFamily = () => {
   const getFamilyUnitQuery = useQuery({
     queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
     queryFn: () => api.getFamilyUnit(),
-    retry: false,
+    retry: true,
     enabled: false,
   });
 
   const updateFamilyMutation = useMutation({
     mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
     mutationFn: ({ updatedFamily }) => api.updateFamilyUnit(updatedFamily),
-    onSuccess: data => setFamily(data)
+    onSuccess: data => setFamily(data),
   });
 
   const validateFamilyAddress = useMutation({
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
     mutationFn: (newAddress: AddressDto) => api.validateAddress(newAddress),
     onSuccess: data => {
-      updateFamilyAddress({...data, uspsVerified: true});
+      updateFamilyAddress({ ...data, uspsVerified: true });
     },
-    onError: (error) => console.error('Failed to validate address', error)
-  })
+    onError: (error) => console.error('Failed to validate address', error),
+  });
 
   const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
     .then((res) => {
       if (!res.data || !res.data.guests) return;
 
       const matchingUser = res.data.guests.find((value: GuestDto) => {
-        return value.guestId === user.guestId
+        return value.guestId === user.guestId;
       });
       if (matchingUser) {
         setUser(matchingUser);
       }
     }), []);
 
-  const updateFamilyGuest = useCallback((guestId: string, interested: InvitationResponseEnum) => {
+  const updateFamilyGuestInterest = useCallback((guestId: string, interested?: InvitationResponseEnum) => {
     const updatedGuests = family?.guests?.map((prevGuest) => {
       if (prevGuest.guestId === guestId) {
         return {
@@ -155,13 +155,29 @@ export const useFamily = () => {
     updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
   }, [family]);
 
+  const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup?: string) => {
+    const updatedGuests = family?.guests?.map((prevGuest) => {
+      if (prevGuest.guestId === guestId) {
+        return {
+          ...prevGuest,
+          ageGroup, // merges the updates onto the original guest
+        };
+      }
+      return prevGuest;
+    });
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
+  }, [family]);
+
   const updateFamilyAddress = useCallback((mailingAddress: AddressDto) => {
     updateFamilyMutation.mutate({ updatedFamily: { ...family, mailingAddress } });
   }, [family]);
 
+  const updateFamilyComment = useCallback((comment: string) => {
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, invitationResponseNotes: comment } });
+  }, [family]);
+
   useEffect(() => {
     if (getFamilyUnitQuery.data) {
-      console.log('setting family', getFamilyUnitQuery.data);
       setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
     }
   }, [getFamilyUnitQuery.data, setFamily]);
@@ -172,7 +188,16 @@ export const useFamily = () => {
     }
   }, [family, auth0User]);
 
-  const familyActions = useMemo(() => ({ getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, setFamily }), [getFamily, updateFamilyGuest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, setFamily]);
+  const familyActions = useMemo(() => ({
+    getFamily,
+    updateFamilyGuestInterest,
+    updateFamilyGuestAgeGroup,
+    updateFamilyAddress,
+    updateFamilyMutation,
+    validateFamilyAddress,
+    updateFamilyComment,
+    setFamily,
+  }), [getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
 
   return [family, familyActions] as const;
 };

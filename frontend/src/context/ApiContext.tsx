@@ -13,9 +13,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const user = useRecoilValue(userState);
   const { getAccessTokenSilently } = useAuth0();
 
-  useEffect(() => {
-    console.log('detecting changes in user', user);
-  }, [user]);
 
   const getTokenFunc = React.useCallback(async () => {
     try {
@@ -30,7 +27,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const apiRef = React.useRef(new Api(getTokenFunc));
 
   useEffect(() => {
-    console.log('updating apiRef.current', apiRef.current);
     apiRef.current = new Api(getTokenFunc);
   }, [user]);
 
