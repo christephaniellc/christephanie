@@ -29,8 +29,11 @@
     "@aws-cdk/aws-route53": "^1.203.0",
     "@aws-cdk/aws-s3": "^1.203.0",
     "@aws-cdk/aws-s3-deployment": "^1.203.0",
-    "aws-cdk-lib": "2.176.0",
-    "constructs": "^10.0.0",
+    "@aws-sdk/client-ssm": "^3.738.0",
+    "aws-cdk-lib": "^2.177.0",
+    "aws-sdk": "^2.1692.0",
+    "constructs": "^10.4.2",
+    "dig": "^0.0.6",
     "dotenv": "^16.4.7"
   }
 }

@@ -26,15 +26,10 @@ export const InvitationCodeInputs = () => {
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
 
   const handleFindUser = () => {
-    console.log('refetching');
     userActions.findUserIdQuery?.refetch();
   };
 
   const { user: auth0User, loginWithPopup, logout } = useAuth0();
-
-  useEffect(() => {
-    console.log('user', user);
-  }, [user]);
 
   if (!user) return null;
 

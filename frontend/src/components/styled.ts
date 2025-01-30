@@ -11,6 +11,9 @@ const CenteredFlexBox = styled(FlexBox)({
 });
 
 const FullSizeCenteredFlexBox = styled(CenteredFlexBox)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
   width: '100%',
   height: '100%',
 });

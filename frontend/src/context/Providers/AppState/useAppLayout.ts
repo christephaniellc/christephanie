@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 export const useAppLayout = () => {
   const [screenWidth, setScreenWidth] = useState(0)
@@ -6,7 +6,7 @@ export const useAppLayout = () => {
   const [contentHeight, setContentHeight] = React.useState(0);
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
       setContentHeight(window.innerHeight - bottomNavHeight);

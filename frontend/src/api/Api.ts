@@ -54,7 +54,6 @@ export default class Api {
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
-    console.log('response', response);
     switch (response.status) {
       case 200:
         return Promise.resolve(response.json());
@@ -135,7 +134,6 @@ export default class Api {
     if (response.status === 500) {
       return 'InternalServerError';
     }
-    console.log('Unhandled error status: ' + response.status);
     return 'InternalServerError';
   };
 
@@ -150,9 +148,8 @@ export default class Api {
 
   //  only used for catching exceptions
   private async handleRejected<T>(reason: any): Promise<T> {
-    console.log('rejected unrecoverable promise, redirect to /500');
     return Promise.reject(reason);
-  }r
+  }
 
   private async buildConfig(
     method: string,
@@ -198,7 +195,6 @@ export default class Api {
       }
       return result;
     } catch (reason) {
-      console.log('I rejected this');
       return this.handleRejected<T>(reason);
     }
   }

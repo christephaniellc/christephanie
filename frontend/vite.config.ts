@@ -1,10 +1,8 @@
-/// <reference types="vitest" />
 import * as path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import manifest from './manifest.json';
-import { svelteTesting } from '@testing-library/svelte/types/vite';
+import manifest from './manifest.json'; // Update this path if manifest.json is not in the root directory
 
 export default defineConfig({
   optimizeDeps: {
@@ -12,10 +10,9 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    svelteTesting(),
     VitePWA({
       manifest,
-      includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      includeAssets: ['./public/favicon.svg', './public/favicon.ico', './public/robots.txt', './public/apple-touch-icon.png'],
       devOptions: {
         enabled: false,
       },
@@ -29,15 +26,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Vitest configuration:
   test: {
-    // Use jsdom to simulate the browser environment
     environment: 'jsdom',
-
-    // Set up a custom test setup file (if you have one)
-    setupFiles: [path.resolve(__dirname, './src/setupTests.ts')],
-
-    // You can still specify the root if you want tests relative to /src
+    setupFiles: [path.resolve(__dirname, './jest.setup.mjs')],
     root: path.resolve(__dirname, './src'),
   },
 });

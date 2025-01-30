@@ -5,7 +5,7 @@ import {
   LinearProgress,
   Button,
   linearProgressClasses,
-  StepConnector, stepConnectorClasses, stepLabelClasses, StepIconProps, StepLabelProps,
+  StepConnector, stepConnectorClasses, stepLabelClasses, StepIconProps, StepLabelProps, useTheme, StepButton,
 } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -23,8 +23,11 @@ import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import { SaveTheDateStep, saveTheDateStepperState } from '@/store/steppers/steppers';
+import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
+import AgeSelector from '@/components/AgeSelector';
 
 export default function SavetheDateStepper() {
+  const theme = useTheme();
   const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
   const navigate = useNavigate();
@@ -32,13 +35,27 @@ export default function SavetheDateStepper() {
   // Local state to track which "tab" (formerly "step") is active
   const [tabIndex, setTabIndex] = React.useState(0);
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
+  const { guests, callByLastNames, attendingLastNames, nobodyComing } = familyStates;
 
   const [saveTheDateStepper, setStepper] = useRecoilState(saveTheDateStepperState);
+
+
   useEffect(() => {
-    if (urlParams?.get('step') === 'attendance') {
-      setTabIndex(0);
-    } else if (urlParams?.get('step') === 'address') {
-      setTabIndex(1);
+    switch (urlParams?.get('step')) {
+      case 'attendance':
+        setTabIndex(0);
+        break;
+      case 'guestAges':
+        setTabIndex(1);
+        break;
+      case 'mailingAddress':
+        setTabIndex(2);
+        break;
+      case 'comments':
+        setTabIndex(3);
+        break;
+      default:
+        setTabIndex(0);
     }
   }, [urlParams]);
 
@@ -51,7 +68,6 @@ export default function SavetheDateStepper() {
   // Example: if we have 2 steps, step 0 = 0%, step 1 = 50%, step 2 (if we had 3 steps) = 100%, etc.
   useEffect(() => {
     if (!familyStates || !saveTheDateStepper) return;
-    const { guests, callByLastNames, attendingLastNames, nobodyComing } = familyStates;
     setStepper((prev: Record<string, SaveTheDateStep>) => {
       return {
         ...prev,
@@ -65,7 +81,12 @@ export default function SavetheDateStepper() {
               {guests && !!guests.length && (
                 <>
                   {!nobodyComing && (
-                    <Typography sx={{ mb: 2 }}>
+                    <Typography sx={{
+                      mb: 2,
+                      [theme.breakpoints.down('sm')]: {
+                        fontSize: 0,
+                      },
+                    }}>
                       {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you, {callByLastNames}!
                     </Typography>
                   )}
@@ -84,6 +105,40 @@ export default function SavetheDateStepper() {
             </Box>
           ),
         },
+        guestAges: {
+          ...prev.guestAges,
+          id: prev.guestAges.id, // Ensure the id is included
+          label: 'Age Groups',
+          completed: false,
+          component: (
+            <Box textAlign="center">
+              {guests && !!guests.length && (
+                <>
+                  {!nobodyComing && (
+                    <Typography sx={{
+                      mb: 2,
+                      [theme.breakpoints.down('sm')]: {
+                        fontSize: 0,
+                      },
+                    }}>
+                      {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you, {callByLastNames}!
+                    </Typography>
+                  )}
+                  {nobodyComing && (
+                    <Typography sx={{ mb: 2 }}>
+                      {guests.length === 1 ? 'I' : 'We'} hope you can make it, {callByLastNames}!
+                    </Typography>
+                  )}
+                  <ButtonsContainer>
+                    {guests.map((guest: GuestDto) => (
+                      <AgeSelector guestId={guest.guestId!} key={guest.guestId} />
+                    ))}
+                  </ButtonsContainer>
+                </>
+              )}
+            </Box>
+          ),
+        },
         mailingAddress: {
           ...prev.mailingAddress,
           id: prev.mailingAddress.id, // Ensure the id is included
@@ -93,6 +148,19 @@ export default function SavetheDateStepper() {
             <AddressEnvelope />
           ),
         },
+        comments: {
+          ...prev.comments,
+          id: prev.comments.id, // Ensure the id is included
+          completed: true,
+          label: 'Any comments?',
+          component: (
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2 }}>Any comments for us?</Typography>
+              <MinHeightTextarea />
+            </Box>
+          ),
+        },
+
       };
     });
   }, [setStepper, familyStates]);
@@ -100,23 +168,8 @@ export default function SavetheDateStepper() {
   // This determines how many tabs there are
   const totalTabs = Object.values(saveTheDateStepper).length;
 
-  // If you still want a "next" button that runs logic, you can keep your existing logic:
-  const handleNext = () => {
-    // Example logic from your original code
-    if (!familyStates?.allUsersResponded) {
-      navigate('/save-the-date?step=attendance');
-    } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      navigate('/save-the-date?step=address');
-    } else if (familyStates.nobodyComing) {
-      console.log('find a way to disable this button');
-    } else {
-      // Go to the next tab if possible
-      setTabIndex((prev) => Math.min(prev + 1, totalTabs - 1));
-    }
-  };
-
-  const handleBack = () => {
-    setTabIndex((prev) => Math.max(prev - 1, 0));
+  const handleNavigateToStep = (step: string) => {
+    navigate(`/save-the-date?step=${step}`);
   };
 
   return (
@@ -131,8 +184,9 @@ export default function SavetheDateStepper() {
       <Stepper
         activeStep={tabIndex}
         alternativeLabel
+        nonLinear
         orientation="horizontal"
-        sx={{ pl: 2, width: "90vw" }}
+        sx={{ pl: 2, width: '90vw' }}
         connector={<StyledConnector />
         }>
         {Object.entries(saveTheDateStepper).map(([key, step]) => (
@@ -140,6 +194,11 @@ export default function SavetheDateStepper() {
             completed={step.completed}
             key={key}>
             <CustomStepLabel
+              component={StepButton}
+              onClick={() => handleNavigateToStep(key)}
+              sx={{
+                cursor: 'pointer',
+              }}
               StepIconComponent={StepperIcon}
             >
               <Box display="flex" alignItems="flex-end">{step.label}</Box>
@@ -148,9 +207,7 @@ export default function SavetheDateStepper() {
         ))}
       </Stepper>
 
-      {/* Tabs, centered */}
       <Box maxWidth={600} mx="auto" border={'0px solid blue'}>
-        {/* Display the content for the currently selected tab */}
         <Box sx={{ p: 2 }}>
           <Box>
             {tabIndex < totalTabs && (
@@ -177,29 +234,29 @@ export default function SavetheDateStepper() {
           )}
       */}
       </Box>
-      <Box
-        sx={{
-          left: 0, right: 0,
-          position: 'absolute',
-          bottom: 200,
-          width: '100vw',
-        }}>
-        <Box
-          maxWidth={600}
-          sx={{
-            mx: 'auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          }}
-        >
-          <Button color="secondary" variant="outlined" onClick={handleBack} disabled={tabIndex <= 0}>
-            Back
-          </Button>
-          <Button color="secondary" variant="outlined" onClick={handleNext} disabled={tabIndex >= totalTabs - 1}>
-            Next
-          </Button>
-        </Box>
-      </Box>
+      {/*<Box*/}
+      {/*  sx={{*/}
+      {/*    left: 0, right: 0,*/}
+      {/*    position: 'absolute',*/}
+      {/*    bottom: 200,*/}
+      {/*    width: '100vw',*/}
+      {/*  }}>*/}
+      {/*  <Box*/}
+      {/*    maxWidth={600}*/}
+      {/*    sx={{*/}
+      {/*      mx: 'auto',*/}
+      {/*    display: 'flex',*/}
+      {/*    justifyContent: 'space-between',*/}
+      {/*    }}*/}
+      {/*  >*/}
+      {/*    <Button color="secondary" variant="outlined" onClick={handleBack} disabled={tabIndex <= 0}>*/}
+      {/*      Back*/}
+      {/*    </Button>*/}
+      {/*    <Button color="secondary" variant="outlined" onClick={handleNext} disabled={tabIndex >= totalTabs - 1}>*/}
+      {/*      Next*/}
+      {/*    </Button>*/}
+      {/*  </Box>*/}
+      {/*</Box>*/}
     </Box>
   );
 }
@@ -302,13 +359,9 @@ const CustomStepLabel = styled(StepLabel)<StepLabelProps>(({ theme }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     fontSize: '0.8rem',
-    ...theme.applyStyles('dark', {
-      color: theme.palette.grey[700],
-    }),
+    ...theme.applyStyles('dark', {}),
   },
-  [`& .${stepLabelClasses.active}`]: {
-    color: '#784af4',
-  },
+
   [`& .${stepLabelClasses.completed}`]: {
     color: theme.palette.success.main,
   },

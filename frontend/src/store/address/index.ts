@@ -37,7 +37,6 @@ export const addressState = selector({
     const city = get(cityAddressState);
     const state = get(stateAddressState);
     const zipCode = get(zipCodeAddressState);
-    console.log('getting address', { streetAddress, secondaryAddress, city, state, zipCode });
     let newAddress: AddressDto | null = null;
     if (familyUnitAddress) {
       newAddress = familyUnitAddress;

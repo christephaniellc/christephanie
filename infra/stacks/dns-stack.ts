@@ -1,59 +1,106 @@
-import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { ARecord, RecordTarget, IHostedZone } from 'aws-cdk-lib/aws-route53';
-import { DomainName } from 'aws-cdk-lib/aws-apigatewayv2';
 import { EnvStackProps } from './config/env-config';
 import { ApplicationProps } from './config/application-config';
+import * as cdk from 'aws-cdk-lib';
+import * as apiGateway from 'aws-cdk-lib/aws-apigatewayv2';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as route53_targets from 'aws-cdk-lib/aws-route53-targets';
+import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 
 export interface DnsStackProps extends EnvStackProps {
-    hostedZone: IHostedZone;
-    certificate: certificatemanager.Certificate;
+    hostedZone: route53.IHostedZone;
+    certificate: certificatemanager.ICertificate;
     fullDomainName: string;
+    frontendUrl: string;
+    apiUrl: string;
     cloudFrontDistribution: cdk.aws_cloudfront.Distribution;
+    apiGateway: apiGateway.HttpApi;
   }
 
 export class DnsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: DnsStackProps) {
-    super(scope, id, props);
+    public readonly apiDomainName: apiGateway.IDomainName;
+  
+    constructor(scope: Construct, id: string, props: DnsStackProps) {
+    super(scope, id, {...props, description: "Creates a custom domain name for API Gateway, and adds DNS ARecords for frontend and api URLs"});   
 
     const environment = this.node.tryGetContext('env') || 'dev';
-    const { applicationName, apiRoute } = ApplicationProps;
+    const { applicationName, domainName, apiRoute, srcFolder, releaseFolder } = ApplicationProps;
+    console.log("------------------------");
+    console.log("DnsStack");
+
+    console.log(`Certificate: ${props.certificate}`);
+    console.log(`HostedZone: ${props.hostedZone}`);
+    console.log(`FullDomainName: ${props.fullDomainName}`);
+    console.log(`FrontendUrl: ${props.frontendUrl}`);
+    console.log(`ApiUrl: ${props.apiUrl}`);
+    console.log(`Hosted zone name servers (${props.env.delegateHostedNameServers?.length || 0}): ${props.env.delegateHostedNameServers?.join(',') || 'No NS found'}`);
+    console.log(`CloudfrontDistribution: ${props.cloudFrontDistribution}`);
+    console.log(`ApiGateway: ${apiGateway}`);
+
+    if (props.env.delegateHostedNameServers && props.env.delegateHostedNameServers.length > 0)     {
+        console.log(`Adding dev subdomain nameserver delegation record, namservers: ${props.env.delegateHostedNameServers?.join(',') || 'NS not found'}`);
+        new route53.RecordSet(this, `${applicationName}-dev-subdomain-delegation`, {
+            zone: props.hostedZone,
+            recordType: route53.RecordType.NS,
+            target: route53.RecordTarget.fromValues(...props.env.delegateHostedNameServers),
+            recordName: 'ns.dev-delegation',
+        });
+    }
+    else {
+        console.log(`INFO: No subdomain nameserver delegation records found.`);
+    }
 
     // Create an A record for the API Gateway custom domain.
     // Instead of using AWS-generated URLs for your API Gateway (e.g., abc123.execute-api.us-east-1.amazonaws.com), 
     // we create a friendly custom domain like api.example.com.
-    const apiDomain = new DomainName(this, `${applicationName}-api-gateway-domain-name-${environment}`, {
-      domainName: `${apiRoute}.${props.fullDomainName}`,  // Example: api.example.com
-      certificate: props.certificate,
-    });
 
-    // ARecord maps the domain/subdomain to an AWS service (API Gateway, CloudFront, or an IP address).
-    // We're adding an ARecord to point the custom domain (api.example.com) to the API Gateway endpoint.
-    // Optionally, we're adding another ARecord for frontend hosting (e.g., www.example.com) pointing to CloudFront.
-    new ARecord(this, `${applicationName}-ApiARecord-${environment}`, {
-      zone: props.hostedZone,
-      recordName: `${apiRoute}.${props.fullDomainName}`,
-      target: RecordTarget.fromAlias({
-        bind: () => ({
-          dnsName: apiDomain.regionalDomainName,
-          hostedZoneId: apiDomain.regionalHostedZoneId,
-        }),
-      }),
-    });
-    new ARecord(this, `${applicationName}-FrontendAliasRecord-${environment}`, {
+    // Add DNS record for CloudFront (Frontend)
+    const frontendTarget = route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(props.cloudFrontDistribution));
+    const frontendARecord = new route53.ARecord(this, `${applicationName}-dns-frontend-record`, {
         zone: props.hostedZone,
-        recordName: `www.${props.fullDomainName}`,
-        target: route53.RecordTarget.fromAlias(
-            new route53_targets.CloudFrontTarget(props.cloudFrontDistribution)),
-    });
+        recordName: `www.${props.fullDomainName}`, // E.g., www.example.com
+        target: frontendTarget,
+      });
+  
+    // ADD CUSTOM DOMAIN NAME to API GATEWAY
+    console.log(`Creating new API Gateway domain name alias (${props.apiUrl}) with certificate: ${props.certificate.certificateArn}`);
+    // Add DNS record for API Gateway (API)
+    this.apiDomainName = new apiGateway.DomainName(this, `${applicationName}-api-gateway-domain-name-${environment}`, {
+        domainName: props.apiUrl,  // E.g, api.example.com
+        certificate: props.certificate
+        });
+        
+    // Map HttpApi API Gateway to this domain name
+    new apiGateway.ApiMapping(this, `${applicationName}-apigateway-mapping`, {
+        api: props.apiGateway,
+        domainName: this.apiDomainName,
+        stage: props.apiGateway.defaultStage
+        });
 
+    console.log(`RegionalDomainName: ${this.apiDomainName.regionalDomainName}`);
+    console.log(`HostedZoneId: ${this.apiDomainName.regionalHostedZoneId}`);
+
+    const apiGatewayARecord = new route53.ARecord(this, `${applicationName}-dns-api-record`, {
+        zone: props.hostedZone,
+        recordName: `${apiRoute}.${props.fullDomainName}`,
+        target: route53.RecordTarget.fromAlias({
+            bind: () => ({
+                dnsName: this.apiDomainName.regionalDomainName,
+                hostedZoneId: this.apiDomainName.regionalHostedZoneId,
+            }),
+        })
+      });
+      
     // Print outputs
     new cdk.CfnOutput(this, 'ApiGatewayDomainUrl', {
-      value: `https://${apiDomain.regionalDomainName}`,
+      value: `https://${this.apiDomainName.regionalDomainName}`,
       description: 'Custom API Gateway Domain URL',
+    });
+    new cdk.CfnOutput(this, 'ApiGatewayARecordDomainName', {
+      value: `https://${apiGatewayARecord.domainName}`
+    });
+    new cdk.CfnOutput(this, 'FrontendARecordDomainName', {
+      value: `https://${frontendARecord.domainName}`
     });
   }
 }
