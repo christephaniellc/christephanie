@@ -22,7 +22,8 @@ export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaCo
                     "dynamodb:UpdateItem",
                     "dynamodb:DeleteItem",
                     "dynamodb:Query",
-                    "dynamodb:Scan"
+                    "dynamodb:Scan",
+                    "dynamodb:DescribeTable"
                 ],
                 resources: [`arn:aws:dynamodb:${region}:${account}:table/*`]
             }),
