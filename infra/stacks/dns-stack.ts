@@ -21,7 +21,7 @@ export class DnsStack extends cdk.Stack {
     public readonly apiDomainName: apiGateway.IDomainName;
   
     constructor(scope: Construct, id: string, props: DnsStackProps) {
-    super(scope, id, props);   
+    super(scope, id, {...props, description: "Creates a custom domain name for API Gateway, and adds DNS ARecords for frontend and api URLs"});   
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const { applicationName, domainName, apiRoute, srcFolder, releaseFolder } = ApplicationProps;

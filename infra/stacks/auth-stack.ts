@@ -1,29 +1,37 @@
 import { Construct } from 'constructs';
-import { lambdaAuthDefaults } from './config/lambda-config';
+import { lambdaAuthDefaults, LambdaConfig } from './config/lambda-config';
 import { EnvStackProps } from './config/env-config';
 import { ApplicationProps } from './config/application-config';
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { attachIamPoliciesToRole } from './helpers/iam-helper';
 
 export class AuthStack extends cdk.Stack {
   public readonly httpLambdaAuthorizer: apigateway.HttpLambdaAuthorizer;
 
   constructor(scope: Construct, id: string, props: EnvStackProps) {
-    super(scope, id, props);
+    super(scope, id, {...props, description: "Creates Lambda authorizer integration for API Gateway"});
 
     const environment = this.node.tryGetContext('env') || 'dev';
-    const authorizerName = 'Wedding.Lambdas.Authorize';
     const { applicationName, srcFolder, releaseFolder } = ApplicationProps;
     const { apiGatewayName } = ApplicationProps;
     console.log("------------------------");
     console.log("AuthStack");
 
-    const authorizerLambda = new lambda.Function(this, authorizerName, {
+    const lambdaConfig: LambdaConfig = {
+        name: 'Wedding.Lambdas.Authorize'
+    };
+    const functionLambdaName = lambdaConfig.name.toLowerCase().replace(/\./g, '-').replace("wedding-lambdas", "");
+    const functionName = `${apiGatewayName}${functionLambdaName}`;
+    const lambdaRole = attachIamPoliciesToRole(this, lambdaConfig, props.env.account, props.env.region);
+
+    const authorizerLambda = new lambda.Function(this, lambdaConfig.name, {
       ...lambdaAuthDefaults,
-      handler: `${authorizerName}::${authorizerName}.Function::FunctionHandler`,
-      functionName: `${apiGatewayName}-${environment}-authorize`,
-      code: lambda.Code.fromAsset(`${srcFolder}/${authorizerName}/${releaseFolder}/${authorizerName}.zip`),
+      handler: `${lambdaConfig.name}::${lambdaConfig.name}.Function::FunctionHandler`,
+      functionName: `${functionName}`,
+      code: lambda.Code.fromAsset(`${srcFolder}/${lambdaConfig.name}/${releaseFolder}/${lambdaConfig.name}.zip`),
+      role: lambdaRole
     });
 
     // Create the HTTP Lambda Authorizer

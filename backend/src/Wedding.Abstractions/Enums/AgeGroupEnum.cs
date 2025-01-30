@@ -2,9 +2,9 @@
 {
     public enum AgeGroupEnum
     {
-        Adult,
-        Under21,
+        Baby,
         Under13,
-        Baby
+        Under21,
+        Adult
     }
 }
