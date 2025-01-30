@@ -1,5 +1,7 @@
 import { Duration } from "aws-cdk-lib";
 import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export const lambdaDefaults = {
     runtime: Runtime.DOTNET_8,
@@ -14,3 +16,10 @@ export const lambdaAuthDefaults = {
     memorySize: 512,
     timeout: Duration.minutes(15),
  };
+
+ export interface LambdaConfig {
+    name: string;
+    method?: apigateway.HttpMethod;
+    path?: string;
+    unauthorized?: boolean;
+}

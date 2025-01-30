@@ -11,7 +11,7 @@ export class HostedZoneStack extends cdk.Stack {
     public readonly apiUrl: string;
     
     constructor(scope: Construct, id: string, props: EnvStackProps) {
-        super(scope, id, props);
+        super(scope, id, {...props, description: "Creates new Route 53 Hosted zones (or uses existing) and sets application properties"});
         
         const environment = this.node.tryGetContext('env') || 'dev';
 

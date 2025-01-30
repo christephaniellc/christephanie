@@ -17,8 +17,8 @@ namespace Wedding.Common.Helpers.AWS
         
         private static readonly Dictionary<Type, string> _configParameterMap = new Dictionary<Type, string>
         {
-            { typeof(Auth0Configuration), "/auth0/api/credentials" },
-            { typeof(UspsConfiguration), "/usps/api/credentials" },
+            { typeof(Auth0Configuration), "/config/auth0/properties" },
+            { typeof(UspsConfiguration), "/config/usps/api-credentials" },
         };
 
         public static async Task<T> GetConfigAsync<T>(int? cacheDurationInSeconds = null, bool forceRefresh = false)

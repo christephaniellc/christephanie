@@ -23,8 +23,8 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Configuration;
 using Wedding.Common.Multitenancy;
-using FluentAssertions.Common;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -158,7 +158,6 @@ namespace Wedding.Lambdas.UnitTests
 
             var serviceCollection = new ServiceCollection();
             var dynamoDBProvider = new Mock<IDynamoDBProvider>();
-            var multitenancyProvider = new MultitenancySettingsProvider();
 
             SetUpRepository(dynamoDBProvider);
             SetUpHandlers(dynamoDBProvider, serviceCollection);

@@ -16,7 +16,7 @@ export class FrontendStack extends cdk.Stack {
     public readonly cloudFrontDistribution: cdk.aws_cloudfront.Distribution;
 
     constructor(scope: Construct, id: string, props: FrontendStackProps) {
-        super(scope, id, props);
+        super(scope, id, {...props, description: "Creates S3 bucket and attaches new CloudFront distribution"});
 
     const environment = this.node.tryGetContext('env') || 'dev'; 
     const { applicationName, domainName } = ApplicationProps;
