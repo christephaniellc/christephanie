@@ -11,14 +11,20 @@ namespace Wedding.Common.Multitenancy
         public string GetMappedAudience(string origin)
         {
             string? audience;
-            switch (origin)
+            switch (origin.ToLower())
             {
                 // Unit tests only
                 case ("https://api.christephanie.com"):
                     audience = $"https://api.christephanie.com";
                     break;
-                case ("https://www.christephanie.com"):
-                case ("https://wedding.christephanie.com/api"):
+                case ("https://www.wedding.christephanie.com"):
+                case ("https://fianceapi.wedding.christephanie.com"):
+                    audience = $"https://fianceapi.wedding.christephanie.com";
+                    break;
+                case ("https://www.dev.wedding.christephanie.com"):
+                case ("https://fianceapi.dev.wedding.christephanie.com"):
+                    audience = $"https://fianceapi.dev.wedding.christephanie.com";
+                    break;
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
@@ -34,14 +40,20 @@ namespace Wedding.Common.Multitenancy
         public string GetMappedTableName(string tenantId)
         {
             string? databaseTable;
-            switch (tenantId)
+            switch (tenantId.ToLower())
             {
                 // Unit tests only
                 case ("https://api.christephanie.com"):
                     databaseTable = $"christephanie-wedding-unittests";
                     break;
-                case ("https://www.christephanie.com"):
-                case ("https://wedding.christephanie.com/api"):
+                case ("https://www.wedding.christephanie.com"):
+                case ("https://fianceapi.wedding.christephanie.com"):
+                    databaseTable = $"christephanie-wedding-table-prod";
+                    break;
+                case ("https://www.dev.wedding.christephanie.com"):
+                case ("https://fianceapi.dev.wedding.christephanie.com"):
+                    databaseTable = $"christephanie-wedding-table-dev";
+                    break;
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
@@ -49,7 +61,7 @@ namespace Wedding.Common.Multitenancy
                     databaseTable = $"christephanie-wedding";
                     break;
                 default:
-                    throw new Exception("Database tenant not found.");
+                    throw new Exception($"Database tenant not found. {tenantId.ToLower()}");
             }
             return databaseTable;
         }

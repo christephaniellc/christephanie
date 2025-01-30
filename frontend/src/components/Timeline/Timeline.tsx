@@ -61,11 +61,6 @@ const Timeline = () => {
     setTimeline(dummyTimelineItems);
   }, []);
 
-  useEffect(() => {
-    console.log('timeline', timeline);
-  }, [timeline]);
-
-
   return (
     <Box px={8} height={75} mx={'auto'} borderTop="2px solid gold" width={'800px'} maxWidth="3200px"
          sx={{ overflow: 'scroll' }}>

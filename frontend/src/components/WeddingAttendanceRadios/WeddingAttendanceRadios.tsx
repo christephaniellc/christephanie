@@ -4,30 +4,41 @@ import { useMemo } from 'react';
 import { InvitationResponseEnum } from '@/types/api';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { useAuth0 } from '@auth0/auth0-react';
+import { guestSelector } from '@/store/family';
 
-interface WeddingAttendanceRadiosProps {
-  interested: InvitationResponseEnum;
-  isMe: boolean;
-}
 
-const WeddingAttendanceRadios = ({ interested, isMe }: WeddingAttendanceRadiosProps) => {
+const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
+  const guest = useRecoilValue(guestSelector(guestId));
+  const interested = guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
+  const { user } = useAuth0();
+  const isMe = guest?.auth0Id === user?.sub;
+
   const response = useMemo(() => {
-      return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? "unable to attend" : 'still thinking about it.';
-    }, [interested])
+    return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? 'unable to attend' : 'still thinking about it.';
+  }, [interested]);
 
   const queryKey = ['updateFamilyUnit'];
   const queryClient = useQueryClient();
 
-  const familyQuery = queryClient.getQueryState(queryKey)
+  const familyQuery = queryClient.getQueryState(queryKey);
 
 
   const declined = useMemo(() => interested === 'Declined', [interested]);
   return (
-    <Box display={'flex'} alignItems='center'>
-      <Typography variant='caption' mr={declined ? 2 : 0}>{isMe ? "I'm" : "They're"} {response}</Typography>
-      {declined && <StickFigureIcon fontSize='small' loading={familyQuery?.fetchStatus === 'fetching'} />}
+    <Box display={'flex'} alignItems="center" justifyContent="flex-end" width="100%">
+      {declined && (
+        <Typography mr={2}><StickFigureIcon fontSize="small" loading={familyQuery?.fetchStatus === 'fetching'} />
+        </Typography>)}
+      <Typography
+        variant="caption"
+        mr={declined ? 2 : 0}
+      >
+        {isMe ? 'I am ' : `${guest?.firstName} is `}{response}
+      </Typography>
     </Box>
   );
-}
+};
 
 export default WeddingAttendanceRadios;

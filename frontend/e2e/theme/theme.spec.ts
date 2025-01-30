@@ -6,11 +6,11 @@ test.describe('test theme', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('default theme is dark', async ({ page }) => {
+  describe('default theme is dark', async ({ page }) => {
     await expect(page.getByTestId('theme-dark')).toBeVisible();
   });
 
-  test('clicking on the theme toggle changes the theme', async ({ page }) => {
+  describe('clicking on the theme toggle changes the theme', async ({ page }) => {
     await page.getByTestId('theme-toggle').click();
 
     await expect(page.getByTestId('theme-light')).toBeVisible();

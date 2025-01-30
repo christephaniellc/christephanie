@@ -77,7 +77,6 @@ export default function WelcomePageStepper() {
   };
 
   const continueText = () => {
-    console.log('familyStates', familyStates);
     if (!familyStates?.allUsersResponded) {
       return 'Let us know if you\'re interested';
     } else if (familyStates.nobodyComing) {

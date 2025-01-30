@@ -5,7 +5,6 @@
     "dotnet lambda help",
     "All the command line options for the Lambda command can be specified in this file."
   ],
-  "profile": "christephanie-dynamodb-user",
   "region": "us-east-1",
   "configuration": "Release",
   "function-architecture": "x86_64",
@@ -13,5 +12,5 @@
   "function-memory-size": 512,
   "function-timeout": 30,
   "function-handler": "Wedding.Lambdas.HelloWorld::Wedding.Lambdas.HelloWorld.Function::FunctionHandler",
-  "function-name": "christephanie-api-dev-helloworld"
+  "function-name": "christephanie-wedding-api-helloworld"
 }

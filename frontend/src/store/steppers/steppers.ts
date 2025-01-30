@@ -18,10 +18,24 @@ export const saveTheDateStepperState = atom<Record<string, SaveTheDateStep>>({
       description: '',
       component: null,
     },
-    mailingAddress: {
+    guestAges: {
       id: 1,
       completed: false,
+      label: "Who's drinkin' what?",
+      description: '',
+      component: null,
+    },
+    mailingAddress: {
+      id: 2,
+      completed: false,
       label: 'Where should we send your invitation?',
+      description: "",
+      component: null,
+    },
+    comments: {
+      id: 3,
+      completed: false,
+      label: 'Any comments?',
       description: "",
       component: null,
     },
