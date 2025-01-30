@@ -62,5 +62,12 @@
         /// </summary>
         public const string DevEfDiagnostics = "DevEfDiagnostics";
         #endregion
+
+        #region Multitenancy
+        /// <summary>
+        /// Multitenancy setup
+        /// </summary>
+        public const string Multitenancy = "Multitenancy";
+        #endregion
     }
 }

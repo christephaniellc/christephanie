@@ -12,6 +12,13 @@ echo "%WORKING_DIR%"
 REM Navigate to the working directory
 cd /d "%WORKING_DIR%"
 
+REM Step 0: Set AWS profile:
+set PROFILE=%~2
+if "%PROFILE%"=="" set PROFILE=dev
+set AWS_PROFILE=%PROFILE%
+echo "Aws profile used: %PROFILE%"
+aws configure list
+
 REM Step 1: Publish the application
 dotnet publish -c Release -o publish /p:DebugType=None
 REM --self-contained 

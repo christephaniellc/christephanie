@@ -9,7 +9,7 @@ interface DatabaseStackProps extends EnvStackProps {
 
 export class DatabaseStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
-    super(scope, id, props);
+    super(scope, id, {...props, description: "Creats DynamoDB table with index. (Destroy does not delete table)"});
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const { applicationName } = ApplicationProps;

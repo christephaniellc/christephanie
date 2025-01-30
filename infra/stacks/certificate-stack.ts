@@ -16,7 +16,7 @@ export class CertificateStack extends cdk.Stack {
     public readonly certificate: certificatemanager.ICertificate;
 
     constructor(scope: Construct, id: string, props: CertificateStackProps) {
-      super(scope, id, props);
+      super(scope, id, {...props, description: "Creates SSL certificate or uses existing"});
 
     const environment = this.node.tryGetContext('env') || 'dev';
       

@@ -9,6 +9,7 @@ import { CertificateStack } from '../stacks/certificate-stack';
 import { HostedZoneStack } from '../stacks/hostedzone-stack';
 import * as cdk from 'aws-cdk-lib';
 import * as fs from 'fs'
+import { ParamsStack } from '../stacks/params-stack';
 
 const app = new cdk.App();
 
@@ -79,6 +80,14 @@ new DnsStack(app, `DnsStack-${env}`, {
   frontendUrl: hostedzoneStack.frontendUrl,
   apiUrl: hostedzoneStack.apiUrl,
   apiGateway: apiStack.apiGateway
+});
+
+//----------------------------------------------------------------
+// Set up SSM Parameter Store
+//----------------------------------------------------------------
+new ParamsStack(app, `ParamsStack-${env}`, {
+  env: config,
+  apiUrl: hostedzoneStack.apiUrl
 });
 
 //----------------------------------------------------------------
