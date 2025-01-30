@@ -8,6 +8,7 @@ import * as cdk from 'aws-cdk-lib';
         delegateHostedNameServers: string[] | undefined;
         subDomainPrefix: string;
         authAuthority: string;
+        allowOrigins: string[] | undefined;
         existingHostedZoneId: string | undefined;
         existingCertificateArn: string | undefined;
         existingDomainNameAliasApi: string | undefined;

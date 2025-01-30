@@ -117,6 +117,22 @@ dynamoTable.addBackup({
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
 ----------------------	
+# Frontend
+
+Update 
+	auth_config.ts
+
+Update NPM packages:
+- VSCode > frontend/src > 
+	yarn install
+	yarn run dev	
+-----------------------
+# Backend
+
+Deploy single Lambda:
+Visual Studio > Open file for Wedding.Lambdas.[project name] > Deploy Lambda button
+	Update "dev" param
+-----------------------
 	./infra/scripts/deploy.sh dev	# Initial infra deploy
 REPEATING DEPLOY (publish lambdas and frontend)
 	./infra/scripts/build.sh dev	# Deploy all lambdas 

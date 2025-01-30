@@ -27,10 +27,21 @@ export class ApiStack extends cdk.Stack {
     //----------------------------
     // CREATE API PROXY GATEWAY
     //----------------------------
+    const corsOptions = props.env.allowOrigins ?
+    {
+        corsPreflight: {
+        allowOrigins: props.env.allowOrigins,
+        allowHeaders: ['authorization', 'content-type'],
+        allowMethods: [apigateway.CorsHttpMethod.ANY], // *
+        allowCredentials: true,
+        },
+    } : {};
+
     this.apiGateway = new apigateway.HttpApi(this, `${applicationName}-http-api`, {
         apiName: `${apiGatewayName}-${environment}`,
         description: `API for ${applicationName}-${environment} website`,
         createDefaultStage: false,
+        ...corsOptions
     });
     console.log(`HttpApi: ${this.apiGateway.apiEndpoint}`);
 
