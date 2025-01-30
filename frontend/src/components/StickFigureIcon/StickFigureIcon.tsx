@@ -22,10 +22,18 @@ import {
   SportsHandball,
   SportsMartialArts,
 } from '@mui/icons-material';
-import {StickFigureIconProps} from "@/components/StickFigureIcon/types";
+import { StickFigureIconProps } from '@/components/StickFigureIcon/types';
 import { useEffect, useRef, useState } from 'react';
+import Box from '@mui/material/Box';
 
-const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color, loading, rotation }: StickFigureIconProps) => {
+const StickFigureIcon = ({
+                           fontSize = 'inherit',
+                           hidden = false,
+                           color,
+                           error = false,
+                           loading,
+                           rotation,
+                         }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
     DirectionsWalk,
@@ -67,7 +75,6 @@ const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color, loading,
       const scheduleNextRotation = () => {
 
         timerRef.current = window.setTimeout(() => {
-          console.log('setting rotation');
           // Update rotation on the exact second
           setStickFigureRotation((prevRotation) => (prevRotation - 30) % 360);
 
@@ -92,13 +99,16 @@ const StickFigureIcon = ({ fontSize = 'inherit', hidden = false, color, loading,
     };
   }, [loading]);
 
-  return <RandomStickFigure fontSize={fontSize}
-                            color={color} sx={{ width: hidden ? 0 : 'auto',
-    transform: `rotate(${stickFigureRotation}deg)`,
-    transition: 'all 1s ease-in-out',
-    opacity: hidden ? 0 : 1,
-    visibility: hidden ? 'hidden' : 'visible'
-  }}/>;
+  return (
+      <RandomStickFigure fontSize={fontSize}
+                         color={error ? 'error' : color} sx={{
+        // width: hidden ? 0 : 'auto',
+        transform: `rotate(${stickFigureRotation}deg)`,
+        transition: 'all 1s ease-in-out',
+        opacity: hidden ? 0 : 1,
+        // visibility: hidden ? 'hidden' : 'visible',
+      }} />
+  );
 
 };
 

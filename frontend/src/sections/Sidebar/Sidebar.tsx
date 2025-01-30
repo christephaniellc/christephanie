@@ -10,12 +10,15 @@ import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 
 import routes from '@/routes';
 import useSidebar from '@/store/sidebar';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 function Sidebar() {
   const [isSidebarOpen, sidebarActions] = useSidebar();
+  const appLayout = useAppLayout();
 
   return (
     <SwipeableDrawer
+      id={'swipeable-drawer'}
       anchor="left"
       open={isSidebarOpen}
       onClose={sidebarActions.close}
@@ -23,6 +26,7 @@ function Sidebar() {
       disableBackdropTransition={false}
       swipeAreaWidth={30}
       data-pw="sidebar"
+      sx={{ maxHeight: `${appLayout.contentHeight}px`, border: '1px solid red'}}
     >
       <List sx={{ width: 250, pt: (theme) => `${theme.mixins.toolbar.minHeight}px` }}>
         {Object.values(routes)

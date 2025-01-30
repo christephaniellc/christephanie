@@ -49,8 +49,9 @@ export default SaveTheDatePage;
 
 export const ButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
+  flexWrap: 'wrap',
+  alignItems: 'space-between',
+  gap: 16,
   justifyContent: 'space-between',
   width: '100%',
   mx: 'auto',
