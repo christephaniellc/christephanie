@@ -34,7 +34,18 @@ jobs:
         id: changes
         run: |
           echo "Detecting modified Lambda functions..."
-          changed_dirs=$(git diff --name-only HEAD^ HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
+          
+          # Ensure we have the full git history (fix for HEAD^ issue)
+          git fetch --prune --unshallow
+
+          # Check if there's a previous commit
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            previous_commit="HEAD~1"
+          else
+            previous_commit=$(git rev-list --max-parents=0 HEAD)  # Get first commit
+          fi
+
+          changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
           
           if [[ -z "$changed_dirs" ]]; then
             echo "No Lambda changes detected. Skipping deployment."
