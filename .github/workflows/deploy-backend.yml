@@ -5,6 +5,9 @@ on:
     branches:
       - main.dev
       - main
+    # Only run if files under frontend/src (or its subdirectories) have changed.
+    paths:
+      - 'backend/src/**'
   workflow_dispatch:
     inputs:
       deploy_env:
