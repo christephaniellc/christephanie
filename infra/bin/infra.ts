@@ -10,6 +10,7 @@ import { HostedZoneStack } from '../stacks/hostedzone-stack';
 import * as cdk from 'aws-cdk-lib';
 import * as fs from 'fs'
 import { ParamsStack } from '../stacks/params-stack';
+import { RoleStack } from '../stacks/role-stack';
 
 const app = new cdk.App();
 
@@ -53,6 +54,15 @@ const certificateStack = new CertificateStack(app, `CertificateStack-${certifica
 const frontendStack = new FrontendStack(app, `FrontendStack-${env}`, { 
   env: config, 
   certificate: certificateStack.certificate 
+});
+
+//----------------------------------------------------------------
+// Set up Github Deploy IAM role
+//----------------------------------------------------------------
+const roleStack = new RoleStack(app, `RoleStack-${env}`, {
+  env: config,
+  frontendUrl: hostedzoneStack.frontendUrl,
+  apiUrl: hostedzoneStack.apiUrl
 });
 
 //----------------------------------------------------------------
