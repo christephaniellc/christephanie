@@ -41,7 +41,7 @@ jobs:
         run: |
           application_name="christephanie-wedding-api"
 
-          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\."); do
+          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\." | grep -v "unittests"); do
             # Extract folder name and remove the "Wedding.Lambdas." prefix
             base_name=$(basename "$dir" | sed 's/^Wedding\.Lambdas\.//')
             
