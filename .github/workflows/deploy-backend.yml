@@ -1,9 +1,25 @@
-name: Deploy Backend Lambdas (Dev)
+name: Deploy Backend Lambdas
 
 on:
   push:
     branches:
       - main.dev
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        description: "Deployment environment (dev or prod)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+      force_deploy:
+        description: "Deploy all Wedding.Lambdas projects (excluding unittests)?"
+        required: false
+        default: "false"
+        type: boolean
 
 permissions:
   id-token: write
@@ -11,7 +27,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Build & Deploy Changed Backend Lambdas
+    name: Build & Deploy Backend Lambdas
     runs-on: ubuntu-latest
 
     steps:
@@ -30,37 +46,73 @@ jobs:
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
 
-      - name: Find Changed Lambda Projects
+      - name: Determine Lambda Projects to Deploy
         id: changes
         run: |
-          echo "Detecting modified Lambda functions..."
-          
-          # Ensure we have the full git history (fix for HEAD^ issue)
+          echo "Determining deployment mode..."
+
+          # Set default branch based on environment
+          if [[ "${{ github.event.inputs.deploy_env }}" == "prod" ]]; then
+            branch="main"
+            force_deploy=true  # Always deploy everything in prod
+          else
+            branch="main.dev"
+            force_deploy="${{ github.event.inputs.force_deploy }}"
+          fi
+
+          echo "Deploying to environment: ${{ github.event.inputs.deploy_env }}"
+          echo "Watching branch: $branch"
+          echo "Force deploy: $force_deploy"
+
+          # Ensure full Git history is available
           git fetch --prune --unshallow
 
-          # Check if there's a previous commit
-          if git rev-parse HEAD~1 >/dev/null 2>&1; then
-            previous_commit="HEAD~1"
+          # Detect Lambda project changes
+          if [[ "$force_deploy" == "true" ]]; then
+            echo "Force deploy enabled: Deploying all Wedding.Lambdas projects."
+            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -v -E "(unittests|tests)" | xargs -n 1 basename)
           else
-            previous_commit=$(git rev-list --max-parents=0 HEAD)  # Get first commit
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              previous_commit="HEAD~1"
+            else
+              previous_commit=$(git rev-list --max-parents=0 HEAD)
+            fi
+
+            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
+
+            # Detect Wedding.Common and Wedding.Abstractions changes
+            common_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Common/ || true)
+            abstractions_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Abstractions/ || true)
+
+            if [[ -n "$abstractions_changed" ]]; then
+              echo "Wedding.Abstractions changed, deploying all Lambdas..."
+              dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -v -E "(unittests|tests)" | xargs -n 1 basename)
+            elif [[ -n "$common_changed" ]]; then
+              echo "Wedding.Common changed, deploying all dependent Lambdas..."
+              dependent_lambdas=$(grep -rl "Wedding.Common" backend/src/Wedding.Lambdas.*/*.csproj | cut -d'/' -f3 | sort -u)
+              changed_dirs="$changed_dirs $dependent_lambdas"
+            fi
           fi
 
-          changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
-          
-          if [[ -z "$changed_dirs" ]]; then
+          # Remove duplicates
+          dirs=$(echo "$changed_dirs" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+          if [[ -z "$dirs" ]]; then
             echo "No Lambda changes detected. Skipping deployment."
             echo "deploy=false" >> $GITHUB_ENV
-          else
-            echo "Changed Lambda directories: $changed_dirs"
-            echo "deploy=true" >> $GITHUB_ENV
-            echo "dirs=$changed_dirs" >> $GITHUB_ENV
+            exit 0
           fi
+
+          echo "Lambdas to deploy: $dirs"
+          echo "deploy=true" >> $GITHUB_ENV
+          echo "dirs=$dirs" >> $GITHUB_ENV
+          echo "branch=$branch" >> $GITHUB_ENV
 
       - name: Build & Deploy Lambda Functions
         if: env.deploy == 'true'
         run: |
           application_name="christephanie-wedding-api"
-          
+
           for dir in $dirs; do
             full_path="backend/src/$dir"
             base_name=$(basename "$full_path" | sed 's/^Wedding\.Lambdas\.//')
