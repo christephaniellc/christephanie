@@ -29,7 +29,7 @@ jobs:
     name: Build & Deploy Frontend to S3
     runs-on: ubuntu-latest
     env:
-      # If manually triggered, use the provided inputs; otherwise, determine based on the branch.
+      # Use workflow inputs if manually triggered; otherwise, determine based on branch.
       DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.deploy_env : (github.ref == 'refs/heads/main' ? 'prod' : 'dev') }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.force_deploy : (github.ref == 'refs/heads/main' ? 'true' : 'false') }}
 
@@ -51,8 +51,12 @@ jobs:
         run: npm run build
         working-directory: frontend
         env:
-          # Choose the API URL based on the deployment environment.
-          REACT_APP_API_URL: ${{ env.DEPLOY_ENV == 'prod' ? 'https://finaceapi.wedding.christephanie.com' : 'https://finaceapi.dev.wedding.christephanie.com' }}
+          # Use a different API URL depending on the deployment environment.
+          # TODO: what other env vars do you need?
+          DOMAIN: ${{ env.DEPLOY_ENV == 'prod' ? secrets.PROD_AUTH0_DOMAIN : secrets.DEV_AUTH0_DOMAIN }}
+          CLIENT_ID: ${{ env.DEPLOY_ENV == 'prod' ? secrets.PROD_AUTH0_CLIENT_ID : secrets.DEV_AUTH0_CLIENT_ID }}
+          AUDIENCE: ${{ env.DEPLOY_ENV == 'prod' ? vars.PROD_AUDIENCE : vars.DEV_AUDIENCE }}
+          WEBSERVICE_URL: ${{ env.DEPLOY_ENV == 'prod' ? vars.PROD_WEBSERVICE_URL : vars.DEV_WEBSERVICE_URL 
           FORCE_DEPLOY: ${{ env.FORCE_DEPLOY }}
 
       - name: Setup AWS Credentials
@@ -66,9 +70,9 @@ jobs:
       - name: Set S3 Bucket Name
         run: |
           if [ "${{ env.DEPLOY_ENV }}" = "prod" ]; then
-            echo "S3_BUCKET=www.wedding.christephanie.com" >> $GITHUB_ENV
+            echo "S3_BUCKET=${{ vars.PROD_S3_BUCKET }}" >> $GITHUB_ENV
           else
-            echo "S3_BUCKET=www.dev.wedding.christephanie.com" >> $GITHUB_ENV
+            echo "S3_BUCKET=${{ vars.DEV_S3_BUCKET }}" >> $GITHUB_ENV
           fi
 
       - name: Deploy to S3
