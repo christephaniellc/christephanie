@@ -1,0 +1,63 @@
+name: Deploy Backend Lambdas (Dev)
+
+on:
+  push:
+    branches:
+      - main.dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy Backend Lambdas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+
+      - name: Setup AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
+          role-session-name: GitHubActionsSession
+          aws-region: us-east-1
+
+      - name: Restore Dependencies
+        run: |
+          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\."); do
+            echo "Restoring dependencies for $dir"
+            dotnet restore "$dir"
+          done
+
+      - name: Build & Package Lambda Functions
+        run: |
+          application_name="christephanie-wedding-api"
+
+          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\."); do
+            # Extract folder name and remove the "Wedding.Lambdas." prefix
+            base_name=$(basename "$dir" | sed 's/^Wedding\.Lambdas\.//')
+            
+            # Convert to lowercase and replace '.' with '-'
+            function_name="${application_name}-$(echo "$base_name" | tr '.' '-' | tr '[:upper:]' '[:lower:]')"
+            
+            echo "Building $function_name"
+            dotnet publish "$dir" -c Release -o "$dir/bin/publish"
+            
+            echo "Packaging Lambda (excluding .pdb files): $function_name"
+            cd "$dir/bin/publish" || exit 1
+            zip -r "../$function_name.zip" . -x "*.pdb"
+            cd - || exit 1
+            
+            echo "Updating Lambda: $function_name"
+            aws lambda update-function-code \
+              --function-name "$function_name" \
+              --zip-file "fileb://$dir/bin/$function_name.zip"
+          done
