@@ -30,8 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Use workflow inputs if manually triggered; otherwise, determine based on branch.
-      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.deploy_env : (github.ref == 'refs/heads/main' ? 'prod' : 'dev') }}
-      FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.force_deploy : (github.ref == 'refs/heads/main' ? 'true' : 'false') }}
+      DEPLOY_ENV: "${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.deploy_env : (github.ref == 'refs/heads/main' ? 'prod' : 'dev') }}"
+      FORCE_DEPLOY: "${{ github.event_name == 'workflow_dispatch' ? github.event.inputs.force_deploy : (github.ref == 'refs/heads/main' ? 'true' : 'false') }}"
 
     steps:
       - name: Checkout Repository
@@ -51,8 +51,6 @@ jobs:
         run: npm run build
         working-directory: frontend
         env:
-          # Use a different API URL depending on the deployment environment.
-          # TODO: what other env vars do you need?
           DOMAIN: ${{ env.DEPLOY_ENV == 'prod' ? secrets.PROD_AUTH0_DOMAIN : secrets.DEV_AUTH0_DOMAIN }}
           CLIENT_ID: ${{ env.DEPLOY_ENV == 'prod' ? secrets.PROD_AUTH0_CLIENT_ID : secrets.DEV_AUTH0_CLIENT_ID }}
           AUDIENCE: ${{ env.DEPLOY_ENV == 'prod' ? vars.PROD_AUDIENCE : vars.DEV_AUDIENCE }}
@@ -62,7 +60,6 @@ jobs:
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          # Use the appropriate role ARN secret depending on the environment.
           role-to-assume: ${{ env.DEPLOY_ENV == 'prod' ? secrets.PROD_AWS_ROLE_ARN : secrets.DEV_AWS_ROLE_ARN }}
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
