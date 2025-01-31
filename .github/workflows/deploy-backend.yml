@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Build & Deploy Backend Lambdas
+    name: Build & Deploy Changed Backend Lambdas
     runs-on: ubuntu-latest
 
     steps:
@@ -30,34 +30,41 @@ jobs:
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
 
-      - name: Restore Dependencies
+      - name: Find Changed Lambda Projects
+        id: changes
         run: |
-          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\."); do
-            echo "Restoring dependencies for $dir"
-            dotnet restore "$dir"
-          done
+          echo "Detecting modified Lambda functions..."
+          changed_dirs=$(git diff --name-only HEAD^ HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
+          
+          if [[ -z "$changed_dirs" ]]; then
+            echo "No Lambda changes detected. Skipping deployment."
+            echo "deploy=false" >> $GITHUB_ENV
+          else
+            echo "Changed Lambda directories: $changed_dirs"
+            echo "deploy=true" >> $GITHUB_ENV
+            echo "dirs=$changed_dirs" >> $GITHUB_ENV
+          fi
 
-      - name: Build & Package Lambda Functions
+      - name: Build & Deploy Lambda Functions
+        if: env.deploy == 'true'
         run: |
           application_name="christephanie-wedding-api"
-
-          for dir in $(find backend/src -type f -name "*.csproj" -printf "%h\n" | sort -u | grep "/Wedding\.Lambdas\." | grep -v "unittests"); do
-            # Extract folder name and remove the "Wedding.Lambdas." prefix
-            base_name=$(basename "$dir" | sed 's/^Wedding\.Lambdas\.//')
-            
-            # Convert to lowercase and replace '.' with '-'
+          
+          for dir in $dirs; do
+            full_path="backend/src/$dir"
+            base_name=$(basename "$full_path" | sed 's/^Wedding\.Lambdas\.//')
             function_name="${application_name}-$(echo "$base_name" | tr '.' '-' | tr '[:upper:]' '[:lower:]')"
-            
+
             echo "Building $function_name"
-            dotnet publish "$dir" -c Release -o "$dir/bin/publish"
-            
+            dotnet publish "$full_path" -c Release -o "$full_path/bin/publish"
+
             echo "Packaging Lambda (excluding .pdb files): $function_name"
-            cd "$dir/bin/publish" || exit 1
+            cd "$full_path/bin/publish" || exit 1
             zip -r "../$function_name.zip" . -x "*.pdb"
             cd - || exit 1
-            
+
             echo "Updating Lambda: $function_name"
             aws lambda update-function-code \
               --function-name "$function_name" \
-              --zip-file "fileb://$dir/bin/$function_name.zip"
+              --zip-file "fileb://$full_path/bin/$function_name.zip"
           done
