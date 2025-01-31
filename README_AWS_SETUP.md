@@ -109,6 +109,9 @@ cdk deploy DnsStack-dev --context env=dev --profile dev
 
 cdk deploy ParamsStack-dev --context env=dev --profile dev
 
+cdk destroy RoleStack-dev --context env=dev --profile dev
+cdk deploy RoleStack-dev --context env=dev --profile dev
+
 If you want to keep backup:
 dynamoTable.addBackup({
   backupName: `${applicationName}-backup-${environment}`,
