@@ -8,7 +8,7 @@ namespace Wedding.Lambdas.HelloWorld.Handlers
     {
         public async Task<string> GetAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await Task.FromResult("Hello, World!");
+            return await Task.FromResult("Hello, World! I can deploy!");
         }
     }
 }
