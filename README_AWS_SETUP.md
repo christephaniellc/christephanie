@@ -8,10 +8,13 @@
 	IAM > User groups > Create group > (added CDK permissions to json policy) cdk-group
 	Moved this user under this group 
 - Gave CDK permissions to this user.
-	TODO
-- ?Run UserStack to set up all deploy permissions for this user
+	copy policy from dev 
+- Generate access key for local CLI use
+	aws configure --profile your-profile-name
+	Saves to C:\Users\<username>\.aws\credentials
+x ?Run UserStack to set up all deploy permissions for this user
 	cdk deploy --context env=dev UserStack
-- Prod: in Route53 owner account: gave dev AWS account permissions to assume role for Route53 zone
+x Prod: in Route53 owner account: gave dev AWS account permissions to assume role for Route53 zone
 	IAM > Roles > Create Role > AWS Account > (dev account ID) > added Route53 permissions as json policy		
 		arn:aws:iam::<prod account id>:role/Route53_TrustChristephanieDev
 # Set up local aws cli
@@ -53,7 +56,7 @@ cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 # Bootstrap for the production account
 cdk bootstrap aws://<prod account id>/us-east-1 --profile prod
 
-# Added role to aws cli profile: C:\Users\Steph Stubler\.aws\config
+x Added role to aws cli profile: C:\Users\Steph Stubler\.aws\config
 	[profile dev]
 	region = us-east-1
 	output = json

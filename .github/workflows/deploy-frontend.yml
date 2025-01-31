@@ -7,7 +7,7 @@ on:
       - main
     # Only run if files under frontend/src (or its subdirectories) have changed.
     paths:
-      - 'frontend/src/**'
+      - 'frontend/**'
   workflow_dispatch:
     inputs:
       deploy_env:
@@ -29,7 +29,6 @@ jobs:
     name: Build & Deploy Frontend to S3
     runs-on: ubuntu-latest
     env:
-      # Use logical operators to decide the environment:
       DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
 
@@ -41,14 +40,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: yarn
 
       - name: Install Dependencies
-        run: npm install
+        run: yarn install
         working-directory: frontend/src
 
       - name: Build React App
-        run: npm run build
+        run: yarn build
         working-directory: frontend/src
         env:
           DOMAIN: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AUTH0_DOMAIN || secrets.DEV_AUTH0_DOMAIN }}"
