@@ -7,18 +7,26 @@ import { HelmetProvider } from 'react-helmet-async';
 import ThemeProvider from '@/theme/Provider';
 import { ApiContextProvider } from '@/context/ApiContext';
 import { AppStateContextProvider } from '@/context/Providers/AppState/AppStateContext';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
 
 export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { providerConfig } = useAuth0Providers();
   const { queryClient } = useQueryProvider();
-
+  const guest = useRecoilValue(userState);
 
   return (
     <Auth0Provider
       domain={providerConfig.domain}
       clientId={providerConfig.clientId}
       onRedirectCallback={providerConfig.onRedirectCallback}
-      authorizationParams={providerConfig.authorizationParams}
+      authorizationParams={{
+        ...providerConfig.authorizationParams,
+        state: JSON.stringify({
+          guest_id: guest.guestId
+        }),
+      }}
+
       cacheLocation="localstorage"
       useRefreshTokens
     >
