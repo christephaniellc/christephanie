@@ -49,7 +49,7 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => {
-            user ? logout() : loginWithPopup();
+            user ? logout() : loginWithPopup({ state: JSON.stringify({guest_id: guest?.guestId })});
           }}
         />
         <BottomNavigationAction

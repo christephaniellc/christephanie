@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Button,
   Card,
@@ -17,7 +17,6 @@ import { useUser } from '@/store/user';
 import { useApiContext } from '@/context/ApiContext';
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
-import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 
 export const InvitationCodeInputs = () => {
@@ -89,7 +88,7 @@ export const InvitationCodeInputs = () => {
                                        fullWidth
                                        variant="contained" onClick={() =>
 
-              user?.guestId ? loginWithPopup() : handleFindUser()}
+              user?.guestId ? loginWithPopup({ authorizationParams: { state: JSON.stringify({ guest_id: user?.guestId }) } }) : handleFindUser()}
             >
               {invitationButtonText || 'Login With your Existing Account'}
             </Button>}
@@ -105,7 +104,7 @@ export const InvitationCodeInputs = () => {
               color="primary"
               variant="contained"
               onClick={() => {
-                auth0User ? logout() : loginWithPopup();
+                auth0User ? logout() : loginWithPopup({ authorizationParams: { state: JSON.stringify({ guest_id: user?.guestId }) } });
               }}
             >
               {auth0User ? 'Logout' : 'Login'}
