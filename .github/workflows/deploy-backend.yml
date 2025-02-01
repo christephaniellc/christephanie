@@ -10,7 +10,7 @@ on:
       - 'backend/src/**'
   workflow_dispatch:
     inputs:
-      deploy_env:
+      environment:
         description: "Deployment environment (dev or prod)"
         required: true
         default: "dev"
@@ -55,7 +55,7 @@ jobs:
           echo "Determining deployment mode..."
 
           # Set default branch based on environment
-          if [[ "${{ github.event.inputs.deploy_env }}" == "prod" ]]; then
+          if [[ "${{ github.event.inputs.environment }}" == "prod" ]]; then
             branch="main"
             force_deploy=true  # Always deploy everything in prod
           else
@@ -63,7 +63,7 @@ jobs:
             force_deploy="${{ github.event.inputs.force_deploy }}"
           fi
 
-          echo "Deploying to environment: ${{ github.event.inputs.deploy_env }}"
+          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
           echo "Watching branch: $branch"
           echo "Force deploy: $force_deploy"
 
