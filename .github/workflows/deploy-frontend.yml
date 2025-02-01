@@ -10,7 +10,7 @@ on:
       - 'frontend/**'
   workflow_dispatch:
     inputs:
-      deploy_env:
+      environment:
         description: "Deployment environment (dev or prod)"
         required: true
         default: "dev"
@@ -26,10 +26,10 @@ on:
 
 jobs:
   deploy:
-    name: Build & Deploy Frontend to S3
+    name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
     env:
-      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
 
     steps:
