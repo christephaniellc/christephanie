@@ -8,7 +8,7 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector } from '@/store/family';
 import { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
-import { CountdownMessage } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsFavoriteFont } from '@/components/AttendanceButton/AttendanceButton';
 
 
 type AsyncAttendanceButtonProps = {
