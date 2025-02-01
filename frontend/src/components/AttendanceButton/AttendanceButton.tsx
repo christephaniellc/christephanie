@@ -95,9 +95,9 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       <Box alignContent="center"
         sx={{ imgButtonSxProps, borderWidth: 2 }}
       >
-        <CountdownMessage>
+        <StephsFavoriteFont>
           <Countdowns event="Invitation" interested={interested} />
-        </CountdownMessage>
+        </StephsFavoriteFont>
       </Box>
     </Box>
   );
@@ -139,7 +139,7 @@ const ImageButton = styled(ButtonBase)(({ theme }) => ({
   },
 }));
 
-export const CountdownMessage = styled(Typography)(({ theme }) => ({
+export const StephsFavoriteFont = styled(Typography)(({ theme }) => ({
   color: theme.palette.error.main,
   fontWeight: 700,
   fontSize: '1.5rem',
