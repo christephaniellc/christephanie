@@ -118,7 +118,7 @@ public class Function
         context.Logger.LogDebug($"Audience: {_audience}");
         context.Logger.LogDebug($"Request.RouteKey: {request.RequestContext.RouteKey ?? "(null)"}");
         context.Logger.LogDebug($"Request.MethodArn: {request.MethodArn ?? "(null)"}");
-        context.Logger.LogDebug($"MethodArn: {methodArn}");
+        context.Logger.LogDebug($"MethodArn : {methodArn}");
 
         var query = new ValidateAuthQuery(
             _authority,
