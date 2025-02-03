@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -29,12 +30,17 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
 
         public async Task<FamilyUnitDto> GetAsync(GetFamilyUnitQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _logger.LogInformation("Validating GetFamily query...");
             query.Validate(nameof(query));
+            _logger.LogInformation("GetFamily query validated.");
 
             try
             {
                 var results = await _dynamoDbProvider.GetFamilyUnitAsync(query.AuthContext.Audience, query.AuthContext.InvitationCode, cancellationToken);
-                
+
+                _logger.LogInformation($"GetFamily after results");
+                _logger.LogInformation($"Raw GetFamily results: {JsonSerializer.Serialize(results)}");
+
                 if (results == null)
                 {
                     throw new KeyNotFoundException($"Family unit with invitation code '{query.AuthContext.InvitationCode}' not found.");
