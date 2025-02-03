@@ -19,6 +19,8 @@ namespace Wedding.Lambdas.UnitTests.TestData
         private readonly AuthHandler _authHandler;
         private readonly Wedding.Lambdas.Authorize.Function _authFunction;
 
+        public string _authorizeArn = "arn:aws:lambda:us-east-1:390403858788:function:christephanie-wedding-api-authorize";
+
         public TestAuthorizer(IConfigurationRoot configuration, ServiceCollection serviceCollection)
         {
             _testTokenHelper = new TestTokenHelper(configuration);
@@ -44,7 +46,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
             var authRequest = new APIGatewayCustomAuthorizerRequest
             {
                 AuthorizationToken = token,
-                MethodArn = LambdaArns.Auth,
+                MethodArn = _authorizeArn,
                 Headers = new Dictionary<string, string>
                 {
                     { "authorization", "Bearer " + token }

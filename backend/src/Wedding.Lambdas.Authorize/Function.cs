@@ -93,7 +93,7 @@ public class Function
             throw new UnauthorizedAccessException("Unauthorized");
         }
 
-        var routeKey = request.RequestContext.RouteKey;
+        var methodArn = request.MethodArn ?? LambdaArnTranslations.ConvertToArn(request.RequestContext.RouteKey);
 
         if (string.IsNullOrEmpty(_authority))
         {
@@ -116,13 +116,14 @@ public class Function
         context.Logger.LogDebug($"Authorization header: {authorizationHeader}");
         context.Logger.LogDebug($"Authority: {_authority}");
         context.Logger.LogDebug($"Audience: {_audience}");
-        context.Logger.LogDebug($"RouteKey: {routeKey}");
-        context.Logger.LogDebug($"Arn: {LambdaArnTranslations.ConvertToArn(routeKey)}");
+        context.Logger.LogDebug($"Request.RouteKey: {request.RequestContext.RouteKey ?? "(null)"}");
+        context.Logger.LogDebug($"Request.MethodArn: {request.MethodArn ?? "(null)"}");
+        context.Logger.LogDebug($"MethodArn: {methodArn}");
 
         var query = new ValidateAuthQuery(
             _authority,
             _audience,
-            LambdaArnTranslations.ConvertToArn(routeKey),
+            methodArn,
             authorizationHeader.Replace("Bearer ", ""));
 
         try

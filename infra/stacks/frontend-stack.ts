@@ -27,6 +27,7 @@ export class FrontendStack extends cdk.Stack {
     console.log(`Full domain name: ${fullDomainName}`);
 
     const frontendBucket = new s3.Bucket(this, `${applicationName}-frontend-bucket`, {
+        bucketName: `www.${props.frontendUrl}`,
         versioned: false,
         websiteIndexDocument: 'index.html',
         websiteErrorDocument: 'error.html',
