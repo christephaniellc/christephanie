@@ -71,7 +71,7 @@ x Added role to aws cli profile: C:\Users\Steph Stubler\.aws\config
 
 # ONE TIME CDK DEPLOYMENT (initial deploy)
 cdk deploy HostedzoneStack-create-dev --context env=dev --profile dev
-	add "existingHostedZoneId": "Z07880633EU429771T27L" to dev.json
+	add "existingHostedZoneId": "Z...T27L" to dev.json
 	add named entries to prod hosted zone 
 	add named entries to prod.json
 		"delegateHostedNameServers": ["name1","name2"]

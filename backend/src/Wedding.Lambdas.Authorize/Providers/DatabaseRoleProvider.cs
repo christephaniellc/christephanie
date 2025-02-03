@@ -35,18 +35,18 @@ namespace Wedding.Lambdas.Authorize.Providers
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        private string GetRequiredPermissionByEndpoint(string methodArn)
-        {
-            switch (methodArn)
-            {
-                case (LambdaArns.AdminFamilyUnitCreate):
-                case (LambdaArns.AdminFamilyUnitUpdate):
-                case (LambdaArns.AdminFamilyUnitDelete):
-                    return RoleEnum.Admin.ToString();
-                default:
-                    return RoleEnum.Guest.ToString();
-            }
-        }
+        // private string GetRequiredPermissionByEndpoint(string methodArn)
+        // {
+        //     switch (methodArn)
+        //     {
+        //         case (LambdaArns.AdminFamilyUnitCreate):
+        //         case (LambdaArns.AdminFamilyUnitUpdate):
+        //         case (LambdaArns.AdminFamilyUnitDelete):
+        //             return RoleEnum.Admin.ToString();
+        //         default:
+        //             return RoleEnum.Guest.ToString();
+        //     }
+        // }
 
         private bool IsAuthorizedToViewThisPage(GuestDto authenticatedUser, bool requiresFamilyBelonging, string methodInvitationCode)
         {
