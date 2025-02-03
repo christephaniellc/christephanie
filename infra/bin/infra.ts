@@ -53,7 +53,8 @@ const certificateStack = new CertificateStack(app, `CertificateStack-${certifica
 //----------------------------------------------------------------
 const frontendStack = new FrontendStack(app, `FrontendStack-${env}`, { 
   env: config, 
-  certificate: certificateStack.certificate 
+  certificate: certificateStack.certificate,
+  frontendUrl: hostedzoneStack.frontendUrl
 });
 
 //----------------------------------------------------------------
@@ -104,3 +105,7 @@ new ParamsStack(app, `ParamsStack-${env}`, {
 // Set up DynamoDB
 //----------------------------------------------------------------
 new DatabaseStack(app, `DatabaseStack-${env}`, { env: config });
+// new DatabaseAdminStack(app, `DatabaseStack-${env}`, { 
+//   env: config,
+//   databaseTable: string 
+// });

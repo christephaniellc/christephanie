@@ -44,7 +44,7 @@ namespace Wedding.PublicApi.Controllers
             string? firstName = null,
             string? arn = null, CancellationToken cancellationToken = default)
         {
-            arn = arn ?? LambdaArns.Auth;
+            arn = arn ?? "arn:aws:lambda:us-east-1:390403858788:function:christephanie-wedding-api-authorize";
             invitationCode = invitationCode?.ToUpper() ?? "RVMBL";
             firstName = firstName ?? "Steph";
 

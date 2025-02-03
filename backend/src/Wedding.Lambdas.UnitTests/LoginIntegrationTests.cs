@@ -44,6 +44,8 @@ namespace Wedding.Lambdas.UnitTests
 
         private string _johnAuth0Id = "auth0|12345";
 
+        public string _authorizeArn = "arn:aws:lambda:us-east-1:390403858788:function:christephanie-wedding-api-authorize";
+
         public void SetUpHandlers(Mock<IDynamoDBProvider> dynamoDBProvider, ServiceCollection serviceCollection)
         {
             var mockLogger = new Mock<ILogger<AuthHandler>>();
@@ -193,7 +195,7 @@ namespace Wedding.Lambdas.UnitTests
             var authRequest = new APIGatewayCustomAuthorizerRequest
             {
                 AuthorizationToken = token,
-                MethodArn = LambdaArns.Auth,
+                MethodArn = _authorizeArn,
                 Headers = new Dictionary<string, string>
                 {
                     { "authorization", "Bearer " + token }
