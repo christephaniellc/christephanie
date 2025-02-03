@@ -5,7 +5,7 @@ on:
     branches:
       - main.dev
       - main
-    # Only run if files under frontend/src (or its subdirectories) have changed.
+    # Only run if files under backend/src (or its subdirectories) have changed.
     paths:
       - 'backend/src/**'
   workflow_dispatch:
@@ -73,7 +73,7 @@ jobs:
           # Detect Lambda project changes
           if [[ "$force_deploy" == "true" ]]; then
             echo "Force deploy enabled: Deploying all Wedding.Lambdas projects."
-            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -v -E "(unittests|tests)" | xargs -n 1 basename)
+            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
           else
             if git rev-parse HEAD~1 >/dev/null 2>&1; then
               previous_commit="HEAD~1"
@@ -81,7 +81,7 @@ jobs:
               previous_commit=$(git rev-list --max-parents=0 HEAD)
             fi
 
-            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(unittests|tests)" || true)
+            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -i -v -E "(unittests|tests)" || true)
 
             # Detect Wedding.Common and Wedding.Abstractions changes
             common_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Common/ || true)
@@ -89,7 +89,7 @@ jobs:
 
             if [[ -n "$abstractions_changed" ]]; then
               echo "Wedding.Abstractions changed, deploying all Lambdas..."
-              dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -v -E "(unittests|tests)" | xargs -n 1 basename)
+              dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
             elif [[ -n "$common_changed" ]]; then
               echo "Wedding.Common changed, deploying all dependent Lambdas..."
               dependent_lambdas=$(grep -rl "Wedding.Common" backend/src/Wedding.Lambdas.*/*.csproj | cut -d'/' -f3 | sort -u)
