@@ -30,8 +30,13 @@ namespace Wedding.Lambdas.UnitTests.Authorize
 
             _testTokenHelper = new TestTokenHelper(configuration);
 
-            var config = new MapperConfiguration(
-                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             _mapper = config.CreateMapper();
 
             _auth0Provider = new Auth0Provider();
