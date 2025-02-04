@@ -155,7 +155,10 @@ namespace Wedding.Lambdas.Authorize.Providers
 
             matchingGuest.Auth0Id = user.UserId;
             matchingGuest.Email = user.Email;
-            matchingGuest.EmailVerified = user.EmailVerified ?? false;
+            matchingGuest.EmailVerified = new VerifyDto()
+            {
+                Verified = user.EmailVerified ?? false
+            }.ToString();
         }
 
         public async Task TryUpdateFamilyUnit(string audience, string invitationCode)
