@@ -32,6 +32,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
         public async Task<FamilyUnitViewModel> ExecuteAsync(UpdateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _logger.LogInformation("UpdateFamilyUnitHandler");
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
 
@@ -42,6 +43,10 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 {
                     throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
+
+                _logger.LogInformation("Table audience: {command.AuthContext.Audience}");
+                _logger.LogInformation("Invitation code: {command.FamilyUnit.InvitationCode}");
+                _logger.LogInformation("Found family unit: {JsonSerializer.Serialize(existingFamilyUnit}");
 
                 // TODO: should only update certain properties, do a patch endpoint, not all guests / properties are included
                 var allGuests = new List<GuestDto>();
@@ -57,15 +62,21 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             cancellationToken);
                         
                         existingGuestEntity.AgeGroup = guest.AgeGroup;
-
-                        if (guest.Rsvp != null)
+                        
+                        if (guest.Rsvp != null) 
                         {
+                            _logger.LogInformation("guest.Rsvp.InvitationResponse: {guest.Rsvp.InvitationResponse}");
                             existingGuestEntity.InvitationResponse = guest.Rsvp.InvitationResponse;
+                            _logger.LogInformation("guest.Rsvp.Wedding: {guest.Rsvp.Wedding}");
                             existingGuestEntity.RsvpWedding = guest.Rsvp.Wedding;
+                            _logger.LogInformation("guest.Rsvp.RehearsalDinner: {guest.Rsvp.RehearsalDinner}");
                             existingGuestEntity.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
+                            _logger.LogInformation("guest.Rsvp.FourthOfJuly: {guest.Rsvp.FourthOfJuly}");
                             existingGuestEntity.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
+
                             if (guest.Rsvp.InvitationResponse != InvitationResponseEnum.Pending)
                             {
+                                _logger.LogInformation("command.AuthContext.Name: {command.AuthContext.Name}");
                                 existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
@@ -81,6 +92,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                     Username = command.AuthContext.Name
                                 }.ToString();
                             }
+                            _logger.LogInformation("guest.Rsvp.RsvpNotes: {guest.Rsvp.RsvpNotes}");
                             existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
                         }
 
@@ -92,9 +104,11 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                         }
 
                         //_mapper.Map(guest, existingGuest);
+                        _logger.LogInformation("About to save...");
 
                         await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
                         allGuests.Add(_mapper.Map<GuestDto>(existingGuestEntity));
+                        _logger.LogInformation("Saved.");
                     }
                 }
 
@@ -103,8 +117,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     .Select(address => address.ToString())
                     .ToList() ?? null;
                 existingFamilyUnitEntity.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
-
-
+                
                 _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
                 familyUnit.Guests = allGuests;
@@ -117,7 +130,8 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while getting the family unit:" + ex.StackTrace);
+                _logger.LogError(ex, "An error occurred while getting the family unit:" + ex.Message);
+                _logger.LogError(ex, "Stacktrace:" + ex.StackTrace);
                 throw new ApplicationException("An error occurred while getting the family unit.", ex);
             }
         }
