@@ -80,11 +80,17 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 {
                     InvitationCode = TEST_INVITATION_CODE,
                     UnitName = "Smiths",
-                    Tier = "A",
+                    Tier = "Platinum",
                     Guests = new List<GuestDto>
                     {
                         GUEST_JOHN,
                         GUEST_JANE
+                    },
+                    MailingAddress = new AddressDto
+                    {
+                        StreetAddress = "123 Main St.",
+                        City = "New York",
+                        State = "NY"
                     }
                 };
             }

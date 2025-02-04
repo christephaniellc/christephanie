@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
@@ -15,7 +16,7 @@ using Wedding.Lambdas.FamilyUnit.Update.Validation;
 
 namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 {
-    public class UpdateFamilyUnitHandler : IAsyncCommandHandler<UpdateFamilyUnitCommand, FamilyUnitDto>
+    public class UpdateFamilyUnitHandler : IAsyncCommandHandler<UpdateFamilyUnitCommand, FamilyUnitViewModel>
     {
         private readonly ILogger<UpdateFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
@@ -29,7 +30,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> ExecuteAsync(UpdateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<FamilyUnitViewModel> ExecuteAsync(UpdateFamilyUnitCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
             var familyUnit = command.FamilyUnit;
@@ -111,11 +112,12 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
 
-                return await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
+                var result = await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
+                return _mapper.Map<FamilyUnitViewModel>(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while getting the family unit.");
+                _logger.LogError(ex, "An error occurred while getting the family unit:" + ex.StackTrace);
                 throw new ApplicationException("An error occurred while getting the family unit.", ex);
             }
         }
