@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -34,7 +35,7 @@ namespace Wedding.PublicApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitViewModel))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -54,7 +55,7 @@ namespace Wedding.PublicApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitViewModel))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

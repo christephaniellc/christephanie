@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using Wedding.Abstractions.Dtos;
 
 namespace Wedding.Abstractions.ViewModels
 {
@@ -10,9 +11,11 @@ namespace Wedding.Abstractions.ViewModels
 
         public string UnitName { get; set; } = "";
 
-        public List<GuestViewModel>? Guests { get; set; }
+        public List<GuestDto>? Guests { get; set; }
 
-        public string? MailingAddress { get; set; }
+        public AddressDto? MailingAddress { get; set; }
+
+        public List<AddressDto>? AdditionalAddresses { get; set; }
 
         public string? InvitationResponseNotes { get; set; }
 
