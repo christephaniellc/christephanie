@@ -138,6 +138,9 @@ jobs:
               --function-name "$function_name" \
               --zip-file "fileb://$full_path/bin/$function_name.zip"
           done
+
+      - name: Build API project
+        run: dotnet build backend/src/Wedding.PublicApi --configuration Release --no-restore
                  
       - name: Generate Swagger JSON
         run: |
