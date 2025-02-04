@@ -126,7 +126,7 @@ namespace Wedding.Abstractions.Entities
         public FoodPreferenceEnum? PrefFood { get; set; }
 
         [DynamoDBProperty]
-        public string? PrefFoodAllergies { get; set; }
+        public List<string>? PrefFoodAllergies { get; set; }
         #endregion
     }
 

@@ -11,6 +11,6 @@ namespace Wedding.Abstractions.Dtos
 
         public FoodPreferenceEnum? FoodPreference { get; set; }
 
-        public string? FoodAllergies { get; set; }
+        public List<string>? FoodAllergies { get; set; }
     }
 }
