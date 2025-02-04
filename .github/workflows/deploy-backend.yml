@@ -139,6 +139,9 @@ jobs:
               --zip-file "fileb://$full_path/bin/$function_name.zip"
           done
 
+      - name: Restore dependencies
+        run: dotnet restore backend/src/Wedding.PublicApi/Wedding.PublicApi.csproj
+
       - name: Build API project
         run: dotnet build backend/src/Wedding.PublicApi --configuration Release --no-restore
                  
