@@ -17,7 +17,6 @@ namespace Wedding.Abstractions.Validation
         {
             //RuleFor(s => s.Id).NotEmpty();
             RuleFor(s => s.InvitationCode).SetValidator(new InvitationCodeValidator());
-            RuleFor(f => f.Tier).SetValidator(new TierValidator());
             RuleFor(f => f.Guests)
                 .NotNull()
                 .NotEmpty()
