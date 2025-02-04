@@ -12,7 +12,6 @@ using Wedding.Common.Abstractions;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Multitenancy;
 using Wedding.PublicApi.Logic.Services.Auth;
-using Wedding.Common.Configuration.Multitenancy;
 
 namespace Wedding.PublicApi.Logic.DI
 {
