@@ -996,11 +996,14 @@
             "nullable": true
           },
           "emailVerified": {
-            "type": "boolean"
+            "$ref": "#/components/schemas/VerifyDto"
           },
           "phone": {
             "type": "string",
             "nullable": true
+          },
+          "phoneVerified": {
+            "$ref": "#/components/schemas/VerifyDto"
           },
           "rsvp": {
             "$ref": "#/components/schemas/RsvpDto"
@@ -1192,6 +1195,24 @@
           "Other"
         ],
         "type": "string"
+      },
+      "VerifyDto": {
+        "type": "object",
+        "properties": {
+          "verified": {
+            "type": "boolean"
+          },
+          "verificationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "verificationCodeExpiration": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
