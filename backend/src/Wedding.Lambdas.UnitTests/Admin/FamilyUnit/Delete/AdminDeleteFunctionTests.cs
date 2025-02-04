@@ -42,7 +42,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
                 .AddJsonFile("appsettings.Development.json")
                 .Build();
             var config = new MapperConfiguration(cfg =>
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             _mapper = config.CreateMapper();
             _testTokenHelper = new TestTokenHelper(configuration);
 

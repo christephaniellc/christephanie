@@ -73,10 +73,13 @@ namespace Wedding.Abstractions.Entities
         public string? Email { get; set; }
 
         [DynamoDBProperty]
-        public bool EmailVerified { get; set; }
+        public string? EmailVerified { get; set; }
 
         [DynamoDBProperty]
         public string? Phone { get; set; }
+
+        [DynamoDBProperty]
+        public string? PhoneVerified { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<AgeGroupEnum>))]
         public AgeGroupEnum? AgeGroup { get; set; }

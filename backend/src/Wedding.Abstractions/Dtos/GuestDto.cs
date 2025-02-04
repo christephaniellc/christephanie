@@ -23,9 +23,10 @@ namespace Wedding.Abstractions.Dtos
         public List<RoleEnum> Roles { get; set; }
 
         public string? Email { get; set; }
-        public bool EmailVerified { get; set; }
+        public VerifyDto? EmailVerified { get; set; }
 
         public string? Phone { get; set; }
+        public VerifyDto? PhoneVerified { get; set; }
 
         public RsvpDto? Rsvp { get; set; }
 

@@ -36,8 +36,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true 
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -140,25 +138,3 @@ jobs:
               --function-name "$function_name" \
               --zip-file "fileb://$full_path/bin/$function_name.zip"
           done
-
-      - name: Restore dependencies
-        run: dotnet restore backend/src/Wedding.PublicApi/Wedding.PublicApi.csproj
-
-      - name: Build API project
-        run: dotnet build backend/src/Wedding.PublicApi --configuration Release --no-restore      
-                 
-      - name: Install Swashbuckle CLI as a Local Tool
-        run: |
-          dotnet new tool-manifest  # Ensures a local tool manifest is created
-          dotnet tool install Swashbuckle.AspNetCore.Cli
-          
-      - name: Generate Swagger JSON
-        run: |
-          dotnet tool run swagger tofile --output backend/src/swagger.json backend/src/Wedding.PublicApi/bin/Release/net8.0/Wedding.PublicApi.dll v1 
-         
-      - name: Commit & Push Swagger JSON
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add backend/src/swagger.json
-          git diff --staged --quiet || (git commit -m "Auto-generated swagger.json" && git push)

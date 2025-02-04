@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
+using Amazon.SimpleSystemsManagement.Model;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +44,13 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             _testTokenHelper = new TestTokenHelper(configuration);
 
             var config = new MapperConfiguration(cfg =>
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
+            
             _mapper = config.CreateMapper();
 
             _mockDynamoDbProvider.Setup(x =>
@@ -84,7 +91,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 _mockDynamoDbProvider.Setup(x =>
                         x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(dto);
-
+         
                 var context = new TestLambdaContext();
 
                 var fakeAuthContext = new AuthContext

@@ -152,7 +152,12 @@ namespace Wedding.Lambdas.UnitTests
             _testTokenHelper = new TestTokenHelper(configuration);
 
             var config = new MapperConfiguration(cfg =>
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             _mapper = config.CreateMapper();
 
             _mockLambdaContext = new Mock<ILambdaContext>();

@@ -32,8 +32,13 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         [SetUp]
         public void Setup()
         {
-            var config = new MapperConfiguration(
-                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             var mapper = config.CreateMapper();
 
             _loggerMock = new Mock<ILogger<DatabaseRoleProvider>>();
