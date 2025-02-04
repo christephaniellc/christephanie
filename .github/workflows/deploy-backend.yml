@@ -90,15 +90,19 @@ jobs:
             if [[ -n "$abstractions_changed" ]]; then
               echo "Wedding.Abstractions changed, deploying all Lambdas..."
               dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
+              changed_dirs=$(echo "$dirs")
+              echo "Found lambda directories: $dirs"
             elif [[ -n "$common_changed" ]]; then
               echo "Wedding.Common changed, deploying all dependent Lambdas..."
               dependent_lambdas=$(grep -rl "Wedding.Common" backend/src/Wedding.Lambdas.*/*.csproj | cut -d'/' -f3 | sort -u)
               changed_dirs="$changed_dirs $dependent_lambdas"
+              echo "Found changed lambda directories: $changed_dirs"
             fi
           fi
 
           # Remove duplicates
           dirs=$(echo "$changed_dirs" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          echo "Lambda directories to deploy after removing dupes: $dirs"
 
           if [[ -z "$dirs" ]]; then
             echo "No Lambda changes detected. Skipping deployment."
