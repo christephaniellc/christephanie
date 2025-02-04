@@ -8,6 +8,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
@@ -15,7 +16,7 @@ using Wedding.Lambdas.FamilyUnit.Get.Validation;
 
 namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
 {
-    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitDto>
+    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitViewModel>
     {
         private readonly ILogger<GetFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
@@ -28,7 +29,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> GetAsync(GetFamilyUnitQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<FamilyUnitViewModel> GetAsync(GetFamilyUnitQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation("Validating GetFamily query...");
             query.Validate(nameof(query));
@@ -51,7 +52,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                     throw new UnauthorizedAccessException("Access denied");
                 }
 
-                return results;
+                return _mapper.Map<FamilyUnitViewModel>(results);
             }
             catch (KeyNotFoundException ex)
             {

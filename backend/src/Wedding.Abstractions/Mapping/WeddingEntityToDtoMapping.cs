@@ -179,12 +179,14 @@ namespace Wedding.Abstractions.Mapping
             public PreferencesProfile()
             {
                 CreateMap<WeddingEntity, PreferencesDto>()
+                    .ForMember(dest => dest.NotificationPreference, opt => opt.MapFrom(src => src.PrefNotification))
                     .ForMember(dest => dest.SleepPreference, opt => opt.MapFrom(src => src.PrefSleep))
                     .ForMember(dest => dest.FoodPreference, opt => opt.MapFrom(src => src.PrefFood))
                     .ForMember(dest => dest.FoodAllergies, opt => opt.MapFrom(src => src.PrefFoodAllergies))
                     ;
 
                 CreateMap<PreferencesDto, WeddingEntity>()
+                    .ForMember(dest => dest.PrefNotification, opt => opt.MapFrom(src => src.NotificationPreference))
                     .ForMember(dest => dest.PrefSleep, opt => opt.MapFrom(src => src.SleepPreference))
                     .ForMember(dest => dest.PrefFood, opt => opt.MapFrom(src => src.FoodPreference))
                     .ForMember(dest => dest.PrefFoodAllergies, opt => opt.MapFrom(src => src.FoodAllergies))

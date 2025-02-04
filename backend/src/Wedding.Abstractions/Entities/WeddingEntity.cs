@@ -115,6 +115,10 @@ namespace Wedding.Abstractions.Entities
         /// <summary>
         /// RSVP-specific fields (used when SortKey = "PREFS")
         /// </summary>
+        /// 
+        [DynamoDBProperty(typeof(EnumToStringConverter<NotificationPreferenceEnum>))]
+        public List<NotificationPreferenceEnum>? PrefNotification { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
         public SleepPreferenceEnum? PrefSleep { get; set; }
 
