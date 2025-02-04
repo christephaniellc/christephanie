@@ -39,7 +39,12 @@ public class GetFunctionTests
         var dynamoDBProvider = new Mock<IDynamoDBProvider>();
 
         var config = new MapperConfiguration(cfg =>
-            cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            {
+                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+            }
+        );
         _mapper = config.CreateMapper();
 
         var familyUnit = new List<WeddingEntity>

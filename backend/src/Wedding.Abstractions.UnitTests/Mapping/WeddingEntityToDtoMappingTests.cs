@@ -18,8 +18,13 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(
-                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             _mapper = config.CreateMapper();
         }
 
@@ -293,6 +298,40 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         }
 
         [Test]
+        public void Should_Map_VerifyDto_False()
+        {
+            var verify = new VerifyDto
+            {
+                Verified = false,
+                VerificationCode = "123456",
+                VerificationCodeExpiration = DateTime.UtcNow.AddHours(1)
+            };
+            
+            var result = _mapper.Map<VerifyDto>(verify.ToString());
+
+            result.Verified.Should().Be(verify.Verified);
+            result.VerificationCode.Should().Be(verify.VerificationCode);
+            result.VerificationCodeExpiration.Should().Be(verify.VerificationCodeExpiration);
+        }
+
+        [Test]
+        public void Should_Map_VerifyDto_True()
+        {
+            var verify = new VerifyDto
+            {
+                Verified = true,
+                VerificationCode = null,
+                VerificationCodeExpiration = null
+            };
+
+            var result = _mapper.Map<VerifyDto>(verify.ToString());
+
+            result.Verified.Should().Be(verify.Verified);
+            result.VerificationCode.Should().Be(verify.VerificationCode);
+            result.VerificationCodeExpiration.Should().Be(verify.VerificationCodeExpiration);
+        }
+
+        [Test]
         public void Should_Map_GuestDto_To_WeddingEntity()
         {
             // Arrange
@@ -303,7 +342,19 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 FirstName = "John",
                 LastName = "Jingleheimer",
                 Email = "jingleheimersmith@gmail.com",
+                EmailVerified = new VerifyDto
+                {
+                    Verified = false,
+                    VerificationCode = "123456",
+                    VerificationCodeExpiration = DateTime.UtcNow.AddHours(1)
+                },
                 Phone = "123-456-7890",
+                PhoneVerified = new VerifyDto
+                {
+                    Verified = true,
+                    VerificationCode = null,
+                    VerificationCodeExpiration = null
+                },
                 AgeGroup = AgeGroupEnum.Under13,
                 Roles = new List<RoleEnum> { RoleEnum.Staff },
                 Rsvp = new RsvpDto
@@ -313,6 +364,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 },
                 Preferences = new PreferencesDto
                 {
+                    NotificationPreference = new List<NotificationPreferenceEnum> { NotificationPreferenceEnum.Email },
                     SleepPreference = SleepPreferenceEnum.Camping,
                     FoodPreference = FoodPreferenceEnum.Omnivore,
                     FoodAllergies = new List<string> { "Peanuts" },
@@ -341,6 +393,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.RsvpFourthOfJuly.Should().Be(guestDto.Rsvp.FourthOfJuly);
             entity.RsvpNotes.Should().Be(guestDto.Rsvp.RsvpNotes);
 
+            entity.PrefNotification.Should().BeEquivalentTo(guestDto.Preferences.NotificationPreference);
             entity.PrefSleep.Should().Be(guestDto.Preferences.SleepPreference);
             entity.PrefFood.Should().Be(guestDto.Preferences.FoodPreference);
             entity.PrefFoodAllergies.Should().BeEquivalentTo(guestDto.Preferences.FoodAllergies);

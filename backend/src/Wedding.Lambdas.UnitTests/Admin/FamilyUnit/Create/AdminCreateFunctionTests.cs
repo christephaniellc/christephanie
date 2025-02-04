@@ -38,7 +38,12 @@ public class AdminCreateFunctionTests
             .AddJsonFile("appsettings.Development.json")
             .Build();
         var config = new MapperConfiguration(cfg =>
-            cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            {
+                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+            }
+        );
         var mapper = config.CreateMapper();
 
         _handlerLogger = new Mock<ILogger<AdminCreateFamilyUnitHandler>>();
