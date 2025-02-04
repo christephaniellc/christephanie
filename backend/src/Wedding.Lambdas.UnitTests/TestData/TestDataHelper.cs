@@ -33,7 +33,19 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     AdditionalFirstNames = new List<string> { "Jacob" },
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest },
-                    EmailVerified = false
+                    EmailVerified = new VerifyDto
+                    {
+                        Verified = false,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
+                    Phone = "555-555-5555",
+                    PhoneVerified = new VerifyDto
+                    {
+                        Verified = false,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
                 };
             }
         }
@@ -50,7 +62,19 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Jane",
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Party },
-                    EmailVerified = false
+                    EmailVerified = new VerifyDto
+                    {
+                        Verified = false,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
+                    Phone = "555-555-5555",
+                    PhoneVerified = new VerifyDto
+                    {
+                        Verified = false,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
                 };
             }
         }
@@ -67,7 +91,19 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Admin",
                     LastName = "Dude",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Admin },
-                    EmailVerified = true
+                    EmailVerified = new VerifyDto
+                    {
+                        Verified = true,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
+                    Phone = "555-555-5555",
+                    PhoneVerified = new VerifyDto
+                    {
+                        Verified = false,
+                        VerificationCode = "123456",
+                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                    },
                 };
             }
         }
