@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -44,9 +45,9 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
 
-                _logger.LogInformation("Table audience: {command.AuthContext.Audience}");
-                _logger.LogInformation("Invitation code: {command.FamilyUnit.InvitationCode}");
-                _logger.LogInformation("Found family unit: {JsonSerializer.Serialize(existingFamilyUnit}");
+                _logger.LogInformation($"Table audience: {command.AuthContext.Audience}");
+                _logger.LogInformation($"Invitation code: {command.FamilyUnit.InvitationCode}");
+                _logger.LogInformation($"Found family unit: {JsonSerializer.Serialize(existingFamilyUnitEntity)}");
 
                 // TODO: should only update certain properties, do a patch endpoint, not all guests / properties are included
                 var allGuests = new List<GuestDto>();
@@ -65,18 +66,18 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                         
                         if (guest.Rsvp != null) 
                         {
-                            _logger.LogInformation("guest.Rsvp.InvitationResponse: {guest.Rsvp.InvitationResponse}");
+                            _logger.LogInformation($"guest.Rsvp.InvitationResponse: {guest.Rsvp.InvitationResponse}");
                             existingGuestEntity.InvitationResponse = guest.Rsvp.InvitationResponse;
-                            _logger.LogInformation("guest.Rsvp.Wedding: {guest.Rsvp.Wedding}");
+                            _logger.LogInformation($"guest.Rsvp.Wedding: {guest.Rsvp.Wedding}");
                             existingGuestEntity.RsvpWedding = guest.Rsvp.Wedding;
-                            _logger.LogInformation("guest.Rsvp.RehearsalDinner: {guest.Rsvp.RehearsalDinner}");
+                            _logger.LogInformation($"guest.Rsvp.RehearsalDinner: {guest.Rsvp.RehearsalDinner}");
                             existingGuestEntity.RsvpRehearsalDinner = guest.Rsvp.RehearsalDinner;
-                            _logger.LogInformation("guest.Rsvp.FourthOfJuly: {guest.Rsvp.FourthOfJuly}");
+                            _logger.LogInformation($"guest.Rsvp.FourthOfJuly: {guest.Rsvp.FourthOfJuly}");
                             existingGuestEntity.RsvpFourthOfJuly = guest.Rsvp.FourthOfJuly;
 
                             if (guest.Rsvp.InvitationResponse != InvitationResponseEnum.Pending)
                             {
-                                _logger.LogInformation("command.AuthContext.Name: {command.AuthContext.Name}");
+                                _logger.LogInformation($"command.AuthContext.Name: {command.AuthContext.Name}");
                                 existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
@@ -92,7 +93,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                     Username = command.AuthContext.Name
                                 }.ToString();
                             }
-                            _logger.LogInformation("guest.Rsvp.RsvpNotes: {guest.Rsvp.RsvpNotes}");
+                            _logger.LogInformation($"guest.Rsvp.RsvpNotes: {guest.Rsvp.RsvpNotes}");
                             existingGuestEntity.RsvpNotes = guest.Rsvp.RsvpNotes;
                         }
 
@@ -112,20 +113,25 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     }
                 }
 
-                existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress.ToString();
+                _logger.LogInformation($"familyUnit.MailingAddress.ToString(): {familyUnit.MailingAddress?.ToString()}");
+                existingFamilyUnitEntity.MailingAddress = familyUnit.MailingAddress?.ToString();
                 existingFamilyUnitEntity.AdditionalAddresses = familyUnit.AdditionalAddresses?
                     .Select(address => address.ToString())
                     .ToList() ?? null;
+                _logger.LogInformation($"familyUnit.InvitationResponseNotes: {familyUnit.InvitationResponseNotes}");
                 existingFamilyUnitEntity.InvitationResponseNotes = familyUnit.InvitationResponseNotes;
                 
                 _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
                 familyUnit.Guests = allGuests;
+                _logger.LogInformation($"familyUnit.CalculateHeadcount(): {familyUnit.CalculateHeadcount()}");
                 existingFamilyUnitEntity.PotentialHeadCount = familyUnit.CalculateHeadcount();
                 
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
+                _logger.LogInformation($"Updated existingFamilyUnitEntity");
 
                 var result = await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
+                _logger.LogInformation($"Got updated existingFamilyUnitEntity");
                 return _mapper.Map<FamilyUnitViewModel>(result);
             }
             catch (Exception ex)
