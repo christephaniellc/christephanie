@@ -195,14 +195,14 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 GuestId = Guid.NewGuid().ToString(),
                 PrefSleep = SleepPreferenceEnum.Camping,
                 PrefFood = FoodPreferenceEnum.Omnivore,
-                PrefFoodAllergies = "Peanuts",
+                PrefFoodAllergies = new List<string> {"Peanuts"},
             };
 
             var dto = _mapper.Map<PreferencesDto>(entity);
 
             dto.SleepPreference.Should().Be(entity.PrefSleep);
             dto.FoodPreference.Should().Be(entity.PrefFood);
-            dto.FoodAllergies.Should().Be(entity.PrefFoodAllergies);
+            dto.FoodAllergies.Should().BeEquivalentTo(entity.PrefFoodAllergies);
         }
 
         [Test]
@@ -315,7 +315,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 {
                     SleepPreference = SleepPreferenceEnum.Camping,
                     FoodPreference = FoodPreferenceEnum.Omnivore,
-                    FoodAllergies = "Peanuts",
+                    FoodAllergies = new List<string> { "Peanuts" },
                 },
                 LastActivity = System.DateTime.Now,
             };
@@ -343,7 +343,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             entity.PrefSleep.Should().Be(guestDto.Preferences.SleepPreference);
             entity.PrefFood.Should().Be(guestDto.Preferences.FoodPreference);
-            entity.PrefFoodAllergies.Should().Be(guestDto.Preferences.FoodAllergies);
+            entity.PrefFoodAllergies.Should().BeEquivalentTo(guestDto.Preferences.FoodAllergies);
         }
     }
 }
