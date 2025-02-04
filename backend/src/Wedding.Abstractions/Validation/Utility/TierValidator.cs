@@ -13,7 +13,7 @@ namespace Wedding.Abstractions.Validation.Utility
         }
 
         /// <summary>
-        /// Validates the specified object.
+        /// Validates the specified object. 
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <param name="_">The .</param>
