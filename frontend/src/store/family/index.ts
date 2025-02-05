@@ -46,7 +46,6 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
   key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
-    const mailingAddressUspsVerified = get(addressState)?.uspsVerified;
     if (!familyUnit) {
       return null;
     }
@@ -56,6 +55,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
     const attendingLastNames = guests.filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested).map((user) => user.lastName);
     const allUsersResponded = !guests.some((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending);
     const mailingAddressEntered = !!familyUnit.mailingAddress;
+    const mailingAddressUspsVerified = familyUnit.mailingAddress?.uspsVerified;
     const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName))).map((lastName) => `${lastName}s`).join(' & ');
     const saveTheDateComplete = mailingAddressUspsVerified && allUsersResponded;
 
@@ -123,35 +123,8 @@ export const useUpdateFamilyGuest = (guestId: string) => {
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
-  const address = useRecoilValue(addressState);
   const { auth0User } = useAuth0();
-  const api = useApiContext();
-
-  const getFamilyUnitQuery = useQuery({
-    queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
-    queryFn: () => api.getFamilyUnit(),
-    retry: true,
-    enabled: false,
-  });
-
-  const updateFamilyMutation = useMutation({
-    mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
-    mutationFn: ({ updatedFamily }) => api.updateFamilyUnit(updatedFamily),
-    onSuccess: data => setFamily(data),
-    onError: (error) => {
-      console.error('Failed to update family', error);
-      setFamily(family);
-    }
-  });
-
-  const validateFamilyAddress = useMutation({
-    mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
-    mutationFn: (newAddress: AddressDto) => api.validateAddress(newAddress),
-    onSuccess: data => {
-      updateFamilyAddress({ ...data, uspsVerified: true });
-    },
-    onError: (error) => console.error('Failed to validate address', error),
-  });
+  const { getFamilyUnitQuery, updateFamilyMutation, validateAddressMutation } = useApiContext();
 
   const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
     .then((res) => {
@@ -171,6 +144,19 @@ export const useFamily = () => {
         return {
           ...prevGuest,
           rsvp: { invitationResponse: interested }, // merges the updates onto the original guest
+        };
+      }
+      return prevGuest;
+    });
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
+  }, [family]);
+
+  const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies?: string) => {
+    const updatedGuests = family?.guests?.map((prevGuest) => {
+      if (prevGuest.guestId === guestId) {
+        return {
+          ...prevGuest,
+          foodAllergies: allergies, // merges the updates onto the original guest
         };
       }
       return prevGuest;
@@ -217,11 +203,11 @@ export const useFamily = () => {
     updateFamilyGuestAgeGroup,
     updateFamilyAddress,
     updateFamilyMutation,
-    validateFamilyAddress,
+    validateFamilyAddress: validateAddressMutation,
     updateFamilyComment,
     getFamilyUnitQuery,
     setFamily,
-  }), [getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateFamilyAddress, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
+  }), [getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
 
   return [family, familyActions] as const;
 };

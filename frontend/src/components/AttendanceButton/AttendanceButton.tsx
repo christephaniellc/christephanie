@@ -4,9 +4,9 @@ import { styled } from '@mui/material/styles';
 import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { useAuth0 } from '@auth0/auth0-react';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import Countdowns from '@/components/Countdowns';
+import AgeSelector from '@/components/AgeSelector';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -74,8 +74,11 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       fontSize: buttonProps.fontSize,
       border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
+      width: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
+      minWidth: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
+      maxWidth: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
     };
-  }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent]);
+  }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent, interested]);
 
   return (
     <Box display="flex"
@@ -88,16 +91,21 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         disabled={familyActions.updateFamilyMutation.isPending}
         onClick={handleClick}
         sx={imgButtonSxProps}
+        width={interested === InvitationResponseEnum.Interested ? '50% !important' : '100%'}
       >
-        <LargeAttendanceButton guestId={guestId} isPending={familyActions.updateFamilyMutation.isPending}
-                               error={familyActions.updateFamilyMutation.error} />
+        <Box display="flex" alignItems="center">
+          <LargeAttendanceButton guestId={guestId} isPending={familyActions.updateFamilyMutation.isPending}
+                                 error={familyActions.updateFamilyMutation.error} />
+        </Box>
+
       </ImageButton>
+      {interested === InvitationResponseEnum.Interested && <AgeSelector guestId={guestId} />}
       <Box alignContent="center"
-        sx={{ imgButtonSxProps, borderWidth: 2 }}
+           sx={{ imgButtonSxProps, borderWidth: 2 }}
       >
-        <StephsFavoriteFont>
+        <StephsFavoriteTypography>
           <Countdowns event="Invitation" interested={interested} />
-        </StephsFavoriteFont>
+        </StephsFavoriteTypography>
       </Box>
     </Box>
   );
@@ -139,7 +147,7 @@ const ImageButton = styled(ButtonBase)(({ theme }) => ({
   },
 }));
 
-export const StephsFavoriteFont = styled(Typography)(({ theme }) => ({
+export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
   color: theme.palette.error.main,
   fontWeight: 700,
   fontSize: '1.5rem',

@@ -17,13 +17,12 @@ export const invitationButtonSelectorState = selector<string>({
     const invitationCode = user?.invitationCode;
 
     if (userIdQuery?.isLoading) return 'Checking guest list';
-    if (userIdQuery?.error && userIdQuery?.error?.status) {
+    if (userIdQuery?.error) {
       switch (userIdQuery.error.status) {
         case 404:
         case 400:
-          return userIdQuery.error.description;
         default:
-          return userIdQuery.error.status;
+          return userIdQuery.error.description;
 
       }
     }

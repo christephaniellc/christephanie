@@ -17,6 +17,7 @@ import StickFigureIcon from '@/components/StickFigureIcon';
 import { useCallback, useEffect } from 'react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
+import { userState } from '@/store/user';
 
 const steps = {
   saveTheDate: {
@@ -52,13 +53,14 @@ export default function WelcomePageStepper() {
   const [activeStep, setActiveStep] = React.useState(0);
   const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
+  const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const navigate = useNavigate();
   const handleNext = useCallback((step: ReturnType<typeof rsvpSteps>) => {
     if (!familyStates?.allUsersResponded) {
       navigate(`${step.stepUrl}?step=attendance`);
     } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      navigate(`${step.stepUrl}?step=address`);
+      navigate(`${step.stepUrl}?step=mailingAddress`);
     } else if (familyStates.nobodyComing) {
       console.log('find a way to disable this button');
     } else {
@@ -104,7 +106,7 @@ export default function WelcomePageStepper() {
       <Stepper activeStep={activeStep} orientation="vertical" sx={{ pl: 2 }}>
         {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
-              icon={<StickFigureIcon rotation={0} fontSize={'large'} />}
+              icon={<StickFigureIcon rotation={0} fontSize={'large'} ageGroup={user.ageGroup} />}
               optional={
                 <Typography variant="caption">
                   {step.stepCompleted ? "Thanks for responding!" : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}

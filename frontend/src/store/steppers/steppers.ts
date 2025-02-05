@@ -18,13 +18,6 @@ export const saveTheDateStepperState = atom<Record<string, SaveTheDateStep>>({
       description: '',
       component: null,
     },
-    guestAges: {
-      id: 1,
-      completed: false,
-      label: "Who's drinkin' what?",
-      description: '',
-      component: null,
-    },
     mailingAddress: {
       id: 2,
       completed: false,
@@ -32,8 +25,29 @@ export const saveTheDateStepperState = atom<Record<string, SaveTheDateStep>>({
       description: "",
       component: null,
     },
-    comments: {
+    foodAllergies: {
       id: 3,
+      completed: false,
+      label: 'Any food allergies?',
+      description: "",
+      component: null,
+    },
+    communicationPreference: {
+      id: 4,
+      completed: false,
+      label: 'How should we contact you?',
+      description: "",
+      component: null,
+    },
+    camping: {
+      id: 5,
+      completed: false,
+      label: 'Camping',
+      description: "",
+      component: null,
+    },
+    comments: {
+      id: 6,
       completed: false,
       label: 'Any comments?',
       description: "",

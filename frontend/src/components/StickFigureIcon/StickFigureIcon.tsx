@@ -1,6 +1,7 @@
 import {
   AirlineSeatLegroomExtra,
   AirlineSeatReclineExtra,
+  BabyChangingStation,
   DirectionsRun,
   DirectionsWalk,
   DownhillSkiing,
@@ -10,6 +11,7 @@ import {
   Hiking,
   Kayaking,
   Kitesurfing,
+  Liquor,
   NordicWalking,
   Paragliding,
   Rowing,
@@ -25,6 +27,7 @@ import {
 import { StickFigureIconProps } from '@/components/StickFigureIcon/types';
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
+import { AgeGroupEnum } from '@/types/api';
 
 const StickFigureIcon = ({
                            fontSize = 'inherit',
@@ -33,6 +36,7 @@ const StickFigureIcon = ({
                            error = false,
                            loading,
                            rotation,
+                            ageGroup = AgeGroupEnum.Adult,
                          }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
@@ -100,14 +104,29 @@ const StickFigureIcon = ({
   }, [loading]);
 
   return (
-      <RandomStickFigure fontSize={fontSize}
+    <Box display={'flex'}>
+      {ageGroup === AgeGroupEnum.Adult && (
+        <Liquor sx={{ fontSize: 10, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }}  />
+      )}
+      {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure fontSize={fontSize}
                          color={error ? 'error' : color} sx={{
         // width: hidden ? 0 : 'auto',
         transform: `rotate(${stickFigureRotation}deg)`,
         transition: 'all 1s ease-in-out',
+        opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
+        // visibility: hidden ? 'hidden' : 'visible',
+      }} />}
+      {ageGroup === AgeGroupEnum.Baby && <BabyChangingStation fontSize={fontSize}
+                                                            color={error ? 'error' : color} sx={{
+        // width: hidden ? 0 : 'auto',
+        transition: 'all 1s ease-in-out',
         opacity: hidden ? 0 : 1,
         // visibility: hidden ? 'hidden' : 'visible',
-      }} />
+      }} />}
+      {ageGroup === AgeGroupEnum.Under13 && (
+        <RandomStickFigure fontSize='small' color={error ? 'error' : color} sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1 }} />
+      )}
+    </Box>
   );
 
 };

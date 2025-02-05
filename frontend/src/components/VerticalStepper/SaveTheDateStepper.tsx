@@ -25,6 +25,8 @@ import StickFigureIcon from '@/components/StickFigureIcon';
 import { SaveTheDateStep, saveTheDateStepperState } from '@/store/steppers/steppers';
 import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
 import AgeSelector from '@/components/AgeSelector';
+import FoodAllergies from '@/components/FoodPreferences';
+import { userState } from '@/store/user';
 
 export default function SavetheDateStepper() {
   const theme = useTheme();
@@ -41,23 +43,14 @@ export default function SavetheDateStepper() {
 
 
   useEffect(() => {
-    switch (urlParams?.get('step')) {
-      case 'attendance':
-        setTabIndex(0);
-        break;
-      case 'guestAges':
-        setTabIndex(1);
-        break;
-      case 'mailingAddress':
-        setTabIndex(2);
-        break;
-      case 'comments':
-        setTabIndex(3);
-        break;
-      default:
-        setTabIndex(0);
+    if (urlParams) {
+      const step = urlParams.get('step');
+      if (step) {
+        const index = Object.keys(saveTheDateStepper).indexOf(step);
+        setTabIndex(index);
+      }
     }
-  }, [urlParams]);
+  }, [saveTheDateStepper, urlParams]);
 
   useEffect(() => {
     setUrlParams(new URLSearchParams(location.search));
@@ -105,40 +98,6 @@ export default function SavetheDateStepper() {
             </Box>
           ),
         },
-        guestAges: {
-          ...prev.guestAges,
-          id: prev.guestAges.id, // Ensure the id is included
-          label: 'Age Groups',
-          completed: false,
-          component: (
-            <Box textAlign="center">
-              {guests && !!guests.length && (
-                <>
-                  {!nobodyComing && (
-                    <Typography sx={{
-                      mb: 2,
-                      [theme.breakpoints.down('sm')]: {
-                        fontSize: 0,
-                      },
-                    }}>
-                      {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you, {callByLastNames}!
-                    </Typography>
-                  )}
-                  {nobodyComing && (
-                    <Typography sx={{ mb: 2 }}>
-                      {guests.length === 1 ? 'I' : 'We'} hope you can make it, {callByLastNames}!
-                    </Typography>
-                  )}
-                  <ButtonsContainer>
-                    {guests.map((guest: GuestDto) => (
-                      <AgeSelector guestId={guest.guestId!} key={guest.guestId} />
-                    ))}
-                  </ButtonsContainer>
-                </>
-              )}
-            </Box>
-          ),
-        },
         mailingAddress: {
           ...prev.mailingAddress,
           id: prev.mailingAddress.id, // Ensure the id is included
@@ -147,6 +106,33 @@ export default function SavetheDateStepper() {
           component: (
             <AddressEnvelope />
           ),
+        },
+        foodAllergies: {
+          ...prev.foodAllergies,
+          id: prev.foodAllergies.id, // Ensure the id is included
+          completed: familyStates?.saveTheDateComplete || false,
+          label: 'Any food allergies?',
+          component: (
+            <>
+              {guests.map(guest => <div key={guest.guestId}><FoodAllergies guestId={guest.guestId} /></div>)}
+            </>
+          ),
+        },
+        communicationPreference: {
+          ...prev.communicationPreference,
+          id: prev.communicationPreference.id, // Ensure the id is included
+          completed: false,
+          label: 'How should we contact you?',
+          description: '',
+          component: <>communication preferences</>,
+        },
+        camping: {
+          ...prev.camping,
+          id: prev.camping.id, // Ensure the id is included
+          completed: false,
+          label: 'Camping',
+          description: '',
+          component: <div>camping preferences</div>,
         },
         comments: {
           ...prev.comments,
@@ -160,7 +146,6 @@ export default function SavetheDateStepper() {
             </Box>
           ),
         },
-
       };
     });
   }, [setStepper, familyStates]);
@@ -213,9 +198,9 @@ export default function SavetheDateStepper() {
             {tabIndex < totalTabs && (
               <>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {Object.values(saveTheDateStepper)[tabIndex].description}
+                  {Object.values(saveTheDateStepper)[tabIndex]?.description}
                 </Typography>
-                {Object.values(saveTheDateStepper)[tabIndex].component}
+                {Object.values(saveTheDateStepper)[tabIndex]?.component}
               </>
             )}
           </Box>
@@ -307,15 +292,15 @@ const StyledConnector = styled(StepConnector)(({ theme }) => ({
 
 function StepperIcon(props: StepIconProps) {
   const { active, completed, className } = props;
-
+  const user = useRecoilValue(userState)
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
       {completed ? (
         <Check color="success" />
       ) : (
         <Box color={'gold'} display={'flex'} flexDirection="column" mb={3}>
-          <Typography variant="caption">- Cmon' Man!</Typography>
-          <StickFigureIcon rotation={0} />
+          <Typography variant="caption"></Typography>
+          <StickFigureIcon rotation={0} ageGroup={user.ageGroup} />
         </Box>
       )}
     </StepperIconRoot>

@@ -4,8 +4,9 @@ import { UseMutationResult, useQuery, useQueryClient, UseQueryResult } from '@ta
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useMemo } from 'react';
 import { useApiContext } from '@/context/ApiContext';
+import { ApiError } from '@/api/Api';
 
-export const userIdQueryState = atom<Partial<UseQueryResult<string | null>>>({
+export const userIdQueryState = atom<Partial<UseQueryResult<string | null, ApiError>>>({
   key: 'userIdQueryState',
   default: null,
 });
@@ -31,28 +32,12 @@ export const userMutationState = atom<Partial<UseMutationResult<GuestDto | null>
 });
 
 export const useUser = () => {
-  const api = useApiContext();
+  const { findUserIdQuery, getMeQuery } = useApiContext();
   const [user, setUser] = useRecoilState(userState);
   // doing this so we can check its state within a recoil selector;
   const [userIdQuery, setUserIdQuery] = useRecoilState(userIdQueryState);
   const queryClient = useQueryClient();
   const { user: auth0User } = useAuth0();
-
-  const queryKey = `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
-
-  const findUserIdQuery = useQuery({
-    queryKey: [`findUserIdQuery`, `${queryKey}`],
-    queryFn: () => api.findUserId(queryKey),
-    retry: false,
-    enabled: false,
-  });
-
-  const getMeQuery = useQuery({
-    queryKey: ['getMeQuery'],
-    queryFn: () => api.getMe(),
-    retry: false,
-    enabled: false,
-  });
 
   useEffect(() => {
     if (findUserIdQuery.isLoading) {
@@ -80,15 +65,18 @@ export const useUser = () => {
         guestId: findUserIdQuery.data,
       };
       setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
     }
   }, [findUserIdQuery.data, setUserIdQuery]);
 
   useEffect(() => {
-    if (auth0User) {
+    if (auth0User && !getMeQuery.data && !getMeQuery.isLoading) {
+      console.log('refetching me')
       getMeQuery.refetch()
         .then((res) => {
           if (res.data) {
             setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
           }
         })
         .catch((err) => {

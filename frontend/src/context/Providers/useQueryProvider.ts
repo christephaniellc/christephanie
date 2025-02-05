@@ -1,4 +1,5 @@
 import {QueryClient, QueryClientConfig} from '@tanstack/react-query';
+import { useAuth0 } from '@auth0/auth0-react';
 
 export const useQueryProvider = () => {
     const queryClient = new QueryClient(

@@ -26,7 +26,7 @@ const routes: Routes = {
     icon: AddTaskIcon,
   },
   [Pages.FoodPreferences]: {
-    component: asyncComponentLoader(() => import('@/pages/FoodPreferences')),
+    component: asyncComponentLoader(() => import('@/components/FoodPreferences')),
     path: '/food-preferences',
     title: 'Food Preferences',
     icon: AddTaskIcon,

@@ -17,6 +17,8 @@ import { useUser } from '@/store/user';
 import { useApiContext } from '@/context/ApiContext';
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
+import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
 
 export const InvitationCodeInputs = () => {
@@ -28,7 +30,8 @@ export const InvitationCodeInputs = () => {
     userActions.findUserIdQuery?.refetch();
   };
 
-  const { user: auth0User, loginWithPopup, logout } = useAuth0();
+  const { user: auth0User, getAccessTokenSilently, loginWithPopup } = useAuth0();
+  const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
 
   if (!user) return null;
 
@@ -37,7 +40,7 @@ export const InvitationCodeInputs = () => {
       <Card padding={3} width={'100%'} mb={2} component={Box}>
         <CardHeader
           title={!user?.guestId ? 'Please enter your invitation to get started.' : `Welcome back ${user?.firstName}`}
-          subheader={!api.getJwt() ? 'Please login or finish creating your account to get started' : ''} />
+          subheader={!getAccessTokenSilently() ? 'Please login or finish creating your account to get started' : ''} />
         <CardContent>
           <>
             {!user?.auth0Id &&
@@ -88,29 +91,33 @@ export const InvitationCodeInputs = () => {
                                        fullWidth
                                        variant="contained" onClick={() =>
 
-              user?.guestId ? loginWithPopup({ authorizationParams: { state: JSON.stringify({ guest_id: user?.guestId }) } }) : handleFindUser()}
+              user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser()}
             >
               {invitationButtonText || 'Login With your Existing Account'}
             </Button>}
           </Box>
         </CardActions>
       </Card>
-      {api.getJwt() && !user.guestId && (
-        <Card mt={2} sx={{ width: '100%' }} pb={2}>
-          <CardHeader subheader="Login with your existing account" />
-          <CardActions>
-            <Button
-              fullWidth
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                auth0User ? logout() : loginWithPopup({ authorizationParams: { state: JSON.stringify({ guest_id: user?.guestId }) } });
-              }}
-            >
-              {auth0User ? 'Logout' : 'Login'}
-            </Button>
-          </CardActions>
-        </Card>
+      {getAccessTokenSilently() && !user.guestId && (
+        <>
+          <StephsFavoriteTypography mx='auto'>OR</StephsFavoriteTypography>
+          <Card mt={2} sx={{ width: '100%' }} pb={2}>
+            <CardHeader subheader="Login with your existing account" />
+            <CardActions>
+              <Button
+                fullWidth
+                color="primary"
+                variant="contained"
+
+                onClick={() => {
+                  auth0User ? logOutFromAuth0() : user.guestId ? signInWithAuth0(user.guestId) : loginWithPopup();
+                }}
+              >
+                {auth0User ? 'Logout' : 'Login'}
+              </Button>
+            </CardActions>
+          </Card>
+        </>
       )}
     </Box>
   )

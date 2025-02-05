@@ -4,8 +4,6 @@ import { styled } from '@mui/material/styles';
 import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { BabyChangingStation, Liquor } from '@mui/icons-material';
-import StickFigureIcon from '@/components/StickFigureIcon';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -23,18 +21,10 @@ function AgeGroupThumbComponent(props: AgeSliderThumbProps) {
   );
 }
 
-const ageIcons = [
-  <Box display={'flex'} alignItems={'flexStart'} key={AgeGroupEnum.Adult}><Liquor
-    sx={{ fontSize: 18 }} /><StickFigureIcon rotation={0} fontSize={'large'} /></Box>,         // 0 -> Adult
-  <StickFigureIcon rotation={0} fontSize={'large'} key={AgeGroupEnum.Under21} />,               // 1 -> Under21
-  <StickFigureIcon rotation={0} fontSize={'small'} key={AgeGroupEnum.Under13} />,           // 2 -> Under13
-  <BabyChangingStation key={AgeGroupEnum.Baby} />, // 3 -> Baby
-];
-
 
 export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
-  const [userAgeGroup, setUserAgeGroup] = useState(guest?.ageGroup || AgeGroupEnum.Adult);
   const guest = useRecoilValue(guestSelector(guestId));
+  const [userAgeGroup, setUserAgeGroup] = useState(guest?.ageGroup || AgeGroupEnum.Adult);
   const theme = useTheme();
   const [_, familyActions] = useFamily();
 
@@ -45,8 +35,6 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
     console.log('ageGroup', ageGroup);
     console.log(Object.values(AgeGroupEnum)[ageGroup]);
     setUserAgeGroup(Object.values(AgeGroupEnum)[ageGroup]);
-
-    // familyActions.updateFamilyGuestAgeGroup(guestId, ageGroup);
   };
 
   useEffect(() => {
@@ -99,7 +87,6 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const imgButtonSxProps = useMemo(() => {
     return {
       fontSize: buttonProps.fontSize,
-      border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
       pointerEvents: 'none',
     };
@@ -136,9 +123,9 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             height: '100%',
           }}
         >
-          <Typography variant="caption">Age</Typography>
+          <Typography variant="caption" mr={'auto'}>Age</Typography>
           <AgeSlider
-            sx={{ pointerEvents: 'auto' }}
+            sx={{ pointerEvents: 'auto', mt: 3 }}
             track="inverted"
             disabled={familyActions.updateFamilyMutation.isPending}
             orientation="vertical"
@@ -150,27 +137,22 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             slots={{
               thumb: AgeGroupThumbComponent,
             }}
-            slotProps={{
-              thumb: {
-                children: ageIcons[userAgeGroupIndex],
-              },
-            }}
             onChange={(_, value) => setUserAge(guestId, value as number)}
             onChangeCommitted={(_, index) => familyActions.updateFamilyGuestAgeGroup(guestId, Object.values(AgeGroupEnum)[index])}
           />
         </Box>
       </ImageButton>
-      <Box alignContent="center"
-           sx={{ imgButtonSxProps, borderWidth: 2 }}
-      >
-        {ageIcons[userAgeGroupIndex]}
-      </Box>
+      {/*<Box alignContent="center"*/}
+      {/*     sx={{ imgButtonSxProps, borderWidth: 2 }}*/}
+      {/*>*/}
+      {/*  {ageIcons[userAgeGroupIndex]}*/}
+      {/*</Box>*/}
     </Box>
   );
 };
 
 
-const ImageButton = styled(ButtonBase)(({ theme }) => ({
+export const ImageButton = styled(ButtonBase)(({ theme }) => ({
   '&:hover': {
     boxShadow: 3,
   },
@@ -193,16 +175,10 @@ const ImageButton = styled(ButtonBase)(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(2),
   position: 'relative',
-  width: 175,
-  minWidth: 175,
-  maxWidth: 175,
+  width: 150,
+  minWidth: 150,
+  maxWidth: 150,
   height: 175,
-
-  [theme.breakpoints.up('sm')]: {
-    width: 250,
-    minWidth: 250,
-    maxWidth: 250,
-  },
 }));
 
 export const CountdownMessage = styled(Typography)(({ theme }) => ({
