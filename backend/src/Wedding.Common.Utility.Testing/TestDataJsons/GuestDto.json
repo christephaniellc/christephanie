@@ -22,7 +22,7 @@
         2
     ],
     "Email": "john.doe@gmail.com",
-    "EmailVerified": true,
+    "EmailVerified": "{\"Verified\":true,\"VerificationCode\":null,\"VerificationCodeExpiration\":null}",
     "Phone": "555-555-5555",
     "AgeGroup": 0,
     "LastActivity": "2025-01-22T06:43:55.839+00:00",

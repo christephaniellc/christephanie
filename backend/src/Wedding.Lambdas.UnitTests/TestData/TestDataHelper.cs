@@ -37,14 +37,14 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     {
                         Verified = false,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                     Phone = "555-555-5555",
                     PhoneVerified = new VerifyDto
                     {
                         Verified = false,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                 };
             }
@@ -66,14 +66,14 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     {
                         Verified = false,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                     Phone = "555-555-5555",
                     PhoneVerified = new VerifyDto
                     {
                         Verified = false,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                 };
             }
@@ -95,14 +95,14 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     {
                         Verified = true,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                     Phone = "555-555-5555",
                     PhoneVerified = new VerifyDto
                     {
                         Verified = false,
                         VerificationCode = "123456",
-                        VerificationCodeExpiration = DateTime.UtcNow.AddHours(2)
+                        VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                     },
                 };
             }

@@ -304,7 +304,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             {
                 Verified = false,
                 VerificationCode = "123456",
-                VerificationCodeExpiration = DateTime.UtcNow.AddHours(1)
+                VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
             };
             
             var result = _mapper.Map<VerifyDto>(verify.ToString());
@@ -346,7 +346,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 {
                     Verified = false,
                     VerificationCode = "123456",
-                    VerificationCodeExpiration = DateTime.UtcNow.AddHours(1)
+                    VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                 },
                 Phone = "123-456-7890",
                 PhoneVerified = new VerifyDto
