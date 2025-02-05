@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Dtos
 {
     public class PreferencesDto
     {
-        [DynamoDBProperty(typeof(EnumToStringConverter<NotificationPreferenceEnum>))]
+        [DynamoDBProperty(typeof(ListEnumToStringConverter<NotificationPreferenceEnum>))]
         public List<NotificationPreferenceEnum>? NotificationPreference { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
