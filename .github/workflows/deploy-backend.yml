@@ -74,6 +74,7 @@ jobs:
           if [[ "$force_deploy" == "true" ]]; then
             echo "Force deploy enabled: Deploying all Wedding.Lambdas projects."
             dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
+            changed_dirs=$(echo "$dirs")
           else
             if git rev-parse HEAD~1 >/dev/null 2>&1; then
               previous_commit="HEAD~1"
