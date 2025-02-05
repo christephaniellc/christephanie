@@ -10,6 +10,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 
 export interface FrontendStackProps extends EnvStackProps {
     certificate: certificatemanager.ICertificate;
+    frontendUrl: string;
   }
 
 export class FrontendStack extends cdk.Stack {
