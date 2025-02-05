@@ -27,6 +27,7 @@ namespace Wedding.Common.Serialization
                     new CustomEnumConverter<RoleEnum>(),
                     new CustomEnumConverter<RsvpEnum>(),
                     new CustomEnumConverter<RsvpStage>(),
+                    new CustomEnumConverter<VerifyEnum>(),
                 }
             };
             CamelCaseJsonSerializerOptions = new JsonSerializerOptions
