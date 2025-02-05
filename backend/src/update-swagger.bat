@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 REM Define paths
 set REPO_ROOT=C:\development\github\Christephanie\christephanie
 set BACKEND_PATH=%REPO_ROOT%\backend\src
+set FRONTEND_PATH=%REPO_ROOT%\frontend\src
 set PROJECT_PATH=%BACKEND_PATH%\Wedding.PublicApi\Wedding.PublicApi.csproj
 set SWAGGER_OUTPUT=%BACKEND_PATH%\swagger.json
 set DLL_PATH=%BACKEND_PATH%\Wedding.PublicApi\bin\Release\net8.0\Wedding.PublicApi.dll
