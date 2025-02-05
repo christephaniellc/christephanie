@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Microsoft.Extensions.Logging;
 using Wedding.Common.Configuration;
 using Wedding.Common.ThirdParty;
 
@@ -16,9 +17,11 @@ namespace Wedding.PublicApi.Logic.DI
         /// <inheritdoc cref="Module"/>
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(_ =>
-                {
-                    return new UspsMailingAddressValidationProvider(_uspsConfiguration.ApiUrl, 
+            builder.Register(context =>
+            {
+                var logger = context.Resolve<ILogger<UspsMailingAddressValidationProvider>>();
+
+                return new UspsMailingAddressValidationProvider(logger, _uspsConfiguration.ApiUrl, 
                         _uspsConfiguration.ConsumerKey, _uspsConfiguration.ConsumerSecret);
                 })
                 .AsImplementedInterfaces()
