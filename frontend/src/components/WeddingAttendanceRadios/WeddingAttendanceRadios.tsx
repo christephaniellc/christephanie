@@ -29,7 +29,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
   return (
     <Box display={'flex'} alignItems="center" justifyContent="flex-end" width="100%">
       {declined && (
-        <Typography mr={2}><StickFigureIcon fontSize="small" loading={familyQuery?.fetchStatus === 'fetching'} />
+        <Typography mr={2}><StickFigureIcon fontSize="small" ageGroup={guest?.ageGroup} loading={familyQuery?.fetchStatus === 'fetching'} />
         </Typography>)}
       <Typography
         variant="caption"

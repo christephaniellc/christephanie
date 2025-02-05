@@ -30,8 +30,8 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
       cacheLocation="localstorage"
       useRefreshTokens
     >
-      <ApiContextProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <ApiContextProvider>
           <HelmetProvider>
             <ThemeProvider>
               <AppStateContextProvider>
@@ -39,8 +39,8 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
               </AppStateContextProvider>
             </ThemeProvider>
           </HelmetProvider>
-        </QueryClientProvider>
-      </ApiContextProvider>
+        </ApiContextProvider>
+      </QueryClientProvider>
     </Auth0Provider>
   );
 };

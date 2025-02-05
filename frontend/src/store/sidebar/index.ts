@@ -5,7 +5,7 @@ import type { Actions } from './types';
 
 const sidebarIsOpenState = atom<boolean>({
   key: 'sidebar-openness-state',
-  default: true,
+  default: false,
 });
 
 function useSidebar(): [boolean, Actions] {

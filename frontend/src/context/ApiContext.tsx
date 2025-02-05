@@ -1,25 +1,38 @@
 import React, { useContext, useEffect } from 'react';
-import Api from '@/api/Api';
+import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
+import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
+import { AddressDto } from '@/types/api';
+import { familyState } from '@/store/family';
+import { addressState } from '@/store/address';
 
-type ApiContextProps = Api;
+interface ApiContextProps {
+  findUserIdQuery: UseQueryResult<ReturnType<typeof Api>['findUserId'], ApiError>;
+  getMeQuery: UseQueryResult<ReturnType<typeof Api>['getMe'], ApiError>;
+  getFamilyUnitQuery: UseQueryResult<ReturnType<typeof Api>['getFamilyUnit'], ApiError>;
+  updateFamilyMutation: UseMutationResult<ReturnType<typeof Api>['updateFamilyUnit'], ApiError>;
+  validateAddressMutation: UseMutationResult<ReturnType<typeof Api>['validateAddress'], ApiError>;
+}
 
 
 export const ApiContext = React.createContext({} as ApiContextProps);
 
 export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const user = useRecoilValue(userState);
-  const { getAccessTokenSilently } = useAuth0();
+  const [family, setFamily] = useRecoilState(familyState);
+  const address = useRecoilValue(addressState);
 
+  const { getAccessTokenSilently, user: auth0User } = useAuth0();
 
   const getTokenFunc = React.useCallback(async () => {
     try {
       console.log('getting token');
       return await getAccessTokenSilently();
     } catch (err) {
-      console.error('Failed to get token', err);
+      console.error('Failed to get token:', err);
+      console.info('Attempting to login with Auth0');
       return null;
     }
   }, [getAccessTokenSilently, user]);
@@ -30,8 +43,50 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     apiRef.current = new Api(getTokenFunc);
   }, [user]);
 
+  const queryKey = `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
+
+  const findUserIdQuery = useQuery({
+    queryKey: [`findUserIdQuery`, `${queryKey}`],
+    queryFn: () => apiRef.current?.findUserId(queryKey),
+    retry: false,
+    enabled: false,
+  });
+
+  const getMeQuery = useQuery({
+    queryKey: ['getMeQuery', `${user.guestNumber}`],
+    queryFn: () => apiRef.current!.getMe(),
+    retry: false,
+    enabled: !!auth0User && !user.lastActivity && !!apiRef.current.getMe,
+  });
+
+  const getFamilyUnitQuery = useQuery({
+    queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
+    queryFn: () => apiRef.current!.getFamilyUnit(),
+    retry: false,
+    enabled: !!auth0User,
+  });
+
+  const updateFamilyMutation = useMutation({
+    mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
+    mutationFn: ({ updatedFamily }) => apiRef.current.updateFamilyUnit(updatedFamily),
+    onSuccess: data => setFamily(data),
+    onError: (error) => {
+      console.error('Failed to update family', error);
+      setFamily(family);
+    },
+  });
+
+  const validateAddressMutation = useMutation({
+    mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
+    mutationFn: (newAddress: AddressDto) => apiRef.current!.validateAddress(newAddress),
+    onSuccess: data => {
+      updateFamilyMutation.mutate({ updatedFamily: { ...family, mailingAddress: { ...data, uspsVerified: true } } });
+    },
+    onError: (error) => console.error('Failed to validate address', error),
+  });
+
   return (
-    <ApiContext.Provider value={apiRef.current}>
+    <ApiContext.Provider value={{ findUserIdQuery, getMeQuery, validateAddressMutation, getFamilyUnitQuery, updateFamilyMutation }}>
       {props.children}
     </ApiContext.Provider>
   );

@@ -4,19 +4,22 @@ import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useAppStateContext } from '@/context/Providers/AppState/AppStateContext';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import ThemeIcon from '@mui/icons-material/InvertColors';
 import useTheme from '@/store/theme';
 import { Themes } from '@/theme/types';
 import { Link } from 'react-router-dom';
+import { userState } from '@/store/user';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
+import { useRecoilValue } from 'recoil';
 
 export const BottomNav = () => {
   // const { navValue, setNavValue } = useAppStateContext();
+  const guest = useRecoilValue(userState);
   const [navValue, setNavValue] = useState();
-  const { user, loginWithPopup, logout  } = useAuth0();
-
+  const { user: auth0User, loginWithPopup  } = useAuth0();
+  const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
   const [themes, themeActions] = useTheme();
 
   return (
@@ -35,7 +38,7 @@ export const BottomNav = () => {
           icon={<HomeIcon />}
         />
         <BottomNavigationAction
-          disabled={!user}
+          disabled={!auth0User}
           label="Save the Date"
           component={Link}
           showLabel={true}
@@ -44,12 +47,12 @@ export const BottomNav = () => {
         />
 
         <BottomNavigationAction // Actions
-          label={user ? 'Logout' : 'Login'}
+          label={auth0User ? 'Logout' : 'Login'}
           sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => {
-            user ? logout() : loginWithPopup({ state: JSON.stringify({guest_id: guest?.guestId })});
+            auth0User ? logOutFromAuth0() : loginWithPopup();
           }}
         />
         <BottomNavigationAction
