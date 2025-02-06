@@ -3,7 +3,14 @@ import {
   selectorFamily, useRecoilState, useRecoilValue,
   useSetRecoilState,
 } from 'recoil';
-import { AddressDto, FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
+import {
+  AddressDto,
+  FamilyUnitDto,
+  GuestDto,
+  InvitationResponseEnum,
+  NotificationPreferenceEnum,
+  SleepPreferenceEnum,
+} from '@/types/api';
 import { FamilyGuestsStates } from '@/store/family/types';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
@@ -53,14 +60,16 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
     const guests = familyUnit.guests || [];
     const nobodyComing = guests.every((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
     const attendingLastNames = guests.filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested).map((user) => user.lastName);
-    const allUsersResponded = !guests.some((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending);
+    const allUsersAttendanceResponded = !guests.some((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending);
+    const allAllergiesResponded = !guests.some((user) => !user.preferences?.foodAllergies?.length);
+
     const mailingAddressEntered = !!familyUnit.mailingAddress;
     const mailingAddressUspsVerified = familyUnit.mailingAddress?.uspsVerified;
     const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName))).map((lastName) => `${lastName}s`).join(' & ');
-    const saveTheDateComplete = mailingAddressUspsVerified && allUsersResponded;
+    const saveTheDateComplete = mailingAddressUspsVerified && allUsersAttendanceResponded;
 
     return {
-      allUsersResponded,
+      allUsersResponded: allUsersAttendanceResponded,
       attendingLastNames,
       callByLastNames,
       guests,
@@ -68,6 +77,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
       mailingAddressUspsVerified,
       nobodyComing,
       saveTheDateComplete,
+      allAllergiesResponded,
     } as FamilyGuestsStates;
   },
 });
@@ -138,6 +148,38 @@ export const useFamily = () => {
       }
     }), []);
 
+  const updateFamilyGuestSleepingPreference = useCallback((guestId: string, sleepingPreference: SleepPreferenceEnum) => {
+    const updatedGuests = family?.guests?.map((prevGuest) => {
+      if (prevGuest.guestId === guestId) {
+        return {
+          ...prevGuest,
+          preferences: {
+            ...prevGuest.preferences,
+            sleepPreference: sleepingPreference, // merges the updates onto the original guest
+          },
+        };
+      }
+      return prevGuest;
+    });
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
+  }, [family]);
+
+  const updateFamilyGuestCommunicationPreference = useCallback((guestId: string, notificationPreference: NotificationPreferenceEnum[]) => {
+    const updatedGuests = family?.guests?.map((prevGuest) => {
+      if (prevGuest.guestId === guestId) {
+        return {
+          ...prevGuest,
+          preferences: {
+            ...prevGuest.preferences,
+            notificationPreference: notificationPreference , // merges the updates onto the original guest
+          },
+        };
+      }
+      return prevGuest;
+    });
+    updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
+  }, [family]);
+
   const updateFamilyGuestInterest = useCallback((guestId: string, interested?: InvitationResponseEnum) => {
     const updatedGuests = family?.guests?.map((prevGuest) => {
       if (prevGuest.guestId === guestId) {
@@ -151,18 +193,21 @@ export const useFamily = () => {
     updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
   }, [family]);
 
-  const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies?: string) => {
+  const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies: string[]) => {
     const updatedGuests = family?.guests?.map((prevGuest) => {
       if (prevGuest.guestId === guestId) {
         return {
           ...prevGuest,
-          foodAllergies: allergies, // merges the updates onto the original guest
+          preferences: {
+            ...prevGuest.preferences,
+            foodAllergies: allergies // merges the updates onto the original guest
+          },
         };
       }
       return prevGuest;
     });
     updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
-  }, [family]);
+  }, [family, updateFamilyMutation]);
 
   const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup?: string) => {
     const updatedGuests = family?.guests?.map((prevGuest) => {
@@ -195,19 +240,23 @@ export const useFamily = () => {
     if (auth0User && !family) {
       getFamily();
     }
-  }, [family, auth0User]);
+  }, [family, auth0User, getFamily]);
 
   const familyActions = useMemo(() => ({
-    getFamily,
-    updateFamilyGuestInterest,
-    updateFamilyGuestAgeGroup,
-    updateFamilyAddress,
-    updateFamilyMutation,
-    validateFamilyAddress: validateAddressMutation,
-    updateFamilyComment,
-    getFamilyUnitQuery,
-    setFamily,
-  }), [getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
+      getFamily,
+      updateFamilyGuestSleepingPreference,
+      getFamilyUnitQuery,
+      setFamily,
+      updateFamilyAddress,
+      updateFamilyComment,
+      updateFamilyGuestAgeGroup,
+      updateFamilyGuestCommunicationPreference,
+      updateFamilyGuestFoodAllergies,
+      updateFamilyGuestInterest,
+      updateFamilyMutation,
+      validateFamilyAddress: validateAddressMutation,
+    }),
+    [updateFamilyGuestFoodAllergies, updateFamilyGuestSleepingPreference, updateFamilyGuestCommunicationPreference, getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, updateFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
 
   return [family, familyActions] as const;
 };

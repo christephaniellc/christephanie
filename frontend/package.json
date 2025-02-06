@@ -15,7 +15,7 @@
     "test:unit": "jest --config jest.config.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "generate:types": "swagger-typescript-api -p swagger.json -o ./src/types -n api.ts"
+    "generate:types": "swagger-typescript-api -p ../backend/src/swagger.json -o ./src/types -n api.ts"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",

@@ -9,4 +9,5 @@ export interface FamilyGuestsStates {
   mailingAddressUspsVerified: boolean;
   nobodyComing: boolean;
   saveTheDateComplete: boolean;
+  allAllergiesResponded: boolean;
 }

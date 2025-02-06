@@ -106,7 +106,7 @@ const StickFigureIcon = ({
   return (
     <Box display={'flex'}>
       {ageGroup === AgeGroupEnum.Adult && (
-        <Liquor sx={{ fontSize: 10, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }}  />
+        <Liquor sx={{ fontSize: 16, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }}  />
       )}
       {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure fontSize={fontSize}
                          color={error ? 'error' : color} sx={{

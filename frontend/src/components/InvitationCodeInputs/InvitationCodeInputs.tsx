@@ -110,7 +110,7 @@ export const InvitationCodeInputs = () => {
                 variant="contained"
 
                 onClick={() => {
-                  auth0User ? logOutFromAuth0() : user.guestId ? signInWithAuth0(user.guestId) : loginWithPopup();
+                  auth0User ? logOutFromAuth0() : user.guestId ? signInWithAuth0(user.guestId) : console.log('no guestId');
                 }}
               >
                 {auth0User ? 'Logout' : 'Login'}

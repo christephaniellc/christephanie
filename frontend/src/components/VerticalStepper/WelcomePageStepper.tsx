@@ -7,12 +7,11 @@ import StepContent from '@mui/material/StepContent';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { familyGuestsStates, useFamily } from '@/store/family';
+import { familyGuestsStates } from '@/store/family';
 import { useRecoilValue } from 'recoil';
-import { redirect, useNavigate } from 'react-router-dom';
-import { differenceInDays, format, subDays } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { differenceInDays, format } from 'date-fns';
 import Tooltip from '@mui/material/Tooltip';
-import { StepIcon } from '@mui/material';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import { useCallback, useEffect } from 'react';
 import routes from '@/routes';
@@ -52,7 +51,6 @@ const steps = {
 export default function WelcomePageStepper() {
   const [activeStep, setActiveStep] = React.useState(0);
   const familyStates = useRecoilValue(familyGuestsStates);
-  const [family, familyActions] = useFamily();
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const navigate = useNavigate();

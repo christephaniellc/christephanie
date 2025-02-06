@@ -48,10 +48,10 @@ export interface AddressDto {
 }
 
 export enum AgeGroupEnum {
-  Adult = 'Adult',
-  Under21 = 'Under21',
-  Under13 = 'Under13',
   Baby = 'Baby',
+  Under13 = 'Under13',
+  Under21 = 'Under21',
+  Adult = 'Adult',
 }
 
 export interface DeleteResponse {
@@ -72,7 +72,19 @@ export interface FamilyUnitDto {
   familyUnitLastLogin?: string | null;
 }
 
+export interface FamilyUnitViewModel {
+  invitationCode?: string | null;
+  unitName?: string | null;
+  guests?: GuestDto[] | null;
+  mailingAddress?: AddressDto;
+  additionalAddresses?: AddressDto[] | null;
+  invitationResponseNotes?: string | null;
+  /** @format date-time */
+  familyUnitLastLogin?: string | null;
+}
+
 export enum FoodPreferenceEnum {
+  Unknown = 'Unknown',
   Omnivore = 'Omnivore',
   Vegetarian = 'Vegetarian',
   Vegan = 'Vegan',
@@ -89,8 +101,9 @@ export interface GuestDto {
   lastName?: string | null;
   roles?: RoleEnum[] | null;
   email?: string | null;
-  emailVerified?: boolean;
+  emailVerified?: VerifyDto;
   phone?: string | null;
+  phoneVerified?: VerifyDto;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
   ageGroup?: AgeGroupEnum;
@@ -119,10 +132,16 @@ export interface LastUpdateAuditDto {
   username?: string | null;
 }
 
+export enum NotificationPreferenceEnum {
+  Email = 'Email',
+  Text = 'Text',
+}
+
 export interface PreferencesDto {
+  notificationPreference?: NotificationPreferenceEnum[] | null;
   sleepPreference?: SleepPreferenceEnum;
   foodPreference?: FoodPreferenceEnum;
-  foodAllergies?: string | null;
+  foodAllergies?: string[] | null;
 }
 
 export interface ProblemDetails {
@@ -138,8 +157,10 @@ export interface ProblemDetails {
 export enum RoleEnum {
   Guest = 'Guest',
   Party = 'Party',
+  FourthOfJuly = 'FourthOfJuly',
   Rehearsal = 'Rehearsal',
   Staff = 'Staff',
+  Manor = 'Manor',
   Admin = 'Admin',
 }
 
@@ -163,6 +184,14 @@ export enum SleepPreferenceEnum {
   Unknown = 'Unknown',
   Camping = 'Camping',
   Hotel = 'Hotel',
+  Other = 'Other',
+}
+
+export interface VerifyDto {
+  verified?: boolean;
+  verificationCode?: string | null;
+  /** @format date-time */
+  verificationCodeExpiration?: string | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -528,7 +557,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitList: (params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails | void>({
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'GET',
         secure: true,
@@ -545,7 +574,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitCreate: (data: FamilyUnitDto, params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails | void>({
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'POST',
         body: data,
