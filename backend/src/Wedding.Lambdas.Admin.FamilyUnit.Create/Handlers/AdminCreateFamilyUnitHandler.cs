@@ -84,6 +84,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                                 GuestNumber = guest.GuestNumber,
                                 Tier = familyUnit.Tier,
                                 FirstName = guest.FirstName,
+                                AdditionalFirstNames = guest.AdditionalFirstNames,
                                 LastName = guest.LastName,
                                 Roles = guest.Roles,
                                 Email = guest.Email,
