@@ -6,5 +6,6 @@ namespace Wedding.Common.Auth.Commands
         string JwtAuthority,
         string JwtAudience,
         string MethodArn,
+        string IpAddress,
         string? Token = null) : IWeddingQuery;
 }

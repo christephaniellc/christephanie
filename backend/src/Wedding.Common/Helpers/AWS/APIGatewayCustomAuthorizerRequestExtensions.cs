@@ -16,6 +16,25 @@ namespace Wedding.Common.Helpers.AWS
             return null;
         }
 
+        public static string GetIpAddressFromRequest(this APIGatewayCustomAuthorizerRequest request)
+        {
+            var ipAddress = request?.RequestContext?.Identity?.SourceIp;
+
+            if (string.IsNullOrEmpty(ipAddress) && request?.Headers != null)
+            {
+                var forwardedForHeader = request.Headers
+                    .FirstOrDefault(h => string.Equals(h.Key, "X-Forwarded-For", StringComparison.OrdinalIgnoreCase))
+                    .Value;
+
+                if (!string.IsNullOrEmpty(forwardedForHeader))
+                {
+                    ipAddress = forwardedForHeader.Split(',')[0].Trim();
+                }
+            }
+
+            return ipAddress;
+        }
+
         public static string? GetCaseInsensitiveParam(APIGatewayCustomAuthorizerRequest request, string paramName)
         {
             string paramValue = null;
