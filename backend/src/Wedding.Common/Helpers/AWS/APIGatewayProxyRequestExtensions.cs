@@ -91,6 +91,7 @@ namespace Wedding.Common.Helpers.AWS
                         "invitationCode" => context.InvitationCode,
                         "name" => context.Name,
                         "roles" => context.Roles,
+                        "ipAddress" => context.IpAddress,
                         _ => null // Return null if key does not match any property
                     };
                 }

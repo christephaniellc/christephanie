@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -7,15 +6,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Auth;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Common.Multitenancy;
-using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
