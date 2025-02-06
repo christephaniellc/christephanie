@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   LinearProgress,
-  Button,
   linearProgressClasses,
   StepConnector, stepConnectorClasses, stepLabelClasses, StepIconProps, StepLabelProps, useTheme, StepButton,
 } from '@mui/material';
@@ -24,23 +23,25 @@ import Step from '@mui/material/Step';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import { SaveTheDateStep, saveTheDateStepperState } from '@/store/steppers/steppers';
 import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
-import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
 import { userState } from '@/store/user';
+import CommunicationPreferences from '@/components/CommunicationPreferences/CommunicationPreferences';
+import { useAuth0 } from '@auth0/auth0-react';
+import CampingPreferences from '@/components/CampingPreferences/CampingPreferences';
 
 export default function SavetheDateStepper() {
   const theme = useTheme();
   const familyStates = useRecoilValue(familyGuestsStates);
-  const [family, familyActions] = useFamily();
+  const [family, _familyActions] = useFamily();
   const navigate = useNavigate();
   const location = useLocation();
   // Local state to track which "tab" (formerly "step") is active
   const [tabIndex, setTabIndex] = React.useState(0);
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
-  const { guests, callByLastNames, attendingLastNames, nobodyComing } = familyStates;
-
+  const { guests, callByLastNames, nobodyComing } = familyStates;
+  const { user } = useAuth0();
   const [saveTheDateStepper, setStepper] = useRecoilState(saveTheDateStepperState);
-
+  const guestId = useMemo(() => family && family.guests && family.guests.find( (guest) => guest.auth0Id === user?.sub)?.guestId || null, [family, user?.sub]);
 
   useEffect(() => {
     if (urlParams) {
@@ -110,7 +111,7 @@ export default function SavetheDateStepper() {
         foodAllergies: {
           ...prev.foodAllergies,
           id: prev.foodAllergies.id, // Ensure the id is included
-          completed: familyStates?.saveTheDateComplete || false,
+          completed: familyStates?.allAllergiesResponded || false,
           label: 'Any food allergies?',
           component: (
             <>
@@ -124,7 +125,7 @@ export default function SavetheDateStepper() {
           completed: false,
           label: 'How should we contact you?',
           description: '',
-          component: <>communication preferences</>,
+          component: <Box>{guests.map(guest => <CommunicationPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
         },
         camping: {
           ...prev.camping,
@@ -132,7 +133,7 @@ export default function SavetheDateStepper() {
           completed: false,
           label: 'Camping',
           description: '',
-          component: <div>camping preferences</div>,
+          component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
         },
         comments: {
           ...prev.comments,

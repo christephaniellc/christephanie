@@ -31,6 +31,11 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const isPending = familyActions.updateFamilyMutation.isPending;
   const darkenCoefficent = isPending ? .5 : 0;
 
+  useEffect(() => {
+    if (guest?.ageGroup) {
+      setUserAgeGroup(guest.ageGroup);
+    }
+  }, [guest]);
   const setUserAge = (guestId: string, ageGroup: AgeGroupEnum) => {
     console.log('ageGroup', ageGroup);
     console.log(Object.values(AgeGroupEnum)[ageGroup]);
@@ -46,10 +51,10 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   }, [userAgeGroup]);
 
   const marks = [
-    { label: 'Adult', value: 0 },
-    { label: 'Under 21', value: 1 },
-    { label: 'Under 13', value: 2 },
-    { label: 'Baby in Arms', value: 3 },
+    { label: 'Adult', value: 3 },
+    { label: 'Under 21', value: 2 },
+    { label: 'Under 13', value: 1 },
+    { label: 'Baby', value: 0 },
   ];
 
 
@@ -210,6 +215,6 @@ export const AgeSlider = styled(Slider)(({ theme }) => ({
     color: 'white',
   },
   ...theme.applyStyles('dark', {
-    color: '#0a84ff',
+    // color: '#0a84ff',
   }),
 }));
