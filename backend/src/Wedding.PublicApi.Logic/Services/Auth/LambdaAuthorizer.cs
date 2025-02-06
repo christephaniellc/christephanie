@@ -27,7 +27,8 @@ namespace Wedding.PublicApi.Logic.Services.Auth
                 InvitationCode = authResult.GetInvitationCodeFromAuth(),
                 GuestId = authResult.GetGuestIdFromAuth(),
                 Name = authResult.GetNameFromAuth(),
-                Roles = string.Join(',', authResult.GetRolesFromAuth())
+                Roles = string.Join(',', authResult.GetRolesFromAuth()),
+                IpAddress = authResult.GetIpAddressFromAuth()
             };
         }
     }

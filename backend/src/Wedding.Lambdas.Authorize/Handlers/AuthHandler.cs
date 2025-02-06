@@ -57,6 +57,7 @@ namespace Wedding.Lambdas.Authorize.Handlers
                     query.MethodArn, 
                     audience: query.JwtAudience,
                     token, 
+                    query.IpAddress,
                     authorizedUser);
 
                 _logger.LogInformation($"Policy: {JsonSerializer.Serialize(policy)}");
