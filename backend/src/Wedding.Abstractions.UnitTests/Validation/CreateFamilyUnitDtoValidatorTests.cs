@@ -68,9 +68,9 @@ namespace Wedding.Abstractions.UnitTests.Validation
         [TestCase("A+-", false)]
         [TestCase("A-+", false)]
         [TestCase("", false)]
-        [TestCase("AA", false)]
-        [TestCase("Z", false)]
-        [TestCase("G-", false)]
+        [TestCase("1234", false)]
+        [TestCase("#$#@%", false)]
+        [TestCase("G-FEWEF", false)]
         [TestCase("F+extra", false)]
         [TestCase("1A", false)]
         public void Should_Have_Valid_Tier(string tier, bool isValid)

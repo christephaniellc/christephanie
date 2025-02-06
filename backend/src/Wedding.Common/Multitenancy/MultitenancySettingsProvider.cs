@@ -49,7 +49,7 @@ namespace Wedding.Common.Multitenancy
                 case ("https://www.wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
                 case ("fianceapi.wedding.christephanie.com"):
-                    databaseTable = $"christephanie-wedding-table-prod";
+                    databaseTable = $"christephanie-wedding-guests-prod";
                     break;
                 case ("https://www.dev.wedding.christephanie.com"):
                 case ("https://fianceapi.dev.wedding.christephanie.com"):
@@ -58,7 +58,7 @@ namespace Wedding.Common.Multitenancy
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
                 case ("localhost:5000"):
-                    databaseTable = $"christephanie-wedding-table-dev";
+                    databaseTable = $"christephanie-wedding-guests-dev";
                     break;
                 default:
                     throw new Exception($"Database tenant not found. {tenantId.ToLower()}");

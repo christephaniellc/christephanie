@@ -109,7 +109,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",
-                    Tier = "Animal"
+                    Tier = "123"
                 }},
                 authContext
             );

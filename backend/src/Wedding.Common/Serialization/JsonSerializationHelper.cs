@@ -20,12 +20,14 @@ namespace Wedding.Common.Serialization
                 {
                     new CustomEnumConverter<AgeGroupEnum>(),
                     new CustomEnumConverter<InvitationResponseEnum>(),
+                    new CustomEnumConverter<NotificationPreferenceEnum>(),
                     new CustomEnumConverter<SleepPreferenceEnum>(),
                     new CustomEnumConverter<FoodPreferenceEnum>(),
                     new CustomEnumConverter<PolicyEffectEnum>(),
                     new CustomEnumConverter<RoleEnum>(),
                     new CustomEnumConverter<RsvpEnum>(),
                     new CustomEnumConverter<RsvpStage>(),
+                    new CustomEnumConverter<VerifyEnum>(),
                 }
             };
             CamelCaseJsonSerializerOptions = new JsonSerializerOptions
