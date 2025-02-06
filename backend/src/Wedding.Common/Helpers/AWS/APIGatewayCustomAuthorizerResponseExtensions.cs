@@ -14,6 +14,7 @@ namespace Wedding.Common.Helpers.AWS
             string methodArn,
             string audience = null,
             string token = null,
+            string ipAddress = null,
             GuestDto? authenticatedUser = null,
             string? error = null)
         {
@@ -32,6 +33,7 @@ namespace Wedding.Common.Helpers.AWS
                 context["name"] = authenticatedUser?.FirstName + " " + authenticatedUser?.LastName;
                 context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
                 context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
+                context["ipAddress"] = ipAddress;
             }
 
             return new APIGatewayCustomAuthorizerResponse
@@ -102,6 +104,11 @@ namespace Wedding.Common.Helpers.AWS
         {
             return response.Context["roles"]?.ToString()
                 .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
+        }
+
+        public static string? GetIpAddressFromAuth(this APIGatewayCustomAuthorizerResponse response)
+        {
+            return response.Context["ipAddress"]?.ToString();
         }
     }
 }

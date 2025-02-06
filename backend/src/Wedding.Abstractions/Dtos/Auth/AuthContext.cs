@@ -21,6 +21,9 @@ namespace Wedding.Abstractions.Dtos.Auth
 
         [JsonPropertyName("roles")]
         public string Roles { get; set; }
+
+        [JsonPropertyName("ipAddress")]
+        public string IpAddress { get; set; }
         
         public List<RoleEnum> ParseRoles()
         {

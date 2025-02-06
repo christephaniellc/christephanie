@@ -95,6 +95,8 @@ public class Function
 
         var methodArn = request.MethodArn ?? LambdaArnTranslations.ConvertToArn(request.RequestContext.RouteKey);
 
+        var ipAddress = request.GetIpAddressFromRequest();
+
         if (string.IsNullOrEmpty(_authority))
         {
             var authConfig = await AwsParameterCache.GetConfigAsync<Auth0Configuration>();
@@ -119,12 +121,14 @@ public class Function
         context.Logger.LogDebug($"Request.RouteKey: {request.RequestContext.RouteKey ?? "(null)"}");
         context.Logger.LogDebug($"Request.MethodArn: {request.MethodArn ?? "(null)"}");
         context.Logger.LogDebug($"MethodArn : {methodArn}");
+        context.Logger.LogDebug($"IpAddress : {ipAddress}");
 
         var query = new ValidateAuthQuery(
             _authority,
             _audience,
             methodArn,
-            authorizationHeader.Replace("Bearer ", ""));
+            ipAddress,
+        authorizationHeader.Replace("Bearer ", ""));
 
         try
         {

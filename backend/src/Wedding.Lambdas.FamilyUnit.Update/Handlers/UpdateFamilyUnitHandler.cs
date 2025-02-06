@@ -11,7 +11,6 @@ using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.FamilyUnit.Update.Validation;
 
@@ -22,7 +21,6 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
         private readonly ILogger<UpdateFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
-        private readonly Lazy<IUspsMailingAddressValidationProvider> _uspsMailingAddressValidationProvider;
 
         public UpdateFamilyUnitHandler(ILogger<UpdateFamilyUnitHandler> logger, IDynamoDBProvider dynamoDbProvider, IMapper mapper)
         {
@@ -99,6 +97,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
                         if (guest.Preferences != null)
                         {
+                            existingGuestEntity.PrefNotification = guest.Preferences.NotificationPreference;
                             existingGuestEntity.PrefSleep = guest.Preferences.SleepPreference;
                             existingGuestEntity.PrefFood = guest.Preferences.FoodPreference;
                             existingGuestEntity.PrefFoodAllergies = guest.Preferences.FoodAllergies;
