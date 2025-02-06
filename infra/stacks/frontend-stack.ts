@@ -1,7 +1,6 @@
 import { EnvStackProps } from './config/env-config';
 import { Construct } from 'constructs';
 import { ApplicationProps } from './config/application-config';
-import { RemovalPolicy } from 'aws-cdk-lib';
 import * as cdk from 'aws-cdk-lib';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';

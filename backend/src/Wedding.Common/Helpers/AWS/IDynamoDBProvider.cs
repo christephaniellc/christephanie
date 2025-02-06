@@ -8,6 +8,7 @@ namespace Wedding.Common.Helpers.AWS
 {
     public interface IDynamoDBProvider
     {
+        Task<bool> CheckRateLimitAsync(string audience, string ipAddress, string route, int rateLimit = 3, double rateLimitPerSeconds = 1.0, CancellationToken cancellationToken = default);
         Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string audience, string invitationCode, CancellationToken cancellationToken = default);
         Task<WeddingEntity?> LoadGuestByGuestIdAsync(string audience, string invitationCode, string guestId, CancellationToken cancellationToken = default);
         Task<List<WeddingEntity>?> QueryAsync(string audience, string invitationCode, CancellationToken cancellationToken = default);
