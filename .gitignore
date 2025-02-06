@@ -467,3 +467,4 @@ aws-exports.js
 
 .dockerignore
 Dockerfile
+/backend/src/Wedding.Lambdas.Admin.Setup/Data
