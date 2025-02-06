@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
+	  <Platforms>x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="appsettings.Development.json" />
