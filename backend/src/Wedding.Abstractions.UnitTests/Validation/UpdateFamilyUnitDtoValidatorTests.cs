@@ -32,17 +32,20 @@ namespace Wedding.Abstractions.UnitTests.Validation
         }
 
         [Test]
-        public void Should_Have_Error_When_Tier_Is_Invalid()
+        public void Should_Have_Error_When_Guest_LastName_Is_Invalid()
         {
             var familyUnit = new FamilyUnitDto
             {
-                InvitationCode = "valid_code",
-                Tier = "InvalidTier",
-                Guests = new List<GuestDto> { new GuestDto() }
+                InvitationCode = "ASFGH",
+                Guests = new List<GuestDto> { new GuestDto
+                {
+                    GuestNumber = 1,
+                    FirstName = "yay"
+                } }
             };
 
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.Tier);
+            result.ShouldHaveValidationErrorFor(f => f.Guests);
         }
 
         [Test]
