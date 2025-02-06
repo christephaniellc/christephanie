@@ -6,7 +6,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Get
 {
     [TestFixture]
     [UnitTestsFor(typeof(UspsAddressValidationHandler))]
-    public class UspsAddressValidatorHandlerTests
+    public class UspsAddressValidationHandlerTests
     {
         [Test]
         public void ShouldWriteTests()

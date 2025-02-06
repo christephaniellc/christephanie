@@ -130,7 +130,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 _logger.LogInformation($"Updated existingFamilyUnitEntity");
 
                 var result = await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
-                _logger.LogInformation($"Got updated existingFamilyUnitEntity");
+                _logger.LogInformation($"Got updated existingFamilyUnitEntity: {JsonSerializer.Serialize(result)}");
                 return _mapper.Map<FamilyUnitViewModel>(result);
             }
             catch (Exception ex)
