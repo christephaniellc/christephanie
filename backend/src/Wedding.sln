@@ -51,6 +51,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.Famil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Common.UnitTests", "Wedding.Common.UnitTests\Wedding.Common.UnitTests.csproj", "{9985A940-62FC-4F71-878E-722624EC2FFF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Validate.Phone", "Wedding.Lambdas.Validate.Phone\Wedding.Lambdas.Validate.Phone.csproj", "{882EC571-C23D-413F-A046-12219DDEA421}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Abstractions.IntegrationTests", "Wedding.Abstractions.IntegrationTests\Wedding.Abstractions.IntegrationTests.csproj", "{E617EEF0-3116-44B1-954B-08ACBB132D64}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.Setup", "Wedding.Lambdas.Admin.Setup\Wedding.Lambdas.Admin.Setup.csproj", "{BCBC73BA-E5C7-4CCC-983F-CD2F1ECE42B5}"
 EndProject
 Global
