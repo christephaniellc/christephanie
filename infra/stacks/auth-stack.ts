@@ -38,7 +38,8 @@ export class AuthStack extends cdk.Stack {
     this.httpLambdaAuthorizer = new apigateway.HttpLambdaAuthorizer(`${apiGatewayName}-${environment}-authorize`, authorizerLambda, {
       responseTypes: [apigateway.HttpLambdaResponseType.IAM],
       identitySource: ['$request.header.Authorization'],
-      resultsCacheTtl: cdk.Duration.minutes(5),
+      resultsCacheTtl: cdk.Duration.seconds(0),
+      //resultsCacheTtl: cdk.Duration.minutes(5),
     });
 
     // Output
