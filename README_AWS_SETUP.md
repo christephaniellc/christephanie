@@ -12,11 +12,7 @@
 - Generate access key for local CLI use
 	aws configure --profile your-profile-name
 	Saves to C:\Users\<username>\.aws\credentials
-x ?Run UserStack to set up all deploy permissions for this user
-	cdk deploy --context env=dev UserStack
-x Prod: in Route53 owner account: gave dev AWS account permissions to assume role for Route53 zone
-	IAM > Roles > Create Role > AWS Account > (dev account ID) > added Route53 permissions as json policy		
-		arn:aws:iam::<prod account id>:role/Route53_TrustChristephanieDev
+
 # Set up local aws cli
 ## aws cli profile: C:\Users\Steph Stubler\.aws\config
 	aws configure --profile dev
@@ -115,11 +111,7 @@ cdk deploy ParamsStack-dev --context env=dev --profile dev
 cdk destroy RoleStack-dev --context env=dev --profile dev
 cdk deploy RoleStack-dev --context env=dev --profile dev
 
-If you want to keep backup:
-dynamoTable.addBackup({
-  backupName: `${applicationName}-backup-${environment}`,
-});
-
+SET UP BOOTSTRAP FOR EACH PROFILE:
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
 ----------------------	
@@ -142,39 +134,26 @@ Visual Studio > Open file for Wedding.Lambdas.[project name] > Deploy Lambda but
 	./infra/scripts/deploy.sh dev	# Initial infra deploy
 REPEATING DEPLOY (publish lambdas and frontend)
 	./infra/scripts/build.sh dev	# Deploy all lambdas 
-	TODO: frontend 
+
+Deploy all lambdas:
+Github > Actions > Deploy Backend Lambdas > Run (select Deploy All checkbox)
+
+Deploy single lambda from local:
+Visual Studio > Deploy Lambda (button top right)
+
+Deploy lambdas changed:
+Github > Pull request > watch Actions 
 
 
-Step 4: Automating with CI/CD
-You can integrate these scripts into a CI/CD pipeline using GitHub Actions, AWS CodePipeline, or Jenkins:
-name: Deploy to AWS
-
-Example GitHub Actions workflow:
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install AWS CDK
-        run: npm install -g aws-cdk
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Build Lambdas
-        run: ./infra/scripts/build.sh dev
-
-      - name: Deploy Infrastructure
-        run: ./deploy.sh dev
+-----------------------
+# Prod deploy:
+Redeploy prod:
+	destroy everything but first two steps
+	delete API gateway
+	delete dynamo tables
+	deploy DNS
+	deploy Dynamo + Throttle
+	update System Params with values
+	turn off authorizer caching
+	create an S3 bucket called christephanie-wedding-setup, add folder called Data/ (upload whole folder of guest .jsons and delete items you don't want)
 

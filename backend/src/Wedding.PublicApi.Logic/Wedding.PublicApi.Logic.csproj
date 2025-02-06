@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<OutputType>Library</OutputType>
+		<Platforms>x64</Platforms>
 	</PropertyGroup>
 
   <ItemGroup>
