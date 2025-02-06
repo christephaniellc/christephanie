@@ -1,10 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { LambdaConfig } from '../config/lambda-config';
+import { ApplicationProps } from '../config/application-config';
 
 export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaConfig, account: string, region: string): iam.IRole {
     console.log(`Attaching IAM policies for Lambda: ${lambdaConfig.name}`);
 
+    const { applicationName } = ApplicationProps;
+    
     const lambdaRole = new iam.Role(stack, `${lambdaConfig.name}-Role`, {
         assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
         description: `IAM Role for ${lambdaConfig.name}`
@@ -48,6 +51,15 @@ export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaCo
                     "logs:PutLogEvents"
                 ],
                 resources: ["*"]
+            }),
+
+            // Attach S3 permissions
+            new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: [
+                    "s3:GetObject"
+                ],
+                resources: [`arn:aws:s3:::${applicationName}-setup/*`]
             })
         ]
     });
