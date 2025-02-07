@@ -16,6 +16,7 @@ namespace Wedding.Common.Utility.Testing.CodeContracts
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw (Exception)(object)Activator.CreateInstance<TException>();
                 //throw (object)Activator.CreateInstance<TException>();
             }
