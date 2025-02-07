@@ -206,7 +206,7 @@ namespace Wedding.Common.Helpers.AWS
             var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
             if (numFamilies.Count > 1)
             {
-                _logger.LogError("Multiple family units with Invitation code '{query.InvitationCode}' found.");
+                _logger.LogError($"Multiple family units with Invitation code '{invitationCode}' found.");
                 throw new ApplicationException($"Multiple family units with Invitation code '{invitationCode}' found.");
             }
 
