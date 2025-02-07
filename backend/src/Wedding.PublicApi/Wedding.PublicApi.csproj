@@ -13,6 +13,19 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<NoWarn>AD0001</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>MSB3270</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<AnalysisLevel>none</AnalysisLevel>
+		<EnableNETAnalyzers>false</EnableNETAnalyzers>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<PublishDir>./publish</PublishDir>
 	</PropertyGroup>
 

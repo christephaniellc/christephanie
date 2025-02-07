@@ -18,7 +18,7 @@ namespace Wedding.Abstractions.Validation.Utility
 
         private bool BeAnAdmin(List<RoleEnum>? currentUserRoles)
         {
-            return currentUserRoles.Contains(RoleEnum.Admin);
+            return currentUserRoles?.Contains(RoleEnum.Admin) ?? false;
         }
 
         /// <summary>
