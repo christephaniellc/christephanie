@@ -12,8 +12,9 @@ namespace Wedding.PublicApi.Swagger
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            var hasAuthorize = context.MethodInfo.DeclaringType.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() ||
-                               context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any();
+            var hasAuthorize = context.MethodInfo.DeclaringType != null 
+                               && (context.MethodInfo.DeclaringType.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() 
+                                   || context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any());
 
             Console.WriteLine($"Processing operation: {context.MethodInfo.Name}, HasAuthorize: {hasAuthorize}");
 

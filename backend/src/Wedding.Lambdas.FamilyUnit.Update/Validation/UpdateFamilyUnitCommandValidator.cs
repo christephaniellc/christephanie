@@ -48,7 +48,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
             return userRoles.Contains(RoleEnum.Admin);
         }
 
-        public bool HavePermissionToUpdate(FamilyUnitDto familyUnit, AuthContext authContext)
+        public bool HavePermissionToUpdate(FamilyUnitDto? familyUnit, AuthContext? authContext)
         {
             if (familyUnit == null || authContext == null)
             {
@@ -60,7 +60,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Validation
                 Console.WriteLine($"Permission error. User invitation code: {authContext.InvitationCode}, expected invitation code: {familyUnit.InvitationCode}");
                 return false;
             }
-            if (!familyUnit.Guests.Any(g => g.GuestId.ToUpper().Equals(authContext.GuestId.ToUpper())) && !UserIsAdmin(userRoles))
+            if (!familyUnit.Guests!.Any(g => g.GuestId.ToUpper().Equals(authContext.GuestId.ToUpper())) && !UserIsAdmin(userRoles))
             {
                 Console.WriteLine($"Permission error. Guest not found: {authContext.GuestId}, in family unit: {familyUnit.InvitationCode}");
                 return false;

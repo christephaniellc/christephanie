@@ -8,6 +8,10 @@
 		<Platforms>x64</Platforms>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<NoWarn>MSB3270</NoWarn>
+	</PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />

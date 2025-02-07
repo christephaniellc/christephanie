@@ -6,10 +6,10 @@ namespace Wedding.Abstractions.Entities
     public class RateLimitEntity
     {
         [DynamoDBHashKey]
-        public string Route { get; set; }
+        public required string Route { get; set; }
 
         [DynamoDBRangeKey]
-        public string IpAddress { get; set; }
+        public required string IpAddress { get; set; }
 
         [DynamoDBProperty]
         public int RequestCount { get; set; }

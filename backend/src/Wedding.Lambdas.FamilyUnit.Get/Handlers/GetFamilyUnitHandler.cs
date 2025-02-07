@@ -39,15 +39,17 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
             {
                 var results = await _dynamoDbProvider.GetFamilyUnitAsync(query.AuthContext.Audience, query.AuthContext.InvitationCode, cancellationToken);
 
-                _logger.LogInformation($"GetFamily after results");
-                _logger.LogInformation($"Raw GetFamily results: {JsonSerializer.Serialize(results)}");
-
                 if (results == null)
                 {
                     throw new KeyNotFoundException($"Family unit with invitation code '{query.AuthContext.InvitationCode}' not found.");
                 }
 
-                if (results.Guests.Any(result => result.GuestId == query.AuthContext.GuestId) == null && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
+                _logger.LogInformation($"GetFamily after results");
+                _logger.LogInformation($"Raw GetFamily results: {JsonSerializer.Serialize(results)}");
+
+                // If not an admin, and auth-ed user is not a part of this family
+                if (results!.Guests!.All(result => result.GuestId != query.AuthContext.GuestId) 
+                    && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
                 {
                     throw new UnauthorizedAccessException("Access denied");
                 }

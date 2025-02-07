@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
@@ -59,6 +60,11 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             command.FamilyUnit.InvitationCode, 
                             guest.GuestId, 
                             cancellationToken);
+
+                        if (existingGuestEntity == null)
+                        {
+                            throw new ValidationException($"Guest not found: Audience: {command.AuthContext.Audience}, GuestId: {guest.GuestId}");
+                        }
                         
                         existingGuestEntity.AgeGroup = guest.AgeGroup;
                         
@@ -79,7 +85,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                 existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
-                                    Username = command.AuthContext.Name
+                                    Username = command.AuthContext.Name ?? "unknown"
                                 }.ToString();
                             }
 
@@ -88,7 +94,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                 existingGuestEntity.RsvpAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
-                                    Username = command.AuthContext.Name
+                                    Username = command.AuthContext.Name ?? "unknown"
                                 }.ToString();
                             }
                             _logger.LogInformation($"guest.Rsvp.RsvpNotes: {guest.Rsvp.RsvpNotes}");

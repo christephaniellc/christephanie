@@ -9,7 +9,7 @@ namespace Wedding.Abstractions.Entities
     public class WeddingEntity
     {
         [DynamoDBHashKey]
-        public string PartitionKey { get; set; }
+        public required string PartitionKey { get; set; }
 
         [DynamoDBRangeKey]
         public string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
@@ -67,7 +67,7 @@ namespace Wedding.Abstractions.Entities
         public string Tier { get; set; } = "";
 
         [DynamoDBProperty(typeof(ListEnumToStringConverter<RoleEnum>))]
-        public List<RoleEnum> Roles { get; set; }
+        public List<RoleEnum>? Roles { get; set; }
 
         [DynamoDBProperty]
         public string? Email { get; set; }

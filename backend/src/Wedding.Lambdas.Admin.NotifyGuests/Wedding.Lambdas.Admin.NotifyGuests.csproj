@@ -9,16 +9,13 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Generate ready to run images during publishing to improve cold start time. -->
     <PublishReadyToRun>true</PublishReadyToRun>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <NoWarn>CA2017</NoWarn>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-		<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	</PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" />
     <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.400.88" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
