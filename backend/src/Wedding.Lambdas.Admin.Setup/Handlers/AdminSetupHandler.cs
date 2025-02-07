@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
@@ -54,7 +55,7 @@ namespace Wedding.Lambdas.Admin.Setup.Handlers
                     Key = "Data/platinum-plus.json"
                 };
 
-                List<FamilyUnitDto> familyUnitDtos;
+                List<FamilyUnitDto>? familyUnitDtos;
                 using (var response = await s3Client.GetObjectAsync(request))
                 using (var reader = new StreamReader(response.ResponseStream))
                 {
@@ -62,10 +63,15 @@ namespace Wedding.Lambdas.Admin.Setup.Handlers
                     familyUnitDtos = JsonSerializer.Deserialize<List<FamilyUnitDto>>(entityJson, jsonOptions);
                 }
 
+                if (familyUnitDtos == null)
+                {
+                    throw new ValidationException("Could not read family units.");
+                } 
+
                 if (familyUnitDtos.FirstOrDefault(x =>
                         x.InvitationCode.Equals(command.InvitationCode, StringComparison.OrdinalIgnoreCase) &&
-                        x.Guests.Any(g => g.FirstName.Equals(command.FirstName, StringComparison.OrdinalIgnoreCase))
-                    ) == null)
+                        (x.Guests ?? new List<GuestDto>()).Any(g =>
+                            g.FirstName.Equals(command.FirstName, StringComparison.OrdinalIgnoreCase))) == null)
 
                 {
                     throw new KeyNotFoundException($"Could not setup admin for invitation code {command.InvitationCode} and first name {command.FirstName}.");
@@ -74,10 +80,14 @@ namespace Wedding.Lambdas.Admin.Setup.Handlers
                 foreach (var familyUnit in familyUnitDtos)
                 {
                     familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
+                    if (!familyUnit.Guests?.Any() ?? true)
+                    {
+                        throw new ValidationException($"Could not read guests in family unit {familyUnit.InvitationCode}");
+                    }
 
                     var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                     var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                    familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
+                    familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests![0].FirstName, familyUnit.Guests[0].LastName);
 
                     var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(command.Audience, familyUnit.InvitationCode);
                     

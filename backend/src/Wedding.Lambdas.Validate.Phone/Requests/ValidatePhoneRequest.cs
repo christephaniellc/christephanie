@@ -6,6 +6,6 @@ namespace Wedding.Lambdas.Validate.Phone.Requests
     {
         public string? PhoneNumber { get; set; }
         public string? Code { get; set; }
-        public VerifyEnum Action { get; set; }
+        public VerifyEnum? Action { get; set; }
     }
 }

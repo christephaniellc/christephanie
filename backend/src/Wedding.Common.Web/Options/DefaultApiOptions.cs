@@ -73,7 +73,7 @@ namespace Wedding.Common.Web.Options
         /// Use request timeouts
         /// reference: https://learn.microsoft.com/en-us/aspnet/core/performance/timeouts?view=aspnetcore-8.0
         /// </summary>
-        internal Action<DefaultRequestTimeoutOptions>? ConfigureRequestTimeouts;
+        internal Action<DefaultRequestTimeoutOptions>? ConfigureRequestTimeouts = null;
 
         // /// <summary>
         // /// Use request timeouts

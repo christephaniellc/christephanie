@@ -14,6 +14,7 @@ using Wedding.Common.Serialization;
 using Wedding.Lambdas.Validate.Phone.Commands;
 using Wedding.Lambdas.Validate.Phone.Handlers;
 using Wedding.Lambdas.Validate.Phone.Requests;
+using Wedding.Lambdas.Validate.Phone.Validation;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace Wedding.Lambdas.Validate.Phone;
@@ -21,7 +22,6 @@ namespace Wedding.Lambdas.Validate.Phone;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly IMapper _mapper;
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -43,7 +43,7 @@ public class Function
     }
 
     /// <summary>
-    /// Returns a well-formed USPS address
+    /// Registers or validates a phone number, or resends code
     /// </summary>
     /// <param name="request">The event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
@@ -62,16 +62,18 @@ public class Function
             var phoneRequest = JsonSerializationHelper.DeserializeFromFrontend<ValidatePhoneRequest>(request.Body);
             context.Logger.LogInformation($"Deserialized Input: {JsonSerializer.Serialize(phoneRequest)}");
 
+            phoneRequest.Validate(nameof(phoneRequest));
+
             if (phoneRequest.Action == VerifyEnum.Register)
             {
-                var command = new RegisterPhoneCommand(authContext, phoneRequest.PhoneNumber);
+                var command = new RegisterPhoneCommand(authContext, phoneRequest.PhoneNumber ?? string.Empty);
                 var result = await handler.ExecuteAsync(command);
                 return result.OkResponse();
             }
 
             if (phoneRequest.Action == VerifyEnum.Validate)
             {
-                var command = new ValidatePhoneCommand(authContext, phoneRequest.Code);
+                var command = new ValidatePhoneCommand(authContext, phoneRequest.Code ?? string.Empty);
                 var result = await handler.ExecuteAsync(command);
                 return result.OkResponse();
             }

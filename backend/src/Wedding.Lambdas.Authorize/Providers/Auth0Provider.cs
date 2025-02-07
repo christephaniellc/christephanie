@@ -53,7 +53,7 @@ namespace Wedding.Lambdas.Authorize.Providers
                     {
                         PropertyNameCaseInsensitive = true
                     };
-                    return JsonSerializer.Deserialize<Auth0User>(jsonResponse, options);
+                    return JsonSerializer.Deserialize<Auth0User>(jsonResponse, options)!;
                 }
             }
             catch (Exception ex)
