@@ -5,11 +5,11 @@
         /// <summary>
         /// string = 1 characters \w{1}
         /// </summary>
-        public string Code { get; set; }
+        public string? Code { get; set; }
 
         /// <summary>
         /// string
         /// </summary>
-        public string Text { get; set; }
+        public string? Text { get; set; }
     }
 }

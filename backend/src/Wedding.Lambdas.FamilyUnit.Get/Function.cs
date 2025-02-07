@@ -17,7 +17,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private Dictionary<string, string> _metaData { get; set; }
+    private Dictionary<string, string>? _metaData { get; set; }
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -52,6 +52,11 @@ public class Function
             context.Logger.LogInformation($"Raw Lambda Context: {JsonSerializer.Serialize(context)}");
 
             var authContext = request.GetAuthContext();
+            if (authContext == null)
+            {
+                throw new UnauthorizedAccessException("Could not determine auth context.");
+            }
+
             _metaData = new Dictionary<string, string>
             {
                 {"audience", authContext?.Audience ?? "unknown"},
@@ -61,7 +66,7 @@ public class Function
                 {"roles", authContext?.Roles ?? "unknown"}
             };
 
-            context.Logger.LogInformation($"audience: {authContext.Audience}");
+            context.Logger.LogInformation($"audience: {authContext!.Audience}");
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"name: {authContext.Name}");

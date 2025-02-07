@@ -70,7 +70,7 @@ namespace Wedding.PublicApi
                         },
                         OnTokenValidated = context =>
                         {
-                            Console.WriteLine($"Token validated for: {context.Principal.Identity.Name}");
+                            Console.WriteLine($"Token validated for: {context?.Principal?.Identity?.Name ?? "unknown principal identity"}");
                             return Task.CompletedTask;
                         }
                     };
@@ -174,6 +174,7 @@ namespace Wedding.PublicApi
             {
                 endpoints.MapGet("/", async context =>
                 {
+                    await Task.Yield();
                     context.Response.Redirect("/swagger");
                 });
 

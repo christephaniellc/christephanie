@@ -7,7 +7,6 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Wedding.Abstractions.Dtos;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Multitenancy;
@@ -20,7 +19,7 @@ namespace Wedding.Lambdas.Admin.Setup;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private Dictionary<string, string> _metaData { get; set; }
+    private Dictionary<string, string>? _metaData { get; set; }
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -51,7 +50,6 @@ public class Function
     {
         try
         {
-            AdminSetupCommand query;
             context.Logger.LogInformation($"Raw Query Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
             context.Logger.LogInformation($"Headers count: {request.Headers.Count}");
             context.Logger.LogInformation($"Headers: {JsonSerializer.Serialize(request.Headers)}");

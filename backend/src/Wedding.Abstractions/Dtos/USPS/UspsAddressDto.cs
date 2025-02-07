@@ -7,11 +7,11 @@ namespace Wedding.Abstractions.Dtos.USPS
     /// </summary>
     public class UspsAddressDto
     {
-        public string Firm { get; set; }
-        public AddressDto Address { get; set; }
-        public UspsAdditionalInfoDto AdditionalInfo { get; set; }
-        public List<UspsCorrectionDto> Corrections { get; set; }
-        public List<UspsMatchDto> Matches { get; set; }
-        public List<string> Warnings { get; set; }
+        public string? Firm { get; set; }
+        public AddressDto? Address { get; set; } = new AddressDto();
+        public UspsAdditionalInfoDto? AdditionalInfo { get; set; }
+        public List<UspsCorrectionDto>? Corrections { get; set; }
+        public List<UspsMatchDto>? Matches { get; set; }
+        public List<string>? Warnings { get; set; }
     }
 }
