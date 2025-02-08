@@ -22,11 +22,9 @@ namespace Wedding.Abstractions.Dtos
 
         public required List<RoleEnum> Roles { get; set; }
 
-        public string? Email { get; set; }
-        public VerifyDto? EmailVerified { get; set; }
+        public VerifiedDto? Email { get; set; }
 
-        public string? Phone { get; set; }
-        public VerifyDto? PhoneVerified { get; set; }
+        public VerifiedDto? Phone { get; set; }
 
         public RsvpDto? Rsvp { get; set; }
 

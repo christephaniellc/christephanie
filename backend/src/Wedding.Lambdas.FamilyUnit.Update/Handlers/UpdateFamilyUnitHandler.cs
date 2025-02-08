@@ -109,6 +109,16 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             existingGuestEntity.PrefFoodAllergies = guest.Preferences.FoodAllergies;
                         }
 
+                        if (guest.Email != null)
+                        {
+                            existingGuestEntity.Email = guest.Email.ToString();
+                        }
+
+                        if (guest.Phone != null)
+                        {
+                            existingGuestEntity.Phone = guest.Phone.ToString();
+                        }
+
                         //_mapper.Map(guest, existingGuest);
                         _logger.LogInformation("About to save...");
 

@@ -13,8 +13,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
     [TestFixture]
     public class AdminDeleteFamilyUnitCommandValidatorTests
     {
-        private TestTokenHelper _testTokenHelper;
-        private AdminDeleteFamilyUnitCommandValidator _validator;
+        private TestTokenHelper? _testTokenHelper;
+        private AdminDeleteFamilyUnitCommandValidator? _validator;
 
         [SetUp]
         public void SetUp()
@@ -33,10 +33,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 
@@ -53,10 +54,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", authContext);
 
@@ -73,12 +75,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
-            var command = new AdminDeleteFamilyUnitCommand(null, authContext);
+            var command = new AdminDeleteFamilyUnitCommand(null!, authContext);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -93,15 +96,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("INVALID!CODE", authContext);
 
             // Act & Assert
-            Assert.Throws<FluentValidation.ValidationException>(() => _validator.IsValid(command));
+            Assert.Throws<FluentValidation.ValidationException>(() => _validator!.IsValid(command));
         }
 
         [Test]
@@ -110,15 +114,16 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 
             // Act & Assert
-            Assert.DoesNotThrow(() => _validator.IsValid(command));
+            Assert.DoesNotThrow(() => _validator!.IsValid(command));
         }
         
         [Test]
@@ -127,10 +132,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
 

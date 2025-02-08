@@ -33,15 +33,16 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     AdditionalFirstNames = new List<string> { "Jacob" },
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest },
-                    EmailVerified = new VerifyDto
+                    Email = new VerifiedDto
                     {
+                        Value = "john.doe@gmail.com",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
                     },
-                    Phone = "555-555-5555",
-                    PhoneVerified = new VerifyDto
+                    Phone = new VerifiedDto
                     {
+                        Value = "555-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
@@ -62,15 +63,16 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Jane",
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Party },
-                    EmailVerified = new VerifyDto
+                    Email = new VerifiedDto
                     {
+                        Value = "jane.doe@gmail.com",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
                     },
-                    Phone = "555-555-5555",
-                    PhoneVerified = new VerifyDto
+                    Phone = new VerifiedDto
                     {
+                        Value = "555-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
@@ -91,15 +93,16 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Admin",
                     LastName = "Dude",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Admin },
-                    EmailVerified = new VerifyDto
+                    Email = new VerifiedDto
                     {
+                        Value = "admin.doe@gmail.com",
                         Verified = true,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
                     },
-                    Phone = "555-555-5555",
-                    PhoneVerified = new VerifyDto
+                    Phone = new VerifiedDto
                     {
+                        Value = "555-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null

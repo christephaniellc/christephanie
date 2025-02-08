@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleSystemsManagement.Model;
@@ -12,14 +11,15 @@ using Wedding.Lambdas.Validate.Phone.Commands;
 using Wedding.Lambdas.Validate.Phone.Validation;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Validate.Phone.Providers;
+using Wedding.Lambdas.Validate.Phone.Requests;
 using ValidationException = Amazon.SimpleNotificationService.Model.ValidationException;
 
 namespace Wedding.Lambdas.Validate.Phone.Handlers
 {
     public class PhoneValidationHandler : 
-        IAsyncCommandHandler<RegisterPhoneCommand, HttpStatusCode?>,
-        IAsyncCommandHandler<ResendCodeCommand, HttpStatusCode?>,
-        IAsyncCommandHandler<ValidatePhoneCommand, bool>
+        IAsyncCommandHandler<RegisterPhoneCommand, ValidatePhoneResponse>,
+        IAsyncCommandHandler<ResendCodeCommand, ValidatePhoneResponse>,
+        IAsyncCommandHandler<ValidatePhoneCommand, ValidatePhoneResponse>
     {
         private readonly ILogger<PhoneValidationHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
@@ -37,7 +37,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _awsSmsHelper = awsSmsHelper;
         }
 
-        public async Task<HttpStatusCode?> ExecuteAsync(RegisterPhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidatePhoneResponse> ExecuteAsync(RegisterPhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
@@ -64,25 +64,31 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var verifyPhone = string.IsNullOrEmpty(existingGuestEntity.PhoneVerified)
-                ? _mapper.Map<VerifyDto>(existingGuestEntity.PhoneVerified)
-                : new VerifyDto
+            var verifyPhone = string.IsNullOrEmpty(existingGuestEntity.Phone)
+                ? _mapper.Map<VerifiedDto>(existingGuestEntity.Phone)
+                : new VerifiedDto
                 {
+                    Value = command.PhoneNumber,
                     Verified = false,
                     VerificationCode = VerificationCodeProvider.GenerateCode(),
                     VerificationCodeExpiration = VerificationCodeProvider.GenerateExpiry()
                 };
 
-            existingGuestEntity.PhoneVerified = verifyPhone.ToString();
-            existingGuestEntity.Phone = command.PhoneNumber;
+            existingGuestEntity.Phone = verifyPhone.ToString();
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
             var message = $"Your Christephanie wedding phone verification code is: {verifyPhone.VerificationCode}";
-            return await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
+            var awsResponse = await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
+
+            return new ValidatePhoneResponse
+            {
+                NotificationServiceStatusCode = awsResponse,
+                PhoneVerifyState = verifyPhone
+            };
         }
 
-        public async Task<HttpStatusCode?> ExecuteAsync(ResendCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidatePhoneResponse> ExecuteAsync(ResendCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
@@ -102,7 +108,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             return await ExecuteAsync(register, cancellationToken);
         }
 
-        public async Task<bool> ExecuteAsync(ValidatePhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidatePhoneResponse> ExecuteAsync(ValidatePhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
@@ -119,7 +125,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Provided code: {command.Code}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var expectedValidation = _mapper.Map<VerifyDto>(existingGuestEntity.PhoneVerified);
+            var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
 
             var validated = expectedValidation?.Verified ?? false;
             var expectedCode = expectedValidation?.VerificationCode?.ToString() ?? null;
@@ -135,22 +141,29 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             
             if (validated)
             {
-                return true;
+                return new ValidatePhoneResponse
+                {
+                    PhoneVerifyState = expectedValidation
+                };
             }
 
             if (command.Code.ToLower() == expectedCode.ToLower()
                 && expiry.Value > DateTime.UtcNow)
             {
-                existingGuestEntity.PhoneVerified = new VerifyDto
+                var verified = new VerifiedDto
                 {
                     Verified = true,
                     VerificationCode = null,
                     VerificationCodeExpiration = null
-                }.ToString();
+                };
+                existingGuestEntity.Phone = verified.ToString();
 
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
-                return true;
+                return new ValidatePhoneResponse
+                {
+                    PhoneVerifyState = verified
+                };
             }
 
             throw new ValidationException("Invalid verification code.");
