@@ -69,6 +69,13 @@ namespace Wedding.PublicApi.Logic.DI
             }).As<ILambdaAuthorizer>()
             .AsImplementedInterfaces()
             .InstancePerDependency();
+
+            builder.Register(c =>
+                {
+                    return new AwsSmsHelper();
+                }).As<IAwsSmsHelper>()
+                .AsImplementedInterfaces()
+                .InstancePerDependency();
         }
     }
 }
