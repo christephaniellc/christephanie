@@ -12,10 +12,10 @@ namespace Wedding.Abstractions.Entities
         public required string PartitionKey { get; set; }
 
         [DynamoDBRangeKey]
-        public string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
+        public required string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
 
         [DynamoDBProperty]
-        public string InvitationCode { get; set; } = ""; // e.g., "FAMILY#InvitationCode"
+        public required string InvitationCode { get; set; } = ""; // e.g., "FAMILY#InvitationCode"
 
         #region Family-specific fields
         /// <summary>
@@ -73,13 +73,7 @@ namespace Wedding.Abstractions.Entities
         public string? Email { get; set; }
 
         [DynamoDBProperty]
-        public string? EmailVerified { get; set; }
-
-        [DynamoDBProperty]
         public string? Phone { get; set; }
-
-        [DynamoDBProperty]
-        public string? PhoneVerified { get; set; }
 
         [DynamoDBProperty(typeof(EnumToStringConverter<AgeGroupEnum>))]
         public AgeGroupEnum? AgeGroup { get; set; }

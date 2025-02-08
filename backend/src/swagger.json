@@ -950,6 +950,9 @@
         "type": "string"
       },
       "GuestDto": {
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
           "invitationCode": {
@@ -992,18 +995,10 @@
             "nullable": true
           },
           "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "emailVerified": {
-            "$ref": "#/components/schemas/VerifyDto"
+            "$ref": "#/components/schemas/VerifiedDto"
           },
           "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneVerified": {
-            "$ref": "#/components/schemas/VerifyDto"
+            "$ref": "#/components/schemas/VerifiedDto"
           },
           "rsvp": {
             "$ref": "#/components/schemas/RsvpDto"
@@ -1066,6 +1061,9 @@
         "type": "string"
       },
       "LastUpdateAuditDto": {
+        "required": [
+          "username"
+        ],
         "type": "object",
         "properties": {
           "lastUpdate": {
@@ -1196,9 +1194,13 @@
         ],
         "type": "string"
       },
-      "VerifyDto": {
+      "VerifiedDto": {
         "type": "object",
         "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
           "verified": {
             "type": "boolean"
           },

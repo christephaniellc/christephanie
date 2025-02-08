@@ -138,6 +138,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
             if (missingAuthenticatedInfo)
             {
+                var emailVerifiedState = _mapper.Map<VerifiedDto>(matchingGuest.Email);
                 var authenticatedUser = await _authenticationProvider.GetUserInfo(token);
                 _logger.LogInformation($"Saving authenticated user info: {JsonSerializer.Serialize(authenticatedUser)}");
 
@@ -157,12 +158,10 @@ namespace Wedding.Lambdas.Authorize.Providers
                     throw new InvalidOperationException(message);
                 }
 
+                emailVerifiedState.Value = authenticatedUser.Email;
+                emailVerifiedState.Verified = authenticatedUser.EmailVerified ?? false;
+                matchingGuest.Email = emailVerifiedState.ToString();
                 matchingGuest.Auth0Id = authenticatedUser.UserId;
-                matchingGuest.Email = authenticatedUser.Email;
-                matchingGuest.EmailVerified = new VerifyDto()
-                {
-                    Verified = authenticatedUser.EmailVerified ?? false
-                }.ToString();
             }
         }
 

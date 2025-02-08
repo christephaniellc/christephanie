@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NSubstitute;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Dtos;
@@ -21,7 +20,6 @@ using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Lambdas.Validate.Phone.Handlers;
 using Wedding.Lambdas.Validate.Phone.Requests;
-using Amazon.Lambda.Core;
 
 namespace Wedding.Lambdas.UnitTests.Validate.Post
 {
@@ -29,14 +27,14 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
     [UnitTestsFor(typeof(Wedding.Lambdas.Validate.Phone.Function))]
     public class ValidatePhoneFunctionTests
     {
-        private IMapper _mapper;
-        private Mock<IDynamoDBProvider> _mockDynamoDbProvider;
-        private Mock<IAwsSmsHelper> _mockAwsSmsHelper;
-        private TestTokenHelper _testTokenHelper;
-        private Wedding.Lambdas.Validate.Phone.Function _function;
+        private IMapper? _mapper;
+        private Mock<IDynamoDBProvider>? _mockDynamoDbProvider;
+        private Mock<IAwsSmsHelper>? _mockAwsSmsHelper;
+        private TestTokenHelper? _testTokenHelper;
+        private Wedding.Lambdas.Validate.Phone.Function? _function;
 
-        private TestLambdaContext _lambdaContext;
-        private AuthContext _fakeAuthContext;
+        private TestLambdaContext? _lambdaContext;
+        private AuthContext? _fakeAuthContext;
 
         [SetUp]
         public void SetUp()
@@ -68,7 +66,8 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
-                Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName
+                Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName,
+                IpAddress = "127.0.0.1"
             };
 
             _mockAwsSmsHelper.Setup(x =>
@@ -98,17 +97,17 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
         {
             var dto = TestDataHelper.FAMILY_DOE;
 
-            _mockDynamoDbProvider.Setup(x =>
-                    x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            _mockDynamoDbProvider!.Setup(x =>
+                    x.GetFamilyUnitAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dto);
             _mockDynamoDbProvider.Setup(x =>
-                    x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
+                    x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mapper!.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
 
             var request = new ValidatePhoneRequest
             {
                 Action = VerifyEnum.Register,
-                PhoneNumber = dto.Guests[0].Phone
+                PhoneNumber = dto.Guests![0].Phone!.Value
             };
 
             var proxyRequest = new APIGatewayProxyRequest
@@ -123,12 +122,12 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
             };
 
-            var response = await _function.FunctionHandler(proxyRequest, _lambdaContext);
+            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<HttpStatusCode>();
 
             result.Should().Be(HttpStatusCode.OK);
 
-            _mockAwsSmsHelper.Verify(x => x.SendVerificationCode(dto.Guests[0].Phone, It.IsAny<string>()), Times.Once);
+            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
         }
 
         [Test]
@@ -136,12 +135,12 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
         {
             var dto = TestDataHelper.FAMILY_DOE;
 
-            _mockDynamoDbProvider.Setup(x =>
-                    x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+            _mockDynamoDbProvider!.Setup(x =>
+                    x.GetFamilyUnitAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dto);
-            _mockDynamoDbProvider.Setup(x =>
-                    x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
+            _mockDynamoDbProvider!.Setup(x =>
+                    x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mapper!.Map<WeddingEntity>(TestDataHelper.GUEST_JOHN));
 
             var request = new ValidatePhoneRequest
             {
@@ -160,12 +159,12 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
             };
 
-            var response = await _function.FunctionHandler(proxyRequest, _lambdaContext);
+            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<HttpStatusCode>();
 
             result.Should().Be(HttpStatusCode.OK);
 
-            _mockAwsSmsHelper.Verify(x => x.SendVerificationCode(dto.Guests[0].Phone, It.IsAny<string>()), Times.Once);
+            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
         }
 
         [Test]
@@ -174,19 +173,19 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             var code = "234567";
             var dto = TestDataHelper.FAMILY_DOE;
 
-            var john = dto.Guests.FirstOrDefault(g => g.GuestId == TestDataHelper.GUEST_JOHN.GuestId);
-            john.PhoneVerified = new VerifyDto
+            var john = dto.Guests!.FirstOrDefault(g => g.GuestId == TestDataHelper.GUEST_JOHN.GuestId);
+            john!.Phone = new VerifiedDto
             {
                 Verified = false,
                 VerificationCode = code,
                 VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
             };
 
+            _mockDynamoDbProvider!.Setup(x =>
+                    x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mapper!.Map<WeddingEntity>(john));
             _mockDynamoDbProvider.Setup(x =>
-                    x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JOHN.GuestId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mapper.Map<WeddingEntity>(john));
-            _mockDynamoDbProvider.Setup(x =>
-                    x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                    x.GetFamilyUnitAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dto);
 
             var request = new ValidatePhoneRequest
@@ -207,12 +206,12 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
             };
 
-            var response = await _function.FunctionHandler(proxyRequest, _lambdaContext);
+            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<bool>();
 
             result.Should().Be(true);
 
-            _mockAwsSmsHelper.Verify(x => x.SendVerificationCode(dto.Guests[0].Phone, It.IsAny<string>()), Times.Never);
+            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Never);
         }
     }
 }

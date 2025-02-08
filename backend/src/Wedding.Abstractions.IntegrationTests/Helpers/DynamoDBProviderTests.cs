@@ -15,21 +15,17 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
     [TestFixture]
     public class DynamoDBProviderTests
     {
-        private Mock<ILogger<DynamoDBProvider>> _loggerMock;
-        //private AmazonDynamoDBClient _dynamoDbClient;
-        private IDynamoDBContext _dynamoDbContext;
-        private string _testTableName = "christephanie-wedding-unittests";
         private IDynamoDBProvider Sut;
+        private Mock<ILogger<DynamoDBProvider>> _loggerMock;
+        private IDynamoDBContext _dynamoDbContext;
         private IMapper _mapper;
         private Mock<IMultitenancySettingsProvider> _multitenancySettingsProviderMock;
+        private string _testTableName = "christephanie-wedding-unittests";
         private const string Audience = "unittests";
-        // private PhoneValidationHandler _handler;
-        // private Mock<IDynamoDBProvider> _mockDynamoDbProvider;
 
         [SetUp]
-        public async Task SetUp()
+        public void SetUp()
         {
-            //_dynamoDbClient = new AmazonDynamoDBClient();
             _loggerMock = new Mock<ILogger<DynamoDBProvider>>();
             var config = new MapperConfiguration(cfg =>
                 {
@@ -44,7 +40,6 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             // Configure the multitenancy settings provider to return a dummy table name.
             _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience))
                 .Returns(_testTableName);
-            //}
 
             var serviceCollection = new ServiceCollection();
             var dynamoDbClient = new AmazonDynamoDBClient();
@@ -57,7 +52,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
         }
 
         [TearDown]
-        public async Task TearDown()
+        public void TearDown()
         {
             _dynamoDbContext.Dispose();
         }
