@@ -99,11 +99,9 @@ export interface GuestDto {
   firstName?: string | null;
   additionalFirstNames?: string[] | null;
   lastName?: string | null;
-  roles?: RoleEnum[] | null;
-  email?: string | null;
-  emailVerified?: VerifyDto;
-  phone?: string | null;
-  phoneVerified?: VerifyDto;
+  roles: RoleEnum[] | null;
+  email?: VerifiedDto;
+  phone?: VerifiedDto;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
   ageGroup?: AgeGroupEnum;
@@ -129,7 +127,7 @@ export enum InvitationResponseEnum {
 export interface LastUpdateAuditDto {
   /** @format date-time */
   lastUpdate?: string;
-  username?: string | null;
+  username: string | null;
 }
 
 export enum NotificationPreferenceEnum {
@@ -187,7 +185,8 @@ export enum SleepPreferenceEnum {
   Other = 'Other',
 }
 
-export interface VerifyDto {
+export interface VerifiedDto {
+  value?: string | null;
   verified?: boolean;
   verificationCode?: string | null;
   /** @format date-time */

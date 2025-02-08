@@ -24,7 +24,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
 
   return (
     <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap" mb={2}>
-      <Typography variant="h5" width="100%" mb={2}>{guest?.firstName}</Typography>
+      <Typography variant="h5" width="100%" mb={2}>{`${guest?.firstName}`}</Typography>
       <ButtonGroup variant="outlined" size="small" color="secondary">
         {contactPreferences.map((value) => (
           <Button

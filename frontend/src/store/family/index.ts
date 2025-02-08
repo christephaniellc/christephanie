@@ -1,6 +1,6 @@
 import {
   atom, selector,
-  selectorFamily, useRecoilState, useRecoilValue,
+  selectorFamily, useRecoilState,
   useSetRecoilState,
 } from 'recoil';
 import {
@@ -13,11 +13,10 @@ import {
 } from '@/types/api';
 import { FamilyGuestsStates } from '@/store/family/types';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
+import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
-import { addressState } from '@/store/address';
 
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
