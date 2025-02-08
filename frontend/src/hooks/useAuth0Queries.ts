@@ -17,6 +17,7 @@ export const useAuth0Queries = () => {
   };
 
   const signInWithAuth0 = useCallback(async (guestId: string) => {
+    alert(`guestId: ${guestId}`);
     return await loginWithPopup({
       authorizationParams: {
         screen_hint: 'signup',

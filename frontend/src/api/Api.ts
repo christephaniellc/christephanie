@@ -83,7 +83,7 @@ export default class Api {
       default:
 
         if (response.headers.has('Content-Length')
-          && parseInt(response.headers.get('Content-Length')) === 0) {
+          && parseInt((response.headers.get('Content-Length') || '0')) === 0) {
 
           return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => {
           });

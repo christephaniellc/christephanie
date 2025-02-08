@@ -2,7 +2,7 @@ import * as path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import manifest from './manifest.json'; // Update this path if manifest.json is not in the root directory
+import manifest from './manifest.json';
 
 export default defineConfig({
   optimizeDeps: {
@@ -28,7 +28,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    setupFiles: [path.resolve(__dirname, './jest.setup.mjs')],
+    setupFiles: [path.resolve(__dirname, './jest.setup.ts')],
     root: path.resolve(__dirname, './src'),
   },
 });

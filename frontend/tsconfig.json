@@ -7,28 +7,19 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "Node",
     "noEmit": true,
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
     "target": "ESNext",
-    "types": ["vite-plugin-pwa/client", "@types/jest"],
+    "types": ["vite-plugin-pwa/client", "@types/jest", "@testing-library/jest-dom"],
     "useDefineForClassFields": true
   },
-  "include": [
-    "./src",
-  ],
-  "references": [{ "path": "./tsconfig.node.json"}]
+  "include": ["src", "test-utils", "e2e", "**/*.spec.ts", "**/*.spec.tsx", "jest.setup.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

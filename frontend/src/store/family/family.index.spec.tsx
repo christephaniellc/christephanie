@@ -1,5 +1,4 @@
 import {familyState, familyGuestsStates, guestSelector, useUpdateFamilyGuest} from './index';
-import {expect, it, describe, vi} from 'vitest';
 import {mockFamilyUnitDto} from "@/types/mockResponses";
 import {RecoilRoot, RecoilState, snapshot_UNSTABLE} from "recoil";
 import {useEffect} from "react";
@@ -20,10 +19,10 @@ describe('familyGuestsStates selector', () => {
     const familyGuests = loadable.valueOrThrow();
 
     // Now you can assert whatever you want about the resulting value:
-    expect(familyGuests.guests.length).equals(2);
-    expect(familyGuests.nobodyComing).equals(false);
-    expect(familyGuests.callByLastNames).equals('Stublers & Sikorras');
-    expect(familyGuests.attendingLastNames).deep.equal(['Stubler']);
+    expect(familyGuests!.guests.length).toEqual(2);
+    expect(familyGuests!.nobodyComing).toEqual(false);
+    expect(familyGuests!.callByLastNames).toEqual('Stublers & Sikorras');
+    expect(familyGuests!.attendingLastNames).toEqual(['Stubler']);
   });
 });
 
@@ -39,8 +38,8 @@ describe('guestSelector selector', () => {
     const guest = loadable.valueOrThrow();
 
     // Now you can assert whatever you want about the resulting value:
-    expect(guest?.firstName).equals('Steph');
-    expect(guest?.lastName).equals('Stubler');
+    expect(guest?.firstName).toEqual('Steph');
+    expect(guest?.lastName).toEqual('Stubler');
   });
 
   describe('guestSelector (with setter)', () => {
@@ -61,16 +60,16 @@ describe('guestSelector selector', () => {
       const updatedGuest = loadable.valueOrThrow();
 
       // 4) Assertions
-      expect(updatedGuest).not.null;
-      expect(updatedGuest?.firstName).equals('UpdatedName');
+      expect(updatedGuest).not.toBeNull();
+      expect(updatedGuest?.firstName).toEqual('UpdatedName');
 
       // Check if other fields remain intact:
-      expect(updatedGuest?.lastName).equals('Stubler');
+      expect(updatedGuest?.lastName).toEqual('Stubler');
 
       // And if you want, confirm that the data is also reflected in familyState:
       const updatedFamily = updatedSnapshot.getLoadable(familyState).valueOrThrow();
       const sameGuest = updatedFamily?.guests!.find((value) => value.guestId === 'guest-001');
-      expect(sameGuest?.firstName).equals('UpdatedName');
+      expect(sameGuest?.firstName).toEqual('UpdatedName');
     });
 
     it('should do nothing if the family/guests is null or undefined', () => {
@@ -84,7 +83,7 @@ describe('guestSelector selector', () => {
 
       // 3) No error should occur, but obviously no data changes
       const loadable = updatedSnapshot.getLoadable(guestSelector('guest-999'));
-      expect(loadable.valueOrThrow()).null;
+      expect(loadable.valueOrThrow()).toBeNull();
     });
   });
 });
@@ -92,7 +91,7 @@ describe('guestSelector selector', () => {
 describe('useUpdateFamilyGuest', () => {
   it('should update the familyState with the new guest data', () => {
     // 1) Spy/callback to track changes in familyState
-    const onChange = vi.fn();
+    const onChange = jest.fn();
 
     // 2) Test component that calls our hook
     function TestComponent() {

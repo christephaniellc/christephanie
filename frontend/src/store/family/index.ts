@@ -4,7 +4,7 @@ import {
   useSetRecoilState,
 } from 'recoil';
 import {
-  AddressDto,
+  AddressDto, AgeGroupEnum,
   FamilyUnitDto,
   GuestDto,
   InvitationResponseEnum,
@@ -133,7 +133,7 @@ export const useUpdateFamilyGuest = (guestId: string) => {
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
-  const { auth0User } = useAuth0();
+  const { user: auth0User } = useAuth0();
   const { getFamilyUnitQuery, updateFamilyMutation, validateAddressMutation } = useApiContext();
 
   const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
@@ -209,15 +209,16 @@ export const useFamily = () => {
     updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
   }, [family, updateFamilyMutation]);
 
-  const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup?: string) => {
-    const updatedGuests = family?.guests?.map((prevGuest) => {
+  const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup: AgeGroupEnum) => {
+    if (!family || !family.guests) return;
+    const updatedGuests: GuestDto[] = family.guests.map((prevGuest) => {
       if (prevGuest.guestId === guestId) {
         return {
           ...prevGuest,
           ageGroup, // merges the updates onto the original guest
-        };
+        } as GuestDto;
       }
-      return prevGuest;
+      return prevGuest as GuestDto;
     });
     updateFamilyMutation.mutate({ updatedFamily: { ...family, guests: updatedGuests } });
   }, [family]);
