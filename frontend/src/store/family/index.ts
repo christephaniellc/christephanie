@@ -23,7 +23,7 @@ export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
   default: null,
   effects: [
-    ({ setSelf, onSet }) => {
+    ({ setSelf }) => {
       // 1. On atom initialization, check localStorage
       const savedValue = localStorage.getItem('familyUnit');
       if (savedValue != null) {
@@ -34,11 +34,6 @@ export const familyState = atom<FamilyUnitDto | null>({
           console.error('Error parsing localStorage value', error);
         }
       }
-
-      // 2. Whenever the atom's state changes, save it to localStorage
-      onSet((newValue) => {
-        localStorage.setItem('familyUnit', JSON.stringify(newValue));
-      });
     },
   ],
 });
