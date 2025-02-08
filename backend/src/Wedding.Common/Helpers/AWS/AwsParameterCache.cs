@@ -36,9 +36,12 @@ namespace Wedding.Common.Helpers.AWS
                 InvalidateCache<T>(cacheKey);
             }
 
-            if (_cache.TryGetValue(cacheKey, out T cachedValue))
+            if (_cache.TryGetValue(cacheKey, out T? cachedValue))
             {
-                return cachedValue;
+                if (cachedValue != null)
+                {
+                    return cachedValue;
+                }
             }
 
             Console.WriteLine($"Cache expired. Fetching parameter store parameter: {cacheKey}");

@@ -69,8 +69,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Tier, opt => opt.MapFrom(src => src.Tier))
                     .ForMember(dest => dest.InvitationResponseNotes,
                         opt => opt.MapFrom(src => src.InvitationResponseNotes))
-                    .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => src.MailingAddress.ToString()))
-                    .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => src.AdditionalAddresses.Select(address => address.ToString()).ToList()))
+                    .ForMember(dest => dest.MailingAddress, opt => opt.MapFrom(src => (src.MailingAddress != null) ? src.MailingAddress.ToString() : null))
+                    .ForMember(dest => dest.AdditionalAddresses, opt => opt.MapFrom(src => (src.AdditionalAddresses != null) ? src.AdditionalAddresses.Select(address => address.ToString()).ToList() : null))
                     .ForMember(dest => dest.PotentialHeadCount, opt => opt.MapFrom(src => src.Guests != null ? src.Guests.Count : 0))
                     .ForMember(dest => dest.FamilyUnitLastLogin, opt => opt.MapFrom(src => src.FamilyUnitLastLogin))
                     ;
@@ -92,17 +92,23 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AdditionalFirstNames, opt => opt.MapFrom(src => src.AdditionalFirstNames))
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
-                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.EmailVerified)
-                            ? null
-                            : JsonSerializer.Deserialize<VerifyDto?>(src.EmailVerified, new JsonSerializerOptions())
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.Email)
+                            ? new VerifiedDto()
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Email, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            })
                     ))
-                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
-                    .ForMember(dest => dest.PhoneVerified, opt => opt.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.PhoneVerified)
-                            ? null
-                            : JsonSerializer.Deserialize<VerifyDto?>(src.PhoneVerified, new JsonSerializerOptions())
+                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.Phone)
+                            ? new VerifiedDto()
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Phone, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            })
                     ))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
@@ -125,10 +131,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AdditionalFirstNames, opt => opt.MapFrom(src => src.AdditionalFirstNames))
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
-                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => src.EmailVerified.ToString()))
-                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
-                    .ForMember(dest => dest.PhoneVerified, opt => opt.MapFrom(src => src.PhoneVerified.ToString()))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => (src.Email != null) ? src.Email.ToString() : null))
+                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => (src.Phone != null) ? src.Phone.ToString() : null))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
 
@@ -177,8 +181,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.RsvpRehearsalDinner, opt => opt.MapFrom(src => src.RehearsalDinner))
                     .ForMember(dest => dest.RsvpFourthOfJuly, opt => opt.MapFrom(src => src.FourthOfJuly))
                     .ForMember(dest => dest.RsvpNotes, opt => opt.MapFrom(src => src.RsvpNotes))
-                    .ForMember(dest => dest.InvitationResponseAudit, opt => opt.MapFrom(src => src.InvitationResponseAudit.ToString()))
-                    .ForMember(dest => dest.RsvpAudit, opt => opt.MapFrom(src => src.RsvpAudit.ToString()))
+                    .ForMember(dest => dest.InvitationResponseAudit, opt => opt.MapFrom(src => src.InvitationResponseAudit != null ? src.InvitationResponseAudit.ToString() : null))
+                    .ForMember(dest => dest.RsvpAudit, opt => opt.MapFrom(src => src.RsvpAudit != null ? src.RsvpAudit.ToString() : null))
                     ;
             }
         }
@@ -213,15 +217,23 @@ namespace Wedding.Abstractions.Mapping
         {
             public VerifyProfile()
             {
-                CreateMap<string, VerifyDto>()
+                CreateMap<string, VerifiedDto?>()
                     .ConvertUsing(verifyString =>
                         string.IsNullOrWhiteSpace(verifyString)
                             ? null
-                            : JsonSerializer.Deserialize<VerifyDto>(verifyString, new JsonSerializerOptions()));
+                            : JsonSerializer.Deserialize<VerifiedDto>(verifyString, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            }));
 
-                CreateMap<VerifyDto, string>()
+                CreateMap<VerifiedDto, string?>()
                     .ConvertUsing(verifyDto => verifyDto != null
-                        ? JsonSerializer.Serialize(verifyDto, new JsonSerializerOptions())
+                        ? JsonSerializer.Serialize(verifyDto, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            AllowTrailingCommas = true
+                        })
                         : null);
             }
         }

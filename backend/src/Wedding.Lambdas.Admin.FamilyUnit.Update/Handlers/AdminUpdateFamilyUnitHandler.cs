@@ -39,6 +39,11 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
             {
                 var results = await _dynamoDBProvider.FromQueryAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
 
+                if (results == null)
+                {
+                    throw new Exception($"Error loading family. Audience: {command.AuthContext.Audience}, InvitationCode: {command.FamilyUnit.InvitationCode}");
+                }
+
                 var existingFamilyUnitEntity = results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
                 var existingFamilyUnit = _mapper.Map<FamilyUnitDto>(existingFamilyUnitEntity);
                 var existingGuests = results.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
@@ -60,12 +65,17 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 var addedGuests = new List<GuestDto>();
                 if (familyUnit.Guests != null)
                 {
-                    foreach (var guest in familyUnit.OrderedGuests())
+                    foreach (var guest in familyUnit!.OrderedGuests()!)
                     {
                         if (existingGuests.Any(g => g.GuestId == guest.GuestId))
                         {
                             guestsToUpdate.Add(guest);
-                            guestsToDelete.Remove(guestsToDelete.FirstOrDefault(g => g.GuestId == guest.GuestId));
+
+                            var guestToDelete = guestsToDelete.FirstOrDefault(g => g.GuestId == guest.GuestId);
+                            if (guestToDelete != null)
+                            {
+                                guestsToDelete.Remove(guestToDelete);
+                            }
                         }
                         else
                         {
@@ -91,7 +101,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
                     _mapper.Map(guest, existingGuest);
                     //_mapper.Map(existingGuest, guest);
-                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuest, cancellationToken);
+                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuest!, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
 
@@ -113,7 +123,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
                 _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
-                existingFamilyUnitEntity.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
+                existingFamilyUnitEntity!.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
 
                 await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
             }

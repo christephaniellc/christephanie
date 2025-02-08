@@ -12,9 +12,9 @@ namespace Wedding.Common.Helpers.AWS
     {
         public static APIGatewayCustomAuthorizerResponse GeneratePolicy(PolicyEffectEnum effect,
             string methodArn,
-            string audience = null,
-            string token = null,
-            string ipAddress = null,
+            string? audience = null,
+            string? token = null,
+            string? ipAddress = null,
             GuestDto? authenticatedUser = null,
             string? error = null)
         {
@@ -31,7 +31,7 @@ namespace Wedding.Common.Helpers.AWS
                 context["audience"] = audience ?? null;
                 context["guestId"] = authenticatedUser?.GuestId ?? null;
                 context["name"] = authenticatedUser?.FirstName + " " + authenticatedUser?.LastName;
-                context["roles"] = string.Join(",", (authenticatedUser?.Roles.Select(role => role.ToString())) ?? null);
+                context["roles"] = string.Join(",", ((authenticatedUser?.Roles.Select(role => role.ToString())) ?? null) ?? Array.Empty<string>());
                 context["invitationCode"] = authenticatedUser?.InvitationCode ?? null;
                 context["ipAddress"] = ipAddress;
             }
@@ -70,6 +70,10 @@ namespace Wedding.Common.Helpers.AWS
             }
 
             var context = JsonSerializer.Deserialize<APIGatewayCustomAuthorizerContext>(wrappedContextJson);
+            if (context == null)
+            {
+                throw new ApplicationException("Unable to load authorization context.");
+            }
 
             return context;
         }
@@ -102,8 +106,8 @@ namespace Wedding.Common.Helpers.AWS
 
         public static List<RoleEnum>? GetRolesFromAuth(this APIGatewayCustomAuthorizerResponse response)
         {
-            return response.Context["roles"]?.ToString()
-                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
+            return response.Context["roles"]?.ToString()?
+                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList() ?? null; // comma delimited string of roles
         }
 
         public static string? GetIpAddressFromAuth(this APIGatewayCustomAuthorizerResponse response)

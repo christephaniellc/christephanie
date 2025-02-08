@@ -94,8 +94,12 @@ namespace Wedding.Lambdas.Authorize.Providers
                 }
 
                 entity = results.FirstOrDefault();
+                if (entity == null)
+                {
+                    throw new UnauthorizedAccessException($"Could not find matching user. Ip: {query.IpAddress}");
+                }
 
-                await TryUpdateUser(entity, query.Token);
+                await TryUpdateUser(entity, query.Token!);
                 await TryUpdateFamilyUnit(query.JwtAudience, entity.InvitationCode);
 
                 entity.LastActivity = DateTime.UtcNow;
@@ -108,12 +112,12 @@ namespace Wedding.Lambdas.Authorize.Providers
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, $"InvalidOperationException {ex.Message}");
-                throw ex;
+                throw new InvalidOperationException(ex.Message, ex);
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogError(ex, $"UnauthorizedAccessException {ex.Message}");
-                throw ex;
+                throw new UnauthorizedAccessException(ex.Message, ex);
             }
             catch (Exception ex)
             {
@@ -134,6 +138,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
             if (missingAuthenticatedInfo)
             {
+                var emailVerifiedState = _mapper.Map<VerifiedDto>(matchingGuest.Email);
                 var authenticatedUser = await _authenticationProvider.GetUserInfo(token);
                 _logger.LogInformation($"Saving authenticated user info: {JsonSerializer.Serialize(authenticatedUser)}");
 
@@ -153,12 +158,10 @@ namespace Wedding.Lambdas.Authorize.Providers
                     throw new InvalidOperationException(message);
                 }
 
+                emailVerifiedState.Value = authenticatedUser.Email;
+                emailVerifiedState.Verified = authenticatedUser.EmailVerified ?? false;
+                matchingGuest.Email = emailVerifiedState.ToString();
                 matchingGuest.Auth0Id = authenticatedUser.UserId;
-                matchingGuest.Email = authenticatedUser.Email;
-                matchingGuest.EmailVerified = new VerifyDto()
-                {
-                    Verified = authenticatedUser.EmailVerified ?? false
-                }.ToString();
             }
         }
 
@@ -167,14 +170,17 @@ namespace Wedding.Lambdas.Authorize.Providers
             try
             {
                 var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(audience, invitationCode);
+                if (familyUnit == null)
+                {
+                    throw new Exception($"Family unit not found. Audience: {audience}, InvitationCode: {invitationCode}");
+                }
 
                 familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
-                _dynamoDBProvider.SaveAsync(audience, familyUnit);
+                await _dynamoDBProvider.SaveAsync(audience, familyUnit);
             }
             catch (Exception ex)
             {
-                // nothing
-                var test = ex.Message;
+                Console.WriteLine($"Exception: {ex.Message}");
             }
         }
     }

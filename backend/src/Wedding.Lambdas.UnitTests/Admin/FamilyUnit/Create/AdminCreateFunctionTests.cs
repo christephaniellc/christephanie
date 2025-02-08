@@ -25,11 +25,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create;
 [UnitTestsFor(typeof(Lambdas.Admin.FamilyUnit.Create.Function))]
 public class AdminCreateFunctionTests
 {
-    private Mock<ILogger<AdminCreateFamilyUnitHandler>> _handlerLogger;
-    private Mock<ILambdaContext> _mockLambdaContext;
-    private Mock<IDynamoDBProvider> _dynamoDBProvider;
-    private TestAuthorizer _testAuthorizer;
-    private Lambdas.Admin.FamilyUnit.Create.Function _function;
+    private Mock<ILogger<AdminCreateFamilyUnitHandler>>? _handlerLogger;
+    private Mock<ILambdaContext>? _mockLambdaContext;
+    private Mock<IDynamoDBProvider>? _dynamoDBProvider;
+    private TestAuthorizer? _testAuthorizer;
+    private Lambdas.Admin.FamilyUnit.Create.Function? _function;
 
     [SetUp]
     public void Setup()
@@ -64,7 +64,7 @@ public class AdminCreateFunctionTests
     [Test]
     public async Task ShouldNotCreateFamilyUnitHandlerWithoutAdmin()
     {
-        var authContext = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_JOHN);
+        var authContext = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_JOHN);
         var familyUnit = new FamilyUnitDto
         {
             InvitationCode = "ABCDE",
@@ -85,12 +85,12 @@ public class AdminCreateFunctionTests
             Body = JsonSerializer.Serialize(new List<FamilyUnitDto> { familyUnit }, JsonSerializationHelper.FromFrontendOptions)
         }.AddAuthToRequest(authContext);
 
-        var response = await _function.FunctionHandler(request, _mockLambdaContext.Object);
+        var response = await _function!.FunctionHandler(request, _mockLambdaContext!.Object);
         var errorResult = JsonSerializer.Deserialize<FrontendApiError>(response.Body);
 
         // Assert
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
-        errorResult.Status.Should().Be((int)HttpStatusCode.BadRequest);
+        errorResult!.Status.Should().Be((int)HttpStatusCode.BadRequest);
         errorResult.Error.Should().Be("FluentValidation.ValidationException");
         errorResult.Description.Should().Contain("AuthContext: No admin permissions.");
     }
@@ -98,7 +98,7 @@ public class AdminCreateFunctionTests
     [Test]
     public async Task ShouldCreateFamilyUnitHandler()
     {
-        var authContext = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_ADMIN);
+        var authContext = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_ADMIN);
         var familyUnit = new FamilyUnitDto
         {
             InvitationCode = "ABCDE",
@@ -118,7 +118,7 @@ public class AdminCreateFunctionTests
             Body = JsonSerializer.Serialize(new List<FamilyUnitDto> {familyUnit}, JsonSerializationHelper.FromFrontendOptions)
         }.AddAuthToRequest(authContext);
         
-        var response = await _function.FunctionHandler(request, _mockLambdaContext.Object);
+        var response = await _function!.FunctionHandler(request, _mockLambdaContext!.Object);
         var result = response.GetResponseBodyData<List<FamilyUnitDto>>();
 
         result[0].Guests.Should().NotBeNull();

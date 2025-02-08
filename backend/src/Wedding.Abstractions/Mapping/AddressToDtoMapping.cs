@@ -33,7 +33,7 @@ namespace Wedding.Abstractions.Mapping
                 //         };
                 //     });
 
-                CreateMap<string, AddressDto>()
+                CreateMap<string, AddressDto?>()
                     .ConstructUsing((addressString, context) =>
                 {
                     if (string.IsNullOrWhiteSpace(addressString))
@@ -44,12 +44,12 @@ namespace Wedding.Abstractions.Mapping
                 });
 
                 CreateMap<AddressDto, UspsAddressDto>()
-                    .ForPath(dest => dest.Address.StreetAddress, opt => opt.MapFrom(src => src.StreetAddress))
-                    .ForPath(dest => dest.Address.SecondaryAddress, opt => opt.MapFrom(src => src.SecondaryAddress))
-                    .ForPath(dest => dest.Address.City, opt => opt.MapFrom(src => src.City))
-                    .ForPath(dest => dest.Address.State, opt => opt.MapFrom(src => src.State.ToUpper()))
-                    .ForPath(dest => dest.Address.ZIPCode, opt => opt.MapFrom(src => src.ZIPCode))
-                    .ForPath(dest => dest.Address.ZIPPlus4, opt => opt.MapFrom(src => src.ZIPPlus4))
+                    .ForPath(dest => dest.Address!.StreetAddress, opt => opt.MapFrom(src => src.StreetAddress))
+                    .ForPath(dest => dest.Address!.SecondaryAddress, opt => opt.MapFrom(src => src.SecondaryAddress))
+                    .ForPath(dest => dest.Address!.City, opt => opt.MapFrom(src => src.City))
+                    .ForPath(dest => dest.Address!.State, opt => opt.MapFrom(src => (src.State != null) ? src.State.ToUpper() : null))
+                    .ForPath(dest => dest.Address!.ZIPCode, opt => opt.MapFrom(src => src.ZIPCode))
+                    .ForPath(dest => dest.Address!.ZIPPlus4, opt => opt.MapFrom(src => src.ZIPPlus4))
                     .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
                 // CreateMap<AddressDto, UspsAddressDto>()
@@ -62,13 +62,13 @@ namespace Wedding.Abstractions.Mapping
                 //     .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
                 CreateMap<UspsAddressDto, AddressDto>()
-                    .ConstructUsing(src => src.Address)
-                    .ForMember(dest => dest.StreetAddress, opt => opt.MapFrom(src => src.Address.StreetAddress))
-                    .ForMember(dest => dest.SecondaryAddress, opt => opt.MapFrom(src => src.Address.SecondaryAddress))
-                    .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Address.City))
-                    .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.Address.State.ToUpper()))
-                    .ForMember(dest => dest.ZIPCode, opt => opt.MapFrom(src => src.Address.ZIPCode))
-                    .ForMember(dest => dest.ZIPPlus4, opt => opt.MapFrom(src => src.Address.ZIPPlus4))
+                    .ConstructUsing(src => src.Address ?? new AddressDto())
+                    .ForMember(dest => dest.StreetAddress, opt => opt.MapFrom(src => src.Address!.StreetAddress))
+                    .ForMember(dest => dest.SecondaryAddress, opt => opt.MapFrom(src => src.Address!.SecondaryAddress))
+                    .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Address!.City))
+                    .ForMember(dest => dest.State, opt => opt.MapFrom(src => (src.Address!.State != null) ? src.Address!.State.ToUpper() : null))
+                    .ForMember(dest => dest.ZIPCode, opt => opt.MapFrom(src => src.Address!.ZIPCode))
+                    .ForMember(dest => dest.ZIPPlus4, opt => opt.MapFrom(src => src.Address!.ZIPPlus4))
                     .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             }
         }

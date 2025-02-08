@@ -18,7 +18,7 @@ namespace Wedding.Common.Helpers.AWS
 
         public static string GetIpAddressFromRequest(this APIGatewayCustomAuthorizerRequest request)
         {
-            var ipAddress = request?.RequestContext?.Identity?.SourceIp;
+            var ipAddress = request?.RequestContext?.Identity?.SourceIp ?? null;
 
             if (string.IsNullOrEmpty(ipAddress) && request?.Headers != null)
             {
@@ -32,12 +32,12 @@ namespace Wedding.Common.Helpers.AWS
                 }
             }
 
-            return ipAddress;
+            return ipAddress ?? String.Empty;
         }
 
         public static string? GetCaseInsensitiveParam(APIGatewayCustomAuthorizerRequest request, string paramName)
         {
-            string paramValue = null;
+            string? paramValue = null;
 
             var caseInsensitiveHeaderParameters = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
             var caseInsensitiveQueryParameters = new Dictionary<string, string>(request.QueryStringParameters, StringComparer.OrdinalIgnoreCase);
@@ -86,8 +86,8 @@ namespace Wedding.Common.Helpers.AWS
 
         public static List<RoleEnum>? GetRoles(this APIGatewayCustomAuthorizerRequest request)
         {
-            return request.RequestContext.Authorizer["roles"]?.ToString()
-                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList(); // comma delimited string of roles
+            return request.RequestContext.Authorizer["roles"]?.ToString()?
+                .Split(',').Select(roles => Enum.Parse<RoleEnum>(roles)).ToList() ?? null; // comma delimited string of roles
         }
     }
 }

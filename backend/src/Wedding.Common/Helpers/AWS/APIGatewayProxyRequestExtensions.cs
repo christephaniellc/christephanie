@@ -13,10 +13,10 @@ namespace Wedding.Common.Helpers.AWS
         public static string? GetOriginFromRequest(this APIGatewayProxyRequest request)
         {
             if (request.Headers == null) return null;
-            if (request.Headers.ContainsKey("Host")) return request.Headers["Host"].ToLower();
-            if (request.Headers.ContainsKey("host")) return request.Headers["host"].ToLower();
-            if (request.Headers.ContainsKey("Origin")) return request.Headers["Origin"].ToLower();
-            if (request.Headers.ContainsKey("origin")) return request.Headers["origin"].ToLower();
+            if (request.Headers.TryGetValue("Host", out var host)) return host.ToLower();
+            if (request.Headers.TryGetValue("host", out var hostLower)) return hostLower.ToLower();
+            if (request.Headers.TryGetValue("Origin", out var origin)) return origin.ToLower();
+            if (request.Headers.TryGetValue("origin", out var originLower)) return originLower.ToLower();
             return null;
         }
 
@@ -24,17 +24,18 @@ namespace Wedding.Common.Helpers.AWS
         {
             return new AuthContext
             {
-                Audience = request.GetAudienceFromAuthContext(),
-                InvitationCode = request.GetInvitationCodeFromAuthContext(),
-                GuestId = request.GetGuestIdFromAuthContext(),
-                Name = request.GetNameFromAuthContext(),
-                Roles = request.GetRoleStringFromAuthContext()
+                Audience = request.GetAudienceFromAuthContext() ?? string.Empty,
+                InvitationCode = request.GetInvitationCodeFromAuthContext() ?? string.Empty,
+                GuestId = request.GetGuestIdFromAuthContext() ?? string.Empty,
+                Name = request.GetNameFromAuthContext() ?? string.Empty,
+                Roles = request.GetRoleStringFromAuthContext() ?? string.Empty,
+                IpAddress = request.GetIpAddressFromAuthContext() ?? string.Empty
             };
         }
 
         public static string? GetCaseInsensitiveParam(APIGatewayProxyRequest request, string paramName)
         {
-            string paramValue = null;
+            string? paramValue = null;
 
             var caseInsensitiveHeaderParameters = request.Headers != null ? new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase) : null;
             var caseInsensitiveQueryParameters = request.QueryStringParameters != null ? new Dictionary<string, string>(request.QueryStringParameters, StringComparer.OrdinalIgnoreCase) : null;
@@ -82,7 +83,11 @@ namespace Wedding.Common.Helpers.AWS
                 {
                     Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");
 
-                    var context = ParseAuthContext(lambdaContext.ToString());
+                    var context = ParseAuthContext(lambdaContext?.ToString() ?? null);
+                    if (context == null)
+                    {
+                        return null;
+                    }
 
                     return key switch
                     {
@@ -98,6 +103,7 @@ namespace Wedding.Common.Helpers.AWS
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 throw new UnauthorizedAccessException("Unauthorized access exception.");
             }
 
@@ -145,6 +151,10 @@ namespace Wedding.Common.Helpers.AWS
             return roles?
                 .ToString(); // comma delimited string of roles
         }
+        public static string? GetIpAddressFromAuthContext(this APIGatewayProxyRequest request)
+        {
+            return request.RequestLambdaData("ipAddress");
+        }
 
         public static string? GetInvitationCodeFromParams(this APIGatewayProxyRequest request)
         {
@@ -156,8 +166,13 @@ namespace Wedding.Common.Helpers.AWS
             return GetCaseInsensitiveParam(request, "firstName");
         }
 
-        public static AuthContext? ParseAuthContext(string json)
+        public static AuthContext? ParseAuthContext(string? json)
         {
+            if (json == null)
+            {
+                Console.WriteLine($"No AuthContext found.");
+                return null;
+            }
             try
             {
                 return JsonSerializer.Deserialize<AuthContext>(json);

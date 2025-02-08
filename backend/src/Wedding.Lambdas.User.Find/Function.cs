@@ -18,7 +18,7 @@ namespace Wedding.Lambdas.User.Find;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private Dictionary<string, string> _metaData { get; set; }
+    private Dictionary<string, string>? _metaData { get; set; }
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -65,12 +65,13 @@ public class Function
 
             _metaData = new Dictionary<string, string>
             {
-                {"originAudience", originAudience},
-                {"invitationCode", invitationCode},
-                {"firstName", firstName}
+                {"origin", origin ?? "unknown"},
+                {"originAudience", originAudience ?? "unknown"},
+                {"invitationCode", invitationCode ?? "unknown"},
+                {"firstName", firstName ?? "unknown"}
             };
 
-            if (string.IsNullOrEmpty(originAudience))
+            if (string.IsNullOrEmpty(originAudience) || string.IsNullOrEmpty(origin))
             {
                 var viewError = $"This request looks shifty.";
                 var logError = $"Audience exception: audience empty.";
@@ -85,7 +86,7 @@ public class Function
 
             context.Logger.LogInformation($"Query Input: {invitationCode} {firstName}");
 
-            query = new FindUserQuery(mappedAudience, invitationCode, firstName);
+            query = new FindUserQuery(mappedAudience, invitationCode ?? string.Empty, firstName ?? string.Empty);
             
             var handler = scope.ServiceProvider.GetRequiredService<FindUserHandler>();
             var result = await handler.GetAsync(query);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -38,11 +39,23 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
             {
                 foreach (var familyUnit in command.FamilyUnits)
                 {
+                    if (familyUnit == null || string.IsNullOrEmpty(familyUnit.InvitationCode))
+                    {
+                        throw new Exception($"Invalid unit or no invitation code found on family unit.");
+                    }
+
                     familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
+
+                    if (familyUnit!.Guests != null || !familyUnit.Guests!.Any())
+                    {
+                        throw new Exception($"No guests in family unit '{familyUnit!.InvitationCode}' found.");
+                    }
 
                     var familyInfoPartitionKey = DynamoKeys.GetPartitionKey(familyUnit.InvitationCode);
                     var familyInfoSortKey = DynamoKeys.GetFamilyInfoSortKey();
-                    familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit.Guests[0].FirstName, familyUnit.Guests[0].LastName);
+
+
+                    familyUnit.UnitName = DynamoKeys.GetFamilyUnitName(familyUnit!.Guests![0].FirstName, familyUnit.Guests[0].LastName);
 
                     var existingFamilyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(command.AuthContext.Audience, familyUnit.InvitationCode);
 
@@ -84,10 +97,11 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                                 GuestNumber = guest.GuestNumber,
                                 Tier = familyUnit.Tier,
                                 FirstName = guest.FirstName,
+                                AdditionalFirstNames = guest.AdditionalFirstNames,
                                 LastName = guest.LastName,
                                 Roles = guest.Roles,
-                                Email = guest.Email,
-                                Phone = guest.Phone,
+                                Email = guest.Email?.ToString() ?? null,
+                                Phone = guest.Phone?.ToString() ?? null,
                                 AgeGroup = guest.AgeGroup,
                                 InvitationResponse = InvitationResponseEnum.Pending
                             };

@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Dtos
     {
         public DateTime LastUpdate { get; set; }
 
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         public override string ToString()
         {

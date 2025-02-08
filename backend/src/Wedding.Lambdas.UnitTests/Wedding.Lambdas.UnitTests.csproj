@@ -4,12 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
+	  <Platforms>x64</Platforms>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Validate\Post\**" />
-    <EmbeddedResource Remove="Validate\Post\**" />
-    <None Remove="Validate\Post\**" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="appsettings.Development.json" />
   </ItemGroup>
@@ -46,5 +42,6 @@
     <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.Phone\Wedding.Lambdas.Validate.Phone.csproj" />
   </ItemGroup>
 </Project>

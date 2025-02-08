@@ -27,13 +27,13 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
     [UnitTestsFor(typeof(Lambdas.Admin.FamilyUnit.Delete.Function))]
     public class AdminDeleteFunctionTests
     {
-        private IMapper _mapper;
-        private Mock<ILogger<AdminDeleteFamilyUnitHandler>> _handlerLogger;
-        private Mock<ILambdaContext> _mockLambdaContext;
-        private Mock<IDynamoDBProvider> _dynamoDBProvider;
-        private TestTokenHelper _testTokenHelper;
-        private Wedding.Lambdas.Admin.FamilyUnit.Delete.Function _function;
-        private TestAuthorizer _testAuthorizer;
+        private IMapper? _mapper;
+        private Mock<ILogger<AdminDeleteFamilyUnitHandler>>? _handlerLogger;
+        private Mock<ILambdaContext>? _mockLambdaContext;
+        private Mock<IDynamoDBProvider>? _dynamoDBProvider;
+        private TestTokenHelper? _testTokenHelper;
+        private Wedding.Lambdas.Admin.FamilyUnit.Delete.Function? _function;
+        private TestAuthorizer? _testAuthorizer;
 
         [SetUp]
         public void Setup()
@@ -72,7 +72,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var invitationCode = "XXXXX";
 
-            var authContext = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_ADMIN);
+            var authContext = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_ADMIN);
             var request = new APIGatewayProxyRequest
             {
                 PathParameters = new Dictionary<string, string>
@@ -82,23 +82,23 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             }.AddAuthToRequest(authContext);
 
             // Act
-            var result = await _function.FunctionHandler(request, _mockLambdaContext.Object);
+            var result = await _function!.FunctionHandler(request, _mockLambdaContext!.Object);
             var errorResult = JsonSerializer.Deserialize<FrontendApiError>(result.Body);
 
             // Assert
             result.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            errorResult.Status.Should().Be((int)HttpStatusCode.InternalServerError);
+            errorResult!.Status.Should().Be((int)HttpStatusCode.InternalServerError);
             errorResult.Error.Should().Be("System.Exception");
             errorResult.Description.Should().Contain("Error occurred: An error occurred while deleting the family unit.");
 
             var expectedLog = $"Could not delete family with invitation code '{invitationCode}': family not found.";
-            _handlerLogger.Verify(
+            _handlerLogger!.Verify(
                 x => x.Log(
                     It.Is<LogLevel>(l => l == LogLevel.Error),
                     It.IsAny<EventId>(), 
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(expectedLog)), 
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(expectedLog)), 
                     It.IsAny<Exception>(),
-                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!),
                 Times.Once);
         }
 
@@ -108,18 +108,19 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var invitationCode = TestDataHelper.TEST_INVITATION_CODE;
 
-            var family = _mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE);
+            var family = _mapper!.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE);
 
-            _dynamoDBProvider.Setup(x => x.QueryAsync(_testTokenHelper.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
+            _dynamoDBProvider!.Setup(x => x.QueryAsync(_testTokenHelper!.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { family });
 
-            var authContextResponse = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_JOHN);
+            var authContextResponse = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_JOHN);
             var authContext = new AuthContext
             {
-                Audience = authContextResponse.GetAudienceFromAuth(),
-                InvitationCode = authContextResponse.GetInvitationCodeFromAuth(),
-                GuestId = authContextResponse.GetGuestIdFromAuth(),
-                Roles = authContextResponse.GetRolesFromAuth().ToString()
+                Audience = authContextResponse.GetAudienceFromAuth()!,
+                InvitationCode = authContextResponse.GetInvitationCodeFromAuth()!,
+                GuestId = authContextResponse.GetGuestIdFromAuth()!,
+                Roles = authContextResponse.GetRolesFromAuth()!.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext);
             var request = new APIGatewayProxyRequest
@@ -132,12 +133,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             }.AddAuthToRequest(authContextResponse);
 
             // Act
-            var result = await _function.FunctionHandler(request, _mockLambdaContext.Object);
+            var result = await _function!.FunctionHandler(request, _mockLambdaContext!.Object);
             var errorResult = JsonSerializer.Deserialize<FrontendApiError>(result.Body);
 
             // Assert
             result.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
-            errorResult.Status.Should().Be((int)HttpStatusCode.BadRequest);
+            errorResult!.Status.Should().Be((int)HttpStatusCode.BadRequest);
             errorResult.Error.Should().Be("FluentValidation.ValidationException");
             errorResult.Description.Should().Contain("AuthContext: No admin permissions.");
         }
@@ -148,18 +149,19 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var invitationCode = TestDataHelper.TEST_INVITATION_CODE;
 
-            var family = _mapper.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE);
+            var family = _mapper!.Map<WeddingEntity>(TestDataHelper.FAMILY_DOE);
 
-            _dynamoDBProvider.Setup(x => x.QueryAsync(_testTokenHelper.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
+            _dynamoDBProvider!.Setup(x => x.QueryAsync(_testTokenHelper!.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { family });
 
-            var authContextResponse = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_ADMIN);
+            var authContextResponse = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_ADMIN);
             var authContext = new AuthContext
             {
-                Audience = authContextResponse.GetAudienceFromAuth(),
-                InvitationCode = authContextResponse.GetInvitationCodeFromAuth(),
-                GuestId = authContextResponse.GetGuestIdFromAuth(),
-                Roles = authContextResponse.GetRolesFromAuth().ToString()
+                Audience = authContextResponse.GetAudienceFromAuth()!,
+                InvitationCode = authContextResponse.GetInvitationCodeFromAuth()!,
+                GuestId = authContextResponse.GetGuestIdFromAuth()!,
+                Roles = authContextResponse.GetRolesFromAuth()!.ToString()!,
+                IpAddress = authContextResponse.GetIpAddressFromAuth()!
             };
             var command = new AdminDeleteFamilyUnitCommand(invitationCode, authContext);
             var request = new APIGatewayProxyRequest
@@ -172,7 +174,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             }.AddAuthToRequest(authContextResponse);
 
             // Act
-            var result = await _function.FunctionHandler(request, _mockLambdaContext.Object);
+            var result = await _function!.FunctionHandler(request, _mockLambdaContext!.Object);
 
             // Assert
             result.StatusCode.Should().Be((int)HttpStatusCode.OK);

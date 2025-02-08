@@ -1,7 +1,6 @@
 import { EnvStackProps } from './config/env-config';
 import { Construct } from 'constructs';
 import { ApplicationProps } from './config/application-config';
-import { RemovalPolicy } from 'aws-cdk-lib';
 import * as cdk from 'aws-cdk-lib';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -26,6 +25,21 @@ export class FrontendStack extends cdk.Stack {
 
     const fullDomainName = `${props.env.subDomainPrefix}.${domainName}`;
     console.log(`Full domain name: ${fullDomainName}`);
+
+    const setupBucket = new s3.Bucket(this, `${applicationName}-setup-bucket`, {
+      bucketName: `${applicationName}-setup`,
+      versioned: false,
+      publicReadAccess: false, 
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: true, 
+        blockPublicPolicy: true, 
+        ignorePublicAcls: true, 
+        restrictPublicBuckets: true 
+      }),
+      removalPolicy: environment === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: false
+     });
+    console.log(`Setup bucket name: ${setupBucket.bucketName}`);
 
     const frontendBucket = new s3.Bucket(this, `${applicationName}-frontend-bucket`, {
         bucketName: `www.${props.frontendUrl}`,
