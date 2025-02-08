@@ -73,7 +73,7 @@ jobs:
           # Detect Lambda project changes
           if [[ "$force_deploy" == "true" ]]; then
             echo "Force deploy enabled: Deploying all Wedding.Lambdas projects."
-            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
+            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" ! -iname "*unittests*" ! -iname "*tests*" | xargs -n 1 basename)
             changed_dirs=$(echo "$dirs")
           else
             if git rev-parse HEAD~1 >/dev/null 2>&1; then
@@ -82,7 +82,7 @@ jobs:
               previous_commit=$(git rev-list --max-parents=0 HEAD)
             fi
 
-            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -i -v -E "(unittests|tests)" || true)
+            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(^Wedding.Lambdas.Unittests$|tests)" || true)
 
             # Detect Wedding.Common and Wedding.Abstractions changes
             common_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Common/ || true)
@@ -122,6 +122,10 @@ jobs:
           application_name="christephanie-wedding-api"
 
           for dir in $dirs; do
+            if [[ "$dir" =~ (unittests|tests) ]]; then
+              echo "Skipping unit test project: $dir"
+              continue
+            fi
             full_path="backend/src/$dir"
             base_name=$(basename "$full_path" | sed 's/^Wedding\.Lambdas\.//')
             function_name="${application_name}-$(echo "$base_name" | tr '.' '-' | tr '[:upper:]' '[:lower:]')"
