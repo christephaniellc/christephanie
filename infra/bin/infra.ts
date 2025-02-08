@@ -11,6 +11,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as fs from 'fs'
 import { ParamsStack } from '../stacks/params-stack';
 import { RoleStack } from '../stacks/role-stack';
+import { ThrottleStack } from '../stacks/throttle-stack';
 
 const app = new cdk.App();
 
@@ -105,7 +106,4 @@ new ParamsStack(app, `ParamsStack-${env}`, {
 // Set up DynamoDB
 //----------------------------------------------------------------
 new DatabaseStack(app, `DatabaseStack-${env}`, { env: config });
-// new DatabaseAdminStack(app, `DatabaseStack-${env}`, { 
-//   env: config,
-//   databaseTable: string 
-// });
+new ThrottleStack(app, `ThrottleStack-${env}`, { env: config });

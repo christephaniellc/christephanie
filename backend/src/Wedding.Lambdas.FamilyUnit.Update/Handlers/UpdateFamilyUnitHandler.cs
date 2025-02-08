@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
@@ -54,11 +55,18 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     foreach (var guest in familyUnit!.OrderedGuests()!)
                     {
                         guest.InvitationCode = command.FamilyUnit.InvitationCode;
-                        
+                        Console.WriteLine($"Serialized Email: {JsonSerializer.Serialize(guest.Email)}");
+
                         var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
                             command.FamilyUnit.InvitationCode, 
                             guest.GuestId, 
                             cancellationToken);
+                        Console.WriteLine($"Serialized guest: {JsonSerializer.Serialize(existingGuestEntity)}");
+
+                        if (existingGuestEntity == null)
+                        {
+                            throw new ValidationException($"Guest not found: Audience: {command.AuthContext.Audience}, GuestId: {guest.GuestId}");
+                        }
                         
                         existingGuestEntity.AgeGroup = guest.AgeGroup;
                         
@@ -79,7 +87,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                 existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
-                                    Username = command.AuthContext.Name
+                                    Username = command.AuthContext.Name ?? "unknown"
                                 }.ToString();
                             }
 
@@ -88,7 +96,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                                 existingGuestEntity.RsvpAudit = new LastUpdateAuditDto
                                 {
                                     LastUpdate = DateTime.UtcNow,
-                                    Username = command.AuthContext.Name
+                                    Username = command.AuthContext.Name ?? "unknown"
                                 }.ToString();
                             }
                             _logger.LogInformation($"guest.Rsvp.RsvpNotes: {guest.Rsvp.RsvpNotes}");
@@ -101,6 +109,16 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                             existingGuestEntity.PrefSleep = guest.Preferences.SleepPreference;
                             existingGuestEntity.PrefFood = guest.Preferences.FoodPreference;
                             existingGuestEntity.PrefFoodAllergies = guest.Preferences.FoodAllergies;
+                        }
+
+                        if (guest.Email != null)
+                        {
+                            existingGuestEntity.Email = guest.Email.ToString();
+                        }
+
+                        if (guest.Phone != null)
+                        {
+                            existingGuestEntity.Phone = guest.Phone.ToString();
                         }
 
                         //_mapper.Map(guest, existingGuest);
@@ -130,7 +148,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                 _logger.LogInformation($"Updated existingFamilyUnitEntity");
 
                 var result = await _dynamoDbProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode);
-                _logger.LogInformation($"Got updated existingFamilyUnitEntity");
+                _logger.LogInformation($"Got updated existingFamilyUnitEntity: {JsonSerializer.Serialize(result)}");
                 return _mapper.Map<FamilyUnitViewModel>(result);
             }
             catch (Exception ex)

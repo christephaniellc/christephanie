@@ -18,11 +18,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
     [UnitTestsFor(typeof(AdminDeleteFamilyUnitHandler))]
     public class AdminDeleteFamilyUnitHandlerTests
     {
-        private Mock<ILogger<AdminDeleteFamilyUnitHandler>> _mockLogger;
-        private Mock<IDynamoDBProvider> _mockDynamoDBProvider;
-        private Mock<IMapper> _mockMapper;
-        private TestTokenHelper _testTokenHelper;
-        private AdminDeleteFamilyUnitHandler _handler;
+        private Mock<ILogger<AdminDeleteFamilyUnitHandler>>? _mockLogger;
+        private Mock<IDynamoDBProvider>? _mockDynamoDBProvider;
+        private Mock<IMapper>? _mockMapper;
+        private TestTokenHelper? _testTokenHelper;
+        private AdminDeleteFamilyUnitHandler? _handler;
 
         [SetUp]
         public void SetUp()
@@ -45,21 +45,22 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
             var cancellationToken = CancellationToken.None;
 
             var weddingEntities = new List<WeddingEntity>
             {
-                new WeddingEntity { PartitionKey = "PK1", SortKey = "SK1" },
-                new WeddingEntity { PartitionKey = "PK2", SortKey = "SK2" }
+                new WeddingEntity { PartitionKey = "PK1", SortKey = "SK1", InvitationCode  = "ABCDE"},
+                new WeddingEntity { PartitionKey = "PK2", SortKey = "SK2", InvitationCode  = "ABCDE" }
             };
 
-            _mockDynamoDBProvider
+            _mockDynamoDBProvider!
                 .Setup(r => r.QueryAsync(authContext.Audience, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(weddingEntities);
 
@@ -68,7 +69,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
                 .Returns(Task.CompletedTask);
 
             // Act
-            var result = await _handler.ExecuteAsync(command, cancellationToken);
+            var result = await _handler!.ExecuteAsync(command, cancellationToken);
 
             // Assert
             Assert.IsTrue(result);
@@ -83,23 +84,24 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminDeleteFamilyUnitCommand("ABCDE", authContext);
             var cancellationToken = CancellationToken.None;
 
-            _mockDynamoDBProvider
+            _mockDynamoDBProvider!
                 .Setup(r => r.QueryAsync(authContext.Audience, "ABCDE", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Repository failure"));
 
             // Act & Assert
             var exception = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await _handler.ExecuteAsync(command, cancellationToken));
+                await _handler!.ExecuteAsync(command, cancellationToken));
 
-            Assert.AreEqual("An error occurred while deleting the family unit.", exception.Message);
+            Assert.AreEqual("An error occurred while deleting the family unit.", exception!.Message);
         }
 
         [Test]
@@ -108,17 +110,18 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
-            var command = new AdminDeleteFamilyUnitCommand(null, authContext);
+            var command = new AdminDeleteFamilyUnitCommand(null!, authContext);
             var cancellationToken = CancellationToken.None;
 
             // Act & Assert
             Assert.ThrowsAsync<ValidationException>(async () =>
-                await _handler.ExecuteAsync(command, cancellationToken));
+                await _handler!.ExecuteAsync(command, cancellationToken));
         }
     }
 }

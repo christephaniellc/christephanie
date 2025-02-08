@@ -19,8 +19,14 @@ namespace Wedding.Common.Helpers.JwtClaim
             return token.Claims.FirstOrDefault(c => c.Type == $"{audience}/guest_id")?.Value;
         }
 
-        public static string GetGuestIdFromToken(string token, string audience)
+        public static string GetGuestIdFromToken(string? token, string audience)
         {
+            if (token == null)
+            {
+                Console.WriteLine("Null token");
+                throw new UnauthorizedAccessException("Invalid token");
+            }
+
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -37,6 +43,7 @@ namespace Wedding.Common.Helpers.JwtClaim
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw new UnauthorizedAccessException("Invalid token");
             }
         }

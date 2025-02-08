@@ -9,12 +9,12 @@
         /// A street address does not necessarily represent a single delivery point because a street address such as one
         /// for an apartment building may have several delivery points.
         /// </summary>
-        public string DeliveryPoint { get; set; }
+        public string? DeliveryPoint { get; set; }
 
         /// <summary>
         /// This is the carrier route code (values unspecified).
         /// </summary>
-        public string CarrierRoute { get; set; }
+        public string? CarrierRoute { get; set; }
 
         /// <summary>
         /// Enum: "Y" "D" "S" "N"
@@ -25,7 +25,7 @@
         ///     S 'Address was DPV confirmed for the primary number only, and the secondary number information was present but not confirmed.'
         ///     N 'Both primary and (if present) secondary number information failed to DPV confirm.'
         /// </summary>
-        public string DPVConfirmation { get; set; }
+        public string? DPVConfirmation { get; set; }
 
         /// <summary>
         /// Enum: "Y" "N"
@@ -33,7 +33,7 @@
         ///     Y 'Address was found in the CMRA table. '
         ///     N 'Address was not found in the CMRA table.'
         /// </summary>
-        public string DPVCMRA { get; set; }
+        public string? DPVCMRA { get; set; }
 
         /// <summary>
         /// Enum: "Y" "N"
@@ -41,7 +41,7 @@
         ///     Y 'The address is a business address.'
         ///     N 'The address is not a business address.'
         /// </summary>
-        public string Business { get; set; }
+        public string? Business { get; set; }
 
         /// <summary>
         /// Enum: "Y" "N"
@@ -51,7 +51,7 @@
         ///     Y 'The address is a central delivery point.'
         ///     N 'The address is not a central delivery point.'
         /// </summary>
-        public string CentralDeliveryPoint { get; set; }
+        public string? CentralDeliveryPoint { get; set; }
 
         /// <summary>
         /// Enum: "Y" "N"
@@ -59,6 +59,6 @@
         ///
         ///     Y 'The address is occupied.' * N 'The address is not occupied.'
         /// </summary>
-        public string Vacant { get; set; }
+        public string? Vacant { get; set; }
     }
 }

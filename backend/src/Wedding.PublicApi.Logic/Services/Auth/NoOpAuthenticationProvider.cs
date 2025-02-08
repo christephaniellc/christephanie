@@ -27,7 +27,7 @@ namespace Wedding.PublicApi.Logic.Services.Auth
         //         GivenName = "Stephanie",
         //         FamilyName = "Stubler",
         //         Email = "steph.stubler@gmail.com",
-        //         EmailVerified = true,
+        //         Email = true,
         //         Picture = "https://lh3.googleusercontent.com/a/ACg8ocKlYzLC2W_9L7JFUlFw70pIrJygt9pEaNmRmxG_7lhCq-6lj8wo=s96-c",
         //         UserMetadata = null,
         //         AppMetadata = null

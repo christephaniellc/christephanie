@@ -21,7 +21,6 @@ namespace Wedding.Lambdas.Validate.Address;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly IMapper _mapper;
 
     public Function()
     {

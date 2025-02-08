@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Dtos.Auth
     public class Auth0User
     {
         [JsonPropertyName("sub")]
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
         [JsonPropertyName("email")]
         public string? Email { get; set; }
         [JsonPropertyName("email_verified")]

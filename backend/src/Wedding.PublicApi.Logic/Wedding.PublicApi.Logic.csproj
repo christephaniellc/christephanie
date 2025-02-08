@@ -5,6 +5,11 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<OutputType>Library</OutputType>
+		<Platforms>x64</Platforms>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>MSB3270</NoWarn>
 	</PropertyGroup>
 
   <ItemGroup>

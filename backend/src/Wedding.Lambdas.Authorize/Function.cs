@@ -23,8 +23,8 @@ namespace Wedding.Lambdas.Authorize;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private static string _authority;
-    private static string _audience;
+    private static string _authority = "";
+    private static string _audience = "";
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -112,6 +112,10 @@ public class Function
         {
             var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
             var origin = request.GetOriginFromRequest();
+            if (string.IsNullOrEmpty(origin))
+            {
+                throw new ApplicationException("Unable to determine origin.");
+            }
             _audience =  multitenancySettingsProvider.GetMappedAudience(origin) ?? throw new InvalidOperationException();
         }
 

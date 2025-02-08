@@ -91,7 +91,6 @@ public class Function
         }
         catch (ValidationException ex)
         {
-            var statusCode = (int)HttpStatusCode.BadRequest;
             var error = $"Validation exception: {ex.Message}";
             context.Logger.LogError(error);
 
