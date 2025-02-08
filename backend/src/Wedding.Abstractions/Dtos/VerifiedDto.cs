@@ -3,8 +3,9 @@ using System.Text.Json;
 
 namespace Wedding.Abstractions.Dtos
 {
-    public class VerifyDto
+    public class VerifiedDto
     {
+        public string? Value { get; set; }
         public bool Verified { get; set; }
         public string? VerificationCode { get; set; }
         public DateTime? VerificationCodeExpiration { get; set; }

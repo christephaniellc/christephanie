@@ -100,8 +100,8 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                                 AdditionalFirstNames = guest.AdditionalFirstNames,
                                 LastName = guest.LastName,
                                 Roles = guest.Roles,
-                                Email = guest.Email,
-                                Phone = guest.Phone,
+                                Email = guest.Email?.ToString() ?? null,
+                                Phone = guest.Phone?.ToString() ?? null,
                                 AgeGroup = guest.AgeGroup,
                                 InvitationResponse = InvitationResponseEnum.Pending
                             };

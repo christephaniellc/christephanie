@@ -4,6 +4,7 @@ using FluentAssertions;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Keys;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Utility.Testing.TestChain;
 
@@ -14,6 +15,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
     public class WeddingEntityToDtoMappingTests
     {
         private IMapper _mapper;
+        private string _invitationCode = "ABCDE";
 
         [SetUp]
         public void SetUp()
@@ -31,9 +33,13 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void ShouldInitializeNestedPropertiesIfNull()
         {
+            var guestId = Guid.NewGuid().ToString();
             var entity = new WeddingEntity
             {
-                GuestId = "123"
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetGuestSortKey(guestId),
+                InvitationCode = _invitationCode,
+                GuestId = guestId
             };
 
             var dto = _mapper.Map<GuestDto>(entity);
@@ -47,7 +53,9 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         {
             var entity = new WeddingEntity
             {
-                InvitationCode = "INV123",
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetFamilyInfoSortKey(),
+                InvitationCode = _invitationCode,
                 UnitName = "Doe Family",
                 MailingAddress = null, // Simulating null value
                 AdditionalAddresses = null
@@ -76,7 +84,9 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             };
             var entity = new WeddingEntity
             {
-                InvitationCode = "RSVP123",
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetFamilyInfoSortKey(),
+                InvitationCode = _invitationCode,
                 UnitName = "Smith Family",
                 Tier = "A",
                 InvitationResponseNotes = "Looking forward to it!",
@@ -96,8 +106,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Tier.Should().Be(entity.Tier);
             dto.InvitationResponseNotes.Should().Be(entity.InvitationResponseNotes);
             dto.MailingAddress.Should().BeEquivalentTo(address);
-            dto.MailingAddress.UspsVerified.Should().BeTrue();
-            dto.AdditionalAddresses[0].Should().BeEquivalentTo(address2);
+            dto.MailingAddress.Should().NotBeNull();
+            dto.MailingAddress!.UspsVerified.Should().BeTrue();
+            dto.AdditionalAddresses.Should().NotBeNull();
+            dto.AdditionalAddresses![0].Should().BeEquivalentTo(address2);
             dto.AdditionalAddresses[0].UspsVerified.Should().BeFalse();
             dto.PotentialHeadCount.Should().Be(entity.PotentialHeadCount);
             dto.FamilyUnitLastLogin.Should().Be(entity.FamilyUnitLastLogin);
@@ -107,16 +119,23 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntity_To_GuestDto()
         {
+            var email = "john.doe@example.com";
+            var phone = "123-456-7890";
+            var guestId = Guid.NewGuid().ToString();
+
             var entity = new WeddingEntity
             {
-                GuestId = Guid.NewGuid().ToString(),
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetGuestSortKey(guestId),
+                InvitationCode = _invitationCode,
+                GuestId = guestId,
                 Auth0Id = "auth0|123456",
                 FirstName = "Jon",
                 AdditionalFirstNames = new List<string> { "Jonathan", "Jojo"},
                 LastName = "Doe",
                 Roles = new List<RoleEnum> { RoleEnum.Admin },
-                Email = "john.doe@example.com",
-                Phone = "123-456-7890",
+                Email = new VerifiedDto { Value = email }.ToString(),
+                Phone = new VerifiedDto { Value = phone }.ToString(),
                 AgeGroup = AgeGroupEnum.Adult,
                 InvitationResponseNotes = "Can't wait!",
                 LastActivity = System.DateTime.Now
@@ -130,8 +149,9 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
             dto.LastName.Should().Be(entity.LastName);
             dto.Roles.Should().BeEquivalentTo(entity.Roles);
-            dto.Email.Should().Be(entity.Email);
-            dto.Phone.Should().Be(entity.Phone);
+            dto.Email.Should().NotBeNull();
+            dto.Email!.Value.Should().Be(email);
+            dto.Phone.Should().Be(phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.LastActivity.Should().Be(entity.LastActivity);
             dto.Rsvp.Should().NotBeNull();
@@ -148,13 +168,14 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             var dto = _mapper.Map<GuestDto>(entity);
 
-            dto.GuestId.Should().Be(entity.GuestId);
+            entity.Should().NotBeNull();
+            dto.GuestId.Should().Be(entity!.GuestId);
             dto.Auth0Id.Should().Be(entity.Auth0Id);
             dto.FirstName.Should().Be(entity.FirstName);
             dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
             dto.LastName.Should().Be(entity.LastName);
             dto.Roles.Should().BeEquivalentTo(entity.Roles);
-            dto.Email.Should().Be(entity.Email);
+            dto.Email.Should().Be("john.doe@gmail.com");
             dto.Phone.Should().Be(entity.Phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.LastActivity.Should().Be(entity.LastActivity);
@@ -166,6 +187,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntity_To_RsvpDto()
         {
+            var guestId = Guid.NewGuid().ToString();
             var audit = new LastUpdateAuditDto
             {
                 LastUpdate = DateTime.UtcNow,
@@ -173,7 +195,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             };
             var entity = new WeddingEntity
             {
-                GuestId = Guid.NewGuid().ToString(),
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetGuestSortKey(guestId),
+                InvitationCode = _invitationCode,
+                GuestId = guestId,
                 InvitationResponse = InvitationResponseEnum.Pending,
                 RsvpWedding = RsvpEnum.Attending,
                 PrefSleep = SleepPreferenceEnum.Camping,
@@ -188,16 +213,21 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Wedding.Should().Be(entity.RsvpWedding);
             dto.RehearsalDinner.Should().Be(entity.RsvpRehearsalDinner);
             dto.FourthOfJuly.Should().Be(entity.RsvpFourthOfJuly);
-            dto.RsvpAudit.LastUpdate.Should().Be(audit.LastUpdate);
+            dto.RsvpAudit.Should().NotBeNull();
+            dto.RsvpAudit!.LastUpdate.Should().Be(audit.LastUpdate);
             dto.RsvpAudit.Username.Should().Be(audit.Username);
         }
 
         [Test]
         public void Should_Map_WeddingEntity_To_PreferencesDto()
         {
+            var guestId = Guid.NewGuid().ToString();
             var entity = new WeddingEntity
             {
-                GuestId = Guid.NewGuid().ToString(),
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetGuestSortKey(guestId),
+                InvitationCode = _invitationCode,
+                GuestId = guestId,
                 PrefSleep = SleepPreferenceEnum.Camping,
                 PrefFood = FoodPreferenceEnum.Omnivore,
                 PrefFoodAllergies = new List<string> {"Peanuts"},
@@ -230,8 +260,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                         GuestNumber = 1,
                         FirstName = "John",
                         LastName = "Jingleheimer",
-                        Email = "jingleheimersmith@gmai.com",
-                        Phone = "123-456-7890",
+                        Email = new VerifiedDto { Value = "jingleheimersmith@gmai.com" },
+                        Phone = new VerifiedDto { Value = "123-456-7890" },
                         AgeGroup = AgeGroupEnum.Under13,
                         Roles = new List<RoleEnum> { RoleEnum.Staff },
                         Rsvp = new RsvpDto
@@ -241,7 +271,11 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                         },
                         LastActivity = System.DateTime.Now,
                     },
-                    new GuestDto { GuestId = Guid.NewGuid().ToString() }
+                    new GuestDto
+                    {
+                        GuestId = Guid.NewGuid().ToString(),
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
+                    }
                 },
                 FamilyUnitLastLogin = System.DateTime.Now
             };
@@ -255,7 +289,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.Tier.Should().Be(dto.Tier);
             entity.InvitationResponseNotes.Should().Be(dto.InvitationResponseNotes);
             entity.MailingAddress.Should().Be(dto.MailingAddress.ToString());
-            entity.AdditionalAddresses[0].Should().BeEquivalentTo(dto.AdditionalAddresses[0].ToString());
+            entity.AdditionalAddresses.Should().NotBeNull();
+            entity.AdditionalAddresses![0].Should().BeEquivalentTo(dto.AdditionalAddresses[0].ToString());
             entity.PotentialHeadCount.Should().Be(dto.Guests.Count);
             entity.PrefFood.Should().BeNull();
             entity.FamilyUnitLastLogin.Should().Be(dto.FamilyUnitLastLogin);
@@ -264,16 +299,23 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntity_To_GuestDto_WithPrefs()
         {
+            var guestId = Guid.NewGuid().ToString();
+            var email = "john.doe@example.com";
+            var phone = "123-456-7890";
+
             var entity = new WeddingEntity
             {
-                GuestId = "123",
+                PartitionKey = DynamoKeys.GetPartitionKey(_invitationCode),
+                SortKey = DynamoKeys.GetGuestSortKey(guestId),
+                InvitationCode = _invitationCode,
+                GuestId = guestId,
                 GuestNumber = 1,
                 Auth0Id = "auth0|test",
                 FirstName = "John",
                 LastName = "Doe",
                 Roles = new List<RoleEnum> { RoleEnum.Guest },
-                Email = "john.doe@example.com",
-                Phone = "123-456-7890",
+                Email = new VerifiedDto { Value = email }.ToString(),
+                Phone = new VerifiedDto { Value = phone }.ToString(),
                 AgeGroup = AgeGroupEnum.Adult,
                 LastActivity =  System.DateTime.Now,
                 InvitationResponse = InvitationResponseEnum.Interested,
@@ -287,8 +329,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.GuestNumber.Should().Be(entity.GuestNumber);
             dto.FirstName.Should().Be(entity.FirstName);
             dto.LastName.Should().Be(entity.LastName);
-            dto.Email.Should().Be(entity.Email);
-            dto.Phone.Should().Be(entity.Phone);
+            dto.Email.Should().Be(email);
+            dto.Phone.Should().Be(phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.Rsvp.Should().NotBeNull();
             dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
@@ -300,14 +342,14 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_VerifyDto_False()
         {
-            var verify = new VerifyDto
+            var verify = new VerifiedDto
             {
                 Verified = false,
                 VerificationCode = "123456",
                 VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
             };
             
-            var result = _mapper.Map<VerifyDto>(verify.ToString());
+            var result = _mapper.Map<VerifiedDto>(verify.ToString());
 
             result.Verified.Should().Be(verify.Verified);
             result.VerificationCode.Should().Be(verify.VerificationCode);
@@ -317,14 +359,14 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_VerifyDto_True()
         {
-            var verify = new VerifyDto
+            var verify = new VerifiedDto
             {
                 Verified = true,
                 VerificationCode = null,
                 VerificationCodeExpiration = null
             };
 
-            var result = _mapper.Map<VerifyDto>(verify.ToString());
+            var result = _mapper.Map<VerifiedDto>(verify.ToString());
 
             result.Verified.Should().Be(verify.Verified);
             result.VerificationCode.Should().Be(verify.VerificationCode);
@@ -335,22 +377,25 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Should_Map_GuestDto_To_WeddingEntity()
         {
             // Arrange
+            var email = "jingleheimersmith@gmail.com";
+            var phone = "123-456-7890";
+
             var guestDto = new GuestDto
             {
                 GuestId = Guid.NewGuid().ToString(),
                 GuestNumber = 1,
                 FirstName = "John",
                 LastName = "Jingleheimer",
-                Email = "jingleheimersmith@gmail.com",
-                EmailVerified = new VerifyDto
+                Email = new VerifiedDto
                 {
+                    Value = email,
                     Verified = false,
                     VerificationCode = "123456",
                     VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
                 },
-                Phone = "123-456-7890",
-                PhoneVerified = new VerifyDto
+                Phone = new VerifiedDto
                 {
+                    Value = phone,
                     Verified = true,
                     VerificationCode = null,
                     VerificationCodeExpiration = null
@@ -383,8 +428,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.LastName.Should().Be(guestDto.LastName);
             entity.AgeGroup.Should().Be(guestDto.AgeGroup);
             entity.Roles.Should().BeEquivalentTo(guestDto.Roles);
-            entity.Email.Should().Be(guestDto.Email);
-            entity.Phone.Should().Be(guestDto.Phone);
+            entity.Email.Should().Be(guestDto.Email.Value);
+            entity.Phone.Should().Be(guestDto.Phone.Value);
             entity.LastActivity.Should().Be(guestDto.LastActivity);
 
             entity.InvitationResponse.Should().Be(guestDto.Rsvp.InvitationResponse);
