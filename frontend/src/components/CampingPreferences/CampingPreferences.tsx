@@ -19,18 +19,22 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
   return (
     <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap" mb={2}>
       <Typography variant="h5" width="100%" mb={2}>{guest?.firstName}</Typography>
-      <ButtonGroup variant="outlined" size="small" color="secondary">
+      <ButtonGroup variant="outlined" size="small" color="secondary" sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)' }}>
         {campingPreferences.map((value) => (
           <Button
             size='large'
             disabled={familyActions.updateFamilyMutation.isPending}
             onClick={() => familyActions.updateFamilyGuestSleepingPreference(guestId, SleepPreferenceEnum[value])}
-            variant={(guest?.preferences?.sleepPreference?.includes(NotificationPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+            variant={(guest?.preferences?.sleepPreference?.includes(SleepPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
             key={value}
             startIcon={value === 'Camping' ? <Festival /> : value === "Hotel" ? <Apartment /> : <HotelOutlined />}
           >
             <Box>
-              <Box display={'flex'} alignItems={'center'}><Typography width='100%'>{value}</Typography></Box>
+              <Box display={'flex'} alignItems={'center'} flexWrap={'wrap'}>
+                <Typography height={80} alignContent={'center'} width='100%' fontWeight={'bold'}>
+                  {value}
+                </Typography>
+              </Box>
             </Box>
           </Button>
         ))}

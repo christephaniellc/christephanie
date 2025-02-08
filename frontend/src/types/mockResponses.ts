@@ -20,11 +20,14 @@ export const mockFamilyUnitDto = {
         "Manor",
         "FourthOfJuly"
       ],
-      email: "topher.sikorra@gmail.com",
-      emailVerified: {
+      email: {
+        value: "topher.sikorra@gmail.com",
         verified: true
       },
-      phone: "703-499-5522",
+      phone: {
+        value: "248-930-0000",
+        verified: true
+      },
       rsvp: {
         invitationResponse: "Pending"
       },
