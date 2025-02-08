@@ -95,12 +95,20 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src =>
                         string.IsNullOrWhiteSpace(src.Email)
                             ? new VerifiedDto()
-                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Email, new JsonSerializerOptions())
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Email, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            })
                     ))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src =>
                         string.IsNullOrWhiteSpace(src.Phone)
                             ? new VerifiedDto()
-                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Phone, new JsonSerializerOptions())
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Phone, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            })
                     ))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
@@ -213,11 +221,19 @@ namespace Wedding.Abstractions.Mapping
                     .ConvertUsing(verifyString =>
                         string.IsNullOrWhiteSpace(verifyString)
                             ? null
-                            : JsonSerializer.Deserialize<VerifiedDto>(verifyString, new JsonSerializerOptions()));
+                            : JsonSerializer.Deserialize<VerifiedDto>(verifyString, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true
+                            }));
 
                 CreateMap<VerifiedDto, string?>()
                     .ConvertUsing(verifyDto => verifyDto != null
-                        ? JsonSerializer.Serialize(verifyDto, new JsonSerializerOptions())
+                        ? JsonSerializer.Serialize(verifyDto, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            AllowTrailingCommas = true
+                        })
                         : null);
             }
         }
