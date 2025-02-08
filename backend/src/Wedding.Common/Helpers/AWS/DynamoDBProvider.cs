@@ -32,11 +32,11 @@ namespace Wedding.Common.Helpers.AWS
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        public DynamoDBOperationConfig GetTableConfig(string audience)
+        public DynamoDBOperationConfig GetTableConfig(string audience, bool rateLimit = false)
         {
             return new DynamoDBOperationConfig
             {
-                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience)
+                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience, rateLimit)
             };
         }
 
@@ -51,8 +51,7 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<bool> CheckRateLimitAsync(string audience, string ipAddress, string route, 
             int rateLimit = 3, double rateLimitPerSeconds = 1.0, CancellationToken cancellationToken = default)
         {
-            var config = GetTableConfig(audience);
-            config.OverrideTableName += "-rate-limit";
+            var config = GetTableConfig(audience, rateLimit:true);
             var now = DateTime.UtcNow;
 
             // Retrieve existing rate limit record

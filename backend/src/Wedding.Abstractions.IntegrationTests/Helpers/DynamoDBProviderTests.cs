@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NSubstitute;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Multitenancy;
@@ -38,7 +39,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             _multitenancySettingsProviderMock = new Mock<IMultitenancySettingsProvider>();
 
             // Configure the multitenancy settings provider to return a dummy table name.
-            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience))
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, It.IsAny<bool>()))
                 .Returns(_testTableName);
 
             var serviceCollection = new ServiceCollection();

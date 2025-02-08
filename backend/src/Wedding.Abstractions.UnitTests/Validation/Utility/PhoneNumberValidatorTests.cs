@@ -33,5 +33,28 @@ namespace Wedding.Abstractions.UnitTests.Validation.Utility
             var result = _validator.TestValidate(phoneNumber);
             result.ShouldNotHaveAnyValidationErrors();
         }
+
+        //[TestCase(null, "Phone number cannot be null.")] // Null value
+        [TestCase("", "Phone number cannot be empty.")] // Empty string
+        [TestCase(" ", "Phone number cannot be empty.")] // Whitespace
+        [TestCase("abc123", "Invalid phone number.")] // Contains letters
+        [TestCase("+", "Invalid phone number.")] // Just a plus sign
+        [TestCase("123", "Invalid phone number.")] // Too short
+        [TestCase("++1234567890", "Invalid phone number.")] // Double plus
+        [TestCase("123-abc-4567", "Invalid phone number.")] // Contains non-numeric characters
+        [TestCase("423-456-78901", "Invalid phone number.")] // Too many digits
+        [TestCase("0000000000", "Invalid phone number.")] // All zeroes
+        [TestCase("+123 (456) 789-000000000000", "Invalid phone number.")] // Too long
+        [TestCase("12-34-56-78-90", "Invalid phone number.")] // Incorrect grouping
+        [TestCase("123 4567 89012", "Invalid phone number.")] // Wrong format
+        public void Should_HaveValidationError_For_InvalidPhoneNumbers(string input, string expectedErrorMessage)
+        {
+            var result = _validator!.TestValidate(input);
+
+            //Assert.Fail();
+
+            result.ShouldHaveValidationErrorFor(x => x)
+                .WithErrorMessage(expectedErrorMessage);
+        }
     }
 }
