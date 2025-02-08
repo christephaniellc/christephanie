@@ -52,7 +52,7 @@ describe('guestSelector selector', () => {
       // 2) Modify that snapshot by setting the selector
       const updatedSnapshot = baseSnapshot.map(({ set }) => {
         // We update the guest with ID 'guest-001' by changing firstName
-        set(guestSelector('guest-001'), { firstName: 'UpdatedName' });
+        set(guestSelector('guest-001'), { firstName: 'UpdatedName' } as GuestDto);
       });
 
       // 3) Now read the updated value out of the snapshot
@@ -78,7 +78,8 @@ describe('guestSelector selector', () => {
 
       // 2) Attempt to set the guest in that snapshot
       const updatedSnapshot = baseSnapshot.map(({ set }) => {
-        set(guestSelector('guest-999'), { firstName: 'DoesNotMatter' });
+
+        set(guestSelector('guest-999'), { firstName: 'DoesNotMatter' } as GuestDto);
       });
 
       // 3) No error should occur, but obviously no data changes

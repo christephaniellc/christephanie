@@ -5,7 +5,7 @@ export interface SaveTheDateStep {
   completed: boolean;
   label: string;
   description: string;
-  component: Element | null;
+  component: React.JSX.Element | null;
 }
 
 export const saveTheDateStepperState = atom<Record<string, SaveTheDateStep>>({
