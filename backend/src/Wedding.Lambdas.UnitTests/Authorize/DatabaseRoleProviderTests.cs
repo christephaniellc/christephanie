@@ -24,12 +24,12 @@ namespace Wedding.Lambdas.UnitTests.Authorize
     [UnitTestsFor(typeof(DatabaseRoleProvider))]
     public class DatabaseRoleProviderTests
     {
-        private Mock<ILogger<DatabaseRoleProvider>> _loggerMock;
-        private IAuthorizationProvider _databaseRoleProvider;
-        private Mock<IDynamoDBProvider> _dynamoProviderMock;
-        private Mock<IAuthenticationProvider> _authenticationProviderMock;
-        private Mock<IMultitenancySettingsProvider> _multitenancySettingsProviderMock;
-        private TestTokenHelper _testTokenHelper;
+        private Mock<ILogger<DatabaseRoleProvider>>? _loggerMock;
+        private IAuthorizationProvider? _databaseRoleProvider;
+        private Mock<IDynamoDBProvider>? _dynamoProviderMock;
+        private Mock<IAuthenticationProvider>? _authenticationProviderMock;
+        private Mock<IMultitenancySettingsProvider>? _multitenancySettingsProviderMock;
+        private TestTokenHelper? _testTokenHelper;
 
         [SetUp]
         public void Setup()

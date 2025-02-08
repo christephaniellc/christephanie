@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using PhoneNumbers;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Wedding.Abstractions.Validation.Common;
 
@@ -11,6 +13,8 @@ namespace Wedding.Abstractions.Validation.Utility
     /// <seealso cref="AbstractValidator{T}" />
     public class PhoneNumberValidator : AbstractValidator<string>, IValidate<string>
     {
+        private readonly PhoneNumberUtil _phoneNumberUtil = PhoneNumberUtil.GetInstance();
+
         public PhoneNumberValidator()
         {
             RuleFor(phoneNumber => phoneNumber)
@@ -33,11 +37,15 @@ namespace Wedding.Abstractions.Validation.Utility
 
         private bool BeAValidPhoneNumber(string phoneNumber)
         {
-            // Regular expression for validating E.164 phone numbers.
-            // E.164 numbers can have an optional '+' followed by up to 15 digits, and must start with a non-zero digit. 
-            var regex = new Regex(@"^\+?(?:[0-9]{1,3})?[ .-]?\(?[0-9]{2,4}\)?[ .-]?[0-9]{2,4}[ .-]?[0-9]{3,4}[ .-]?[0-9]{0,4}$");
-
-            return regex.IsMatch(phoneNumber);
+            try
+            {
+                var parsedNumber = _phoneNumberUtil.Parse(phoneNumber, "US"); // Change "US" if necessary
+                return _phoneNumberUtil.IsValidNumber(parsedNumber);
+            }
+            catch (NumberParseException)
+            {
+                return false;
+            }
         }
     }
 }
