@@ -22,7 +22,9 @@ namespace Wedding.Abstractions.UnitTests.Validation
         public void Should_Have_Error_When_FirstName_Is_Empty()
         {
             // Arrange
-            var guest = new GuestDto { FirstName = string.Empty };
+            var guest = new GuestDto { FirstName = string.Empty,
+                Roles = new List<RoleEnum> { RoleEnum.Guest }
+            };
 
             // Act & Assert
             var result = _validator.TestValidate(guest);
@@ -34,7 +36,9 @@ namespace Wedding.Abstractions.UnitTests.Validation
         public void Should_Have_Error_When_LastName_Is_Empty_And_Not_Plus1()
         {
             // Arrange
-            var guest = new GuestDto { LastName = string.Empty };
+            var guest = new GuestDto { LastName = string.Empty,
+                Roles = new List<RoleEnum> { RoleEnum.Guest }
+            };
 
             // Act & Assert
             var result = _validator.TestValidate(guest);
@@ -49,7 +53,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
             var guest = new GuestDto
             {
                 FirstName = "+1",
-                LastName = string.Empty
+                LastName = string.Empty,
+                Roles = new List<RoleEnum> { RoleEnum.Guest }
             };
 
             // Act & Assert
@@ -61,7 +66,9 @@ namespace Wedding.Abstractions.UnitTests.Validation
         public void Should_Have_Error_When_AgeGroup_Is_Invalid()
         {
             // Arrange
-            var guest = new GuestDto { AgeGroup = (AgeGroupEnum) 999 };
+            var guest = new GuestDto { AgeGroup = (AgeGroupEnum) 999,
+                Roles = new List<RoleEnum> { RoleEnum.Guest }
+            };
 
             // Act & Assert
             var result = _validator.TestValidate(guest);
@@ -76,7 +83,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
             {
                 FirstName = "John",
                 LastName = "Doe",
-                AgeGroup = AgeGroupEnum.Adult
+                AgeGroup = AgeGroupEnum.Adult,
+                Roles = new List<RoleEnum> { RoleEnum.Guest }
             };
 
             // Act & Assert

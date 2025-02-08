@@ -42,7 +42,7 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
@@ -64,7 +64,7 @@ namespace Wedding.PublicApi.Controllers
         public async Task<ActionResult<FamilyUnitDto>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);

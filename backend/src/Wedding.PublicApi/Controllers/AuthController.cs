@@ -49,7 +49,7 @@ namespace Wedding.PublicApi.Controllers
             firstName = firstName ?? "Steph";
 
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var query = new ValidateAuthQuery(_authConfiguration.Authority ?? string.Empty, _authConfiguration.Audience ?? string.Empty, arn, ipAddress, token);
             var result = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(query, cancellationToken);
         

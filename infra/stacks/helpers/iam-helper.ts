@@ -60,7 +60,16 @@ export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaCo
                     "s3:GetObject"
                 ],
                 resources: [`arn:aws:s3:::${applicationName}-setup/*`]
-            })
+            }),
+
+            // Attach Simple messaging service permissions
+            new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: [
+                    "sns:Publish"
+                ],
+                resources: ["*"]
+            }),
         ]
     });
 

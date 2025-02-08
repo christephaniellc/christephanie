@@ -71,7 +71,7 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+                var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
                 var authRequest = new ValidateAuthQuery(_auth0Configuration!.Authority!, _auth0Configuration!.Audience!,
                     LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
                 var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
@@ -136,7 +136,7 @@ namespace Wedding.PublicApi.Controllers
 
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
@@ -157,7 +157,7 @@ namespace Wedding.PublicApi.Controllers
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
@@ -195,7 +195,7 @@ namespace Wedding.PublicApi.Controllers
 
                 //#if !DEBUG_ANONYMOUS
                 var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-                var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+                var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
                 var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                     LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
                 var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
@@ -232,7 +232,7 @@ namespace Wedding.PublicApi.Controllers
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var ipAddress = HeaderHelper.GetIpAddress(HttpContext);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
             var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
