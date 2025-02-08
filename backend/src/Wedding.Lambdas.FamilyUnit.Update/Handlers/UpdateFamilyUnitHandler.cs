@@ -55,11 +55,13 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
                     foreach (var guest in familyUnit!.OrderedGuests()!)
                     {
                         guest.InvitationCode = command.FamilyUnit.InvitationCode;
-                        
+                        Console.WriteLine($"Serialized Email: {JsonSerializer.Serialize(guest.Email)}");
+
                         var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
                             command.FamilyUnit.InvitationCode, 
                             guest.GuestId, 
                             cancellationToken);
+                        Console.WriteLine($"Serialized guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
                         if (existingGuestEntity == null)
                         {
@@ -111,7 +113,6 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
                         if (guest.Email != null)
                         {
-                            Console.WriteLine($"Serialized Email: {JsonSerializer.Serialize(guest.Email)}");
                             existingGuestEntity.Email = guest.Email.ToString();
                         }
 
