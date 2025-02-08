@@ -16,10 +16,10 @@ namespace Wedding.Lambdas.UnitTests.TestData
 
         public TestTokenHelper(IConfigurationRoot configuration)
         {
-            JwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority];
-            JwtAudience = configuration[ConfigurationKeys.AuthenticationAudience];
-            ClientId = configuration[ConfigurationKeys.AuthenticationClientIdM2M];
-            ClientSecret = configuration[ConfigurationKeys.AuthenticationClientSecretM2M];
+            JwtAuthority = configuration[ConfigurationKeys.AuthenticationAuthority]!;
+            JwtAudience = configuration[ConfigurationKeys.AuthenticationAudience]!;
+            ClientId = configuration[ConfigurationKeys.AuthenticationClientIdM2M]!;
+            ClientSecret = configuration[ConfigurationKeys.AuthenticationClientSecretM2M]!;
             TokenEndpoint = JwtAuthority + "/oauth/token";
         }
 
@@ -65,18 +65,18 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 var responseBody = await response.Content.ReadAsStringAsync();
                 var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
 
-                return tokenResponse.access_token;
+                return tokenResponse!.access_token;
             }
         }
 
         public class TokenResponse
         {
             [JsonPropertyName("access_token")]
-            public string access_token { get; set; }
+            public required string access_token { get; set; }
             [JsonPropertyName("expires_in")]
             public int expires_in { get; set; }
             [JsonPropertyName("token_type")]
-            public string token_type { get; set; }
+            public required string token_type { get; set; }
         }
 
         // public static string GenerateTestToken(string authority, string audience, string? guestId = null)

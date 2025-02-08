@@ -36,7 +36,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = "",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
@@ -54,7 +55,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = "sdfsdfsdfsd",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
@@ -72,7 +74,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = "",
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
@@ -90,7 +93,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = "sdfsdfsdfsd",
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
@@ -108,7 +112,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = "324oijsoifj",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
@@ -126,7 +131,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 Audience = _testTokenHelper.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 

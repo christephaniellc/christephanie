@@ -1,7 +1,10 @@
-﻿using FluentValidation.TestHelper;
+﻿using FluentAssertions;
+using FluentValidation.TestHelper;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Validation;
 using Wedding.Common.Utility.Testing.TestChain;
+using Wedding.Lambdas.UnitTests.TestData;
 
 namespace Wedding.Abstractions.UnitTests.Validation
 {
@@ -24,7 +27,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             {
                 InvitationCode = "invalid_code",
                 Tier = "Tier1",
-                Guests = new List<GuestDto> { new GuestDto() }
+                Guests = new List<GuestDto> { TestDataHelper.GUEST_JOHN }
             };
 
             var result = _validator.TestValidate(familyUnit);
@@ -40,12 +43,21 @@ namespace Wedding.Abstractions.UnitTests.Validation
                 Guests = new List<GuestDto> { new GuestDto
                 {
                     GuestNumber = 1,
-                    FirstName = "yay"
+                    FirstName = "yay",
+                    Roles = new List<RoleEnum> { RoleEnum.Guest }
                 } }
             };
 
             var result = _validator.TestValidate(familyUnit);
-            result.ShouldHaveValidationErrorFor(f => f.Guests);
+
+            // foreach (var error in result.Errors)
+            // {
+            //     Console.WriteLine($"Property: {error.PropertyName}, Error: {error.ErrorMessage}");
+            // }
+            result.ShouldHaveValidationErrorFor("Guests[0].LastName");
+            //result.ShouldHaveValidationErrorFor(f => f.Guests);
+            //result.Errors.Any(e => e.PropertyName == "Guests[0].LastName").Should().BeTrue();
+            //result.ShouldHaveValidationErrorFor(f => f.Guests![0]!.LastName);
         }
 
         [Test]
@@ -97,7 +109,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
             {
                 InvitationCode = "valid_code",
                 Tier = "Tier1",
-                Guests = new List<GuestDto> { new GuestDto() }
+                Guests = new List<GuestDto> { TestDataHelper.GUEST_JOHN }
             };
 
             var result = _validator.TestValidate(familyUnit);
@@ -116,7 +128,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     {
                         FirstName = "Bob",
                         LastName = "Licker",
-                        GuestNumber = 1
+                        GuestNumber = 1,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };

@@ -26,10 +26,10 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
     [UnitTestsFor(typeof(Lambdas.FamilyUnit.Update.Function))]
     public class UpdateFunctionTests
     {
-        private IMapper _mapper;
-        private Mock<IDynamoDBProvider> _mockDynamoDbProvider;
-        private TestTokenHelper _testTokenHelper;
-        private Wedding.Lambdas.FamilyUnit.Update.Function _function;
+        private IMapper? _mapper;
+        private Mock<IDynamoDBProvider>? _mockDynamoDbProvider;
+        private TestTokenHelper? _testTokenHelper;
+        private Wedding.Lambdas.FamilyUnit.Update.Function? _function;
 
         [SetUp]
         public void SetUp()
@@ -77,8 +77,9 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             try
             {
                 var dto = TestDataHelper.FAMILY_DOE;
+                var updatedPhone = "777-777-7777";
                 dto.MailingAddress = new AddressDto { StreetAddress = "123 Main St." };
-                dto.Guests[0].AgeGroup = AgeGroupEnum.Under13;
+                dto.Guests![0].AgeGroup = AgeGroupEnum.Under13;
                 dto.Guests[0].Rsvp = new RsvpDto
                 {
                     InvitationResponse = InvitationResponseEnum.Interested
@@ -87,19 +88,25 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 {
                     InvitationResponse = InvitationResponseEnum.Declined
                 };
+                dto.Guests[0].Phone = new VerifiedDto
+                {
+                    Value = updatedPhone,
+                    Verified = false
+                };
 
-                _mockDynamoDbProvider.Setup(x =>
-                        x.GetFamilyUnitAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
+                _mockDynamoDbProvider!.Setup(x =>
+                        x.GetFamilyUnitAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(dto);
          
                 var context = new TestLambdaContext();
 
                 var fakeAuthContext = new AuthContext
                 {
-                    Audience = _testTokenHelper.JwtAudience,
+                    Audience = _testTokenHelper!.JwtAudience,
                     GuestId = TestDataHelper.GUEST_JOHN.GuestId,
                     InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
-                    Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles)
+                    Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
+                    IpAddress = "127.0.0.1"
                 };
 
                 var request = new APIGatewayProxyRequest
@@ -114,16 +121,18 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                     Body = JsonSerializer.Serialize(dto, JsonSerializationHelper.FromFrontendOptions)
                 };
 
-                var response = await _function.FunctionHandler(request, context);
+                var response = await _function!.FunctionHandler(request, context);
                 var result = response.GetResponseBodyData<FamilyUnitDto>();
 
+                result.Should().NotBeNull();
                 result.Guests.Should().NotBeNull();
                 result.Guests!.Count.Should().BeGreaterThan(0);
                 result.Guests![0].FirstName.Should().Be("John");
                 result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Under13);
-                result.Guests![0].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
-                result.Guests![1].Rsvp.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
-                result.MailingAddress.StreetAddress.Should().Be("123 Main St.");
+                result!.Guests![0]!.Email!.Value.Should().Be(updatedPhone);
+                result!.Guests![0]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
+                result!.Guests![1]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
+                result!.MailingAddress!.StreetAddress.Should().Be("123 Main St.");
                 result.CalculateHeadcount().Should().Be(1);
             }
             catch (Exception ex)

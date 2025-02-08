@@ -92,17 +92,15 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AdditionalFirstNames, opt => opt.MapFrom(src => src.AdditionalFirstNames))
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
-                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.EmailVerified)
-                            ? null
-                            : JsonSerializer.Deserialize<VerifyDto?>(src.EmailVerified, new JsonSerializerOptions())
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.Email)
+                            ? new VerifiedDto()
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Email, new JsonSerializerOptions())
                     ))
-                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
-                    .ForMember(dest => dest.PhoneVerified, opt => opt.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.PhoneVerified)
-                            ? null
-                            : JsonSerializer.Deserialize<VerifyDto?>(src.PhoneVerified, new JsonSerializerOptions())
+                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.Phone)
+                            ? new VerifiedDto()
+                            : JsonSerializer.Deserialize<VerifiedDto?>(src.Phone, new JsonSerializerOptions())
                     ))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup ?? AgeGroupEnum.Adult))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
@@ -125,10 +123,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AdditionalFirstNames, opt => opt.MapFrom(src => src.AdditionalFirstNames))
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
-                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                    .ForMember(dest => dest.EmailVerified, opt => opt.MapFrom(src => (src.EmailVerified != null) ? src.EmailVerified.ToString() : null))
-                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
-                    .ForMember(dest => dest.PhoneVerified, opt => opt.MapFrom(src => (src.PhoneVerified != null) ? src.PhoneVerified.ToString() : null))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => (src.Email != null) ? src.Email.ToString() : null))
+                    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => (src.Phone != null) ? src.Phone.ToString() : null))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
 
@@ -213,13 +209,13 @@ namespace Wedding.Abstractions.Mapping
         {
             public VerifyProfile()
             {
-                CreateMap<string, VerifyDto?>()
+                CreateMap<string, VerifiedDto?>()
                     .ConvertUsing(verifyString =>
                         string.IsNullOrWhiteSpace(verifyString)
                             ? null
-                            : JsonSerializer.Deserialize<VerifyDto>(verifyString, new JsonSerializerOptions()));
+                            : JsonSerializer.Deserialize<VerifiedDto>(verifyString, new JsonSerializerOptions()));
 
-                CreateMap<VerifyDto, string?>()
+                CreateMap<VerifiedDto, string?>()
                     .ConvertUsing(verifyDto => verifyDto != null
                         ? JsonSerializer.Serialize(verifyDto, new JsonSerializerOptions())
                         : null);
