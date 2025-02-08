@@ -52,6 +52,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
                 _logger.LogWarning($"Rate limit exceeded for {command.AuthContext.IpAddress}");
                 throw new TooManyUpdatesException($"Too many requests for IP '{command.AuthContext.IpAddress}'");
             }
+            _logger.LogInformation($"IP {command.AuthContext.IpAddress} NOT rate limited.");
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
             if (existingGuestEntity == null)
