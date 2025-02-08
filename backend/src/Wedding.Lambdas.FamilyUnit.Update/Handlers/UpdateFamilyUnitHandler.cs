@@ -111,6 +111,7 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Handlers
 
                         if (guest.Email != null)
                         {
+                            Console.WriteLine($"Serialized Email: {JsonSerializer.Serialize(guest.Email)}");
                             existingGuestEntity.Email = guest.Email.ToString();
                         }
 
