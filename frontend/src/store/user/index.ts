@@ -1,12 +1,12 @@
 import { atom, useRecoilState } from 'recoil';
 import { GuestDto } from '@/types/api';
-import { UseMutationResult, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
+import { UseMutationResult, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useMemo } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { ApiError } from '@/api/Api';
 
-export const userIdQueryState = atom<Partial<UseQueryResult<string | null, ApiError>>>({
+export const userIdQueryState = atom<Partial<UseQueryResult<string | undefined, ApiError>> | null>({
   key: 'userIdQueryState',
   default: null,
 });
@@ -21,12 +21,7 @@ export const userState = atom<Partial<GuestDto>>({
   } as GuestDto,
 });
 
-export const refetchUserState = atom<() => void>({
-  key: 'refetchUserState',
-  default: false,
-});
-
-export const userMutationState = atom<Partial<UseMutationResult<GuestDto | null>>>({
+export const userMutationState = atom<Partial<UseMutationResult<GuestDto>> | null>({
   key: 'userMutationState',
   default: null,
 });
@@ -86,7 +81,7 @@ export const useUser = () => {
   }, [auth0User]);
 
   useEffect(() => {
-    setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<string | null>);
+    setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<string | undefined, ApiError>);
     queryClient.resetQueries({ queryKey: [`findUserIdQuery`] });
   }, [user.firstName, user.invitationCode]);
 

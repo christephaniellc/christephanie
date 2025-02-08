@@ -17,7 +17,7 @@ describe('useAuth0Utils', () => {
   });
   it('should attach the users guestId when it makes a call to auth0 to log in', () => {
     const { result } = renderHook(() => useAuth0Utils());
-    result.current.loginUser(1234);
+    result.current.loginUser('1234');
     expect(useAuth0).toHaveBeenCalled();
   });
 });

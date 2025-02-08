@@ -1,94 +1,63 @@
-import {FamilyUnitDto, InvitationResponseEnum} from '@/types/api';
+import { FamilyUnitDto } from '@/types/api';
 
-export const mockFamilyUnitDto: FamilyUnitDto = {
-  'invitationCode': 'abc',
-  'unitName': 'Stubler-Sikorra Family',
-  'tier': 'Gold',
-  'potentialHeadCount': 4,
-  'familyUnitLastLogin': '2024-04-25T10:30:00Z',
-  'guests': [
+export const mockFamilyUnitDto = {
+  invitationCode: "RVMBL",
+  unitName: "Sikorra_Christopher Family",
+  guests: [
     {
-      'invitationCode': 'abc',
-      'guestId': 'guest-001',
-      'guestNumber': 1,
-      'auth0Id': 'auth0|1234567890abcdef',
-      'firstName': 'Steph',
-      'additionalFirstNames': [
-        'Marie',
+      invitationCode: "RVMBL",
+      guestId: "6f2e238d-6792-453f-82d1-1cde35414d5b",
+      guestNumber: 1,
+      auth0Id: "google-oauth2|109165472878949322902",
+      firstName: "Christopher",
+      additionalFirstNames: [
+        "topher.sikorra"
       ],
-      'lastName': 'Stubler',
-      'roles': [
-        'Guest',
+      lastName: "Sikorra",
+      roles: [
+        "Admin",
+        "Rehearsal",
+        "Manor",
+        "FourthOfJuly"
       ],
-      'email': 'steph.stubler@example.com',
-      'emailVerified': true,
-      'phone': '+1-555-123-4567',
-      'ageGroup': 'Adult',
-      'rsvp': {
-        'guestId': 'guest-001',
-        'invitationResponse': InvitationResponseEnum.Interested,
-        'wedding': 'Attending',
-        'sleepPreference': 'Hotel',
-        'rehearsalDinner': 'Pending',
-        'fourthOfJuly': 'Declined',
-        'buildWeek': 'Pending',
-        'arrivalDate': '2024-05-01T15:00:00Z',
-        'rsvpNotes': 'Looking forward to the event!',
+      email: "topher.sikorra@gmail.com",
+      emailVerified: {
+        verified: true
       },
-      'preferences': {
-        'guestId': 'guest-001',
-        'meal': 'Vegetarian',
-        'kidsPortion': false,
-        'foodAllergies': 'None',
-        'specialAlcoholRequests': 'No preferences',
+      phone: "703-499-5522",
+      rsvp: {
+        invitationResponse: "Pending"
       },
-      'guestLogins': [
-        'login1',
-        'login2',
-      ],
+      preferences: {
+        notificationPreference: [],
+        foodAllergies: []
+      },
+      ageGroup: "Adult",
+      lastActivity: "2025-02-06T05:05:15.228+00:00"
     },
     {
-      'invitationCode': 'abc',
-      'guestId': 'guest-002',
-      'guestNumber': 2,
-      'auth0Id': 'auth0|abcdef1234567890',
-      'firstName': 'Topher',
-      'additionalFirstNames': [
-        'James',
+      invitationCode: "RVMBL",
+      guestId: "8e22da5e-2943-4297-bb78-1d60e82ba94c",
+      guestNumber: 2,
+      firstName: "Stephanie",
+      additionalFirstNames: [],
+      lastName: "Stubler",
+      roles: [
+        "Admin",
+        "Rehearsal",
+        "Manor",
+        "FourthOfJuly"
       ],
-      'lastName': 'Sikorra',
-      'roles': [
-        'Guest',
-      ],
-      'email': 'topher.sikorra@example.com',
-      'emailVerified': false,
-      'phone': '+1-555-987-6543',
-      'ageGroup': 'Teenager',
-      'rsvp': {
-        'guestId': 'guest-002',
-        'invitationResponse': InvitationResponseEnum.Pending,
-        'wedding': 'Pending',
-        'sleepPreference': 'Unknown',
-        'rehearsalDinner': 'Pending',
-        'fourthOfJuly': 'Pending',
-        'buildWeek': 'Pending',
-        'arrivalDate': null,
-        'rsvpNotes': 'Awaiting confirmation from parents.',
+      rsvp: {
+        invitationResponse: "Pending"
       },
-      'preferences': {
-        'guestId': 'guest-002',
-        'meal': 'Omnivore',
-        'kidsPortion': true,
-        'foodAllergies': 'Peanuts',
-        'specialAlcoholRequests': null,
+      preferences: {
+        notificationPreference: [],
+        foodAllergies: []
       },
-      'guestLogins': [],
-    },
+      ageGroup: "Adult"
+    }
   ],
-  'mailingAddress': '123 Main St, Springfield, IL 62704',
-  'additionalAddresses': [
-    '456 Elm St, Springfield, IL 62705',
-    '789 Oak St, Springfield, IL 62706',
-  ],
-  'invitationResponseNotes': 'Family is excited to attend!',
+  additionalAddresses: [],
+  familyUnitLastLogin: "2025-02-06T05:05:15.227+00:00"
 } as FamilyUnitDto;

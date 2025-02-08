@@ -7,13 +7,13 @@ export const useAuth0Utils = () => {
     const { loginWithPopup } = useAuth0();
 
 
-    const loginUser = useCallback((guestId) => {
+    const loginUser = useCallback((guestId: string) => {
       loginWithPopup({
         authorizationParams: {
           screen_hint: 'signup',
           guest_id: guestId,
         },
-      }).then(() => {
+      }).then(()=> {
         console.log('logged in');
       });
     }, [loginWithPopup]);

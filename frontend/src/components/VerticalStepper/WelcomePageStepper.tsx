@@ -18,7 +18,17 @@ import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import { userState } from '@/store/user';
 
-const steps = {
+export interface Step {
+  id: number;
+  label: string;
+  description: string;
+  lastDate: Date;
+  stepCompleted: boolean;
+  stepUrl: string | undefined;
+  component?: React.ReactNode;
+}
+
+const steps: { [step: string]: Step } = {
   saveTheDate: {
     id: 0,
     label: 'Save the Date',
@@ -34,7 +44,7 @@ const steps = {
     label: 'RSVP (coming soon)!',
     description:
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
-    lastDate: new Date("2025-05-20"),
+    lastDate: new Date('2025-05-20'),
     stepCompleted: false,
     stepUrl: routes[Pages.FoodPreferences].path,
   },
@@ -54,7 +64,7 @@ export default function WelcomePageStepper() {
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const navigate = useNavigate();
-  const handleNext = useCallback((step: ReturnType<typeof rsvpSteps>) => {
+  const handleNext = useCallback((step: Step) => {
     if (!familyStates?.allUsersResponded) {
       navigate(`${step.stepUrl}?step=attendance`);
     } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
@@ -107,14 +117,14 @@ export default function WelcomePageStepper() {
               icon={<StickFigureIcon rotation={0} fontSize={'large'} ageGroup={user.ageGroup} />}
               optional={
                 <Typography variant="caption">
-                  {step.stepCompleted ? "Thanks for responding!" : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
+                  {step.stepCompleted ? 'Thanks for responding!' : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
                 </Typography>
               }
             >
               {step.label}
             </StepLabel>
             <StepContent>
-              <Tooltip textAlign="start" content={step.description}>
+              <Tooltip sx={{ textAlign: 'start' }} content={step.description} title={''}>
                 <Box sx={{ mb: 2 }}>
                   <Button
                     variant="contained"
@@ -125,7 +135,7 @@ export default function WelcomePageStepper() {
                   </Button>
                   <Button
                     disabled={!step.stepCompleted}
-                    onClick={() => step.stepCompleted  ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()}
+                    onClick={() => step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()}
                     sx={{ mt: 1, mr: 1 }}
                   >
                     {step.stepCompleted ? 'Update Your Response' : 'Back'}
