@@ -101,7 +101,7 @@ export const InvitationCodeInputs = () => {
       {getAccessTokenSilently() && !user.guestId && (
         <>
           <StephsFavoriteTypography mx='auto'>OR</StephsFavoriteTypography>
-          <Card mt={2} sx={{ width: '100%' }} pb={2}>
+          <Card sx={{ width: '100%', mt: 2, pb: 2 }}>
             <CardHeader subheader="Login with your existing account" />
             <CardActions>
               <Button

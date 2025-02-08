@@ -1,18 +1,17 @@
+import React from 'react';
 import Meta from '@/components/Meta';
 import Box from '@mui/material/Box';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { seriousFoodAllergies } from '@/components/Allergies';
 import Button from '@mui/material/Button';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { createSvgIcon, Icon, SvgIcon, SvgIconTypeMap, useTheme } from '@mui/material';
+import { SvgIconTypeMap, useTheme } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { guestSelector, useFamily } from '@/store/family';
-import { ImageButton } from '@/components/AgeSelector/AgeSelector';
 import { userState } from '@/store/user';
 import Shark from '@/assets/shark.svg';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { rgba } from 'polished';
 
 function FoodAllergies({ guestId }: { guestId: string }) {
   const theme = useTheme();
@@ -66,7 +65,8 @@ function FoodAllergies({ guestId }: { guestId: string }) {
   }, [familyActions.updateFamilyMutation]);
 
   return (
-    <Box display="flex" my={2} border={'1px dotted green'} sx={{ backdropFilter: 'blur(16px)', backgroundColor: 'rgba(0,0,0,.8)' }}>
+    <Box display="flex" my={2} border={'1px dotted green'}
+         sx={{ backdropFilter: 'blur(16px)', backgroundColor: 'rgba(0,0,0,.8)' }}>
       <Box border={'1px solid blue'} display="flex" width={300} p={2} minHeight="100%" flexWrap="wrap">
         <Box width={'100%'} flexWrap="wrap" alignContent="flex-start" display="flex">
           <Typography sx={{ width: '100%' }}>
@@ -76,7 +76,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
             Food Allergies:
           </Typography>
           <Typography sx={{ width: '100%' }} color="secondary"
-                      variant="body 2">{newAllergies?.join(', ')}</Typography>
+                      variant="body2">{newAllergies?.join(', ')}</Typography>
         </Box>
         <Button
           variant="outlined"
@@ -98,7 +98,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
                   color={(chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as 'primary' | 'secondary'}
                   variant={(chosenAllergies.join('') === 'none' ? 'outlined' : 'text') as 'contained' | 'text'}
                   onClick={resetAllergies}>
-            <IconButton mr={1} position="relative">
+            <IconButton sx={{ mr: 1 }}>
               <Box component={'img'} src={`${Shark}`} width={24} height={24}
                    sx={{ filter: chosenAllergies.join('') === 'none' ? filterColorSecondary : filterColorPrimary }} />
             </IconButton>
