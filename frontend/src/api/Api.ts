@@ -184,46 +184,45 @@ export default class Api {
   }
 
   private async compositeResponseHandler<T>(
-    promise: Promise<Response>,
-    callback?: (_response: T) => T
-  ): Promise<T> {
-    try {
-      const response = await promise;
-      let result = await this.handleResponse<T>(response);
-      if (callback) {
-        result = callback(result);
-      }
-      return result;
-    } catch (reason) {
-      return this.handleRejected<T>(reason);
+  promise: Promise<Response>,
+  callback?: (_response: Awaited<T>) => Awaited<T>
+): Promise<Awaited<T>> {
+  try {
+    const response = await promise;
+    let result = await this.handleResponse<Awaited<T>>(response);
+    if (callback) {
+      result = callback(result);
     }
+    return result;
+  } catch (reason) {
+    return this.handleRejected<Awaited<T>>(reason);
   }
-
-  async get<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+}
+  async get<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
   }
 
-  async getPublic<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+  async getPublic<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, false)), callback);
   }
 
-  async post<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async post<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
   }
 
-  async patch<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async patch<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PATCH', data, true)), callback);
   }
 
-  async put<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async put<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PUT', data, true)), callback);
   }
 
-  async delete<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async delete<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('DELETE', data, true)), callback);
   }
 
-  async postForm<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async postForm<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildMutipartFormConfig('POST', data)), callback);
   }
 }
