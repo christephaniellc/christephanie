@@ -57,20 +57,20 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
 
   const buttonProps = useMemo(() => {
-    switch (userAgeGroupIndex) {
-      case InvitationResponseEnum['Interested']:
+    switch (InvitationResponseEnum[userAgeGroupIndex]) {
+      case InvitationResponseEnum.Interested:
         return {
           color: 'primary',
           fontSize: 'large',
           border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}`,
         };
-      case InvitationResponseEnum["Declined"]:
+      case InvitationResponseEnum.Declined:
         return {
           color: 'error',
           fontSize: 'small',
           border: `2px dashed ${darken(theme.palette.error.main, darkenCoefficent)}`,
         };
-      case InvitationResponseEnum["Pending"]:
+      case InvitationResponseEnum.Pending:
         return {
           color: 'default',
           fontSize: 'medium',
