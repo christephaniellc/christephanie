@@ -29,6 +29,7 @@ jobs:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
     env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
 
     steps:
@@ -49,15 +50,16 @@ jobs:
         run: yarn build
         working-directory: frontend/src
         env:
-          TEST: "${{ secrets.DEV_AWS_ROLE_ARN }}"
-          DOMAIN: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AUTH0_DOMAIN || secrets.DEV_AUTH0_DOMAIN }}"
-          CLIENT_ID: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AUTH0_CLIENT_ID || secrets.DEV_AUTH0_CLIENT_ID }}"
-          AUDIENCE: "${{ github.event.inputs.environment == 'prod' && vars.PROD_AUDIENCE || vars.DEV_AUDIENCE }}"
-          WEBSERVICE_URL: "${{ github.event.inputs.environment == 'prod' && vars.PROD_WEBSERVICE_URL || vars.DEV_WEBSERVICE_URL }}"
+          DOMAIN: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AUTH0_DOMAIN || secrets.DEV_AUTH0_DOMAIN }}"
+          CLIENT_ID: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AUTH0_CLIENT_ID || secrets.DEV_AUTH0_CLIENT_ID }}"
+          AUDIENCE: "${{ env.DEPLOY_ENV == 'prod' && vars.PROD_AUDIENCE || vars.DEV_AUDIENCE }}"
+          WEBSERVICE_URL: "${{ env.DEPLOY_ENV == 'prod' && vars.PROD_WEBSERVICE_URL || vars.DEV_WEBSERVICE_URL }}"
           FORCE_DEPLOY: "${{ env.FORCE_DEPLOY }}"
 
-      - name: Debug Deployment Environment
-        run: echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+      - name: Debug Secrets & Vars
+        run: |
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+          echo "AWS_ROLE: ${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
       
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
