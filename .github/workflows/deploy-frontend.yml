@@ -58,6 +58,7 @@ jobs:
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
+          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
           role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
