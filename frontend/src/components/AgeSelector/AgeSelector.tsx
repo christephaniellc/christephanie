@@ -1,18 +1,16 @@
-import { Box, ButtonBase, darken, Slider, SliderThumb, Typography, useTheme } from '@mui/material';
+import { Box, darken, Slider, SliderThumb, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
+import Button from '@mui/material/Button';
 
 interface AttendanceButtonProps {
   guestId: string;
 }
 
-interface AgeSliderThumbProps extends React.HTMLAttributes<unknown> {
-}
-
-function AgeGroupThumbComponent(props: AgeSliderThumbProps) {
+function AgeGroupThumbComponent(props: React.HTMLAttributes<unknown>) {
   const { children, ...other } = props;
   return (
     <SliderThumb {...other}>
@@ -59,8 +57,8 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
 
   const buttonProps = useMemo(() => {
-    switch (userAgeGroupIndex) {
-      case InvitationResponseEnum['Interested']:
+    switch (InvitationResponseEnum[userAgeGroupIndex]) {
+      case InvitationResponseEnum.Interested:
         return {
           color: 'primary',
           fontSize: 'large',
@@ -99,13 +97,41 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
   return (
     <Box display="flex"
-         flexWrap="no-wrap"
+         flexWrap="nowrap"
          sx={{
            backdropFilter: 'blur(8px)',
            backgroundColor: 'rgba(0,0,0,0.5)',
          }}>
-      <ImageButton
-        sx={imgButtonSxProps}
+      <Button
+        sx={{
+          '&:hover': {
+            boxShadow: 3,
+          },
+          '&:hover, &.Mui-focusVisible': {
+            zIndex: 1,
+            '& .MuiImageBackdrop-root': {
+              opacity: 0.15,
+            },
+            '& .MuiImageMarked-root': {
+              opacity: 0,
+            },
+            '& .MuiTypography-root': {
+              // border: '4px solid currentColor',
+            },
+          },
+          alignItems: 'flex-start',
+          boxShadow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: theme.spacing(2),
+          position: 'relative',
+          width: 150,
+          minWidth: 150,
+          maxWidth: 150,
+          height: 175,
+          ...imgButtonSxProps,
+        }}
 
       >
         <Box
@@ -142,11 +168,11 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             slots={{
               thumb: AgeGroupThumbComponent,
             }}
-            onChange={(_, value) => setUserAge(guestId, value as number)}
-            onChangeCommitted={(_, index) => familyActions.updateFamilyGuestAgeGroup(guestId, Object.values(AgeGroupEnum)[index])}
+            onChange={(_, value) => setUserAge(guestId, value as number as unknown as AgeGroupEnum)}
+            onChangeCommitted={(_event, value) => familyActions.updateFamilyGuestAgeGroup(guestId, value as number as unknown as AgeGroupEnum)}
           />
         </Box>
-      </ImageButton>
+      </Button>
       {/*<Box alignContent="center"*/}
       {/*     sx={{ imgButtonSxProps, borderWidth: 2 }}*/}
       {/*>*/}
@@ -157,34 +183,6 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 };
 
 
-export const ImageButton = styled(ButtonBase)(({ theme }) => ({
-  '&:hover': {
-    boxShadow: 3,
-  },
-  '&:hover, &.Mui-focusVisible': {
-    zIndex: 1,
-    '& .MuiImageBackdrop-root': {
-      opacity: 0.15,
-    },
-    '& .MuiImageMarked-root': {
-      opacity: 0,
-    },
-    '& .MuiTypography-root': {
-      // border: '4px solid currentColor',
-    },
-  },
-  alignItems: 'flex-start',
-  boxShadow: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  padding: theme.spacing(2),
-  position: 'relative',
-  width: 150,
-  minWidth: 150,
-  maxWidth: 150,
-  height: 175,
-}));
 
 export const CountdownMessage = styled(Typography)(({ theme }) => ({
   color: theme.palette.error.main,

@@ -52,7 +52,7 @@ export default function BetterTextField() {
     familyActions.updateFamilyMutation.reset();
   }, [comment]);
 
-  const mutationState: UseMutationResult<FamilyUnitDto> = familyActions.updateFamilyMutation
+  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> = familyActions.updateFamilyMutation
   // Handler to invoke the query
   const handleSend = () => {
     // Clear any previous data if you wish, or handle it differently

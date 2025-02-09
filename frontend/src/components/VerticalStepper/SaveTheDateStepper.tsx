@@ -180,7 +180,6 @@ export default function SavetheDateStepper() {
             completed={step.completed}
             key={key}>
             <CustomStepLabel
-              component={StepButton}
               onClick={() => handleNavigateToStep(key)}
               sx={{
                 cursor: 'pointer',
