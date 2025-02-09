@@ -57,7 +57,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         return {
           color: 'default',
           fontSize: 'medium',
-          border: `2px solid ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
+          border: `2px outset ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
         };
       default:
         return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
@@ -103,7 +103,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
           minWidth: 175,
           maxWidth: 175,
           height: 175,
-
+          ...imgButtonSxProps,
           [theme.breakpoints.up('sm')]: {
             minWidth: 250,
             maxWidth: 250,

@@ -1,5 +1,5 @@
 import {familyState, familyGuestsStates, guestSelector, useUpdateFamilyGuest} from './index';
-import {mockFamilyUnitDto} from "@/types/mockResponses";
+import {mockFamilyUnitDto} from "../../../test-utils/mockResponses";
 import {RecoilRoot, RecoilState, snapshot_UNSTABLE} from "recoil";
 import {useEffect} from "react";
 import { FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';

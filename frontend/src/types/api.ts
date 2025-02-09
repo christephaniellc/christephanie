@@ -118,6 +118,7 @@ export interface IAMPolicyStatement {
   Condition?: Record<string, Record<string, any>>;
 }
 
+
 export enum InvitationResponseEnum {
   Pending = 'Pending',
   Interested = 'Interested',

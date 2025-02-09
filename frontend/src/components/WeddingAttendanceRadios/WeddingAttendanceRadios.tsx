@@ -14,9 +14,11 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
   const interested = guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
   const { user } = useAuth0();
   const isMe = guest?.auth0Id === user?.sub;
+  const interestedOptions = ['Who knows?', 'Only time will tell.', "It's fine, we can wait.", "I'm sure we'll all know one day.", "C'mon, tell us.", "Steph is kind of a planner btw", 'still thinking about it for some reason.'];
+  const interestedOption = useMemo(() => interestedOptions[Math.floor(Math.random() * interestedOptions.length)], [interested]);
 
   const response = useMemo(() => {
-    return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? 'unable to attend' : 'still thinking about it.';
+    return interested === 'Interested' ? 'interested!' : interested === 'Declined' ? 'unable to attend' : interestedOption;
   }, [interested]);
 
   const queryKey = ['updateFamilyUnit'];
@@ -35,7 +37,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
         variant="caption"
         mr={declined ? 2 : 0}
       >
-        {isMe ? 'I am ' : `${guest?.firstName} is `}{response}
+        {isMe ? '' : `${guest?.firstName} is `}{response}
       </Typography>
     </Box>
   );

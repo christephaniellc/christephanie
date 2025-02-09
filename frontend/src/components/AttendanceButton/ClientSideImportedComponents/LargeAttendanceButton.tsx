@@ -37,7 +37,7 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
       <Typography variant="h6" sx={{ mx: 'auto' }} width='100%'>
-        {guest?.auth0Id === user?.sub ? 'You' : guest?.firstName}
+        {guest?.auth0Id === user?.sub ? `You${interested === 'Pending' ? `, Maybe.` : ""}` : guest?.firstName}
       </Typography>
     </Box>
   );
