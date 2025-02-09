@@ -82,7 +82,7 @@ jobs:
               previous_commit=$(git rev-list --max-parents=0 HEAD)
             fi
 
-            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -v -E "(^Wedding.Lambdas.Unittests$|tests)" || true)
+            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -E "^Wedding\.Lambdas\." | grep -v -E "(unittests|tests)" || true)
 
             # Detect Wedding.Common and Wedding.Abstractions changes
             common_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Common/ || true)
@@ -122,7 +122,7 @@ jobs:
           application_name="christephanie-wedding-api"
 
           for dir in $dirs; do
-            if [[ "$dir" =~ (unittests|tests) ]]; then
+            if [[ "$dir" == *"unittests"* || "$dir" == *"tests"* ]]; then
               echo "Skipping unit test project: $dir"
               continue
             fi
