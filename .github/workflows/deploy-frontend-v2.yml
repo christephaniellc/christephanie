@@ -28,6 +28,7 @@ jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
     env:
       DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
@@ -59,8 +60,8 @@ jobs:
       - name: Debug Secrets & Vars
         run: |
           echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
-          echo "AWS_ROLE: ${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
-      
+          if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
+          
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
