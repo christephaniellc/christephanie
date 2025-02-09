@@ -1,4 +1,4 @@
-import { Box, ButtonBase, darken, Typography, useTheme } from '@mui/material';
+import { Box, ButtonBase, ButtonProps, darken, Typography, useTheme } from '@mui/material';
 import React, { useCallback, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import { InvitationResponseEnum } from '@/types/api';
@@ -7,6 +7,7 @@ import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import Countdowns from '@/components/Countdowns';
 import AgeSelector from '@/components/AgeSelector';
+import Button from '@mui/material/Button';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -81,24 +82,42 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent, interested]);
 
   return (
-    <Box display="flex"
-         flexWrap="no-wrap"
+    <Box
          sx={{
+           display: "flex",
+           flexWrap: "no-wrap",
            backdropFilter: 'blur(8px)',
            backgroundColor: 'rgba(0,0,0,0.5)',
          }}>
-      <ImageButton
+      <Button
         disabled={familyActions.updateFamilyMutation.isPending}
         onClick={handleClick}
-        sx={imgButtonSxProps}
-        width={interested === InvitationResponseEnum.Interested ? '50% !important' : '100%'}
+        sx={{
+          alignItems: 'flex-start',
+          boxShadow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 2,
+          position: 'relative',
+          minWidth: 175,
+          maxWidth: 175,
+          height: 175,
+
+          [theme.breakpoints.up('sm')]: {
+            minWidth: 250,
+            maxWidth: 250,
+          },
+          width: interested === InvitationResponseEnum.Interested ? '50% !important' : '100%'
+        }}
+
       >
         <Box display="flex" alignItems="center">
           <LargeAttendanceButton guestId={guestId} isPending={familyActions.updateFamilyMutation.isPending}
                                  error={familyActions.updateFamilyMutation.error} />
         </Box>
 
-      </ImageButton>
+      </Button>
       {interested === InvitationResponseEnum.Interested && <AgeSelector guestId={guestId} />}
       <Box alignContent="center"
            sx={{ imgButtonSxProps, borderWidth: 2 }}
@@ -112,39 +131,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 };
 
 
-const ImageButton = styled(ButtonBase)(({ theme }) => ({
-  '&:hover': {
-    boxShadow: 3,
-  },
-  '&:hover, &.Mui-focusVisible': {
-    zIndex: 1,
-    '& .MuiImageBackdrop-root': {
-      opacity: 0.15,
-    },
-    '& .MuiImageMarked-root': {
-      opacity: 0,
-    },
-    '& .MuiTypography-root': {
-      // border: '4px solid currentColor',
-    },
-  },
-  alignItems: 'flex-start',
-  boxShadow: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  padding: theme.spacing(2),
-  position: 'relative',
-  width: 175,
-  minWidth: 175,
-  maxWidth: 175,
-  height: 175,
+const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({
 
-  [theme.breakpoints.up('sm')]: {
-    width: 250,
-    minWidth: 250,
-    maxWidth: 250,
-  },
 }));
 
 export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({

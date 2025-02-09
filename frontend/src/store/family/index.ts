@@ -1,7 +1,6 @@
 import {
   atom, selector,
   selectorFamily, useRecoilState,
-  useSetRecoilState,
 } from 'recoil';
 import {
   AddressDto, AgeGroupEnum,
@@ -115,10 +114,10 @@ export const guestSelector = selectorFamily<GuestDto | null, string>({
 });
 
 export const useUpdateFamilyGuest = (guestId: string) => {
-  const updateGuest = useSetRecoilState(guestSelector(guestId));
+  const [guest, updateGuest] = useRecoilState(guestSelector(guestId));
 
   const updateInvitation = (invitationResponse: InvitationResponseEnum) => {
-    updateGuest({ rsvp: { invitationResponse } });
+    updateGuest({ ...guest, rsvp: { invitationResponse: invitationResponse } });
   };
 
   return useMemo(() => ({ updateInvitation }), [updateGuest]);
