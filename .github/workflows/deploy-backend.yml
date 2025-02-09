@@ -42,10 +42,12 @@ jobs:
         with:
           dotnet-version: '8.0'
 
+      - name: Debug Deployment Environment
+        run: echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
           role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           #role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
           role-session-name: GitHubActionsSession
