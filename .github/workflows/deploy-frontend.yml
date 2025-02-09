@@ -57,7 +57,7 @@ jobs:
           FORCE_DEPLOY: "${{ env.FORCE_DEPLOY }}"
 
       - name: Debug Deployment Environment
-        run: echo "Deploying to environment: ${{ github.event.inputs.environment }} ${{ env.TEST }}"
+        run: echo "Deploying to environment: ${{ github.event.inputs.environment }}"
       
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
