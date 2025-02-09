@@ -5,6 +5,7 @@ import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import Button from '@mui/material/Button';
+import { getEnumValueByIndex } from '@/utils/utils';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -57,7 +58,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
 
   const buttonProps = useMemo(() => {
-    switch (InvitationResponseEnum[userAgeGroupIndex]) {
+    switch (getEnumValueByIndex(InvitationResponseEnum, userAgeGroupIndex)) {
       case InvitationResponseEnum.Interested:
         return {
           color: 'primary',
