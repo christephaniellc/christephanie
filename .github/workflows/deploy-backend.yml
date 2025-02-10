@@ -53,21 +53,9 @@ jobs:
       - name: Debug Deployment Environment
         run: echo "DEPLOY_ENV=${{ env.DEPLOY_ENV }}"
 
-      - name: Set AWS Role ARN
-        run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
-
-      - name: Debug AWS Role ARN
-        run: |
-          echo "Using AWS Role: $AWS_ROLE"
-        env:
-          AWS_ROLE: ${{ env.AWS_ROLE }}
-        
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          #role-to-assume: "${{ env.AWS_ROLE }}"
-          #role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
-          #role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
