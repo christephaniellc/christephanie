@@ -18,11 +18,11 @@ on:
         options:
           - dev
           - prod
-      force_deploy:
-        description: "Force deploy flag (set true to deploy all projects)"
-        required: false
-        default: "false"
-        type: boolean
+      #force_deploy:
+      #  description: "Force deploy flag (set true to deploy all projects)"
+      #  required: false
+      #  default: "false"
+      #  type: boolean
         
 permissions:
   id-token: write
@@ -32,12 +32,14 @@ jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
-    env:
-      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
-      FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
-
+    #environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
+    
     steps:
+      - name: Setup environment 
+        run | 
+          echo "DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}" >> $GITHUB_ENV
+          #echo "FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}" >> $GITHUB_ENV
+      
       - name: Debug Secrets & Vars
         run: |
           echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
