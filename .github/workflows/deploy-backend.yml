@@ -50,9 +50,15 @@ jobs:
           echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
           if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
           
+      - name: Debug Deployment Environment
+        run: echo "DEPLOY_ENV=${{ env.DEPLOY_ENV }}"
+
       - name: Set AWS Role ARN
         run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
 
+      - name: Debug AWS Role ARN
+        run: echo "Using AWS Role: ${{ env.AWS_ROLE }}"
+        
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
