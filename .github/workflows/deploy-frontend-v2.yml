@@ -55,6 +55,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Debug Secrets & Vars
+        run: |
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+          if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
+          
+      - name: Setup AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
+          role-session-name: GitHubActionsSession
+          aws-region: us-east-1
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,7 +85,7 @@ jobs:
           CLIENT_ID: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AUTH0_CLIENT_ID || secrets.DEV_AUTH0_CLIENT_ID }}"
           AUDIENCE: "${{ env.DEPLOY_ENV == 'prod' && vars.PROD_AUDIENCE || vars.DEV_AUDIENCE }}"
           WEBSERVICE_URL: "${{ env.DEPLOY_ENV == 'prod' && vars.PROD_WEBSERVICE_URL || vars.DEV_WEBSERVICE_URL }}"
-          FORCE_DEPLOY: "${{ env.FORCE_DEPLOY }}
+          FORCE_DEPLOY: "${{ env.FORCE_DEPLOY }}"
 
       - name: Set S3 Bucket Name
         run: |
