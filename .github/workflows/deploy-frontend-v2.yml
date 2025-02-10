@@ -23,15 +23,16 @@ on:
         required: false
         default: "false"
         type: boolean
+        
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
-    permissions:
-      id-token: write # required for OIDC auth
-      contents: read
     env:
       DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
       FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}
@@ -48,6 +49,9 @@ jobs:
       - name: Testing env variables
         run: | 
           echo "AWS_ROLE: ${{ vars.DEV_AWS_ROLE_ARN }}"
+          
+      - name: Reset OIDC Token
+        run: rm -rf ~/.aws/
           
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
