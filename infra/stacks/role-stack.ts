@@ -12,26 +12,35 @@ export interface RoleStackProps extends EnvStackProps {
 
 export class RoleStack extends Stack {
   constructor(scope: Construct, id: string, props: RoleStackProps) {
-    super(scope, id, { ...props, description: "Creates GitHub deploy IAM role" });
+    super(scope, id, { ...props, description: "Creates GitHub deploy IAM role and OIDC provider" });
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const { applicationName } = ApplicationProps;
     const githubRepo = props.env.githubRepo;
+    const awsAccountId = props.env.account;
+    const awsRegion = props.env.region;
+    const frontendBucketArn = `arn:aws:s3:::${props.frontendUrl}/*`;
 
-    // Define the GitHub OIDC provider if it doesn't exist
-    const oidcProvider = new OpenIdConnectProvider(this, `${applicationName}-github-oidcprovider-${environment}`, {
+    // Create GitHub OIDC Provider
+    const oidcProvider = new OpenIdConnectProvider(this, 'GitHubOIDCProvider', {
       url: 'https://token.actions.githubusercontent.com',
       clientIds: ['sts.amazonaws.com'],
+      thumbprints: ['6938fd4d98bab03faadb97b34396831e3780aea1']
     });
 
-    // Create IAM Role for GitHub Actions
+    // IAM Role for GitHub Actions Deployments
     const githubActionsRole = new Role(this, `${applicationName}-githubdeploy-role-${environment}`, {
       assumedBy: new FederatedPrincipal(
         oidcProvider.openIdConnectProviderArn,
         {
           "StringEquals": {
-            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub": `repo:${githubRepo}:ref:refs/heads/${props.env.githubBranch}`
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          },
+          "StringLike": {
+            "token.actions.githubusercontent.com:sub": [
+              `repo:${githubRepo}:ref:refs/heads/main`,
+              `repo:${githubRepo}:ref:refs/heads/main.dev`
+            ]
           }
         },
         "sts:AssumeRoleWithWebIdentity"
@@ -39,19 +48,34 @@ export class RoleStack extends Stack {
       roleName: "GitHubActionsDeployRole"
     });
 
+    // Allow GitHub to Assume This Role
+    githubActionsRole.addToPolicy(
+      new PolicyStatement({
+        actions: [
+          "sts:AssumeRole",
+          "sts:AssumeRoleWithWebIdentity"
+        ],
+        resources: [`arn:aws:iam::${awsAccountId}:role/GitHubActionsDeployRole`]
+      })
+    );
+
     // Allow Lambda function updates
     githubActionsRole.addToPolicy(
       new PolicyStatement({
         actions: ["lambda:UpdateFunctionCode"],
-        resources: [`arn:aws:lambda:${props.env.region}:${props.env.account}:function:${applicationName}-api-*`]
+        resources: [`arn:aws:lambda:${awsRegion}:${awsAccountId}:function:${applicationName}-api-*`]
       })
     );
 
-    // Allow S3 uploads
+    // Allow S3 uploads and deletions
     githubActionsRole.addToPolicy(
       new PolicyStatement({
-        actions: ["s3:PutObject", "s3:DeleteObject"],
-        resources: [`arn:aws:s3:::www.${props.frontendUrl}/*`]
+        actions: [
+          "s3:PutObject", 
+          "s3:ListBucket",
+          "s3:DeleteObject"
+        ],
+        resources: [frontendBucketArn]
       })
     );
 
@@ -63,12 +87,12 @@ export class RoleStack extends Stack {
       })
     );
 
-    // Attach AWS managed policies if needed (e.g., CloudWatch)
+    // Attach AWS Managed Policies (Optional)
     githubActionsRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("CloudWatchLogsFullAccess"));
 
     // OUTPUTS
     new cdk.CfnOutput(this, 'GitHubActionsDeployRole', { 
-        value: githubActionsRole.roleArn
+      value: githubActionsRole.roleArn
     });
 
     new cdk.CfnOutput(this, 'GitHubOIDCProviderArn', {
