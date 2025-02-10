@@ -36,7 +36,7 @@ jobs:
     
     steps:
       - name: Setup environment 
-        run | 
+        run: | 
           echo "DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}" >> $GITHUB_ENV
           #echo "FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy || (github.ref == 'refs/heads/main' && 'true') || 'false' }}" >> $GITHUB_ENV
       
