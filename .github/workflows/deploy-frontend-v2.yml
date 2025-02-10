@@ -32,7 +32,7 @@ jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
-    #environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}  # <-- This ensures environment secrets load 
     
     steps:
       - name: Setup environment 
@@ -46,7 +46,14 @@ jobs:
           if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
       
       - name: Set AWS Role ARN
-        run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+        run: |
+          if [ "${{ env.DEPLOY_ENV }}" = "prod" ]; then
+            echo "Using PROD Role ARN"
+            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+          else
+            echo "Using DEV Role ARN"
+            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+          fi
         
       - name: Testing env variables
         run: | 
