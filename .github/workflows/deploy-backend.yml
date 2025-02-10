@@ -45,10 +45,19 @@ jobs:
         with:
           dotnet-version: '8.0'
           
+      - name: Debug Secrets & Vars
+        run: |
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+          if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
+          
+      - name: Set AWS Role ARN
+        run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
+          role-to-assume: "${{ env.AWS_ROLE }}"
+          #role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           #role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           #role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
           role-session-name: GitHubActionsSession
