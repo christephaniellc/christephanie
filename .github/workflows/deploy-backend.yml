@@ -32,6 +32,9 @@ jobs:
   deploy:
     name: Build & Deploy Backend Lambdas
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}  # <-- This ensures environment secrets load 
+    env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
 
     steps:
       - name: Checkout Repository
@@ -45,7 +48,8 @@ jobs:
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
+          role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
+          #role-to-assume: "${{ github.event.inputs.environment == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
           #role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
