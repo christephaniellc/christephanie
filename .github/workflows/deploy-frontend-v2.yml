@@ -45,31 +45,20 @@ jobs:
       - name: Set AWS Role ARN
         run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
         
-    - name: Testing env variables
+      - name: Testing env variables
         run: echo "AWS_ROLE=${{ env.DEPLOY_ENV == 'prod' && vars.PROD_AWS_ROLE_ARN || vars.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
-
-      - name: Setup AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: "${{ env.AWS_ROLE }}"
-          role-session-name: GitHubActionsSession
-          aws-region: us-east-1
-          
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Debug Secrets & Vars
-        run: |
-          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
-          if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
           
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           #role-to-assume: "${{ env.DEPLOY_ENV == 'prod' && secrets.PROD_AWS_ROLE_ARN || secrets.DEV_AWS_ROLE_ARN }}"
+          #role-to-assume: "${{ env.AWS_ROLE }}"
           role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
+                
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
