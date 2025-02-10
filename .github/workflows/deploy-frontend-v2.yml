@@ -27,12 +27,13 @@ on:
 permissions:
   id-token: write
   contents: read
+  
+environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}  # <-- This ensures environment secrets load 
 
 jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}  # <-- This ensures environment secrets load 
     
     steps:
       - name: Setup environment 
