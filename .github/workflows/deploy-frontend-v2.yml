@@ -28,12 +28,12 @@ permissions:
   id-token: write
   contents: read
   
-environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}  # <-- This ensures environment secrets load 
-
 jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
     
     steps:
       - name: Setup environment 
@@ -46,25 +46,34 @@ jobs:
           echo "GitHub Repository: ${{ github.repository }}"
           echo "GitHub Ref: ${{ github.ref }}"
           echo "GitHub Actor: ${{ github.actor }}"
+          
+      - name: Manually Load Secrets Based on Environment
+        run: |
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.PROD_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.PROD_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          else
+            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.DEV_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.DEV_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          fi
       
       - name: Debug Secrets & Vars
         run: |
           echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
           if [[ -z "${{ secrets.DEV_AWS_ROLE_ARN }}" ]]; then echo "AWS Role is missing!"; else echo "AWS Role is set."; fi
+          echo "AWS_ROLE: ${{ vars.DEV_AWS_ROLE_ARN }}"
       
       - name: Set AWS Role ARN
         run: |
           if [ "${{ env.DEPLOY_ENV }}" = "prod" ]; then
             echo "Using PROD Role ARN"
-            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            #echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
           else
             echo "Using DEV Role ARN"
-            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            #echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
           fi
-        
-      - name: Testing env variables
-        run: | 
-          echo "AWS_ROLE: ${{ vars.DEV_AWS_ROLE_ARN }}"
           
       - name: Reset OIDC Token
         run: rm -rf ~/.aws/
