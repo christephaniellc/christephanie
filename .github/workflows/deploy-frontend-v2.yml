@@ -10,14 +10,14 @@ on:
       - 'frontend/**'
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Deployment environment (dev or prod)"
+      branch:
+        description: "Branch to deploy"
         required: true
-        default: "dev"
+        default: "main.dev"
         type: choice
         options:
-          - dev
-          - prod
+          - main.dev
+          - main
 
 permissions:
   id-token: write
@@ -27,21 +27,23 @@ jobs:
   deploy:
     name: Build & Deploy Frontend to S3    
     runs-on: ubuntu-latest
-    # Use env: (not environment:) so that GitHub doesn’t try to auto-load environment secrets.
     env:
-      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
+      BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.branch == 'main' && 'prod' || 'dev') || (github.ref_name == 'main' && 'prod' || 'dev') }}
 
     steps:
       - name: Setup Environment Variable
         run: echo "DEPLOY_ENV=${{ env.DEPLOY_ENV }}" >> $GITHUB_ENV
 
-      - name: Debug GitHub Actions Identity
+      - name: Debug Environment
         run: |
           echo "GitHub Repository: ${{ github.repository }}"
           echo "GitHub Ref: ${{ github.ref }}"
           echo "GitHub Actor: ${{ github.actor }}"
+	      echo "Branch Name: ${{ env.BRANCH_NAME }}"
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
 
-      - name: Manually Load Repository Secrets Based on DEPLOY_ENV
+      - name: Load Vars Based on DEPLOY_ENV
         run: |
           if [ "$DEPLOY_ENV" = "prod" ]; then
             echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
@@ -61,7 +63,7 @@ jobs:
             echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
           fi
 
-      - name: Debug Loaded Secrets
+      - name: Debug Loaded Vars
         run: |
           echo "DEPLOY_ENV: $DEPLOY_ENV"
           echo "AWS_ROLE: $AWS_ROLE"
