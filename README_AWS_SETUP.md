@@ -95,6 +95,12 @@ Prod > Route 53 > Hosted Zones > christephanie.com > Create record
 	Record type: NS 
 	Value: (addresses above)
 	TTL: 300 (short for change quick updates)
+	
+# Onetime setup Auth0:
+
+# Onetime setup Github Actions 
+Github > Repo > Actions > Settings > Secrets
+	Add prod secrets
 --------------------------------------	
 DESTROY STEPS:
 cdk destroy --all --context env=dev --profile dev
@@ -156,4 +162,6 @@ Redeploy prod:
 	update System Params with values
 	turn off authorizer caching
 	create an S3 bucket called christephanie-wedding-setup, add folder called Data/ (upload whole folder of guest .jsons and delete items you don't want)
+	Add prod secrets in github
+	Add new auth0 prod app
 
