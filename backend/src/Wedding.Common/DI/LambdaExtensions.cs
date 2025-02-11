@@ -27,7 +27,6 @@ namespace Wedding.Common.DI
         public static IServiceCollection AddLambdaRegistrations(this IServiceCollection services, Type registrationHook)
         {
             services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
-            services.AddScoped<IAwsSmsHelper, AwsSmsHelper>();
             services.AddScoped<IDynamoDBContext, DynamoDBContext>();
             services.AddScoped<IDynamoDBProvider, DynamoDBProvider>();
             services.AddScoped<IMultitenancySettingsProvider, MultitenancySettingsProvider>();

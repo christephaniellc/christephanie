@@ -11,5 +11,5 @@ namespace Wedding.Lambdas.FamilyUnit.Update.Commands
     /// <seealso cref="IWeddingQuery" />
     /// <param name="FamilyUnit">The FamilyUnit</param>
     public record UpdateFamilyUnitCommand(
-        FamilyUnitDto FamilyUnit, AuthContext AuthContext, bool AddressesConfirmed = false) : IWeddingCommand;
+        FamilyUnitDto FamilyUnit, AuthContext AuthContext) : IWeddingCommand;
 }
