@@ -40,7 +40,7 @@ jobs:
           echo "GitHub Repository: ${{ github.repository }}"
           echo "GitHub Ref: ${{ github.ref }}"
           echo "GitHub Actor: ${{ github.actor }}"
-	      echo "Branch Name: ${{ env.BRANCH_NAME }}"
+          echo "Branch Name: ${{ env.BRANCH_NAME }}"
           echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
 
       - name: Load Vars Based on DEPLOY_ENV
