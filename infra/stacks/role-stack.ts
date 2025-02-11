@@ -50,8 +50,15 @@ export class RoleStack extends Stack {
     // Allow S3 uploads
     githubActionsRole.addToPolicy(
       new PolicyStatement({
-        actions: ["s3:PutObject", "s3:DeleteObject"],
-        resources: [`arn:aws:s3:::www.${props.frontendUrl}/*`]
+        actions: [
+          "s3:PutObject", 
+          "s3:ListBucket",
+          "s3:DeleteObject"
+        ],
+        resources: [
+          `arn:aws:s3:::www.${props.frontendUrl}`,
+          `arn:aws:s3:::www.${props.frontendUrl}/*`
+        ]
       })
     );
 
