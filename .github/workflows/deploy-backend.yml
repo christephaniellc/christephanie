@@ -32,21 +32,47 @@ jobs:
   deploy:
     name: Build & Deploy Backend Lambdas
     runs-on: ubuntu-latest
+    env:        
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
+      BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.environment == 'prod' && 'main' || 'main.dev') || github.ref_name }}
 
     steps:
+      - name: Debug Environment
+        run: |
+          echo "GitHub Repository: ${{ github.repository }}"
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "BRANCH_NAME: ${{ env.BRANCH_NAME }}"
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+          
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          
+      - name: Load Vars Based on DEPLOY_ENV
+        run: |
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.PROD_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.PROD_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          else
+            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.DEV_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.DEV_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          fi
 
+      - name: Debug Loaded Vars
+        run: |
+          echo "DEPLOY_ENV: $DEPLOY_ENV"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "AWS_ROLE: $AWS_ROLE"
+          echo "AUTH0_DOMAIN: $AUTH0_DOMAIN"
+          echo "AUTH0_CLIENT_ID: $AUTH0_CLIENT_ID"
+          
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
-          
-      - name: Debug GitHub Actions Identity
-        run: |
-          echo "GitHub Repository: ${{ github.repository }}"
-          echo "GitHub Ref: ${{ github.ref }}"
-          echo "GitHub Actor: ${{ github.actor }}"
           
       - name: Reset OIDC Token
         run: rm -rf ~/.aws/
@@ -54,7 +80,7 @@ jobs:
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::390403858788:role/GitHubActionsDeployRole
+          role-to-assume: "${{ env.AWS_ROLE }}"
           role-session-name: GitHubActionsSession
           aws-region: us-east-1
 
