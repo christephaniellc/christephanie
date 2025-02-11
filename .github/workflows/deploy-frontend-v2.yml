@@ -97,21 +97,18 @@ jobs:
 
       - name: Build React App
         run: yarn build
-        working-directory: frontend/src
+        working-directory: frontend
         env:
           DOMAIN: "${{ env.AUTH0_DOMAIN }}"
           CLIENT_ID: "${{ env.AUTH0_CLIENT_ID }}"
           AUDIENCE: "${{ env.AUDIENCE }}"
           WEBSERVICE_URL: "${{ env.WEBSERVICE_URL }}"
-          
-      - name: Debug AWS CLI and Build Directory
-        run: |
-          which aws
-          aws --version
-          ls -la frontend/src/build
+      
+      - name: Verify Build Output
+        run: ls -la frontend/dist
 
       - name: Deploy to S3
-        run: aws s3 sync frontend/src/build s3://$S3_BUCKET --delete
+        run: aws s3 sync frontend/dist s3://$S3_BUCKET --delete
 
       - name: Invalidate CloudFront Cache (if using CloudFront)
         run: |
