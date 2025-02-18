@@ -13,7 +13,7 @@ interface ApiContextProps {
   getMeQuery: UseQueryResult<GuestDto, ApiError>;
   getFamilyUnitQuery: UseQueryResult<FamilyUnitDto, ApiError>;
   updateFamilyMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>;
-  validateAddressMutation: UseMutationResult<AddressDto, Error, AddressDto, unknown>;
+  validateAddressMutation: UseMutationResult<AddressDto, ApiError, AddressDto, unknown>;
 }
 
 

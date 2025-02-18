@@ -1,5 +1,5 @@
-import { Box, Typography, useTheme } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { Box, Typography } from '@mui/material';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
 import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
@@ -11,6 +11,7 @@ import { useRecoilValue } from 'recoil';
 import { familyGuestsStates, useFamily } from '@/store/family';
 import WelcomePageStepper from '@/components/VerticalStepper/WelcomePageStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import ForestBackground from '@/components/ForestBackground/ForestBackground';
 
 
 const Welcome = () => {
@@ -47,8 +48,11 @@ const Welcome = () => {
   const shortScreen = contentHeight < 800;
 
   return (
-    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center"
-         flexWrap="wrap">
+    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap="wrap" id={'welcome-page'} position={'relative'}>
+      <Box position="absolute" top={0} left={0} bottom={0} right={0} zIndex={-1}>
+        {/*<ForestBackground figureCount={200} />*/}
+      </Box>
+
       <Box display="flex" flexDirection="column" width="100%" ref={welcomeBannerRef}>
         <Typography variant="h4" color="text.primary" gutterBottom mt={shortScreen ? 2 : 4} width="100%" textAlign="center">
           Steph & Topher
@@ -63,7 +67,7 @@ const Welcome = () => {
                     interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending} />
       </Box>
 
-      {stepperHeight === 0 ? "Loading" : <Box maxWidth={600} mx="auto" mb={2} height={stepperHeight} overflow='scroll'>
+      {stepperHeight === 0 ? "Loading" : <Box maxWidth={600} mx="auto" mb={2} height={stepperHeight} overflow='auto'>
         {!auth0User && <InvitationCodeInputs /> || (
           <Box>
             <WelcomePageStepper />

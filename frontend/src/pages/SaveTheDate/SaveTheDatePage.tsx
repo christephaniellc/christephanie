@@ -64,14 +64,14 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   mx: 'auto',
   [theme.breakpoints.up('sm')]: {
+    flexWrap: 'nowrap',
     marginLeft: 'auto',
     marginRight: 'auto',
+    gap: 20,
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
     alignSelf: 'center',
     flexGrow: 1,
-    maxWidth: 800,
-    mb: 4,
   },
 }));

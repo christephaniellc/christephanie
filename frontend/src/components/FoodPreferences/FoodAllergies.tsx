@@ -65,9 +65,9 @@ function FoodAllergies({ guestId }: { guestId: string }) {
   }, [familyActions.updateFamilyMutation]);
 
   return (
-    <Box display="flex" my={2} border={'1px dotted green'}
+    <Box display="flex" my={2} border={'0px dotted green'}
          sx={{ backdropFilter: 'blur(16px)', backgroundColor: 'rgba(0,0,0,.8)' }}>
-      <Box border={'1px solid blue'} display="flex" width={300} p={2} minHeight="100%" flexWrap="wrap">
+      <Box border={'0px solid blue'} display="flex" width={300} p={2} minHeight="100%" flexWrap="wrap">
         <Box width={'100%'} flexWrap="wrap" alignContent="flex-start" display="flex">
           <Typography sx={{ width: '100%' }}>
             {guestName}
@@ -93,7 +93,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
       </Box>
       <Box border={`1px dashed ${theme.palette.secondary.main}`} p={2}>
         <Meta title="Food Allergies" />
-        <Box display="flex" flexWrap="wrap" height="100%" maxWidth={600}>
+        <Box display="flex" flexWrap="wrap" height="100%" maxWidth={600} justifyContent='space-between'>
           <Button fullWidth
                   color={(chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as 'primary' | 'secondary'}
                   variant={(chosenAllergies.join('') === 'none' ? 'outlined' : 'text') as 'contained' | 'text'}
@@ -119,7 +119,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
               allergyName: string,
               selected: boolean
             }[])}>
-              <Box mr={1} width={'33%'} position="relative">
+              <Box mr={1} position="relative">
                 <allergy.icon />
                 <Box position="absolute" top={0} bottom={0} left={0} right={0}
                      sx={{

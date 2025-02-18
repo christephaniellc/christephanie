@@ -15,11 +15,10 @@ import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import { useRecoilValue } from 'recoil';
 
 export const BottomNav = () => {
-  // const { navValue, setNavValue } = useAppStateContext();
-  const guest = useRecoilValue(userState);
+  useRecoilValue(userState);
   const [navValue, setNavValue] = useState();
   const { user: auth0User, loginWithPopup  } = useAuth0();
-  const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
+  const { logOutFromAuth0 } = useAuth0Queries();
   const [themes, themeActions] = useTheme();
 
   return (
@@ -51,9 +50,9 @@ export const BottomNav = () => {
           sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
-          onClick={() => {
-            auth0User ? logOutFromAuth0() : loginWithPopup();
-          }}
+          onClick={() => (
+            auth0User ? logOutFromAuth0() : loginWithPopup()
+          )}
         />
         <BottomNavigationAction
           showLabel={true}

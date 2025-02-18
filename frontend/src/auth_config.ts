@@ -13,10 +13,10 @@ const configJson: { [key: string]: Config} = {
     "webserviceUrl": "https://fianceapi.dev.wedding.christephanie.com"
   },
   "production": {
-    "domain": "prod-abc789.us.auth0.com",
-    "clientId": "PROD_CLIENT_ID",
-    "audience": "https://api.example.com",
-    "webserviceUrl": "https://api.example.com"
+    "domain": "christephanie.us.auth0.com",
+    "clientId": "wWcIuy2ILD0fvUucUzJlicIPUEHSa2f6",
+    "audience": "https://fianceapi.wedding.christephanie.com",
+    "webserviceUrl": "https://fianceapi.wedding.christephanie.com"
   }
 }
 

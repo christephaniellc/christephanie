@@ -122,7 +122,7 @@ export default function SavetheDateStepper() {
         communicationPreference: {
           ...prev.communicationPreference,
           id: prev.communicationPreference.id, // Ensure the id is included
-          completed: false,
+          completed: guests.some(guest => guest.preferences?.notificationPreference.length),
           label: 'How should we contact you?',
           description: '',
           component: <Box>{guests.map(guest => <CommunicationPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
@@ -130,7 +130,7 @@ export default function SavetheDateStepper() {
         camping: {
           ...prev.camping,
           id: prev.camping.id, // Ensure the id is included
-          completed: false,
+          completed: guests.some(guest => guest.preferences.sleepPreference !== "Unknown"),
           label: 'Camping',
           description: '',
           component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
@@ -159,7 +159,7 @@ export default function SavetheDateStepper() {
   };
 
   return (
-    <Box sx={{ width: '100%', mx: 'auto' }} border={'0px dotted red'} display="flex" flexDirection="column"
+    <Box sx={{ width: '100%', mx: 'auto' }} display="flex" flexDirection="column"
          alignItems="center">
       <Box display={'flex'} justifyContent="flex-end" mb={2} pr={4} width="100%">
         <IconButton onClick={() => navigate('/')}>
@@ -167,12 +167,13 @@ export default function SavetheDateStepper() {
         </IconButton>
       </Box>
       {/* Linear Progress across top */}
+      <Box width={'100%'} overflow={'auto'}>
       <Stepper
         activeStep={tabIndex}
         alternativeLabel
         nonLinear
         orientation="horizontal"
-        sx={{ pl: 2, width: '90vw' }}
+        sx={{ px: 2, width: '90vw' }}
         connector={<StyledConnector />
         }>
         {Object.entries(saveTheDateStepper).map(([key, step]) => (
@@ -191,7 +192,7 @@ export default function SavetheDateStepper() {
           </Step>
         ))}
       </Stepper>
-
+      </Box>
       <Box maxWidth={600} mx="auto" border={'0px solid blue'}>
         <Box sx={{ p: 2 }}>
           <Box>
