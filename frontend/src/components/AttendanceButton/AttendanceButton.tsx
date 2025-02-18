@@ -1,11 +1,10 @@
-import { Box, ButtonBase, ButtonProps, darken, Typography, useTheme } from '@mui/material';
+import { Box, ButtonProps, darken, Typography, useTheme } from '@mui/material';
 import React, { useCallback, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
-import Countdowns from '@/components/Countdowns';
 import AgeSelector from '@/components/AgeSelector';
 import Button from '@mui/material/Button';
 
@@ -45,7 +44,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         return {
           color: 'primary',
           fontSize: 'large',
-          border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}`,
+          border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}; border-right-style: dotted; elevation:5;`,
         };
       case InvitationResponseEnum.Declined:
         return {
@@ -57,7 +56,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         return {
           color: 'default',
           fontSize: 'medium',
-          border: `2px outset ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
+          border: `2px dashed ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
         };
       default:
         return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
@@ -83,12 +82,18 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 
   return (
     <Box
-         sx={{
-           display: "flex",
-           flexWrap: "no-wrap",
-           backdropFilter: 'blur(8px)',
-           backgroundColor: 'rgba(0,0,0,0.5)',
-         }}>
+      sx={{
+        display: 'flex',
+        flexWrap: 'no-wrap',
+        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        width: '100%',
+        mr: 0,
+        [theme.breakpoints.up('sm')]: {
+          mr: 'auto',
+        },
+      }}
+    >
       <Button
         disabled={familyActions.updateFamilyMutation.isPending}
         onClick={handleClick}
@@ -108,7 +113,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
             minWidth: 250,
             maxWidth: 250,
           },
-          width: interested === InvitationResponseEnum.Interested ? '50% !important' : '100%'
+          width: interested === InvitationResponseEnum.Interested ? '50% !important' : '100%',
         }}
 
       >
@@ -119,21 +124,19 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 
       </Button>
       {interested === InvitationResponseEnum.Interested && <AgeSelector guestId={guestId} />}
-      <Box alignContent="center"
-           sx={{ imgButtonSxProps, borderWidth: 2 }}
-      >
-        <StephsFavoriteTypography>
-          <Countdowns event="Invitation" interested={interested} />
-        </StephsFavoriteTypography>
-      </Box>
+      {/*  <Box alignContent="center"*/}
+      {/*       sx={{ imgButtonSxProps, borderWidth: 2 }}*/}
+      {/*  >*/}
+      {/*    <StephsFavoriteTypography>*/}
+      {/*      <Countdowns event="Wedding" interested={interested} guestId={guestId} />*/}
+      {/*    </StephsFavoriteTypography>*/}
+      {/*  </Box>*/}
     </Box>
   );
 };
 
 
-const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({
-
-}));
+const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({}));
 
 export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
   color: theme.palette.error.main,

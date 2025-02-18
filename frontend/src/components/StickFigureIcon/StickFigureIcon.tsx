@@ -25,7 +25,7 @@ import {
   SportsMartialArts,
 } from '@mui/icons-material';
 import { StickFigureIconProps } from '@/components/StickFigureIcon/types';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import { AgeGroupEnum } from '@/types/api';
 
@@ -36,7 +36,7 @@ const StickFigureIcon = ({
                            error = false,
                            loading,
                            rotation,
-                            ageGroup = AgeGroupEnum.Adult,
+                            ageGroup = AgeGroupEnum.Under21,
                          }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
@@ -67,7 +67,7 @@ const StickFigureIcon = ({
   const [stickFigureIndex] = useState(rotation || Math.floor(Math.random() * StickFigureAdults.length));
 
   const RandomStickFigure = StickFigureAdults[stickFigureIndex];
-  const [stickFigureRotation, setStickFigureRotation] = useState(rotation || Math.floor(Math.random() * 360));
+  const [stickFigureRotation, setStickFigureRotation] = useState(Number.isFinite(rotation) || Math.floor(Math.random() * 360));
 
   // We'll use a ref to store the timer ID so we can cancel it on unmount or
   // when `loading` changes.
@@ -124,7 +124,7 @@ const StickFigureIcon = ({
         // visibility: hidden ? 'hidden' : 'visible',
       }} />}
       {ageGroup === AgeGroupEnum.Under13 && (
-        <RandomStickFigure fontSize='small' color={error ? 'error' : color} sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1 }} />
+        <RandomStickFigure fontSize='small'  sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? color : 'red' }} />
       )}
     </Box>
   );

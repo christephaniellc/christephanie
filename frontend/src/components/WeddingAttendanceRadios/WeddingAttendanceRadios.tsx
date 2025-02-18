@@ -14,7 +14,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
   const interested = guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
   const { user } = useAuth0();
   const isMe = guest?.auth0Id === user?.sub;
-  const interestedOptions = ['Who knows?', 'Only time will tell.', "It's fine, we can wait.", "I'm sure we'll all know one day.", "C'mon, tell us.", "Steph is kind of a planner btw", 'still thinking about it for some reason.'];
+  const interestedOptions = ['... uh ¯\\_(ツ)_/¯ Who knows!', 'figuring things out.  only time will tell.', "... (It's fine, we can wait.)", "... I'm sure we'll all find out one day.", "... not really a planner", '... still thinking about it for some reason.'];
   const interestedOption = useMemo(() => interestedOptions[Math.floor(Math.random() * interestedOptions.length)], [interested]);
 
   const response = useMemo(() => {
@@ -26,7 +26,6 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
 
   const familyQuery = queryClient.getQueryState(queryKey);
 
-
   const declined = useMemo(() => interested === 'Declined', [interested]);
   return (
     <Box display={'flex'} alignItems="center" justifyContent="flex-end" width="100%">
@@ -37,7 +36,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
         variant="caption"
         mr={declined ? 2 : 0}
       >
-        {isMe ? '' : `${guest?.firstName} is `}{response}
+        {isMe ? '' : `${guest?.firstName}'s `}{response}
       </Typography>
     </Box>
   );

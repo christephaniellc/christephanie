@@ -20,8 +20,8 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
   const guest = useRecoilValue(guestSelector(guestId));
   const interested = useMemo(() => guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending, [guest]);
   return (
-    <Box width={interested === InvitationResponseEnum.Interested ? '50%' : '100%'} height='100%' display="flex" flexWrap="wrap">
-      <Box display="flex" width="100%" >
+    <Box height='100%' display="flex" flexWrap="wrap" id={`large-attendance-button-${guest.firstName}`}>
+      <Box display="flex" width="100%" id={`wedding-attendance-radios-${guestId}`} justifyContent="center">
         <WeddingAttendanceRadios guestId={guestId} />
       </Box>
       {/*<Box id="spacer" height={20} border={'1px dashed white'}/>*/}

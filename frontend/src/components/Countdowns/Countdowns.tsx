@@ -1,18 +1,21 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
-import { familyState } from '@/store/family';
-import { InvitationResponseEnum } from '@/types/api';
+import { familyState, guestSelector } from '@/store/family';
+import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { rem } from 'polished';
 import { useUser } from '@/store/user';
-import { ForestRounded } from '@mui/icons-material';
+import { ForestRounded, ForestSharp, ForestTwoTone } from '@mui/icons-material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import StickFigureIcon from '@/components/StickFigureIcon';
 
-export const Countdowns = ({ event = 'Wedding', interested }: {
+export const Countdowns = ({ event = 'Wedding', interested, guestId }: {
   event: 'Wedding' | 'Invitation',
   interested: InvitationResponseEnum
+  guestId?: string
 }) => {
-  const {  screenWidth } = useAppLayout();
+  const { screenWidth } = useAppLayout();
+  const guest = useRecoilValue(guestSelector(guestId));
   // const shortScreen = contentHeight < 800;
   const [user] = useUser();
   const familyUnit = useRecoilValue(familyState);
@@ -56,40 +59,17 @@ export const Countdowns = ({ event = 'Wedding', interested }: {
          ref={centerTreesWidthRef}>
       {event === 'Invitation' && <Typography>{daysUntilMessage}</Typography> || (
         <>
-          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center">
-            <Typography width="38%" mx="auto" variant="h3" fontSize={rem(18)} textAlign="end">
+          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center" justifyContent='center' flexWrap={'wrap'}>
+            <Typography mx="auto" variant="h3" fontSize={rem(18)} textAlign="center" width='100%'>
               July 5, 2025
             </Typography>
-            <Box display="flex" mx="auto" flexGrow={1} justifyContent="center">
-              {Array(Math.floor(numberOfTrees * 0.75)).fill(undefined)
-                .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                  sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-            </Box>
-            <Typography variant="h3" fontSize={rem(18)} mx="auto" textAlign="start" width={'38%'}>
-              {user.auth0Id && user.guestId && 'Lovettsville, VA'}
-            </Typography>
-            {!(user.auth0Id && user.guestId) && Array(numberOfTrees)
-              .fill(
-                <ForestRounded sx={{ mx: 'auto' }} fontSize="small" />)
-              .map(e => e)
-            }
-          </Box>
-          <Box textAlign="center"
-                      width="100%">
-            {Array(Math.floor(numberOfTrees / 3)).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-            in {daysUntil} days
-            {Array(Math.floor(numberOfTrees / 4)).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-          </Box>
-          <Box display="flex" mx="auto" flexGrow={1} justifyContent="center" width={'100%'}>
-            {Array(numberOfTrees).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-          </Box>
 
+            {user.auth0Id && user.guestId && <Typography variant="h3" fontSize={rem(18)} mx="auto" textAlign="start" width={'38%'}>
+              'Lovettsville, VA'
+            </Typography>}
+
+            in {daysUntil} days
+          </Box>
         </>
       )}
     </Box>

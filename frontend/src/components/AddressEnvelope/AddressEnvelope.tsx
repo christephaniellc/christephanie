@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Box, TextField, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useMemo } from 'react';
+import { Box, FormGroup, TextField, Typography, useTheme } from '@mui/material';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { familyGuestsStates, useFamily } from '@/store/family';
 import {
@@ -44,6 +44,10 @@ const AddressEnvelope: React.FC = () => {
     }
   }, [familyUnit]);
 
+  const saveAddressState = useMemo(() => {
+    return familyActions.validateFamilyAddress.status;
+  }, [familyActions.updateFamilyMutation]);
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Typography mb={4} gutterBottom variant="h5">Where should we send your formal invitation?</Typography>
@@ -71,7 +75,7 @@ const AddressEnvelope: React.FC = () => {
           The {callByLastNames}
         </Typography>
         <Box
-          component="form"
+          component={FormGroup}
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -119,7 +123,14 @@ const AddressEnvelope: React.FC = () => {
           </Box>
           <Button variant='contained' color='secondary' onClick={() => {
             if (address !== null) familyActions.validateFamilyAddress.mutate(address)
-          }}>Update Address</Button>
+          }}
+          >
+
+            {saveAddressState === 'idle' && 'Save'}
+            {saveAddressState === 'pending' && 'Saving...'}
+            {saveAddressState === 'success' && 'Saved'}
+            {saveAddressState === 'error' && familyActions.validateFamilyAddress.error.description}
+          </Button>
         </Box>
       </Box>
     </Box>
