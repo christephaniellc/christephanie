@@ -1,4 +1,4 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import { LogoutOptions, useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
 import { useUser } from '@/store/user';
 import { useCallback, useEffect } from 'react';
@@ -10,14 +10,13 @@ export const useAuth0Queries = () => {
 
 
   const logOutFromAuth0 = async () => {
-    return await logout().then(() => {
+    return await logout({ returnTo: config.returnTo } as LogoutOptions).then(() => {
       localStorage.removeItem('user');
       localStorage.removeItem('family');
     });
   };
 
   const signInWithAuth0 = useCallback(async (guestId: string) => {
-    alert(`guestId: ${guestId}`);
     return await loginWithRedirect({
       authorizationParams: {
         screen_hint: 'signup',

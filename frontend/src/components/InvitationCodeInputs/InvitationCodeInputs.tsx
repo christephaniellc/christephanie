@@ -98,7 +98,7 @@ export const InvitationCodeInputs = () => {
           </Box>
         </CardActions>
       </Card>
-      {getAccessTokenSilently() && !user.guestId && (
+      {getAccessTokenSilently() && user.guestId && (
         <>
           <StephsFavoriteTypography mx='auto'>OR</StephsFavoriteTypography>
           <Card sx={{ width: '100%', mt: 2, pb: 2 }}>
