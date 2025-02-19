@@ -3,7 +3,7 @@ import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 
 export function Profile() {
-  const { isAuthenticated, user, isLoading, loginWithPopup, logout } = useAuth0();
+  const { isAuthenticated, user, isLoading, loginWithRedirect, logout } = useAuth0();
   const guest = useRecoilValue(userState)
 
   if (isLoading) {
@@ -14,7 +14,7 @@ export function Profile() {
     return (
       <div>
         <p>You’re not authenticated.</p>
-        <button onClick={() => loginWithPopup({ authorizationParams: {state: JSON.stringify({guest_id: guest?.guestId })}})}>Log In with Popup</button>
+        <button onClick={() => loginWithRedirect({ authorizationParams: {state: JSON.stringify({guest_id: guest?.guestId })}})}>Log In with Popup</button>
         {/* Or loginWithRedirect if you prefer */}
       </div>
     );

@@ -17,7 +17,7 @@ import { useRecoilValue } from 'recoil';
 export const BottomNav = () => {
   useRecoilValue(userState);
   const [navValue, setNavValue] = useState();
-  const { user: auth0User, loginWithPopup  } = useAuth0();
+  const { user: auth0User, loginWithRedirect  } = useAuth0();
   const { logOutFromAuth0 } = useAuth0Queries();
   const [themes, themeActions] = useTheme();
 
@@ -51,7 +51,7 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => (
-            auth0User ? logOutFromAuth0() : loginWithPopup()
+            auth0User ? logOutFromAuth0() : loginWithRedirect()
           )}
         />
         <BottomNavigationAction

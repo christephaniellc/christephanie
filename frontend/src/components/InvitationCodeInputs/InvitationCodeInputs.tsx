@@ -30,7 +30,7 @@ export const InvitationCodeInputs = () => {
     userActions.findUserIdQuery?.refetch();
   };
 
-  const { user: auth0User, getAccessTokenSilently, loginWithPopup } = useAuth0();
+  const { user: auth0User, getAccessTokenSilently, loginWithRedirect } = useAuth0();
   const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
 
   if (!user) return null;
