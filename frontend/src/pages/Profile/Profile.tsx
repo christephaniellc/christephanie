@@ -6,6 +6,7 @@ export function Profile() {
   const { isAuthenticated, user, isLoading, loginWithRedirect, logout } = useAuth0();
   const guest = useRecoilValue(userState)
 
+
   if (isLoading) {
     return <div>Loading user...</div>;
   }
