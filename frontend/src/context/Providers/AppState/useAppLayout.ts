@@ -19,5 +19,6 @@ export const useAppLayout = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
   return {screenWidth, contentHeight};
 }

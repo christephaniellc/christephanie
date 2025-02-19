@@ -47,7 +47,7 @@ const ForestBackground: React.FC<ForestBackgroundProps> = ({ figureCount = 0 }) 
 
   // Prepare JSX for tree clusters
   const treeClusterElements = useCallback(() => {
-    clusters.map((cluster, i) => (
+    return clusters.map((cluster, i) => (
       <div
         key={`trees-${i}`}
         style={{
@@ -61,21 +61,21 @@ const ForestBackground: React.FC<ForestBackgroundProps> = ({ figureCount = 0 }) 
         {Array.from({ length: cluster.largeCount }).map((_, j) => (
           <ForestIcon
             key={`tree-large-${i}-${j}`}
-            style={{ fontSize: cluster.largeSize, color: getRandomPaletteColor(), marginBottom: Math.random() * 10 }}
+            sx={{ fontSize: cluster.largeSize, color: getRandomPaletteColor(), marginBottom: Math.random() * 10 }}
           />
         ))}
         {/* Medium trees */}
         {Array.from({ length: cluster.mediumCount }).map((_, j) => (
           <ForestIcon
             key={`tree-medium-${i}-${j}`}
-            style={{ fontSize: cluster.mediumSize, color: getRandomPaletteColor() }}
+            sx={{ fontSize: cluster.mediumSize, color: getRandomPaletteColor() }}
           />
         ))}
         {/* Small trees */}
         {Array.from({ length: cluster.smallCount }).map((_, j) => (
           <ForestIcon
             key={`tree-small-${i}-${j}`}
-            style={{ fontSize: cluster.smallSize, color: getRandomPaletteColor() }}
+            sx={{ fontSize: cluster.smallSize, color: getRandomPaletteColor() }}
           />
         ))}
       </div>
@@ -96,12 +96,12 @@ const ForestBackground: React.FC<ForestBackgroundProps> = ({ figureCount = 0 }) 
           style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '8px' }}
         >
           {/* One person on left of fire */}
-          <StickFigureIcon size={"24px"} sx={{ marginRight: '4px', color: getRandomPaletteColor() }} />
-          {/* Fire icon in the center */}
-          <WhatshotIcon size={"28px"} sx={{ margin: '0 4px', color: '#FF5722' }} />
-          {/* Two people on right of fire */}
-          <StickFigureIcon size={"24px"} sx={{margin: '0 4px', color: getRandomPaletteColor() }} />
-          <StickFigureIcon size={"24px"} sx={{ marginLeft: '4px', color: getRandomPaletteColor() }} />
+          {/*<StickFigureIcon size={"24px"} sx={{ marginRight: '4px', color: getRandomPaletteColor() }} />*/}
+          {/*/!* Fire icon in the center *!/*/}
+          {/*<WhatshotIcon size={"28px"} sx={{ margin: '0 4px', color: '#FF5722' }} />*/}
+          {/*/!* Two people on right of fire *!/*/}
+          {/*<StickFigureIcon size={"24px"} sx={{margin: '0 4px', color: getRandomPaletteColor() }} />*/}
+          {/*<StickFigureIcon size={"24px"} sx={{ marginLeft: '4px', color: getRandomPaletteColor() }} />*/}
         </div>,
       );
     }
@@ -113,7 +113,7 @@ const ForestBackground: React.FC<ForestBackgroundProps> = ({ figureCount = 0 }) 
           key={`single-figure-${k}`}
           style={{ display: 'flex', justifyContent: alignStyle, marginTop: '4px' }}
         >
-          <StickFigureIcon style={{ fontSize: 20, color: getRandomPaletteColor() }} />
+          <StickFigureIcon color={getRandomPaletteColor()} />
         </div>,
       );
     }
@@ -127,9 +127,7 @@ const ForestBackground: React.FC<ForestBackgroundProps> = ({ figureCount = 0 }) 
       width: '100%',
       height: '100%',
     }}>
-      {/* Render tree clusters from top to bottom */}
       {treeClusterElements()}
-      {/* Render figure clusters (campfire group and singles) at the bottom if any */}
       {figureElements}
     </div>
   );

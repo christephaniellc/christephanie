@@ -11,7 +11,6 @@ import { useRecoilValue } from 'recoil';
 import { familyGuestsStates, useFamily } from '@/store/family';
 import WelcomePageStepper from '@/components/VerticalStepper/WelcomePageStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import ForestBackground from '@/components/ForestBackground/ForestBackground';
 
 
 const Welcome = () => {
