@@ -36,7 +36,7 @@ const StickFigureIcon = ({
                            error = false,
                            loading,
                            rotation,
-                            ageGroup = AgeGroupEnum.Under21,
+                           ageGroup = AgeGroupEnum.Under21,
                          }: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
@@ -67,7 +67,7 @@ const StickFigureIcon = ({
   const [stickFigureIndex] = useState(rotation || Math.floor(Math.random() * StickFigureAdults.length));
 
   const RandomStickFigure = StickFigureAdults[stickFigureIndex];
-  const [stickFigureRotation, setStickFigureRotation] = useState(Number.isFinite(rotation) || Math.floor(Math.random() * 360));
+  const [stickFigureRotation, setStickFigureRotation] = useState(Number.isFinite(rotation) && rotation || Math.floor(Math.random() * 360));
 
   // We'll use a ref to store the timer ID so we can cancel it on unmount or
   // when `loading` changes.
@@ -106,25 +106,27 @@ const StickFigureIcon = ({
   return (
     <Box display={'flex'}>
       {ageGroup === AgeGroupEnum.Adult && (
-        <Liquor sx={{ fontSize: 16, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }}  />
+        <Liquor sx={{ fontSize: 16, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }} />
       )}
       {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure fontSize={fontSize}
-                         color={error ? 'error' : color} sx={{
-        // width: hidden ? 0 : 'auto',
-        transform: `rotate(${stickFigureRotation}deg)`,
-        transition: 'all 1s ease-in-out',
-        opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
-        // visibility: hidden ? 'hidden' : 'visible',
-      }} />}
-      {ageGroup === AgeGroupEnum.Baby && <BabyChangingStation fontSize={fontSize}
-                                                            color={error ? 'error' : color} sx={{
+                                                            sx={{
+                                                              color: error ? 'error' : color,
+                                                              // width: hidden ? 0 : 'auto',
+                                                              transform: `rotate(${stickFigureRotation}deg)`,
+                                                              transition: 'all 1s ease-in-out',
+                                                              opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
+                                                              // visibility: hidden ? 'hidden' : 'visible',
+                                                            }} />}
+      {ageGroup === AgeGroupEnum.Baby && <BabyChangingStation fontSize={fontSize} sx={{
+        color: error ? 'error' : color,
         // width: hidden ? 0 : 'auto',
         transition: 'all 1s ease-in-out',
         opacity: hidden ? 0 : 1,
         // visibility: hidden ? 'hidden' : 'visible',
       }} />}
       {ageGroup === AgeGroupEnum.Under13 && (
-        <RandomStickFigure fontSize='small'  sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? color : 'red' }} />
+        <RandomStickFigure fontSize="small"
+                           sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? color : 'red' }} />
       )}
     </Box>
   );

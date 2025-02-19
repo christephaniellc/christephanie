@@ -76,7 +76,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     },
   });
 
-  const validateAddressMutation = useMutation<AddressDto, Error, AddressDto, unknown>({
+  const validateAddressMutation = useMutation<AddressDto, ApiError, AddressDto, unknown>({
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
     mutationFn: (newAddress: AddressDto) => apiRef.current!.validateAddress(newAddress),
     onSuccess: data => {
