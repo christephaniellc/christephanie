@@ -66,7 +66,7 @@ const Welcome = () => {
                     interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending} />
       </Box>
 
-      {stepperHeight === 0 ? "Loading" : <Box maxWidth={600} mx="auto" mb={2} height={stepperHeight} overflow='auto'>
+      {stepperHeight === 0 ? "Loading" : <Box maxWidth={600} mx="auto" mb={2} overflow='auto'>
         {!auth0User && <InvitationCodeInputs /> || (
           <Box>
             <WelcomePageStepper />
