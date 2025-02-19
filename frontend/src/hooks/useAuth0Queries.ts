@@ -4,7 +4,7 @@ import { useUser } from '@/store/user';
 import { useCallback, useEffect } from 'react';
 
 export const useAuth0Queries = () => {
-  const { getAccessTokenSilently, loginWithPopup, user: auth0User, isAuthenticated, logout,  } = useAuth0();
+  const { getAccessTokenSilently, loginWithRedirect, user: auth0User, isAuthenticated, logout,  } = useAuth0();
   const config = getConfig();
   const [user, userActions] = useUser();
 
@@ -18,7 +18,7 @@ export const useAuth0Queries = () => {
 
   const signInWithAuth0 = useCallback(async (guestId: string) => {
     alert(`guestId: ${guestId}`);
-    return await loginWithPopup({
+    return await loginWithRedirect({
       authorizationParams: {
         screen_hint: 'signup',
         guest_id: guestId,
@@ -29,7 +29,7 @@ export const useAuth0Queries = () => {
     try {
       if (!isAuthenticated) throw Error('User is not authenticated');
     } catch (_e) {
-      await loginWithPopup();
+      await loginWithRedirect();
     } finally {
       console.log('getting access token');
       await getAccessTokenSilently({

@@ -9,7 +9,7 @@ jest.mock('@auth0/auth0-react', () => ({
 
 describe('useAuth0Utils', () => {
   beforeEach(() => {
-    mockUseAuth0({ loginWithPopup: jest.fn() });
+    mockUseAuth0({ loginWithRedirect: jest.fn() });
   });
 
   afterEach(() => {
