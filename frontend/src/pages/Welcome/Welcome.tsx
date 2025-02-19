@@ -47,7 +47,7 @@ const Welcome = () => {
   const shortScreen = contentHeight < 800;
 
   return (
-    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap="wrap" id={'welcome-page'} position={'relative'}>
+    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap="wrap" id={'welcome-page'} position='relative'>
       <Box position="absolute" top={0} left={0} bottom={0} right={0} zIndex={-1}>
         {/*<ForestBackground figureCount={200} />*/}
       </Box>
