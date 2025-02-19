@@ -3,8 +3,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
+import fs from 'fs';
+
+const isProduction = process.env.DEPLOY_ENV === 'production';
 
 export default defineConfig({
+  mode: isProduction ? 'production' : 'development',
   optimizeDeps: {
     exclude: ['chunk-UTMPNLEB'],
   },
