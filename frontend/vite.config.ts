@@ -5,10 +5,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
 import fs from 'fs';
 
+const env = process.env.VITE_ENV || 'development';
 const isProduction = process.env.DEPLOY_ENV === 'production';
 
 export default defineConfig({
-  mode: isProduction ? 'production' : 'development',
+  mode: isProduction ? 'production' : env,
   optimizeDeps: {
     exclude: ['chunk-UTMPNLEB'],
   },
