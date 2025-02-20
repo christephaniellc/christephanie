@@ -22,6 +22,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
         private IMapper _mapper;
         private Mock<IMultitenancySettingsProvider> _multitenancySettingsProviderMock;
         private string _testTableName = "christephanie-wedding-unittests";
+        private string _testTableNameRateLimit = "christephanie-wedding-unittests-rate-limit";
         private const string Audience = "unittests";
 
         [SetUp]
@@ -39,8 +40,10 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             _multitenancySettingsProviderMock = new Mock<IMultitenancySettingsProvider>();
 
             // Configure the multitenancy settings provider to return a dummy table name.
-            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, It.IsAny<bool>()))
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, false))
                 .Returns(_testTableName);
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, true))
+                .Returns(_testTableNameRateLimit);
 
             var serviceCollection = new ServiceCollection();
             var dynamoDbClient = new AmazonDynamoDBClient();

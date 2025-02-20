@@ -14,6 +14,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();
