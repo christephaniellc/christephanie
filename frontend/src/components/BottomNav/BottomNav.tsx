@@ -54,12 +54,6 @@ export const BottomNav = () => {
             auth0User ? logOutFromAuth0() : loginWithRedirect()
           )}
         />
-        <BottomNavigationAction
-          showLabel={true}
-          icon={<ThemeIcon />}
-          label={themes === Themes.DARK ? 'Light' : 'Dark'}
-          onClick={() => themeActions.toggle()}
-        />
       </BottomNavigation>
     </Box>
   );

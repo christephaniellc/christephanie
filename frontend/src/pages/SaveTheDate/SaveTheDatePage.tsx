@@ -31,12 +31,10 @@ function SaveTheDatePage() {
     return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
   }
 
-  const queryParams = new URLSearchParams(window.location.search);
-  // const { callByLastNames, attendingLastNames, guests, nobodyComing } = saveTheDateGuestStates;
-
   if (!saveTheDateGuestStates) {
     return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
   }
+
   return (
     <Box display="flex" flexDirection="column" justifyContent="" pb={10} border={'0px dashed yellow'} pt={2}>
       {(!saveTheDateGuestStates?.guests || !saveTheDateGuestStates?.guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
@@ -63,15 +61,4 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   width: '100%',
   mx: 'auto',
-  [theme.breakpoints.up('sm')]: {
-    flexWrap: 'nowrap',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    gap: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    alignSelf: 'center',
-    flexGrow: 1,
-  },
 }));

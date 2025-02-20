@@ -32,7 +32,7 @@ import CampingPreferences from '@/components/CampingPreferences/CampingPreferenc
 export default function SavetheDateStepper() {
   const theme = useTheme();
   const familyStates = useRecoilValue(familyGuestsStates);
-  const [family, _familyActions] = useFamily();
+  const [family, familyActions] = useFamily();
   const navigate = useNavigate();
   const location = useLocation();
   // Local state to track which "tab" (formerly "step") is active
@@ -155,6 +155,7 @@ export default function SavetheDateStepper() {
   const totalTabs = Object.values(saveTheDateStepper).length;
 
   const handleNavigateToStep = (step: string) => {
+    familyActions.getFamily();
     navigate(`/save-the-date?step=${step}`);
   };
 
@@ -205,44 +206,8 @@ export default function SavetheDateStepper() {
               </>
             )}
           </Box>
-
-          {/* Optional: Next / Back Buttons */}
         </Box>
-
-        {/* If you want a "finished" state after the last tab, you can conditionally render it:
-          {tabIndex === totalTabs && (
-            <Paper square elevation={0} sx={{ p: 3 }}>
-              <Typography>All steps completed - you’re finished</Typography>
-              <Button onClick={() => setTabIndex(0)} sx={{ mt: 1, mr: 1 }}>
-                Reset
-              </Button>
-            </Paper>
-          )}
-      */}
       </Box>
-      {/*<Box*/}
-      {/*  sx={{*/}
-      {/*    left: 0, right: 0,*/}
-      {/*    position: 'absolute',*/}
-      {/*    bottom: 200,*/}
-      {/*    width: '100vw',*/}
-      {/*  }}>*/}
-      {/*  <Box*/}
-      {/*    maxWidth={600}*/}
-      {/*    sx={{*/}
-      {/*      mx: 'auto',*/}
-      {/*    display: 'flex',*/}
-      {/*    justifyContent: 'space-between',*/}
-      {/*    }}*/}
-      {/*  >*/}
-      {/*    <Button color="secondary" variant="outlined" onClick={handleBack} disabled={tabIndex <= 0}>*/}
-      {/*      Back*/}
-      {/*    </Button>*/}
-      {/*    <Button color="secondary" variant="outlined" onClick={handleNext} disabled={tabIndex >= totalTabs - 1}>*/}
-      {/*      Next*/}
-      {/*    </Button>*/}
-      {/*  </Box>*/}
-      {/*</Box>*/}
     </Box>
   );
 }

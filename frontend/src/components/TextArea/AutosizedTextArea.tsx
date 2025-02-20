@@ -82,7 +82,7 @@ export default function BetterTextField() {
         placeholder={family?.invitationResponseNotes || 'Tell us your feelings...'}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        disabled={isFetching}
+        disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
       />
 
       {/* Row for the send button and any extra info */}
@@ -91,7 +91,7 @@ export default function BetterTextField() {
           variant="contained"
           color="secondary"
           onClick={handleSend}
-          disabled={mutationState.status === 'pending' || !comment}
+          disabled={mutationState.status === 'pending' || !comment || familyActions.getFamilyUnitQuery.isFetching}
         >
           {isError ? `${error}` : ''}
           {isFetching ? 'Sending...' : ''}

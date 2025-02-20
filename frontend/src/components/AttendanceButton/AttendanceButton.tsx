@@ -95,7 +95,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       }}
     >
       <Button
-        disabled={familyActions.updateFamilyMutation.isPending}
+        disabled={familyActions.updateFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
         onClick={handleClick}
         sx={{
           alignItems: 'flex-start',

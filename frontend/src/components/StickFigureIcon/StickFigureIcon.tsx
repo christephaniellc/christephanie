@@ -126,7 +126,7 @@ const StickFigureIcon = ({
       }} />}
       {ageGroup === AgeGroupEnum.Under13 && (
         <RandomStickFigure fontSize="small"
-                           sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? color : 'red' }} />
+                           sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? 'red' : color }} />
       )}
     </Box>
   );
