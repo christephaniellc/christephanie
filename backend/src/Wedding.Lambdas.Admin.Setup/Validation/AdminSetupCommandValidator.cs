@@ -17,6 +17,13 @@ namespace Wedding.Lambdas.Admin.Setup.Validation
         /// </summary>
         public AdminSetupCommandValidator()
         {
+            RuleFor(query => query.Environment)
+                .NotEmpty()
+                .Must(env => env == "dev" || env == "prod")
+                .WithMessage("Environment must be either 'dev' or 'prod'.");
+            RuleFor(query => query.Level)
+                .NotEmpty()
+                .WithMessage("Missing level (e.g., platinum).");
             RuleFor(query => query.InvitationCode)
                 .SetValidator(new InvitationCodeValidator());
         }

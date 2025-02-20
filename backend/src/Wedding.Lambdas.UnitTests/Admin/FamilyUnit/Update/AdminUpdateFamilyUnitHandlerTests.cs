@@ -9,9 +9,9 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
     [UnitTestsFor(typeof(AdminUpdateFamilyUnitHandler))]
     public class AdminUpdateFamilyUnitHandlerTests
     {
-        private AdminUpdateFamilyUnitHandler _handler;
-        private List<RoleEnum> _adminRoles;
-        private List<RoleEnum> _nonAdminRoles;
+        private AdminUpdateFamilyUnitHandler? _handler;
+        private List<RoleEnum>? _adminRoles;
+        private List<RoleEnum>? _nonAdminRoles;
 
         [SetUp]
         public void SetUp()
