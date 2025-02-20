@@ -36,7 +36,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
         variant="caption"
         mr={declined ? 2 : 0}
       >
-        {isMe ? '' : `${guest?.firstName}'s `}{response}
+        {isMe ? '' : `${guest?.firstName} is `}{response}
       </Typography>
     </Box>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Meta from '@/components/Meta';
 import Box from '@mui/material/Box';
 import { useRecoilValue } from 'recoil';
@@ -6,7 +6,6 @@ import { seriousFoodAllergies } from '@/components/Allergies';
 import Button from '@mui/material/Button';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { SvgIconTypeMap, useTheme } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
 import { guestSelector, useFamily } from '@/store/family';
 import { userState } from '@/store/user';
 import Shark from '@/assets/shark.svg';
@@ -47,14 +46,25 @@ function FoodAllergies({ guestId }: { guestId: string }) {
     }
   }, [guest]);
 
+  const setPageAllergies = () => {
+    if (guest?.preferences?.foodAllergies.length) {
+      setNewAllergies(guest?.preferences?.foodAllergies);
+    } else {
+      setNewAllergies(['none']);
+    }
+  };
+
   useEffect(() => {
     const activeAllergies = allergies.filter(allergy => allergy.selected);
     if (activeAllergies.length) {
       setNewAllergies(activeAllergies.map(allergy => allergy.allergyName));
-    } else {
-      setNewAllergies(['none']);
     }
   }, [allergies]);
+
+  useEffect(() => {
+    console.log('guestAllergies', guestAllergies);
+    setPageAllergies();
+  }, []);
 
   const guestName = guest?.auth0Id === user.auth0Id ? 'You' : guest?.firstName;
   const filterColorPrimary = 'brightness(0) saturate(100%) invert(9%) sepia(100%) saturate(7453%) hue-rotate(278deg) brightness(106%) contrast(114%);';
@@ -82,7 +92,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
           variant="outlined"
           color="secondary"
           fullWidth
-          disabled={familyActions.updateFamilyMutation.status === 'pending'}
+          disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
           sx={{ display: showSaveButton, mt: 'auto', mx: 'auto', alignSelf: 'flex-end' }}
           onClick={() => familyActions.updateFamilyGuestFoodAllergies(guestId, chosenAllergies)}>
           {saveAllergiesState === 'idle' && 'Save'}
@@ -92,9 +102,9 @@ function FoodAllergies({ guestId }: { guestId: string }) {
         </Button>
       </Box>
       <Box border={`1px dashed ${theme.palette.secondary.main}`} p={2}>
-        <Meta title="Food Allergies" />
-        <Box display="flex" flexWrap="wrap" height="100%" maxWidth={600} justifyContent='space-between'>
+        <Box display="flex" flexWrap="wrap" height="100%" maxWidth={600} justifyContent="space-between">
           <Button fullWidth
+                  disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
                   color={(chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as 'primary' | 'secondary'}
                   variant={(chosenAllergies.join('') === 'none' ? 'outlined' : 'text') as 'contained' | 'text'}
                   onClick={resetAllergies}>
@@ -109,7 +119,10 @@ function FoodAllergies({ guestId }: { guestId: string }) {
             if (!matchingAllergy) return;
             const newAllergies = allergies.filter((a) => a !== allergy);
             if (!newAllergies) return;
-            return <Button key={allergy.allergyName} onClick={() => setAllergies([...newAllergies, {
+            return <Button
+              disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
+              key={allergy.allergyName}
+              onClick={() => setAllergies([...newAllergies, {
               ...matchingAllergy,
               selected: !matchingAllergy?.selected,
             }].sort(
@@ -144,6 +157,6 @@ function FoodAllergies({ guestId }: { guestId: string }) {
       </Box>
     </Box>
   );
-}
+};
 
 export default FoodAllergies;
