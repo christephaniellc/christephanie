@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using Amazon.Lambda.APIGatewayEvents;
-using Amazon.Lambda.TestUtilities;
-using Amazon.SimpleSystemsManagement.Model;
+﻿using Amazon.Lambda.TestUtilities;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -10,12 +7,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.FamilyUnit.Update.Handlers;
 using Wedding.Lambdas.UnitTests.TestData;
@@ -29,7 +24,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
         private IMapper? _mapper;
         private Mock<IDynamoDBProvider>? _mockDynamoDbProvider;
         private TestTokenHelper? _testTokenHelper;
-        private Wedding.Lambdas.FamilyUnit.Update.Function? _function;
+        private Wedding.Lambdas.FamilyUnit.Update.Function? Sut;
 
         [SetUp]
         public void SetUp()
@@ -68,7 +63,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             serviceCollection.AddScoped(_ => updateFamilyUnitHandler);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            _function = new Wedding.Lambdas.FamilyUnit.Update.Function(serviceProvider);
+            Sut = new Wedding.Lambdas.FamilyUnit.Update.Function(serviceProvider);
         }
 
         [Test]
@@ -76,6 +71,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
         {
             try
             {
+                // ARRANGE
                 var dto = TestDataHelper.FAMILY_DOE;
                 var updatedPhone = "777-777-7777";
                 dto.MailingAddress = new AddressDto { StreetAddress = "123 Main St." };
@@ -99,31 +95,13 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                     .ReturnsAsync(dto);
          
                 var context = new TestLambdaContext();
+                var request = TestRequestHelper.RequestAsJohn(dto);
 
-                var fakeAuthContext = new AuthContext
-                {
-                    Audience = _testTokenHelper!.JwtAudience,
-                    GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                    InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
-                    Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
-                    IpAddress = "127.0.0.1"
-                };
-
-                var request = new APIGatewayProxyRequest
-                {
-                    RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
-                    {
-                        Authorizer = new APIGatewayCustomAuthorizerContext
-                        {
-                            ["lambda"] = JsonSerializer.Serialize(fakeAuthContext)
-                        }
-                    },
-                    Body = JsonSerializer.Serialize(dto, JsonSerializationHelper.FromFrontendOptions)
-                };
-
-                var response = await _function!.FunctionHandler(request, context);
+                // ACT
+                var response = await Sut!.FunctionHandler(request, context);
                 var result = response.GetResponseBodyData<FamilyUnitDto>();
 
+                // ASSERT
                 result.Should().NotBeNull();
                 result.Guests.Should().NotBeNull();
                 result.Guests!.Count.Should().BeGreaterThan(0);

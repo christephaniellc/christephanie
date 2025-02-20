@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Text.Json;
-using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using AutoMapper;
 using FluentAssertions;
@@ -9,17 +7,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Serialization;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Lambdas.Validate.Phone.Handlers;
 using Wedding.Lambdas.Validate.Phone.Requests;
+using Wedding.Common.ThirdParty;
 
 namespace Wedding.Lambdas.UnitTests.Validate.Post
 {
@@ -31,10 +28,9 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
         private Mock<IDynamoDBProvider>? _mockDynamoDbProvider;
         private Mock<IAwsSmsHelper>? _mockAwsSmsHelper;
         private TestTokenHelper? _testTokenHelper;
-        private Wedding.Lambdas.Validate.Phone.Function? _function;
+        private Wedding.Lambdas.Validate.Phone.Function? Sut;
 
         private TestLambdaContext? _lambdaContext;
-        private AuthContext? _fakeAuthContext;
 
         [SetUp]
         public void SetUp()
@@ -60,15 +56,6 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             _mapper = config.CreateMapper();
             
             _lambdaContext = new TestLambdaContext();
-            _fakeAuthContext = new AuthContext
-            {
-                Audience = _testTokenHelper.JwtAudience,
-                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
-                Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
-                Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName,
-                IpAddress = "127.0.0.1"
-            };
 
             _mockAwsSmsHelper.Setup(x =>
                 x.SendVerificationCode(It.IsAny<string>(), It.IsAny<string>()))
@@ -81,22 +68,23 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                     x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE));
 
+            var mockTwilioSmsProvider = new Mock<ITwilioSmsProvider>();
+
             var phoneValidationHandler = new PhoneValidationHandler(Mock.Of<ILogger<PhoneValidationHandler>>(), 
                 _mockDynamoDbProvider.Object, 
-                _mapper, 
-                _mockAwsSmsHelper.Object);
+                _mapper,
+                mockTwilioSmsProvider.Object);
 
             serviceCollection.AddScoped(_ => phoneValidationHandler);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            _function = new Wedding.Lambdas.Validate.Phone.Function(serviceProvider);
+            Sut = new Wedding.Lambdas.Validate.Phone.Function(serviceProvider);
         }
 
         [Test]
         public async Task ShouldRegisterPhone()
         {
             var dto = TestDataHelper.FAMILY_DOE;
-
             _mockDynamoDbProvider!.Setup(x =>
                     x.GetFamilyUnitAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dto);
@@ -110,19 +98,9 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 PhoneNumber = dto.Guests![0].Phone!.Value
             };
 
-            var proxyRequest = new APIGatewayProxyRequest
-            {
-                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
-                {
-                    Authorizer = new APIGatewayCustomAuthorizerContext
-                    {
-                        ["lambda"] = JsonSerializer.Serialize(_fakeAuthContext)
-                    }
-                },
-                Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
-            };
+            var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
-            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
+            var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<HttpStatusCode>();
 
             result.Should().Be(HttpStatusCode.OK);
@@ -146,20 +124,9 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             {
                 Action = VerifyEnum.ResendCode
             };
+            var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
-            var proxyRequest = new APIGatewayProxyRequest
-            {
-                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
-                {
-                    Authorizer = new APIGatewayCustomAuthorizerContext
-                    {
-                        ["lambda"] = JsonSerializer.Serialize(_fakeAuthContext)
-                    }
-                },
-                Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
-            };
-
-            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
+            var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<HttpStatusCode>();
 
             result.Should().Be(HttpStatusCode.OK);
@@ -193,20 +160,9 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 Action = VerifyEnum.Validate,
                 Code = code
             };
+            var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
-            var proxyRequest = new APIGatewayProxyRequest
-            {
-                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
-                {
-                    Authorizer = new APIGatewayCustomAuthorizerContext
-                    {
-                        ["lambda"] = JsonSerializer.Serialize(_fakeAuthContext)
-                    }
-                },
-                Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
-            };
-
-            var response = await _function!.FunctionHandler(proxyRequest, _lambdaContext!);
+            var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
             var result = response.GetResponseBodyData<bool>();
 
             result.Should().Be(true);

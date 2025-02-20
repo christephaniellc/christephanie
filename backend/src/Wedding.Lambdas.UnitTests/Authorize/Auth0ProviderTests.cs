@@ -1,9 +1,6 @@
-﻿using Amazon.DynamoDBv2.Model;
-using Amazon.DynamoDBv2;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using Moq;
 using NUnit.Framework;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Authorize.Providers;
@@ -17,9 +14,9 @@ namespace Wedding.Lambdas.UnitTests.Authorize
     [TestFixture]
     public class Auth0ProviderTests
     {
-        private IMapper _mapper;
-        private Auth0Provider _auth0Provider;
-        private TestTokenHelper _testTokenHelper;
+        private IMapper? _mapper;
+        private Auth0Provider? Sut;
+        private TestTokenHelper? _testTokenHelper;
 
         [SetUp]
         public void Setup()
@@ -39,19 +36,19 @@ namespace Wedding.Lambdas.UnitTests.Authorize
             );
             _mapper = config.CreateMapper();
 
-            _auth0Provider = new Auth0Provider();
+            Sut = new Auth0Provider();
         }
 
-        private void MockAmazonDynamoDB(QueryResponse response)
-        {
-            var amazonDynamoDBMock = new Mock<IAmazonDynamoDB>();
-            amazonDynamoDBMock
-                .Setup(client => client.QueryAsync(It.IsAny<QueryRequest>(), default))
-                .ReturnsAsync(response);
-
-            // Replace actual DynamoDB client instantiation
-            AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        }
+        // private void MockAmazonDynamoDB(QueryResponse response)
+        // {
+        //     var amazonDynamoDBMock = new Mock<IAmazonDynamoDB>();
+        //     amazonDynamoDBMock
+        //         .Setup(client => client.QueryAsync(It.IsAny<QueryRequest>(), default))
+        //         .ReturnsAsync(response);
+        //
+        //     // Replace actual DynamoDB client instantiation
+        //     AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+        // }
 
         // private string GenerateTestJwtToken(RoleEnum role)
         // {
@@ -75,7 +72,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         public async Task IsAuthorized_AuthenticateToken()
         {
             // Arrange
-            var token = await _testTokenHelper.GenerateAuth0Token(TestDataHelper.GUEST_JOHN.GuestId);
+            var token = await _testTokenHelper!.GenerateAuth0Token(TestDataHelper.GUEST_JOHN.GuestId);
             // var methodArn = LambdaArns.FamilyUnitGet;
             // var userId = "Auth0|12345";
             // var invitationCode = "ABCDE";
@@ -110,7 +107,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-                JwtClaimHelper.GetGuestIdFromToken(token, _testTokenHelper.JwtAudience));
+                JwtClaimHelper.GetGuestIdFromToken(token, _testTokenHelper!.JwtAudience));
         }
     }
 }

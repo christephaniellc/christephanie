@@ -33,6 +33,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     AdditionalFirstNames = new List<string> { "Jacob" },
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest },
+                    AgeGroup = AgeGroupEnum.Adult,
                     Email = new VerifiedDto
                     {
                         Value = "john.doe@gmail.com",
@@ -63,6 +64,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Jane",
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Party },
+                    AgeGroup = AgeGroupEnum.Adult,
                     Email = new VerifiedDto
                     {
                         Value = "jane.doe@gmail.com",
@@ -93,6 +95,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Admin",
                     LastName = "Dude",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Admin },
+                    AgeGroup = AgeGroupEnum.Adult,
                     Email = new VerifiedDto
                     {
                         Value = "admin.doe@gmail.com",

@@ -4,6 +4,7 @@ using Wedding.Lambdas.FamilyUnit.Get.Handlers;
 
 namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
 {
+    [TestFixture]
     [UnitTestsFor(typeof(GetFamilyUnitHandler))]
     public class GetFamilyUnitHandlerTests
     {

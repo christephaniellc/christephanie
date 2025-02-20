@@ -26,8 +26,9 @@ export class FrontendStack extends cdk.Stack {
     const fullDomainName = `${props.env.subDomainPrefix}.${domainName}`;
     console.log(`Full domain name: ${fullDomainName}`);
 
-    const setupBucket = new s3.Bucket(this, `${applicationName}-setup-bucket`, {
-      bucketName: `${applicationName}-setup`,
+    // Initial bucket used by AdminSetup lambda to upload admin or guest data
+    const setupBucket = new s3.Bucket(this, `${applicationName}-setup-bucket-${environment}`, {
+      bucketName: `${applicationName}-setup-${environment}`,
       versioned: false,
       publicReadAccess: false, 
       blockPublicAccess: new s3.BlockPublicAccess({
