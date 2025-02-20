@@ -162,7 +162,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntityJson_To_GuestDto()
         {
-            var filePath = @"..\..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
+            var filePath = @"..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
             var entityJson = File.ReadAllText(filePath);
             var entity = JsonSerializer.Deserialize<WeddingEntity>(entityJson);
 

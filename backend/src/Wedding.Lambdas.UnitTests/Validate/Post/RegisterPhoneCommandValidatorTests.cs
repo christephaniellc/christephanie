@@ -9,6 +9,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
     public class RegisterPhoneCommandValidatorTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

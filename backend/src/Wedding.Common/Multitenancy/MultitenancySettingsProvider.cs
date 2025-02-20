@@ -44,7 +44,15 @@ namespace Wedding.Common.Multitenancy
             {
                 // Unit tests only
                 case ("https://api.christephanie.com"):
-                    databaseTable = $"christephanie-wedding-unittests";
+                    if (rateLimit)
+                    {
+                        databaseTable = $"christephanie-wedding-unittests-rate-limit";
+                    }
+                    else
+                    {
+                        databaseTable = $"christephanie-wedding-unittests";
+                    }
+
                     break;
                 case ("https://www.wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
