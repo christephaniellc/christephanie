@@ -38,39 +38,40 @@ const Welcome = () => {
   }, [user, family, familyActions]);
 
   const randomLoveyQuotesWithFunnyTwists = [
-    "Sittin in a tree",
-    "would love your attendance and full attention, for a few days, max.",
-    "love each other like Kanye loves Kanye.",
+    'Sittin in a tree',
+    'would love your attendance and full attention, for a few days, max.',
+    'love each other like Kanye loves Kanye.',
   ];
 
   const randomQuote = () => randomLoveyQuotesWithFunnyTwists[Math.floor(Math.random() * randomLoveyQuotesWithFunnyTwists.length)];
   const shortScreen = contentHeight < 800;
 
   return (
-    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center" flexWrap="wrap" id={'welcome-page'} position='relative'>
+    <Box display="flex" height="100%" justifyContent="center" alignContent="flex-start" textAlign="center"
+         flexWrap="wrap" id={'welcome-page'} position="relative">
       <Box position="absolute" top={0} left={0} bottom={0} right={0} zIndex={-1}>
         {/*<ForestBackground figureCount={200} />*/}
       </Box>
 
       <Box display="flex" flexDirection="column" width="100%" ref={welcomeBannerRef}>
-        <Typography variant="h4" color="text.primary" gutterBottom mt={shortScreen ? 2 : 4} width="100%" textAlign="center">
+        <Typography variant="h4" color="text.primary" gutterBottom mt={shortScreen ? 2 : 4} width="100%"
+                    textAlign="center">
           Steph & Topher
         </Typography>
         <Box mx="auto">
           <EightBitWeddingLogo />
         </Box>
-        <Typography variant="caption" color="text.secondary" mb={shortScreen ? 1 : 4} mt={shortScreen ? -4 : 0} maxWidth={200} mx='auto' textAlign='justify' height={40}>
+        <Typography variant="caption" color="text.secondary" mb={shortScreen ? 1 : 4} mt={shortScreen ? -4 : 0}
+                    maxWidth={200} mx="auto" textAlign="justify" height={40}>
           ({randomQuote()})
         </Typography>
         <Countdowns event={'Wedding'}
                     interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending} />
       </Box>
 
-      {stepperHeight === 0 ? "Loading" : <Box maxWidth={600} mx="auto" mb={2} overflow='auto'>
+      {stepperHeight === 0 ? 'Loading' : <Box maxWidth={600} mx="auto" mb={2} overflow="auto">
         {!auth0User && <InvitationCodeInputs /> || (
-          <Box>
-            <WelcomePageStepper />
-          </Box>
+          <WelcomePageStepper />
         )}
       </Box>}
     </Box>

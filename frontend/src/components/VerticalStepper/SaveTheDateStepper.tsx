@@ -29,7 +29,7 @@ import CommunicationPreferences from '@/components/CommunicationPreferences/Comm
 import { useAuth0 } from '@auth0/auth0-react';
 import CampingPreferences from '@/components/CampingPreferences/CampingPreferences';
 
-export default function SavetheDateStepper() {
+export default function SaveTheDateStepper() {
   const theme = useTheme();
   const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
@@ -41,7 +41,6 @@ export default function SavetheDateStepper() {
   const { guests, callByLastNames, nobodyComing } = familyStates;
   const { user } = useAuth0();
   const [saveTheDateStepper, setStepper] = useRecoilState(saveTheDateStepperState);
-  const guestId = useMemo(() => family && family.guests && family.guests.find( (guest) => guest.auth0Id === user?.sub)?.guestId || null, [family, user?.sub]);
 
   useEffect(() => {
     if (urlParams) {

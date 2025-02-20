@@ -45,7 +45,7 @@ const steps: { [step: string]: Step } = {
     description:
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
     lastDate: new Date('2025-05-20'),
-    stepCompleted: false,
+    stepCompleted: true,
     stepUrl: routes[Pages.FoodPreferences].path,
   },
   wedding: {
@@ -53,7 +53,7 @@ const steps: { [step: string]: Step } = {
     label: 'Wedding Day',
     description: `July 5th, 2025! See you in ${differenceInDays(new Date('2025-07-05'), new Date())} days!`,
     lastDate: new Date('2025-07-06'),
-    stepCompleted: false,
+    stepCompleted: true,
     stepUrl: routes[Pages.Profile].path,
   },
 };
@@ -110,14 +110,14 @@ export default function WelcomePageStepper() {
   }, [familyStates]);
 
   return (
-    <Box>
+    <Box width='100%' minWidth={330}>
       <Stepper activeStep={activeStep} orientation="vertical" sx={{ pl: 2 }}>
         {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
               icon={<StickFigureIcon rotation={0} fontSize={'large'} ageGroup={user.ageGroup} />}
               optional={
                 <Typography variant="caption">
-                  {step.stepCompleted ? 'Thanks for responding!' : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
+                  {step.id === 0 && step.stepCompleted ? 'Thanks for responding!' : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
                 </Typography>
               }
             >
@@ -130,15 +130,18 @@ export default function WelcomePageStepper() {
                     variant="contained"
                     onClick={() => handleNext(step)}
                     sx={{ mt: 1, mr: 1 }}
+                    disabled={step.id !== 0}
                   >
                     {continueText()}
                   </Button>
                   <Button
                     disabled={!step.stepCompleted}
-                    onClick={() => step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()}
+                    onClick={() => {
+                      step.id === 0 && step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()
+                    }}
                     sx={{ mt: 1, mr: 1 }}
                   >
-                    {step.stepCompleted ? 'Update Your Response' : 'Back'}
+                    {step.id === 0 && step.stepCompleted ? 'Update Your Response' : 'Back'}
                   </Button>
                 </Box>
               </Tooltip>
