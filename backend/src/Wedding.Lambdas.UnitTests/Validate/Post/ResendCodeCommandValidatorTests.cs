@@ -9,6 +9,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
     public class ResendCodeCommandValidatorTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

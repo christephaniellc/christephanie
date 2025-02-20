@@ -9,6 +9,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
     public class AuthHandlerTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

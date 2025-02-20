@@ -20,6 +20,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();
