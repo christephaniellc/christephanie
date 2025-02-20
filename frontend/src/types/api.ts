@@ -118,7 +118,6 @@ export interface IAMPolicyStatement {
   Condition?: Record<string, Record<string, any>>;
 }
 
-
 export enum InvitationResponseEnum {
   Pending = 'Pending',
   Interested = 'Interested',
@@ -134,6 +133,21 @@ export interface LastUpdateAuditDto {
 export enum NotificationPreferenceEnum {
   Email = 'Email',
   Text = 'Text',
+}
+
+export interface PatchFamilyUnitRequest {
+  mailingAddress?: AddressDto;
+  invitationResponseNotes?: string | null;
+}
+
+export interface PatchGuestRequest {
+  guestId: string | null;
+  auth0Id?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  rsvp?: RsvpDto;
+  preferences?: PreferencesDto;
+  ageGroup?: AgeGroupEnum;
 }
 
 export interface PreferencesDto {
@@ -577,6 +591,44 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags FamilyUnit
+     * @name FamilyunitPartialUpdate
+     * @request PATCH:/api/familyunit
+     * @secure
+     */
+    familyunitPartialUpdate: (data: PatchFamilyUnitRequest, params: RequestParams = {}) =>
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
+        path: `/api/familyunit`,
+        method: 'PATCH',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guest
+     * @name GuestPartialUpdate
+     * @request PATCH:/api/guest
+     * @secure
+     */
+    guestPartialUpdate: (data: PatchGuestRequest, params: RequestParams = {}) =>
+      this.request<GuestDto, ProblemDetails | void>({
+        path: `/api/guest`,
+        method: 'PATCH',
         body: data,
         secure: true,
         type: ContentType.Json,
