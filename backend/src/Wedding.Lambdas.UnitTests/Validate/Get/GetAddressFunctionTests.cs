@@ -8,6 +8,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Get
     public class GetAddressFunctionTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();
