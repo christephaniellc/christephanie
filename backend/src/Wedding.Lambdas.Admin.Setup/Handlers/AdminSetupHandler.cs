@@ -51,8 +51,8 @@ namespace Wedding.Lambdas.Admin.Setup.Handlers
                 var s3Client = new AmazonS3Client();
                 var request = new GetObjectRequest
                 {
-                    BucketName = "christephanie-wedding-setup",
-                    Key = "Data/platinum-plus.json"
+                    BucketName = $"christephanie-wedding-setup-{command.Environment.ToLower()}",
+                    Key = $"Data/{command.Level}.json" // platinum-plus
                 };
 
                 List<FamilyUnitDto>? familyUnitDtos;

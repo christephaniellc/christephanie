@@ -11,5 +11,5 @@ namespace Wedding.Lambdas.Admin.Setup.Commands
     /// <param name="InvitationCode">Invitation Code</param>
     /// <param name="FirstName">FirstName</param>
     public record AdminSetupCommand(
-        string Audience, string InvitationCode, string FirstName) : IWeddingQuery;
+        string Environment, string Level, string Audience, string InvitationCode, string FirstName) : IWeddingQuery;
 }
