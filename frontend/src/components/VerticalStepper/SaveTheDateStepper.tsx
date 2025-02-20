@@ -137,7 +137,7 @@ export default function SaveTheDateStepper() {
         comments: {
           ...prev.comments,
           id: prev.comments.id, // Ensure the id is included
-          completed: true,
+          completed: !!family.invitationResponseNotes,
           label: 'Any comments?',
           component: (
             <Box>
