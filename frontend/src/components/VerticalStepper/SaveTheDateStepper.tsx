@@ -131,7 +131,7 @@ export default function SavetheDateStepper() {
           ...prev.camping,
           id: prev.camping.id, // Ensure the id is included
           completed: guests.some(guest => guest.preferences.sleepPreference !== "Unknown"),
-          label: 'Camping',
+          label: 'Accommodations',
           description: '',
           component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
         },
