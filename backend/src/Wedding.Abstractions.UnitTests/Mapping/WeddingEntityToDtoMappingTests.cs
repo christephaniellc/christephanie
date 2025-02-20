@@ -151,7 +151,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Roles.Should().BeEquivalentTo(entity.Roles);
             dto.Email.Should().NotBeNull();
             dto.Email!.Value.Should().Be(email);
-            dto.Phone.Should().Be(phone);
+            dto.Phone!.Value.Should().Be(phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.LastActivity.Should().Be(entity.LastActivity);
             dto.Rsvp.Should().NotBeNull();
@@ -162,7 +162,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [Test]
         public void Should_Map_WeddingEntityJson_To_GuestDto()
         {
-            var filePath = @"..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
+            var filePath = @"..\..\..\..\..\Wedding.Common.Utility.Testing\TestDataJsons\GuestDto.json";
             var entityJson = File.ReadAllText(filePath);
             var entity = JsonSerializer.Deserialize<WeddingEntity>(entityJson);
 
@@ -175,8 +175,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.AdditionalFirstNames.Should().BeEquivalentTo(entity.AdditionalFirstNames);
             dto.LastName.Should().Be(entity.LastName);
             dto.Roles.Should().BeEquivalentTo(entity.Roles);
-            dto.Email.Should().Be("john.doe@gmail.com");
-            dto.Phone.Should().Be(entity.Phone);
+            dto.Email!.Value.Should().Be("john.doe@gmail.com");
+            dto.Phone!.Value.Should().Be("555-555-5555");
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.LastActivity.Should().Be(entity.LastActivity);
             dto.Rsvp.Should().NotBeNull();
@@ -329,8 +329,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.GuestNumber.Should().Be(entity.GuestNumber);
             dto.FirstName.Should().Be(entity.FirstName);
             dto.LastName.Should().Be(entity.LastName);
-            dto.Email.Should().Be(email);
-            dto.Phone.Should().Be(phone);
+            dto.Email!.Value.Should().Be(email);
+            dto.Phone!.Value.Should().Be(phone);
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.Rsvp.Should().NotBeNull();
             dto.Rsvp!.InvitationResponse.Should().Be(entity.InvitationResponse);
@@ -428,8 +428,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.LastName.Should().Be(guestDto.LastName);
             entity.AgeGroup.Should().Be(guestDto.AgeGroup);
             entity.Roles.Should().BeEquivalentTo(guestDto.Roles);
-            entity.Email.Should().Be(guestDto.Email.Value);
-            entity.Phone.Should().Be(guestDto.Phone.Value);
+            entity.Email.Should().Be(guestDto.Email.ToString());
+            entity.Phone.Should().Be(guestDto.Phone.ToString());
             entity.LastActivity.Should().Be(guestDto.LastActivity);
 
             entity.InvitationResponse.Should().Be(guestDto.Rsvp.InvitationResponse);

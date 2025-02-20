@@ -8,12 +8,12 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
     [UnitTestsFor(typeof(AdminGetFamilyUnitQueryValidator))]
     public class AdminGetFamilyUnitQueryValidatorTests
     {
-        private AdminGetFamilyUnitQueryValidator _validator;
+        private AdminGetFamilyUnitQueryValidator? Sut;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new AdminGetFamilyUnitQueryValidator();
+            Sut = new AdminGetFamilyUnitQueryValidator();
         }
 
         [Test]
