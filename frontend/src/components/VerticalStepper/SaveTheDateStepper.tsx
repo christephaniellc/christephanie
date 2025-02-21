@@ -9,7 +9,7 @@ import {
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { familyGuestsStates, useFamily } from '@/store/family';
+import { useFamily } from '@/store/family';
 import { GuestDto } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
@@ -31,16 +31,16 @@ import CampingPreferences from '@/components/CampingPreferences/CampingPreferenc
 
 export default function SaveTheDateStepper() {
   const theme = useTheme();
-  const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
   const navigate = useNavigate();
   const location = useLocation();
   // Local state to track which "tab" (formerly "step") is active
   const [tabIndex, setTabIndex] = React.useState(0);
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
-  const { guests, callByLastNames, nobodyComing } = familyStates;
   const { user } = useAuth0();
   const [saveTheDateStepper, setStepper] = useRecoilState(saveTheDateStepperState);
+
+  const guests = useMemo(() => family.guests, [family.guests]);
 
   useEffect(() => {
     if (urlParams) {
@@ -60,49 +60,44 @@ export default function SaveTheDateStepper() {
   // which tab is active vs. the total number of tabs.
   // Example: if we have 2 steps, step 0 = 0%, step 1 = 50%, step 2 (if we had 3 steps) = 100%, etc.
   useEffect(() => {
-    if (!familyStates || !saveTheDateStepper) return;
+    console.log('i am firing');
+    if (!saveTheDateStepper) return;
     setStepper((prev: Record<string, SaveTheDateStep>) => {
       return {
         ...prev,
         attendance: {
           ...prev.attendance,
           id: prev.attendance.id, // Ensure the id is included
-          completed: familyStates?.allUsersResponded || false,
-          label: familyStates?.allUsersResponded ? familyStates?.nobodyComing ? 'Nobody is coming' : 'Everyone has responded' : 'Who\'s Interested?',
+          completed: false,
+          label: 'Nobody is coming',
           component: (
             <Box textAlign="center">
-              {guests && !!guests.length && (
-                <>
-                  {!nobodyComing && (
-                    <Typography sx={{
-                      mb: 2,
-                      [theme.breakpoints.down('sm')]: {
-                        fontSize: 0,
-                      },
-                    }}>
-                      {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you, {callByLastNames}!
-                    </Typography>
-                  )}
-                  {nobodyComing && (
-                    <Typography sx={{ mb: 2 }}>
-                      {guests.length === 1 ? 'I' : 'We'} hope you can make it, {callByLastNames}!
-                    </Typography>
-                  )}
-                  <ButtonsContainer>
-                    {guests.map((guest: GuestDto) => (
-                      <AttendanceButton guestId={guest.guestId!} key={guest.guestId} />
-                    ))}
-                  </ButtonsContainer>
-                </>
-              )}
+              <>
+                <Typography sx={{
+                  mb: 2,
+                  [theme.breakpoints.down('sm')]: {
+                    fontSize: 0,
+                  },
+                }}>
+                  {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you!
+                </Typography>
+                <Typography sx={{ mb: 2 }}>
+                  {guests.length === 1 ? 'I' : 'We'} hope you can make it!
+                </Typography>
+                <ButtonsContainer>
+                  {guests.map((guest: GuestDto) => (
+                    <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+                  ))}
+                </ButtonsContainer>
+              </>
             </Box>
           ),
         },
         mailingAddress: {
           ...prev.mailingAddress,
           id: prev.mailingAddress.id, // Ensure the id is included
-          label: familyStates?.mailingAddressUspsVerified ? 'Address Confirmed' : 'Where should we send your invitation?',
-          completed: familyStates?.mailingAddressUspsVerified || false,
+          label: family?.mailingAddress?.uspsVerified ? 'Address Confirmed' : 'Where should we send your invitation?',
+          completed: family?.mailingAddress?.uspsVerified || false,
           component: (
             <AddressEnvelope />
           ),
@@ -110,7 +105,7 @@ export default function SaveTheDateStepper() {
         foodAllergies: {
           ...prev.foodAllergies,
           id: prev.foodAllergies.id, // Ensure the id is included
-          completed: familyStates?.allAllergiesResponded || false,
+          completed: family.guests.every(guest => guest.preferences.foodAllergies.length),
           label: 'Any food allergies?',
           component: (
             <>
@@ -118,21 +113,23 @@ export default function SaveTheDateStepper() {
             </>
           ),
         },
+        camping: {
+          ...prev.camping,
+          id: prev.camping.id, // Ensure the id is included
+          completed: guests.some(guest => guest.preferences.sleepPreference !== 'Unknown'),
+          label: 'Accommodations',
+          description: '',
+          component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId}
+                                                                   guestId={guest.guestId} />)}</Box>,
+        },
         communicationPreference: {
           ...prev.communicationPreference,
           id: prev.communicationPreference.id, // Ensure the id is included
           completed: guests.some(guest => guest.preferences?.notificationPreference.length),
           label: 'How should we contact you?',
           description: '',
-          component: <Box>{guests.map(guest => <CommunicationPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
-        },
-        camping: {
-          ...prev.camping,
-          id: prev.camping.id, // Ensure the id is included
-          completed: guests.some(guest => guest.preferences.sleepPreference !== "Unknown"),
-          label: 'Accommodations',
-          description: '',
-          component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId} guestId={guest.guestId} />)}</Box>,
+          component: <Box>{guests.map(guest => <CommunicationPreferences key={guest.guestId}
+                                                                         guestId={guest.guestId} />)}</Box>,
         },
         comments: {
           ...prev.comments,
@@ -148,7 +145,7 @@ export default function SaveTheDateStepper() {
         },
       };
     });
-  }, [setStepper, familyStates]);
+  }, []);
 
   // This determines how many tabs there are
   const totalTabs = Object.values(saveTheDateStepper).length;
@@ -168,30 +165,30 @@ export default function SaveTheDateStepper() {
       </Box>
       {/* Linear Progress across top */}
       <Box width={'100%'} overflow={'auto'}>
-      <Stepper
-        activeStep={tabIndex}
-        alternativeLabel
-        nonLinear
-        orientation="horizontal"
-        sx={{ px: 2, width: '90vw' }}
-        connector={<StyledConnector />
-        }>
-        {Object.entries(saveTheDateStepper).map(([key, step]) => (
-          <Step
-            completed={step.completed}
-            key={key}>
-            <CustomStepLabel
-              onClick={() => handleNavigateToStep(key)}
-              sx={{
-                cursor: 'pointer',
-              }}
-              StepIconComponent={StepperIcon}
-            >
-              <Box display="flex" alignItems="flex-end">{step.label}</Box>
-            </CustomStepLabel>
-          </Step>
-        ))}
-      </Stepper>
+        <Stepper
+          activeStep={tabIndex}
+          alternativeLabel
+          nonLinear
+          orientation="horizontal"
+          sx={{ px: 2, width: '90vw' }}
+          connector={<StyledConnector />
+          }>
+          {Object.entries(saveTheDateStepper).map(([key, step]) => (
+            <Step
+              completed={step.completed}
+              key={key}>
+              <CustomStepLabel
+                onClick={() => handleNavigateToStep(key)}
+                sx={{
+                  cursor: 'pointer',
+                }}
+                StepIconComponent={StepperIcon}
+              >
+                <Box display="flex" alignItems="flex-end">{step.label}</Box>
+              </CustomStepLabel>
+            </Step>
+          ))}
+        </Stepper>
       </Box>
       <Box maxWidth={600} mx="auto" border={'0px solid blue'}>
         <Box sx={{ p: 2 }}>
@@ -257,7 +254,7 @@ const StyledConnector = styled(StepConnector)(({ theme }) => ({
 
 function StepperIcon(props: StepIconProps) {
   const { active, completed, className } = props;
-  const user = useRecoilValue(userState)
+  const user = useRecoilValue(userState);
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
       {completed ? (

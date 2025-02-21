@@ -33,17 +33,17 @@ export const saveTheDateStepperState = atom<Record<string, SaveTheDateStep>>({
       description: "",
       component: null,
     },
-    communicationPreference: {
+    camping: {
       id: 4,
       completed: false,
-      label: 'How should we contact you?',
+      label: 'Camping',
       description: "",
       component: null,
     },
-    camping: {
+    communicationPreference: {
       id: 5,
       completed: false,
-      label: 'Camping',
+      label: 'How should we contact you?',
       description: "",
       component: null,
     },

@@ -1,7 +1,7 @@
 import { Box, ButtonProps, darken, Typography, useTheme } from '@mui/material';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
-import { InvitationResponseEnum } from '@/types/api';
+import { GuestDto, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
@@ -17,29 +17,34 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   const theme = useTheme();
   const [_, familyActions] = useFamily();
 
-  const isPending = familyActions.updateFamilyMutation.isPending;
-  const darkenCoefficent = isPending ? .5 : 0;
+  // const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
+  const darkenCoefficent = 0;
+  const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
+    console.log('setting user is attending');
 
-  const setUserIsAttending = (guestId: string, interested: InvitationResponseEnum) => {
-    familyActions.updateFamilyGuestInterest(guestId, interested);
+    familyActions.patchFamilyGuestMutation.mutate({
+      updatedGuest: {
+        guestId: guestId,
+        rsvp: { ...guest.rsvp, invitationResponse: interestedResponse },
+      },
+    });
   };
 
-  const interested = useMemo(() => guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending, [guest]);
-
-  const handleClick = useCallback(() => {
-    if (!guest || !guest.guestId || !interested) return;
-    if (interested === InvitationResponseEnum.Interested) {
-      setUserIsAttending(guest.guestId, InvitationResponseEnum.Declined);
-    } else if (interested === InvitationResponseEnum.Declined) {
-      setUserIsAttending(guest.guestId, InvitationResponseEnum.Pending);
+  const handleClick = (invitationResponse: InvitationResponseEnum) => {
+    console.log('clicky');
+    if (invitationResponse === InvitationResponseEnum.Interested) {
+      setUserIsAttending(InvitationResponseEnum.Declined);
+    } else if (invitationResponse === InvitationResponseEnum.Declined) {
+      setUserIsAttending(InvitationResponseEnum.Pending);
     } else {
-      setUserIsAttending(guest.guestId, InvitationResponseEnum.Interested);
+      setUserIsAttending(InvitationResponseEnum.Interested);
     }
-  }, [guest, interested, setUserIsAttending]);
+  };
 
 
   const buttonProps = useMemo(() => {
-    switch (interested) {
+    console.log('buttonPropping for ', guest?.rsvp.invitationResponse);
+    switch (guest?.rsvp.invitationResponse) {
       case InvitationResponseEnum['Interested']:
         return {
           color: 'primary',
@@ -62,23 +67,19 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
 
     }
-  }, [interested, theme.palette.primary.main, theme.palette.secondary.main, darkenCoefficent]);
-
-  // todo: move these to an age selector component
-  // const [ageGroup, setAgeGroup] = useState<AgeGroupEnum>(AgeGroupEnum.Adult);
-  // const toSliderValue = (ageGroup: AgeGroupEnum) => Object.values(AgeGroupEnum).indexOf(ageGroup);
-  // const toAgeGroup = useCallback((value: number) => Object.values(AgeGroupEnum)[value] as AgeGroupEnum, []);
+  }, [guest]);
 
   const imgButtonSxProps = useMemo(() => {
+    console.log('imgButtonSxPropsing for ', guest?.rsvp.invitationResponse);
     return {
       fontSize: buttonProps.fontSize,
       border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
-      width: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
-      minWidth: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
-      maxWidth: interested === InvitationResponseEnum.Interested ? '150px !important' : '100%',
+      width: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '150px !important' : '100%',
+      minWidth: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '150px !important' : '100%',
+      maxWidth: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '150px !important' : '100%',
     };
-  }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent, interested]);
+  }, [buttonProps, darkenCoefficent]);
 
   return (
     <Box
@@ -95,8 +96,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       }}
     >
       <Button
-        disabled={familyActions.updateFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
-        onClick={handleClick}
+        disabled={familyActions.patchFamilyGuestMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
+        onClick={() => handleClick(guest?.rsvp.invitationResponse)}
         sx={{
           alignItems: 'flex-start',
           boxShadow: 1,
@@ -113,24 +114,18 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
             minWidth: 250,
             maxWidth: 250,
           },
-          width: interested === InvitationResponseEnum.Interested ? '50% !important' : '100%',
+          width: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '50% !important' : '100%',
         }}
 
       >
         <Box display="flex" alignItems="center">
-          <LargeAttendanceButton guestId={guestId} isPending={familyActions.updateFamilyMutation.isPending}
-                                 error={familyActions.updateFamilyMutation.error} />
+          {guest &&
+            <LargeAttendanceButton guestId={guest.guestId} isPending={familyActions.updateFamilyMutation.isPending}
+                                   error={familyActions.updateFamilyMutation.error} />}
         </Box>
 
       </Button>
-      {interested === InvitationResponseEnum.Interested && <AgeSelector guestId={guestId} />}
-      {/*  <Box alignContent="center"*/}
-      {/*       sx={{ imgButtonSxProps, borderWidth: 2 }}*/}
-      {/*  >*/}
-      {/*    <StephsFavoriteTypography>*/}
-      {/*      <Countdowns event="Wedding" interested={interested} guestId={guestId} />*/}
-      {/*    </StephsFavoriteTypography>*/}
-      {/*  </Box>*/}
+      {guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested && <AgeSelector guestId={guest?.guestId} />}
     </Box>
   );
 };

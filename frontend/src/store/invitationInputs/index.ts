@@ -16,7 +16,7 @@ export const invitationButtonSelectorState = selector<string>({
     const firstName = user?.firstName;
     const invitationCode = user?.invitationCode;
 
-    if (userIdQuery?.isLoading) return 'Checking guest list';
+    if (userIdQuery?.isLoading) return 'Checking guest list...';
     if (userIdQuery?.error) {
       switch (userIdQuery.error.status) {
         case 404:

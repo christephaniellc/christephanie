@@ -19,7 +19,7 @@ type Config = {
         "clientId": "sAJY1fIiPwOLa0z1SUzXZzD3Hp1vjuV5",
         "audience": "https://fianceapi.dev.wedding.christephanie.com",
         "webserviceUrl": "https://fianceapi.dev.wedding.christephanie.com",
-        "returnTo": "https://www.dev.christephanie.com/"
+        "returnTo": "https://www.dev.wedding.christephanie.com/"
       },
       "production": {
         "domain": "christephanie.us.auth0.com",

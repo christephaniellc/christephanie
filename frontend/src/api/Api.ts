@@ -34,19 +34,19 @@ export default class Api {
   }
 
   getGuestDto(id: number): Promise<GuestDto> {
-    return this.get(`/GuestDtos/${id}`);
+    return this.get(`/guest/${id}`);
   }
 
   postGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
-    return this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
+  patchGuestDto(GuestDto: Partial<GuestDto>): Promise<GuestDto> {
+    return this.patch(`/guest`, GuestDto);
   }
 
   deleteGuestDto(id: number): Promise<GuestDto> {
-    return this.delete(`/GuestDtos/${id}/change-password`);
+    return this.delete(`/guest/${id}/change-password`);
   }
 
   validateAddress(address: AddressDto): Promise<AddressDto> {

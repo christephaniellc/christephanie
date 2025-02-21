@@ -23,7 +23,7 @@ function AgeGroupThumbComponent(props: React.HTMLAttributes<unknown>) {
 
 export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const guest = useRecoilValue(guestSelector(guestId));
-  const [userAgeGroup, setUserAgeGroup] = useState(guest?.ageGroup || AgeGroupEnum.Adult);
+  const [userAgeGroup, setUserAgeGroup] = useState(guest.ageGroup);
   const theme = useTheme();
   const [_, familyActions] = useFamily();
   const { user } = useAuth0();
@@ -44,7 +44,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   };
 
   useEffect(() => {
-    setUserAgeGroup(guest?.ageGroup || AgeGroupEnum.Adult);
+    if (guest && guest.ageGroup) setUserAgeGroup(guest.ageGroup);
   }, [guest, familyActions.updateFamilyGuestAgeGroup]);
 
   const userAgeGroupIndex = useMemo(() => {
