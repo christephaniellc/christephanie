@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
+import { useState } from 'react';
+import { BottomNavigation, BottomNavigationAction, Box, useTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import ShieldIcon from '@mui/icons-material/Security';
@@ -9,23 +9,14 @@ import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import { Link, useNavigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import { userState } from '@/store/user';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 export const BottomNav = () => {
   const [navValue, setNavValue] = useState();
-  const { user: auth0User, loginWithRedirect } = useAuth0();
+  const { user: auth0User, loginWithRedirect } = useAuth0();  
+  const { logOutFromAuth0 } = useAuth0Queries();  
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
-
-  // Debounce function to prevent rapid clicks
-  const debounce = (func: () => void, delay: number) => {
-    let timer: NodeJS.Timeout;
-    return () => {
-      clearTimeout(timer);
-      timer = setTimeout(func, delay);
-    };
-  };
 
   const handleNavigation = (path: string) => {
     if (isNavigating) return; // Prevent rapid clicks
@@ -76,7 +67,7 @@ export const BottomNav = () => {
           sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
-          onClick={() => (auth0User ? logout() : loginWithRedirect())}
+          onClick={() => (auth0User ? logOutFromAuth0() : loginWithRedirect())}
         />
       </BottomNavigation>
     </Box>
