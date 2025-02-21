@@ -107,7 +107,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 result.Guests!.Count.Should().BeGreaterThan(0);
                 result.Guests![0].FirstName.Should().Be("John");
                 result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Under13);
-                result!.Guests![0]!.Email!.Value.Should().Be(updatedPhone);
+                result!.Guests![0]!.Phone!.Value.Should().Be(updatedPhone);
                 result!.Guests![0]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
                 result!.Guests![1]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
                 result!.MailingAddress!.StreetAddress.Should().Be("123 Main St.");
