@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, Suspense } from 'react';
 
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -10,6 +10,7 @@ import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
+import Loading from '@/components/Loading';
 
 function App() {
   return (
@@ -20,9 +21,10 @@ function App() {
       <SW />
 
       <Sidebar />
-      <Pages />
+      <Suspense fallback={<Loading />}>
+        <Pages />
+      </Suspense>
       <BottomNav />
-
     </>
   );
 }

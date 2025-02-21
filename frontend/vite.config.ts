@@ -17,7 +17,7 @@ export default defineConfig({
     react(),
     VitePWA({
       manifest,
-      includeAssets: ['./public/favicon.svg', './public/favicon.ico', './public/robots.txt', './public/apple-touch-icon.png'],
+      includeAssets: ['./public/favicon.ico', './public/favicon.svg', './public/robots.txt', './public/apple-touch-icon.png'],
       devOptions: {
         enabled: false,
       },
