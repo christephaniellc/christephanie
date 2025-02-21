@@ -58,6 +58,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

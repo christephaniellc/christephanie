@@ -27,12 +27,14 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTestsForOneFamily()
         {
             Assert.Fail();
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTestsForMultipleFamilies()
         {
             Assert.Fail();

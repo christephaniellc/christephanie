@@ -43,7 +43,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     },
                     Phone = new VerifiedDto
                     {
-                        Value = "555-555-5555",
+                        Value = "202-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
@@ -74,7 +74,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     },
                     Phone = new VerifiedDto
                     {
-                        Value = "555-555-5555",
+                        Value = "202-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
@@ -105,7 +105,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     },
                     Phone = new VerifiedDto
                     {
-                        Value = "555-555-5555",
+                        Value = "202-555-5555",
                         Verified = false,
                         VerificationCode = null,
                         VerificationCodeExpiration = null
