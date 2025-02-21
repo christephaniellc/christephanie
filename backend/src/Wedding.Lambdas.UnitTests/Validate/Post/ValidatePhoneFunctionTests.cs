@@ -17,6 +17,9 @@ using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Lambdas.Validate.Phone.Handlers;
 using Wedding.Lambdas.Validate.Phone.Requests;
 using Wedding.Common.ThirdParty;
+using Amazon.SimpleSystemsManagement.Model;
+using System.Numerics;
+using NSubstitute;
 
 namespace Wedding.Lambdas.UnitTests.Validate.Post
 {
@@ -27,6 +30,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
         private IMapper? _mapper;
         private Mock<IDynamoDBProvider>? _mockDynamoDbProvider;
         private Mock<IAwsSmsHelper>? _mockAwsSmsHelper;
+        private Mock<ITwilioSmsProvider>? _mockTwilioSmsProvider;
         private TestTokenHelper? _testTokenHelper;
         private Wedding.Lambdas.Validate.Phone.Function? Sut;
 
@@ -67,13 +71,16 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             _mockDynamoDbProvider.Setup(x =>
                     x.LoadGuestByGuestIdAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, TestDataHelper.GUEST_JANE.GuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper.Map<WeddingEntity>(TestDataHelper.GUEST_JANE));
+            _mockTwilioSmsProvider = new Mock<ITwilioSmsProvider>();
 
-            var mockTwilioSmsProvider = new Mock<ITwilioSmsProvider>();
+            _mockTwilioSmsProvider.Setup(x =>
+                x.CheckVerification(TestDataHelper.GUEST_JOHN.Phone.Value, It.IsAny<string>()))
+                    .ReturnsAsync(true);
 
             var phoneValidationHandler = new PhoneValidationHandler(Mock.Of<ILogger<PhoneValidationHandler>>(), 
                 _mockDynamoDbProvider.Object, 
                 _mapper,
-                mockTwilioSmsProvider.Object);
+                _mockTwilioSmsProvider.Object);
 
             serviceCollection.AddScoped(_ => phoneValidationHandler);
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -101,11 +108,14 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
             var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
-            var result = response.GetResponseBodyData<HttpStatusCode>();
+            var result = response.GetResponseBodyData<ValidatePhoneResponse>();
 
-            result.Should().Be(HttpStatusCode.OK);
+            result.PhoneVerifyState.Verified.Should().BeFalse();
+            result.PhoneVerifyState.Value.Should().Be(dto.Guests![0].Phone!.Value);
+            result.VerifiedStatus.Should().Be(TwilioOtpStatusEnum.Pending);
 
-            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
+            //_mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
+            _mockTwilioSmsProvider!.Verify(x => x.SendOTPCode(dto!.Guests![0]!.Phone!.Value!), Times.Once);
         }
 
         [Test]
@@ -127,11 +137,15 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
             var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
-            var result = response.GetResponseBodyData<HttpStatusCode>();
+            var result = response.GetResponseBodyData<ValidatePhoneResponse>();
+            
+            result.PhoneVerifyState.Verified.Should().BeFalse();
+            result.PhoneVerifyState.Value.Should().Be(dto.Guests![0].Phone!.Value);
+            result.VerifiedStatus.Should().Be(TwilioOtpStatusEnum.Pending);
 
-            result.Should().Be(HttpStatusCode.OK);
+            _mockTwilioSmsProvider!.Verify(x => x.SendOTPCode(dto!.Guests![0]!.Phone!.Value!), Times.Once);
 
-            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
+            //_mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Once);
         }
 
         [Test]
@@ -143,6 +157,7 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             var john = dto.Guests!.FirstOrDefault(g => g.GuestId == TestDataHelper.GUEST_JOHN.GuestId);
             john!.Phone = new VerifiedDto
             {
+                Value = TestDataHelper.GUEST_JOHN.Phone.Value,
                 Verified = false,
                 VerificationCode = code,
                 VerificationCodeExpiration = DateTime.UtcNow.AddMinutes(10)
@@ -163,11 +178,14 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
             var proxyRequest = TestRequestHelper.RequestAsJohn(request);
 
             var response = await Sut!.FunctionHandler(proxyRequest, _lambdaContext!);
-            var result = response.GetResponseBodyData<bool>();
+            var result = response.GetResponseBodyData<ValidatePhoneResponse>();
+            
+            result.PhoneVerifyState.Verified.Should().BeTrue();
+            result.PhoneVerifyState.Value.Should().Be(dto.Guests![0].Phone!.Value);
+            result.VerifiedStatus.Should().BeNull();
 
-            result.Should().Be(true);
-
-            _mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Never);
+            _mockTwilioSmsProvider!.Verify(x => x.SendOTPCode(dto!.Guests![0]!.Phone!.Value!), Times.Never);
+            //_mockAwsSmsHelper!.Verify(x => x.SendVerificationCode(dto!.Guests![0]!.Phone!.Value!, It.IsAny<string>()), Times.Never);
         }
     }
 }
