@@ -30,7 +30,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
           {campingPreferences.map((value) => (
             <Button
               size="large"
-              disabled={familyActions.updateFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
+              disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
               sx={{ px: value === 'Unknown' ? 0 : 3, minWidth: value === 'Unknown' ? '0.5px !important' : 40 }}
               onClick={() => handleChangeSleepPreference(SleepPreferenceEnum[value])}
               variant={(guest?.preferences?.sleepPreference?.includes(SleepPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}

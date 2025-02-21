@@ -29,8 +29,8 @@ export default class Api {
     return this.get('/familyunit');
   }
 
-  async updateFamilyUnit(familyUnit: FamilyUnitDto): Promise<FamilyUnitDto> {
-    return this.post(`/familyunit`, familyUnit);
+  async patchFamilyUnit(familyUnit: Partial<FamilyUnitDto>): Promise<FamilyUnitDto> {
+    return this.patch(`/familyunit`, familyUnit);
   }
 
   getGuestDto(id: number): Promise<GuestDto> {

@@ -71,8 +71,8 @@ function FoodAllergies({ guestId }: { guestId: string }) {
   const filterColorSecondary = 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%);';
 
   const saveAllergiesState = useMemo(() => {
-    return familyActions.updateFamilyMutation.status;
-  }, [familyActions.updateFamilyMutation]);
+    return familyActions.patchFamilyMutation.status;
+  }, [familyActions.patchFamilyMutation]);
 
   return (
     <Box display="flex" my={2} border={'0px dotted green'}
@@ -92,19 +92,19 @@ function FoodAllergies({ guestId }: { guestId: string }) {
           variant="outlined"
           color="secondary"
           fullWidth
-          disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
+          disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
           sx={{ display: showSaveButton, mt: 'auto', mx: 'auto', alignSelf: 'flex-end' }}
           onClick={() => familyActions.updateFamilyGuestFoodAllergies(guestId, chosenAllergies)}>
           {saveAllergiesState === 'idle' && 'Save'}
           {saveAllergiesState === 'pending' && 'Saving...'}
           {saveAllergiesState === 'success' && 'Saved'}
-          {saveAllergiesState === 'error' && familyActions.updateFamilyMutation.error?.error}
+          {saveAllergiesState === 'error' && familyActions.patchFamilyMutation.error?.error}
         </Button>
       </Box>
       <Box border={`1px dashed ${theme.palette.secondary.main}`} p={2}>
         <Box display="flex" flexWrap="wrap" height="100%" maxWidth={600} justifyContent="space-between">
           <Button fullWidth
-                  disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
+                  disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
                   color={(chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as 'primary' | 'secondary'}
                   variant={(chosenAllergies.join('') === 'none' ? 'outlined' : 'text') as 'contained' | 'text'}
                   onClick={resetAllergies}>
@@ -120,7 +120,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
             const newAllergies = allergies.filter((a) => a !== allergy);
             if (!newAllergies) return;
             return <Button
-              disabled={familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
+              disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
               key={allergy.allergyName}
               onClick={() => setAllergies([...newAllergies, {
               ...matchingAllergy,

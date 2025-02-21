@@ -28,7 +28,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const [_, familyActions] = useFamily();
   const { user } = useAuth0();
 
-  const isPending = familyActions.updateFamilyMutation.isPending;
+  const isPending = familyActions.patchFamilyMutation.isPending;
   const darkenCoefficent = isPending ? .5 : 0;
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
     };
   }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent]);
 
-  const disabled = useMemo(() => familyActions.updateFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching, [familyActions.updateFamilyMutation.isPending, familyActions.getFamilyUnitQuery.isFetching]);
+  const disabled = useMemo(() => familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching, [familyActions.patchFamilyMutation.isPending, familyActions.getFamilyUnitQuery.isFetching]);
 
   return (
     <Box display="flex"
