@@ -31,6 +31,18 @@ const routes: Routes = {
     title: 'Food Preferences',
     icon: AddTaskIcon,
   },
+  [Pages.PrivacyPolicy]: {
+    component: asyncComponentLoader(() => import('@/pages/PrivacyPolicy')),
+    path: '/privacy-policy',
+    title: 'Privacy Policy',
+    icon: AddTaskIcon,
+  },
+  [Pages.TermsOfService]: {
+    component: asyncComponentLoader(() => import('@/pages/TermsOfService')),
+    path: '/terms-of-service',
+    title: 'TermsOfService',
+    icon: AddTaskIcon,
+  },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
     path: '*',
