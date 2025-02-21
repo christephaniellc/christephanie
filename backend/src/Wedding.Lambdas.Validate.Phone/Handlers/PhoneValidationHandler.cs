@@ -10,9 +10,10 @@ using Wedding.Common.Abstractions;
 using Wedding.Lambdas.Validate.Phone.Commands;
 using Wedding.Lambdas.Validate.Phone.Validation;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Validate.Phone.Providers;
 using Wedding.Lambdas.Validate.Phone.Requests;
-using ValidationException = Amazon.SimpleNotificationService.Model.ValidationException;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace Wedding.Lambdas.Validate.Phone.Handlers
 {
@@ -24,17 +25,18 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
         private readonly ILogger<PhoneValidationHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
-        private readonly IAwsSmsHelper _awsSmsHelper;
+        //private readonly IAwsSmsHelper _awsSmsHelper;
+        private readonly ITwilioSmsProvider _twilioSmsProvider;
 
         public PhoneValidationHandler(ILogger<PhoneValidationHandler> logger,
             IDynamoDBProvider dynamoDbProvider,
             IMapper mapper, 
-            IAwsSmsHelper awsSmsHelper)
+            ITwilioSmsProvider twilioSmsProvider)
         {
             _logger = logger;
             _dynamoDbProvider = dynamoDbProvider;
             _mapper = mapper;
-            _awsSmsHelper = awsSmsHelper;
+            _twilioSmsProvider = twilioSmsProvider;
         }
 
         public async Task<ValidatePhoneResponse> ExecuteAsync(RegisterPhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
@@ -65,7 +67,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var verifyPhone = string.IsNullOrEmpty(existingGuestEntity.Phone)
+            var verifyPhone = !string.IsNullOrEmpty(existingGuestEntity.Phone)
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Phone)
                 : new VerifiedDto
                 {
@@ -79,12 +81,13 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
-            var message = $"Your Christephanie wedding phone verification code is: {verifyPhone.VerificationCode}";
-            var awsResponse = await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
+            //var message = $"Your Christephanie wedding phone verification code is: {verifyPhone.VerificationCode}";
+            var sendOtpResponse = await _twilioSmsProvider.SendOTPCode(verifyPhone!.Value);
+            //var awsResponse = await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
 
             return new ValidatePhoneResponse
             {
-                NotificationServiceStatusCode = awsResponse,
+                VerifiedStatus = sendOtpResponse,
                 PhoneVerifyState = verifyPhone
             };
         }
@@ -105,7 +108,13 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var register = new RegisterPhoneCommand(command.AuthContext, existingGuestEntity.Phone);
+            var phoneNumber = JsonSerializer.Deserialize<VerifiedDto>(existingGuestEntity.Phone)?.Value;
+            if (phoneNumber == null)
+            {
+                throw new ValidationException($"Phone is null or empty.");
+            }
+
+            var register = new RegisterPhoneCommand(command.AuthContext, phoneNumber);
             return await ExecuteAsync(register, cancellationToken);
         }
 
@@ -126,33 +135,38 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Provided code: {command.Code}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
+            if (string.IsNullOrEmpty(existingGuestEntity.Phone))
+            {
+                throw new ValidationException($"Phone is null or empty.");
+            }
+
             var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
 
-            var validated = expectedValidation?.Verified ?? false;
-            var expectedCode = expectedValidation?.VerificationCode?.ToString() ?? null;
-            var expiry = expectedValidation?.VerificationCodeExpiration ?? null;
-
-            if (expectedValidation == null
-                || expectedCode == null 
-                || expiry == null
-                || expiry.Value < DateTime.UtcNow)
+            if (expectedValidation == null)
             {
                 throw new ValidationException($"Bad validation state.");
             }
-            
+
+            var validated = expectedValidation?.Verified ?? false;
+            var phone = expectedValidation!.Value ?? string.Empty;
             if (validated)
             {
                 return new ValidatePhoneResponse
                 {
-                    PhoneVerifyState = expectedValidation
+                    PhoneVerifyState = expectedValidation!
                 };
             }
 
-            if (command.Code.ToLower() == expectedCode.ToLower()
-                && expiry.Value > DateTime.UtcNow)
+            _logger.LogInformation("Phone not yet verified. Checking Twilio for verification...");
+            var twilioVerified = await _twilioSmsProvider.CheckVerification(phone, command.Code);
+            _logger.LogInformation($"Phone: {phone}. Code: {command.Code}. Verified? {twilioVerified}");
+
+            // Only update if newly verified
+            if (twilioVerified)
             {
                 var verified = new VerifiedDto
                 {
+                    Value = phone,
                     Verified = true,
                     VerificationCode = null,
                     VerificationCodeExpiration = null
@@ -166,6 +180,36 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
                     PhoneVerifyState = verified
                 };
             }
+
+            // var expectedCode = expectedValidation?.VerificationCode?.ToString() ?? null;
+            // var expiry = expectedValidation?.VerificationCodeExpiration ?? null;
+            //
+            // if (expectedValidation == null
+            //     || expectedCode == null 
+            //     || expiry == null
+            //     || expiry.Value < DateTime.UtcNow)
+            // {
+            //     throw new ValidationException($"Bad validation state.");
+            // }
+
+            // if (command.Code.ToLower() == expectedCode.ToLower()
+            //     && expiry.Value > DateTime.UtcNow)
+            // {
+            //     var verified = new VerifiedDto
+            //     {
+            //         Verified = true,
+            //         VerificationCode = null,
+            //         VerificationCodeExpiration = null
+            //     };
+            //     existingGuestEntity.Phone = verified.ToString();
+            //
+            //     await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
+            //
+            //     return new ValidatePhoneResponse
+            //     {
+            //         PhoneVerifyState = verified
+            //     };
+            // }
 
             throw new ValidationException("Invalid verification code.");
         }
