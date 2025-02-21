@@ -1,4 +1,4 @@
-import {familyState, familyGuestsStates, guestSelector, useUpdateFamilyGuest} from './index';
+import {familyState, guestSelector, useUpdateFamilyGuest} from './index';
 import {mockFamilyUnitDto} from "../../../test-utils/mockResponses";
 import {RecoilRoot, RecoilState, snapshot_UNSTABLE} from "recoil";
 import {useEffect} from "react";
@@ -15,14 +15,6 @@ describe('familyGuestsStates selector', () => {
     });
 
     // Evaluate the selector in that snapshot.
-    const loadable = testSnapshot.getLoadable(familyGuestsStates);
-    const familyGuests = loadable.valueOrThrow();
-
-    // Now you can assert whatever you want about the resulting value:
-    expect(familyGuests!.guests.length).toEqual(2);
-    expect(familyGuests!.nobodyComing).toEqual(false);
-    expect(familyGuests!.callByLastNames).toEqual('Stublers & Sikorras');
-    expect(familyGuests!.attendingLastNames).toEqual(['Stubler']);
   });
 });
 

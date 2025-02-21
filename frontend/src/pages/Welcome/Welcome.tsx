@@ -8,7 +8,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Countdowns from '@/components/Countdowns';
 import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
-import { familyGuestsStates, useFamily } from '@/store/family';
+import { useFamily } from '@/store/family';
 import WelcomePageStepper from '@/components/VerticalStepper/WelcomePageStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
@@ -16,7 +16,6 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 const Welcome = () => {
   const { contentHeight } = useAppLayout();
   const [user, _] = useUser();
-  const familyStates = useRecoilValue(familyGuestsStates);
   const [family, familyActions] = useFamily();
   const [stepperHeight, setStepperHeight] = React.useState(0);
   const { user: auth0User } = useAuth0();

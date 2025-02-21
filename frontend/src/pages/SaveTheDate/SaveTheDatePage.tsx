@@ -1,16 +1,8 @@
-import Typography from '@mui/material/Typography';
-
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
-import { GuestDto, InvitationResponseEnum } from '@/types/api';
-import AttendanceButton from '@/components/AttendanceButton';
 import { styled } from '@mui/material/styles';
-import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
-import { familyGuestsStates, useFamily } from '@/store/family';
-import { useRecoilValue } from 'recoil';
-import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
-import React from 'react';
-import Countdowns from '@/components/Countdowns';
+import { useFamily } from '@/store/family';
+import React, { useEffect } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/VerticalStepper/SaveTheDateStepper';
@@ -19,25 +11,24 @@ function SaveTheDatePage() {
   // const { matchingUsers, allLastNames, lastNames, nobodyComing } = useInvitation();
   const [family, familyActions] = useFamily();
   const { user: auth0User } = useAuth0();
-  const saveTheDateGuestStates = useRecoilValue(familyGuestsStates);
   const { getFamilyUnitQuery } = familyActions;
 
-  if (!saveTheDateGuestStates && getFamilyUnitQuery.isPending) {
-    familyActions.getFamily();
-    return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
-  }
+  useEffect(() => {
+    if (!getFamilyUnitQuery.isPending) {
+      familyActions.getFamily();
+      // return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
+    }
 
-  if (!saveTheDateGuestStates && getFamilyUnitQuery.isError) {
-    return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
-  }
+    // if (getFamilyUnitQuery.isError) {
+    //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
+    // }
+  }, []);
 
-  if (!saveTheDateGuestStates) {
-    return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
-  }
+
 
   return (
     <Box display="flex" flexDirection="column" justifyContent="" pb={10} border={'0px dashed yellow'} pt={2}>
-      {(!saveTheDateGuestStates?.guests || !saveTheDateGuestStates?.guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
+      {(!family?.guests || !family?.guests.length) && <div onClick={() => familyActions.getFamily()}>No guests found</div>}
       <SaveTheDateStepper />
       <Box position='absolute' bottom={0} left={0} right={0} sx={{
         backgroundImage: `url(${ElPulpo})`,

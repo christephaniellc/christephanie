@@ -59,7 +59,7 @@ export const Countdowns = ({ event = 'Wedding', interested, guestId }: {
          ref={centerTreesWidthRef}>
       {event === 'Invitation' && <Typography>{daysUntilMessage}</Typography> || (
         <>
-          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center" justifyContent='center' flexWrap={'wrap'}>
+          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center" justifyContent='center' flexWrap='wrap'>
             <Typography mx="auto" variant="h3" fontSize={rem(18)} textAlign="center" width='100%'>
               July 5, 2025
             </Typography>

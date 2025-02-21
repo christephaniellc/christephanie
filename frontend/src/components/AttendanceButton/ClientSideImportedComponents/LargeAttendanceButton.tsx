@@ -18,7 +18,6 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
   //todo: move this to a hook
   const { user } = useAuth0();
   const guest = useRecoilValue(guestSelector(guestId));
-  const interested = useMemo(() => guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending, [guest]);
   return (
     <Box height='100%' display="flex" flexWrap="wrap" id={`large-attendance-button-${guest.firstName}`}>
       <Box display="flex" width="100%" id={`wedding-attendance-radios-${guestId}`} justifyContent="center">
@@ -27,17 +26,17 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
       {/*<Box id="spacer" height={20} border={'1px dashed white'}/>*/}
       <Box
         mb={1}
-        mx={interested === 'Interested' ? 'auto' : 0}
+        mx={guest.rsvp.invitationResponse === 'Interested' ? 'auto' : 0}
       >
-        <StickFigureIcon hidden={interested === 'Declined'}
-                         fontSize={interested === 'Interested' && 'large' || 'medium'}
+        <StickFigureIcon hidden={guest.rsvp.invitationResponse === 'Declined'}
+                         fontSize={guest.rsvp.invitationResponse === 'Interested' && 'large' || 'medium'}
                          loading={isPending}
                          ageGroup={guest?.ageGroup}
         />
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
       <Typography variant="h6" sx={{ mx: 'auto' }} width='100%'>
-        {guest?.auth0Id === user?.sub ? `You${interested === 'Pending' ? `, Maybe.` : ""}` : guest?.firstName}
+        {guest?.auth0Id === user?.sub ? `You${guest.rsvp.invitationResponse === 'Pending' ? `, Maybe.` : ""}` : guest?.firstName}
       </Typography>
     </Box>
   );

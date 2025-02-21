@@ -7,7 +7,6 @@ import StepContent from '@mui/material/StepContent';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { familyGuestsStates } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
@@ -60,23 +59,15 @@ const steps: { [step: string]: Step } = {
 
 export default function WelcomePageStepper() {
   const [activeStep, setActiveStep] = React.useState(0);
-  const familyStates = useRecoilValue(familyGuestsStates);
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const navigate = useNavigate();
   const handleNext = useCallback((step: Step) => {
-    if (!familyStates?.allUsersResponded) {
-      navigate(`${step.stepUrl}?step=attendance`);
-    } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      navigate(`${step.stepUrl}?step=mailingAddress`);
-    } else if (familyStates.nobodyComing) {
-      console.log('find a way to disable this button');
-    } else {
-      // Go to the next tab if possible
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    }
+    // Go to the next tab if possible
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+
     // return setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  }, [rsvpSteps, activeStep, familyStates]);
+  }, [rsvpSteps, activeStep]);
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -87,30 +78,20 @@ export default function WelcomePageStepper() {
   };
 
   const continueText = () => {
-    if (!familyStates?.allUsersResponded) {
-      return 'Let us know if you\'re interested';
-    } else if (familyStates.nobodyComing) {
-      return 'Let us know if you change your mind';
-    } else if (!familyStates?.mailingAddressEntered || !familyStates?.mailingAddressUspsVerified) {
-      return 'Finish entering your address';
-    }
     return 'RSVP';
   };
 
   useEffect(() => {
     setRsvpSteps((prev) => {
       const newSteps = { ...prev };
-      if (familyStates?.allUsersResponded && familyStates?.mailingAddressEntered && familyStates?.mailingAddressUspsVerified) {
-        newSteps.saveTheDate.stepCompleted = true;
-      } else {
-        newSteps.saveTheDate.stepCompleted = false;
-      }
+
+      newSteps.saveTheDate.stepCompleted = false;
       return newSteps;
     });
-  }, [familyStates]);
+  }, []);
 
   return (
-    <Box width='100%' minWidth={330}>
+    <Box width="100%" minWidth={330}>
       <Stepper activeStep={activeStep} orientation="vertical" sx={{ pl: 2 }}>
         {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
@@ -137,7 +118,7 @@ export default function WelcomePageStepper() {
                   <Button
                     disabled={!step.stepCompleted}
                     onClick={() => {
-                      step.id === 0 && step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset()
+                      step.id === 0 && step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset();
                     }}
                     sx={{ mt: 1, mr: 1 }}
                   >

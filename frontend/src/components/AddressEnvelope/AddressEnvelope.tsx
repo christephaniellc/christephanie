@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Box, FormGroup, TextField, Typography, useTheme } from '@mui/material';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { familyGuestsStates, useFamily } from '@/store/family';
+import { useFamily } from '@/store/family';
 import {
   addressState,
   cityAddressState,
@@ -13,7 +13,6 @@ import Button from '@mui/material/Button';
 
 const AddressEnvelope: React.FC = () => {
   const [familyUnit, familyActions] = useFamily();
-  const { callByLastNames } = useRecoilValue(familyGuestsStates);
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
   const setSecondaryAddress = useSetRecoilState(secondaryAddressState);
@@ -75,7 +74,7 @@ const AddressEnvelope: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-          The {callByLastNames}
+          {/*The {callByLastNames}*/}
         </Typography>
         <Box
           component={FormGroup}
@@ -142,7 +141,7 @@ const AddressEnvelope: React.FC = () => {
             {saveAddressState === 'idle' && 'Save'}
             {saveAddressState === 'pending' && 'Saving...'}
             {saveAddressState === 'success' && 'Saved'}
-            {saveAddressState === 'error' && familyActions.validateFamilyAddress.error.description}
+            {saveAddressState === 'error' && 'Please enter a valid address'}
           </Button>
         </Box>
       </Box>
