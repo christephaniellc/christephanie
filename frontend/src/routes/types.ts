@@ -8,7 +8,9 @@ enum Pages {
   SaveTheDate,
   Profile,
   FoodPreferences,
-  NotFound,
+  PrivacyPolicy,
+  TermsOfService,
+  NotFound
 }
 
 type PathRouteCustomProps = {
