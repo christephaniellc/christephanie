@@ -20,6 +20,7 @@ namespace Wedding.Common.Helpers.AWS
         {
             { typeof(Auth0Configuration), "/config/auth0/properties" },
             { typeof(UspsConfiguration), "/config/usps/api-credentials" },
+            { typeof(TwilioSmsConfiguration), "/config/twilio/api-credentials" },
         };
 
         public static async Task<T> GetConfigAsync<T>(int? cacheDurationInSeconds = null, bool forceRefresh = false)

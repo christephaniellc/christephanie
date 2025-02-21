@@ -6,11 +6,15 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.SimpleSystemsManagement.Model;
 using AutoMapper;
+using FluentAssertions.Common;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
+using Wedding.Common.Configuration;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
+using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Validate.Phone.Commands;
 using Wedding.Lambdas.Validate.Phone.Handlers;
 using Wedding.Lambdas.Validate.Phone.Requests;
@@ -38,6 +42,18 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<PhoneValidationHandler>();
+
+        //serviceCollection.AddScoped<IAwsSmsHelper, AwsSmsHelper>();
+
+        serviceCollection.AddSingleton<Lazy<Task<ITwilioSmsProvider>>>(sp =>
+        {
+            return new Lazy<Task<ITwilioSmsProvider>>(async () =>
+            {
+                var logger = sp.GetRequiredService<ILogger<TwilioSmsProvider>>();
+                var config = await AwsParameterCache.GetConfigAsync<TwilioSmsConfiguration>();
+                return new TwilioSmsProvider(logger, config);
+            });
+        });
 
         return serviceCollection.BuildServiceProvider();
     }
