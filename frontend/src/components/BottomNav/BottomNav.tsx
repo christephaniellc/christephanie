@@ -1,35 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
+import ShieldIcon from '@mui/icons-material/Security';
+import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
-import ThemeIcon from '@mui/icons-material/InvertColors';
-import useTheme from '@/store/theme';
-import { Themes } from '@/theme/types';
-import { Link } from 'react-router-dom';
-import { userState } from '@/store/user';
-import { useAuth0Queries } from '@/hooks/useAuth0Queries';
+import { Link, useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
 
 export const BottomNav = () => {
-  useRecoilValue(userState);
   const [navValue, setNavValue] = useState();
-  const { user: auth0User, loginWithRedirect  } = useAuth0();
-  const { logOutFromAuth0 } = useAuth0Queries();
-  const [themes, themeActions] = useTheme();
+  const { user: auth0User, loginWithRedirect } = useAuth0();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigate = useNavigate();
+
+  // Debounce function to prevent rapid clicks
+  const debounce = (func: () => void, delay: number) => {
+    let timer: NodeJS.Timeout;
+    return () => {
+      clearTimeout(timer);
+      timer = setTimeout(func, delay);
+    };
+  };
+
+  const handleNavigation = (path: string) => {
+    if (isNavigating) return; // Prevent rapid clicks
+    setIsNavigating(true);
+    navigate(path);
+
+    // Reset navigation lock after 500ms
+    setTimeout(() => setIsNavigating(false), 500);
+  };
 
   return (
     <Box position="fixed" bottom={0} width="100%">
       <BottomNavigation
         value={navValue}
-        onChange={(event, newValue) => {
-          setNavValue(newValue);
-        }}
+        onChange={(event, newValue) => setNavValue(newValue)}
       >
-        <BottomNavigationAction // Routes
+        <BottomNavigationAction
           label="Home"
           component={Link}
           showLabel={true}
@@ -44,15 +57,26 @@ export const BottomNav = () => {
           to={routes[Pages.SaveTheDate].path!}
           icon={<ConnectWithoutContactIcon />}
         />
-
-        <BottomNavigationAction // Actions
+        <BottomNavigationAction
+          disabled={!auth0User}
+          label="Privacy Policy"
+          showLabel={true}
+          icon={<ShieldIcon />}
+          onClick={() => handleNavigation(routes[Pages.PrivacyPolicy].path!)}
+        />
+        <BottomNavigationAction
+          disabled={!auth0User}
+          label="Terms of Service"
+          showLabel={true}
+          icon={<GavelIcon />}
+          onClick={() => handleNavigation(routes[Pages.TermsOfService].path!)}
+        />
+        <BottomNavigationAction
           label={auth0User ? 'Logout' : 'Login'}
           sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
-          onClick={() => (
-            auth0User ? logOutFromAuth0() : loginWithRedirect()
-          )}
+          onClick={() => (auth0User ? logout() : loginWithRedirect())}
         />
       </BottomNavigation>
     </Box>
