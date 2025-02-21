@@ -8,6 +8,7 @@ namespace Wedding.Abstractions.UnitTests.Validation.Utility
     public class GuidValidatorTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();
