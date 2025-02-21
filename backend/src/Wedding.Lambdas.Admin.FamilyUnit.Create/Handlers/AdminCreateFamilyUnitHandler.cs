@@ -46,7 +46,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
 
                     familyUnit.InvitationCode = familyUnit.InvitationCode.ToUpper();
 
-                    if (familyUnit!.Guests != null || !familyUnit.Guests!.Any())
+                    if (familyUnit!.Guests == null || !familyUnit.Guests!.Any())
                     {
                         throw new Exception($"No guests in family unit '{familyUnit!.InvitationCode}' found.");
                     }
