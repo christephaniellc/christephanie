@@ -49,10 +49,10 @@ export default function BetterTextField() {
   // Styled MUI BaseTextareaAutosize
 
   useEffect(() => {
-    familyActions.updateFamilyMutation.reset();
+    familyActions.patchFamilyMutation.reset();
   }, [comment]);
 
-  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> = familyActions.updateFamilyMutation
+  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> = familyActions.patchFamilyMutation
   // Handler to invoke the query
   const handleSend = () => {
     // Clear any previous data if you wish, or handle it differently

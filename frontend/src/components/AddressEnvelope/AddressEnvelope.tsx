@@ -45,9 +45,9 @@ const AddressEnvelope: React.FC = () => {
 
   const saveAddressState = useMemo(() => {
     return familyActions.validateFamilyAddress.status;
-  }, [familyActions.updateFamilyMutation]);
+  }, [familyActions.patchFamilyMutation]);
 
-  const disabled = useMemo(() => familyActions.updateFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching || familyActions.validateFamilyAddress.status === 'pending', [familyActions.updateFamilyMutation.status, familyActions.getFamilyUnitQuery.isFetching, familyActions.validateFamilyAddress.status]);
+  const disabled = useMemo(() => familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching || familyActions.validateFamilyAddress.status === 'pending', [familyActions.patchFamilyMutation.status, familyActions.getFamilyUnitQuery.isFetching, familyActions.validateFamilyAddress.status]);
 
 
   return (

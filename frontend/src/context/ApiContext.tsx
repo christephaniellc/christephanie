@@ -12,7 +12,7 @@ interface ApiContextProps {
   findUserIdQuery: UseQueryResult<string | undefined, ApiError>;
   getMeQuery: UseQueryResult<GuestDto, ApiError>;
   getFamilyUnitQuery: UseQueryResult<FamilyUnitDto, ApiError>;
-  updateFamilyMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>;
+  patchFamilyMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>;
   patchFamilyGuestMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedGuest: Partial<GuestDto> }, unknown>;
   validateAddressMutation: UseMutationResult<AddressDto, ApiError, AddressDto, unknown>;
 }
@@ -72,15 +72,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['patchFamilyGuest', JSON.stringify(family)],
     mutationFn: ({ updatedGuest }: {updatedGuest: Partial<GuestDto>}) => apiRef.current.patchGuestDto(updatedGuest),
     onSuccess: data => {
-      console.log('patching family and guest');
-      const updatedGuests = family.guests.map((guest) => {
-        if (guest.guestId === data.guestId) {
-          return data;
-        }
-        return guest;
-      });
-      console.log('updatedGuests', updatedGuests);
-      setFamily({ ...family, guests: updatedGuests });
+      getFamilyUnitQuery.refetch();
     },
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
@@ -88,9 +80,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     },
   }) as UseMutationResult<FamilyUnitDto, ApiError, { updatedGuest: GuestDto }, unknown>;
 
-  const updateFamilyMutation = useMutation<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>({
+  const patchFamilyMutation = useMutation<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>({
     mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
-    mutationFn: ({ updatedFamily }: {updatedFamily: FamilyUnitDto}) => apiRef.current.updateFamilyUnit(updatedFamily),
+    mutationFn: ({ updatedFamily }: {updatedFamily: Partial<FamilyUnitDto>}) => apiRef.current.patchFamilyUnit(updatedFamily),
     onSuccess: data => setFamily(data),
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
@@ -102,13 +94,13 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
     mutationFn: (newAddress: AddressDto) => apiRef.current!.validateAddress(newAddress),
     onSuccess: data => {
-      updateFamilyMutation.mutate({ updatedFamily: { ...family, mailingAddress: { ...data, uspsVerified: true } } });
+      patchFamilyMutation.mutate({ updatedFamily: { mailingAddress: { ...data, uspsVerified: true } } });
     },
     onError: (error) => console.error('Failed to validate address', error),
   });
 
   return (
-    <ApiContext.Provider value={{ findUserIdQuery, getMeQuery, validateAddressMutation, getFamilyUnitQuery, updateFamilyMutation, patchFamilyGuestMutation }}>
+    <ApiContext.Provider value={{ findUserIdQuery, getMeQuery, validateAddressMutation, getFamilyUnitQuery, patchFamilyMutation, patchFamilyGuestMutation }}>
       {props.children}
     </ApiContext.Provider>
   );

@@ -38,7 +38,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       <ButtonGroup variant="outlined" size="small" color="secondary">
         {contactPreferences.map((value) => (
           <Button
-            disabled={familyActions.updateFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
+            disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
             onClick={() => handleUpdateCommunicationPreference(NotificationPreferenceEnum[value])}
             variant={(guest?.preferences?.notificationPreference?.includes(NotificationPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
             key={value}
