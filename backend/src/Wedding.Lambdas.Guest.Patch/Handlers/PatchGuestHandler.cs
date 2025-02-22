@@ -3,14 +3,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Lambdas.FamilyUnit.Patch.Validation;
 using Wedding.Lambdas.Guest.Patch.Commands;
+using Wedding.Lambdas.Guest.Patch.Validation;
 
 namespace Wedding.Lambdas.Guest.Patch.Handlers
 {
@@ -46,33 +45,24 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
 
             _logger.LogInformation($"Serialized existing guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            if (command.Auth0Id != null)
-            {
-                _logger.LogInformation($"Updating Auth0Id from '{existingGuestEntity.Auth0Id ?? "<empty>"}' to '{command.Auth0Id}'");
-                existingGuestEntity.AgeGroup = command.AgeGroup;
-            }
-
             if (command.AgeGroup != null)
             {
                 _logger.LogInformation($"Updating age group from '{existingGuestEntity.AgeGroup}' to '{command.AgeGroup}'");
                 existingGuestEntity.AgeGroup = command.AgeGroup;
             }
 
-            if (command.Rsvp != null)
+            if (command.Auth0Id != null)
             {
-                _logger.LogInformation($"Updating guest.Rsvp.InvitationResponse from '{existingGuestEntity.InvitationResponse}' to '{command.Rsvp.InvitationResponse}'");
-                existingGuestEntity.InvitationResponse = command.Rsvp.InvitationResponse;
+                _logger.LogInformation($"Updating Auth0Id from '{existingGuestEntity.Auth0Id ?? "<empty>"}' to '{command.Auth0Id}'");
+                existingGuestEntity.AgeGroup = command.AgeGroup;
+            }
 
-                _logger.LogInformation($"Updating guest.Rsvp.Wedding from '{existingGuestEntity.RsvpWedding}' to '{command.Rsvp.Wedding}'");
-                existingGuestEntity.RsvpWedding = command.Rsvp.Wedding;
+            if (command.InvitationResponse != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.InvitationResponse from '{existingGuestEntity.InvitationResponse}' to '{command.InvitationResponse}'");
+                existingGuestEntity.InvitationResponse = command.InvitationResponse.Value;
 
-                _logger.LogInformation($"Updating guest.Rsvp.RehearsalDinner from '{existingGuestEntity.RsvpRehearsalDinner}' to '{command.Rsvp.RehearsalDinner}'");
-                existingGuestEntity.RsvpRehearsalDinner = command.Rsvp.RehearsalDinner;
-
-                _logger.LogInformation($"Updating guest.Rsvp.FourthOfJuly from '{existingGuestEntity.RsvpFourthOfJuly}' to '{command.Rsvp.FourthOfJuly}'");
-                existingGuestEntity.RsvpFourthOfJuly = command.Rsvp.FourthOfJuly;
-
-                if (command.Rsvp.InvitationResponse != InvitationResponseEnum.Pending)
+                if (command.InvitationResponse != InvitationResponseEnum.Pending)
                 {
                     _logger.LogInformation($"Invitation Response audit, command.AuthContext.Name: {command.AuthContext.Name ?? "<unknown>"}");
                     existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
@@ -81,8 +71,14 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
                         Username = command.AuthContext.Name ?? "unknown"
                     }.ToString();
                 }
+            }
 
-                if (command.Rsvp.Wedding != RsvpEnum.Pending)
+            if (command.Wedding != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.Wedding from '{existingGuestEntity.RsvpWedding}' to '{command.Wedding}'");
+                existingGuestEntity.RsvpWedding = command.Wedding.Value;
+
+                if (command.Wedding != RsvpEnum.Pending)
                 {
                     _logger.LogInformation($"RSVP Response audit, command.AuthContext.Name: {command.AuthContext.Name ?? "<unknown>"}");
                     existingGuestEntity.RsvpAudit = new LastUpdateAuditDto
@@ -91,47 +87,68 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
                         Username = command.AuthContext.Name ?? "unknown"
                     }.ToString();
                 }
-
-                if (command.Rsvp.RsvpNotes != null)
-                {
-                    _logger.LogInformation($"Updating guest.Rsvp.RsvpNotes from '{existingGuestEntity.RsvpNotes ?? "<empty>"}' to '{command.Rsvp.RsvpNotes}'");
-                    existingGuestEntity.RsvpNotes = command.Rsvp.RsvpNotes;
-                }
             }
 
-            if (command.Preferences != null)
+            if (command.RehearsalDinner != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.RehearsalDinner from '{existingGuestEntity.RsvpRehearsalDinner}' to '{command.RehearsalDinner}'");
+                existingGuestEntity.RsvpRehearsalDinner = command.RehearsalDinner;
+            }
+
+            if (command.FourthOfJuly != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.FourthOfJuly from '{existingGuestEntity.RsvpFourthOfJuly}' to '{command.FourthOfJuly}'");
+                existingGuestEntity.RsvpFourthOfJuly = command.FourthOfJuly;
+            }
+
+            if (command.RsvpNotes != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.RsvpNotes from '{existingGuestEntity.RsvpNotes ?? "<empty>"}' to '{command.RsvpNotes}'");
+                existingGuestEntity.RsvpNotes = command.RsvpNotes;
+            }
+
+            if (command.NotificationPreference != null)
             {
                 var previousNotificationPreferences = existingGuestEntity.PrefNotification == null
                     ? "<none>"
                     : JsonSerializer.Serialize(existingGuestEntity.PrefNotification);
-                _logger.LogInformation($"Updating guest.Preferences.Notification from '{previousNotificationPreferences}' to '{JsonSerializer.Serialize(command.Preferences.NotificationPreference)}'");
-                existingGuestEntity.PrefNotification = command.Preferences.NotificationPreference;
+                _logger.LogInformation($"Updating guest.Preferences.Notification from '{previousNotificationPreferences}' to '{JsonSerializer.Serialize(command.NotificationPreference)}'");
+                existingGuestEntity.PrefNotification = command.NotificationPreference;
+            }
 
+            if (command.SleepPreference != null)
+            {
                 var previousPrefSleep = existingGuestEntity.PrefSleep == null
                     ? "<none>"
                     : existingGuestEntity.PrefSleep.ToString();
-                _logger.LogInformation($"Updating guest.Preferences.Sleep from '{previousPrefSleep}' to '{command.Preferences.SleepPreference.ToString()}'");
-                existingGuestEntity.PrefSleep = command.Preferences.SleepPreference;
+                _logger.LogInformation($"Updating guest.Preferences.Sleep from '{previousPrefSleep}' to '{command.SleepPreference.ToString()}'");
+                existingGuestEntity.PrefSleep = command.SleepPreference;
+            }
 
+            if (command.SleepPreference != null)
+            {
                 var previousPrefFood = existingGuestEntity.PrefFood == null
                     ? "<none>"
                     : existingGuestEntity.PrefFood.ToString();
-                _logger.LogInformation($"Updating guest.Preferences.Food from '{previousPrefFood}' to '{command.Preferences.FoodPreference.ToString()}'");
-                existingGuestEntity.PrefFood = command.Preferences.FoodPreference;
+                _logger.LogInformation($"Updating guest.Preferences.Food from '{previousPrefFood}' to '{command.FoodPreference.ToString()}'");
+                existingGuestEntity.PrefFood = command.FoodPreference;
+            }
 
+            if (command.FoodAllergies != null)
+            {
                 var previousPrefFoodAllergies = existingGuestEntity.PrefFoodAllergies == null
                     ? "<none>"
                     : JsonSerializer.Serialize(existingGuestEntity.PrefFoodAllergies);
-                _logger.LogInformation($"Updating guest.Preferences.FoolAllergies from '{previousPrefFoodAllergies}' to '{JsonSerializer.Serialize(command.Preferences.FoodAllergies)}'");
-                existingGuestEntity.PrefFoodAllergies = command.Preferences.FoodAllergies;
+                _logger.LogInformation($"Updating guest.Preferences.FoolAllergies from '{previousPrefFoodAllergies}' to '{JsonSerializer.Serialize(command.FoodAllergies)}'");
+                existingGuestEntity.PrefFoodAllergies = command.FoodAllergies;
             }
 
             if (command.Email != null)
             {
                 var currentEmail = _mapper.Map<VerifiedDto>(existingGuestEntity.Email);
-                if (currentEmail.Value != command.Email)
+                if (currentEmail == null || currentEmail.Value != command.Email)
                 {
-                    _logger.LogInformation($"Updating guest.Email from '{currentEmail.Value ?? "<empty>"}, verified: {currentEmail.Verified}' to '{command.Email}'");
+                    _logger.LogInformation($"Updating guest.Email from '{currentEmail?.Value ?? "<empty>"}, verified: {currentEmail?.Verified}' to '{command.Email}'");
                     existingGuestEntity.Email = new VerifiedDto
                     {
                         Value = command.Email,
@@ -143,9 +160,9 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
             if (command.Phone != null)
             {
                 var currentPhone = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
-                if (currentPhone.Value != command.Phone)
+                if (currentPhone == null || currentPhone.Value != command.Phone)
                 {
-                    _logger.LogInformation($"Updating guest.Phone from '{currentPhone.Value ?? "<empty>"}, verified: {currentPhone.Verified}' to '{command.Phone}'");
+                    _logger.LogInformation($"Updating guest.Phone from '{currentPhone?.Value ?? "<empty>"}, verified: {currentPhone?.Verified}' to '{command.Phone}'");
                     existingGuestEntity.Phone = new VerifiedDto
                     {
                         Value = command.Phone,
