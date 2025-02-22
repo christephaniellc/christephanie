@@ -9,9 +9,9 @@ using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
 using Wedding.Common.Helpers;
 using Wedding.Lambdas.Authorize.Commands;
-using Wedding.Lambdas.FamilyUnit.Patch.Validation;
 using Wedding.Lambdas.Guest.Patch.Commands;
 using Wedding.Lambdas.Guest.Patch.Requests;
+using Wedding.Lambdas.Guest.Patch.Validation;
 using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Controllers
@@ -46,14 +46,23 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
-            var command = new PatchGuestCommand(authContext,
-                authContext.GuestId,
+            var command = new PatchGuestCommand(
+                authContext,
+                patchRequest.GuestId,
+                patchRequest.AgeGroup,
                 patchRequest.Auth0Id,
                 patchRequest.Email,
                 patchRequest.Phone,
-                patchRequest.Rsvp,
-                patchRequest.Preferences,
-                patchRequest.AgeGroup);
+                patchRequest.InvitationResponse,
+                patchRequest.RehearsalDinner,
+                patchRequest.FourthOfJuly,
+                patchRequest.Wedding,
+                patchRequest.RsvpNotes,
+                patchRequest.NotificationPreference,
+                patchRequest.SleepPreference,
+                patchRequest.FoodPreference,
+                patchRequest.FoodAllergies
+            );
             command.Validate();
             var result = await _dispatcher.ExecuteAsync<PatchGuestCommand, GuestDto>(command, cancellationToken);
 
