@@ -14,6 +14,7 @@ using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Guest.Patch.Commands;
 using Wedding.Lambdas.Guest.Patch.Handlers;
 using Wedding.Lambdas.Guest.Patch.Requests;
+using Wedding.Lambdas.Guest.Patch.Validation;
 
 namespace Wedding.Lambdas.Guest.Patch;
 
@@ -67,16 +68,26 @@ public class Function
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
+            
+            patchRequest!.Validate(nameof(patchRequest));
 
             var command = new PatchGuestCommand(
                 authContext, 
-                patchRequest.GuestId, 
+                patchRequest.GuestId,
+                patchRequest.AgeGroup, 
                 patchRequest.Auth0Id, 
                 patchRequest.Email, 
                 patchRequest.Phone, 
-                patchRequest.Rsvp, 
-                patchRequest.Preferences, 
-                patchRequest.AgeGroup);
+                patchRequest.InvitationResponse,
+                patchRequest.RehearsalDinner,
+                patchRequest.FourthOfJuly,
+                patchRequest.Wedding,
+                patchRequest.RsvpNotes,
+                patchRequest.NotificationPreference,
+                patchRequest.SleepPreference,
+                patchRequest.FoodPreference,
+                patchRequest.FoodAllergies
+                );
 
             if (string.IsNullOrEmpty(command.GuestId))
             {

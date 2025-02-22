@@ -1243,6 +1243,9 @@
             "type": "string",
             "nullable": true
           },
+          "ageGroup": {
+            "$ref": "#/components/schemas/AgeGroupEnum"
+          },
           "auth0Id": {
             "type": "string",
             "nullable": true
@@ -1255,14 +1258,41 @@
             "type": "string",
             "nullable": true
           },
-          "rsvp": {
-            "$ref": "#/components/schemas/RsvpDto"
+          "invitationResponse": {
+            "$ref": "#/components/schemas/InvitationResponseEnum"
           },
-          "preferences": {
-            "$ref": "#/components/schemas/PreferencesDto"
+          "rehearsalDinner": {
+            "$ref": "#/components/schemas/RsvpEnum"
           },
-          "ageGroup": {
-            "$ref": "#/components/schemas/AgeGroupEnum"
+          "fourthOfJuly": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "wedding": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "rsvpNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "notificationPreference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationPreferenceEnum"
+            },
+            "nullable": true
+          },
+          "sleepPreference": {
+            "$ref": "#/components/schemas/SleepPreferenceEnum"
+          },
+          "foodPreference": {
+            "$ref": "#/components/schemas/FoodPreferenceEnum"
+          },
+          "foodAllergies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
