@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
@@ -81,7 +82,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Patch
 
             var mutableDto = TestDataHelper.GUEST_JOHN;
 
-            var command = new PatchGuestCommand(_fakeAuthContext!, guestId, Email: newEmail);
+            var command = new PatchGuestCommand(_fakeAuthContext!, guestId, Email: newEmail, Wedding: RsvpEnum.Attending);
 
             _mockDynamoDbProvider!
                 .Setup(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, invitationCode, guestId, It.IsAny<CancellationToken>()))
@@ -107,6 +108,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Patch
             result.InvitationCode.Should().Be(invitationCode);
             result.Email!.Value.Should().Be(newEmail);
             result.Email.Verified.Should().Be(false);
+            result.Rsvp!.Wedding.Should().Be(RsvpEnum.Attending);
 
             _mockDynamoDbProvider.Verify(x => x.SaveAsync(_testTokenHelper!.JwtAudience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Once);
             _mockDynamoDbProvider.Verify(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, invitationCode, guestId, It.IsAny<CancellationToken>()), Times.Exactly(2));
