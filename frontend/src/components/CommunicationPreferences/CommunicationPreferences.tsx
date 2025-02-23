@@ -33,9 +33,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     }
   }
   return (
-    <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap" mb={2}>
-      <Typography variant="h5" width="100%" mb={2}>{`${guest?.firstName}`}</Typography>
-      <ButtonGroup variant="outlined" size="small" color="secondary">
+    <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap">
+      <ButtonGroup variant="outlined" size="small" color="secondary" orientation='vertical' sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)' }}>
         {contactPreferences.map((value) => (
           <Button
             disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}

@@ -11,7 +11,13 @@ import SetMealIcon from '@mui/icons-material/SetMeal';      // fish
 import LunchDiningIcon from '@mui/icons-material/LunchDining'; // shellfish
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 
-export const seriousFoodAllergies = [
+export interface FoodAllergyIconProps {
+  allergyName: string;
+  icon: React.ElementType;
+  selected: boolean;
+}
+
+export const seriousFoodAllergies: FoodAllergyIconProps[] = [
   {
     allergyName: 'Peanuts',
     icon: RestaurantIcon,

@@ -4,7 +4,7 @@ import {
 } from 'recoil';
 import {
   AddressDto, AgeGroupEnum,
-  FamilyUnitDto,
+  FamilyUnitDto, FoodPreferenceEnum,
   GuestDto,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
@@ -151,6 +151,10 @@ export const useFamily = () => {
     patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, rsvp: { invitationResponse: interested } } });
   }, []);
 
+  const updateFamilyGuestFoodPreferences = useCallback((guestId: string, foodPreference: FoodPreferenceEnum) => {
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { foodPreference } } });
+  }, []);
+
   const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies: string[]) => {
     patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { foodAllergies: allergies } } });
   }, []);
@@ -191,11 +195,13 @@ export const useFamily = () => {
       updateFamilyGuestCommunicationPreference,
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestInterest,
+      updateFamilyGuestFoodPreferences,
       patchFamilyMutation: patchFamilyMutation,
       validateFamilyAddress: validateAddressMutation,
       patchFamilyGuestMutation,
     }),
-    [patchFamilyGuestMutation, updateFamilyGuestFoodAllergies, updateFamilyGuestSleepingPreference, updateFamilyGuestCommunicationPreference, getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, patchFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
+    [
+      updateFamilyGuestFoodPreferences, patchFamilyGuestMutation, updateFamilyGuestFoodAllergies, updateFamilyGuestSleepingPreference, updateFamilyGuestCommunicationPreference, getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, patchFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
 
   return [family, familyActions] as const;
 };

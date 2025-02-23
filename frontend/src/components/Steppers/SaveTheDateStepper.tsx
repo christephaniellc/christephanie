@@ -21,7 +21,7 @@ import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import StickFigureIcon from '@/components/StickFigureIcon';
-import { SaveTheDateStep, saveTheDateStepperState } from '@/store/steppers/steppers';
+import { SaveTheDateStep, saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
 import FoodAllergies from '@/components/FoodPreferences';
 import { userState } from '@/store/user';
@@ -30,15 +30,14 @@ import { useAuth0 } from '@auth0/auth0-react';
 import CampingPreferences from '@/components/CampingPreferences/CampingPreferences';
 
 export default function SaveTheDateStepper() {
-  const theme = useTheme();
-  const [family, familyActions] = useFamily();
   const navigate = useNavigate();
   const location = useLocation();
-  // Local state to track which "tab" (formerly "step") is active
-  const [tabIndex, setTabIndex] = React.useState(0);
+  const theme = useTheme();
+
+  const [family, familyActions] = useFamily();
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
-  const { user } = useAuth0();
-  const [saveTheDateStepper, setStepper] = useRecoilState(saveTheDateStepperState);
+  const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
+  const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
 
   const guests = useMemo(() => family.guests, [family.guests]);
 
@@ -46,109 +45,15 @@ export default function SaveTheDateStepper() {
     if (urlParams) {
       const step = urlParams.get('step');
       if (step) {
-        const index = Object.keys(saveTheDateStepper).indexOf(step);
+        const index = Object.keys(saveTheDateSteps).indexOf(step);
         setTabIndex(index);
       }
     }
-  }, [saveTheDateStepper, urlParams]);
+  }, [saveTheDateSteps, urlParams]);
 
   useEffect(() => {
     setUrlParams(new URLSearchParams(location.search));
   }, [location]);
-
-  // For a determinate progress bar, you can base the percentage on
-  // which tab is active vs. the total number of tabs.
-  // Example: if we have 2 steps, step 0 = 0%, step 1 = 50%, step 2 (if we had 3 steps) = 100%, etc.
-  useEffect(() => {
-    console.log('i am firing');
-    if (!saveTheDateStepper) return;
-    setStepper((prev: Record<string, SaveTheDateStep>) => {
-      return {
-        ...prev,
-        attendance: {
-          ...prev.attendance,
-          id: prev.attendance.id, // Ensure the id is included
-          completed: false,
-          label: 'Nobody is coming',
-          component: (
-            <Box textAlign="center">
-              <>
-                <Typography sx={{
-                  mb: 2,
-                  [theme.breakpoints.down('sm')]: {
-                    fontSize: 0,
-                  },
-                }}>
-                  {guests.length === 1 ? 'I' : 'We'} are excited to celebrate with you!
-                </Typography>
-                <Typography sx={{ mb: 2 }}>
-                  {guests.length === 1 ? 'I' : 'We'} hope you can make it!
-                </Typography>
-                <ButtonsContainer>
-                  {guests.map((guest: GuestDto) => (
-                    <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-                  ))}
-                </ButtonsContainer>
-              </>
-            </Box>
-          ),
-        },
-        mailingAddress: {
-          ...prev.mailingAddress,
-          id: prev.mailingAddress.id, // Ensure the id is included
-          label: family?.mailingAddress?.uspsVerified ? 'Address Confirmed' : 'Where should we send your invitation?',
-          completed: family?.mailingAddress?.uspsVerified || false,
-          component: (
-            <AddressEnvelope />
-          ),
-        },
-        foodAllergies: {
-          ...prev.foodAllergies,
-          id: prev.foodAllergies.id, // Ensure the id is included
-          completed: family.guests.every(guest => guest.preferences.foodAllergies.length),
-          label: 'Any food allergies?',
-          component: (
-            <>
-              {guests.map(guest => <div key={guest.guestId}><FoodAllergies guestId={guest.guestId} /></div>)}
-            </>
-          ),
-        },
-        camping: {
-          ...prev.camping,
-          id: prev.camping.id, // Ensure the id is included
-          completed: guests.some(guest => guest.preferences.sleepPreference !== 'Unknown'),
-          label: 'Accommodations',
-          description: '',
-          component: <Box>{guests.map(guest => <CampingPreferences key={guest.guestId}
-                                                                   guestId={guest.guestId} />)}</Box>,
-        },
-        communicationPreference: {
-          ...prev.communicationPreference,
-          id: prev.communicationPreference.id, // Ensure the id is included
-          completed: guests.some(guest => guest.preferences?.notificationPreference.length),
-          label: 'How should we contact you?',
-          description: '',
-          component: <Box>{guests.map(guest => <CommunicationPreferences key={guest.guestId}
-                                                                         guestId={guest.guestId} />)}</Box>,
-        },
-        comments: {
-          ...prev.comments,
-          id: prev.comments.id, // Ensure the id is included
-          completed: !!family.invitationResponseNotes,
-          label: 'Any comments?',
-          component: (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>Any comments for us?</Typography>
-              <MinHeightTextarea />
-            </Box>
-          ),
-        },
-      };
-    });
-  }, []);
-
-  // This determines how many tabs there are
-  const totalTabs = Object.values(saveTheDateStepper).length;
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
@@ -173,7 +78,7 @@ export default function SaveTheDateStepper() {
           sx={{ px: 2, width: '90vw' }}
           connector={<StyledConnector />
           }>
-          {Object.entries(saveTheDateStepper).map(([key, step]) => (
+          {Object.entries(saveTheDateSteps).map(([key, step]) => (
             <Step
               completed={step.completed}
               key={key}>
@@ -190,20 +95,7 @@ export default function SaveTheDateStepper() {
           ))}
         </Stepper>
       </Box>
-      <Box maxWidth={600} mx="auto" border={'0px solid blue'}>
-        <Box sx={{ p: 2 }}>
-          <Box>
-            {tabIndex < totalTabs && (
-              <>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {Object.values(saveTheDateStepper)[tabIndex]?.description}
-                </Typography>
-                {Object.values(saveTheDateStepper)[tabIndex]?.component}
-              </>
-            )}
-          </Box>
-        </Box>
-      </Box>
+
     </Box>
   );
 }
