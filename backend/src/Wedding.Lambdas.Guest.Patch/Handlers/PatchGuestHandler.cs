@@ -125,7 +125,7 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
                 existingGuestEntity.PrefSleep = command.SleepPreference;
             }
 
-            if (command.SleepPreference != null)
+            if (command.FoodPreference != null)
             {
                 var previousPrefFood = existingGuestEntity.PrefFood == null
                     ? "<none>"
