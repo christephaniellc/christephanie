@@ -63,6 +63,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     <Box
       data-testid={'attendance-button'}
       sx={{
+        px: 2,
         display: 'flex',
         flexWrap: 'no-wrap',
         height: 175,
@@ -107,7 +108,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         </Box>
 
       </Button>
-      <Box sx={{ overflowX: 'auto', my: 'auto', mx: 'auto' }}>
+      <Box sx={{ overflowX: 'auto', mx: 'auto' }}>
         {guest.rsvp.invitationResponse === InvitationResponseEnum.Interested && stdStepper.tabIndex < stdStepper.totalTabs && (
           CurrentComponent
         )}

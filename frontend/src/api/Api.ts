@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, GuestDto } from '@/types/api';
+import { AddressDto, FamilyUnitDto, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -29,7 +29,7 @@ export default class Api {
     return this.get('/familyunit');
   }
 
-  async patchFamilyUnit(familyUnit: Partial<FamilyUnitDto>): Promise<FamilyUnitDto> {
+  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
     return this.patch(`/familyunit`, familyUnit);
   }
 
@@ -41,7 +41,7 @@ export default class Api {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(GuestDto: Partial<GuestDto>): Promise<GuestDto> {
+  patchGuestDto(GuestDto: PatchGuestRequest): Promise<GuestDto> {
     return this.patch(`/guest`, GuestDto);
   }
 

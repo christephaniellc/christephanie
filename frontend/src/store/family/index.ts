@@ -140,23 +140,23 @@ export const useFamily = () => {
     }), []);
 
   const updateFamilyGuestSleepingPreference = useCallback((guestId: string, sleepPreference: SleepPreferenceEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId: guestId, preferences: { sleepPreference } } });
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId: guestId, sleepPreference } });
   }, []);
 
   const updateFamilyGuestCommunicationPreference = useCallback((guestId: string, notificationPreference: NotificationPreferenceEnum[]) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { notificationPreference } } });
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, notificationPreference } });
   }, []);
 
   const updateFamilyGuestInterest = useCallback((guestId: string, interested: InvitationResponseEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, rsvp: { invitationResponse: interested } } });
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, invitationResponse: interested } });
   }, []);
 
   const updateFamilyGuestFoodPreferences = useCallback((guestId: string, foodPreference: FoodPreferenceEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { foodPreference } } });
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodPreference } });
   }, []);
 
   const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies: string[]) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { foodAllergies: allergies } } });
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodAllergies: allergies } });
   }, []);
 
   const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup: AgeGroupEnum) => {
