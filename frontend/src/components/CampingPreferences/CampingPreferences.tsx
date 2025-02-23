@@ -22,16 +22,14 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
   };
 
   return (
-    <Box width="100%" mb={2}>
-      <Typography variant="h5" width="100%" mb={2}>{guest?.firstName}</Typography>
-      <Box width='100%' sx={{ overflow: 'auto' }}>
-        <ButtonGroup variant="outlined" size="small" color="secondary"
+    <Box width="100%" my='auto'>
+        <ButtonGroup variant="outlined" size="small" color="secondary" orientation='vertical'
                      sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)' }}>
-          {campingPreferences.map((value) => (
+          {campingPreferences.slice(1).map((value) => (
             <Button
               size="large"
               disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
-              sx={{ px: value === 'Unknown' ? 0 : 3, minWidth: value === 'Unknown' ? '0.5px !important' : 40 }}
+              sx={{ px: value === 'Unknown' ? 0 : 3 }}
               onClick={() => handleChangeSleepPreference(SleepPreferenceEnum[value])}
               variant={(guest?.preferences?.sleepPreference?.includes(SleepPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
               key={value}
@@ -40,7 +38,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
             >
               <Box>
                 <Box display={'flex'} alignItems={'center'} flexWrap="wrap">
-                  <Typography height={80} alignContent={'center'} width="100%" fontWeight={'bold'}>
+                  <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
                     {value === 'Unknown' ? '' : value}
                   </Typography>
                 </Box>
@@ -48,7 +46,6 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
             </Button>
           ))}
         </ButtonGroup>
-      </Box>
     </Box>
   );
 };

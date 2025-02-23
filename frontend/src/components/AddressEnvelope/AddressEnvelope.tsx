@@ -11,7 +11,7 @@ import {
 } from '@/store/address';
 import Button from '@mui/material/Button';
 
-const AddressEnvelope: React.FC = () => {
+const AddressEnvelope: React.FC = ({guestId}: {guestId: string}) => {
   const [familyUnit, familyActions] = useFamily();
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
@@ -58,7 +58,6 @@ const AddressEnvelope: React.FC = () => {
           width: '100%',
           maxWidth: '400px',
           height: '350px',
-          // backgroundColor: "#ffffff",
           borderRadius: '10px',
           margin: 'auto',
           position: 'relative',

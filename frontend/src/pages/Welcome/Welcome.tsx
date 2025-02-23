@@ -9,7 +9,7 @@ import Countdowns from '@/components/Countdowns';
 import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { useFamily } from '@/store/family';
-import WelcomePageStepper from '@/components/VerticalStepper/WelcomePageStepper';
+import WelcomePageStepper from '@/components/Steppers/WelcomePageStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 

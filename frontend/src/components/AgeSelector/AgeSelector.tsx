@@ -7,6 +7,7 @@ import { guestSelector, useFamily } from '@/store/family';
 import { getEnumValueByIndex } from '@/utils/utils';
 import Button from '@mui/material/Button';
 import { useAuth0 } from '@auth0/auth0-react';
+import Stepper from '@mui/material/Stepper';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -20,6 +21,20 @@ function AgeGroupThumbComponent(props: React.HTMLAttributes<unknown>) {
     </SliderThumb>
   );
 }
+
+const CustomStepper = styled(Stepper)(({ theme }) => ({
+  position: 'relative',
+  '& .MuiStepConnector-lineVertical': {
+    borderLeft: 'none',
+    position: 'absolute',
+    left: '50%',
+    top: 0,
+    bottom: 0,
+    width: '20px',
+    background: 'linear-gradient(to top, transparent 0%, transparent 80%, black 100%)',
+    transform: 'translateX(-50%)',
+  },
+}));
 
 export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const guest = useRecoilValue(guestSelector(guestId));
@@ -157,8 +172,9 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 
 export const AgeSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
-    border: 'none',
-    backgroundColor: 'transparent',
+    background: 'linear-gradient(to top, transparent 0%, transparent 80%, black 100%)',
+    width: '20px',
+    transform: 'translateX(-50%)',
   },
   '& .MuiSlider-rail': {
     backgroundColor: 'transparent',

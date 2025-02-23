@@ -1,12 +1,20 @@
 import { Box, ButtonProps, darken, Typography, useTheme } from '@mui/material';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { styled } from '@mui/material/styles';
-import { GuestDto, InvitationResponseEnum } from '@/types/api';
+import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
-import AgeSelector from '@/components/AgeSelector';
 import Button from '@mui/material/Button';
+import { stdStepperState } from '@/store/steppers/steppers';
+import AddressEnvelope from '@/components/AddressEnvelope';
+import { AgeSlider } from '@/components/AgeSelector/AgeSelector';
+import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';
+import CommunicationPreferences from '@/components/CommunicationPreferences';
+import CampingPreferences from '@/components/CampingPreferences';
+import AutosizedTextArea from '@/components/TextArea';
+import AgeSelector from '@/components/AgeSelector';
+import FoodAllergies from '@/components/FoodPreferences';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -19,22 +27,119 @@ export const themePaletteToRgba = (colorHexString: string, opacity: number = 0.1
   const g = parseInt(hexToRgba.substring(2, 4), 16);
   const b = parseInt(hexToRgba.substring(4, 6), 16);
   return `rgba(${r},${g},${b},${opacity})`;
-}
+};
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
+  const {
+    semiTransparentBackgroundColor,
+    theme,
+    familyActions,
+    handleClick,
+    guest,
+    imgButtonSxProps,
+  } = useAttendanceButton({ guestId });
+
+  const stdStepper = useRecoilValue(stdStepperState);
+  const CurrentComponent = useMemo(() => {
+    switch (stdStepper.currentStep[0]) {
+      case 'ageGroup':
+        return <AgeSelector guestId={guestId} />;
+      case 'foodPreferences':
+        return <FoodPreferences guestId={guestId} />;
+      case 'foodAllergies':
+        return <FoodAllergies guestId={guestId} />;
+      case 'communicationPreference':
+        return <CommunicationPreferences guestId={guestId} />;
+      case 'camping':
+        return <CampingPreferences guestId={guestId} />;
+      default:
+        return <></>;
+    }
+  }, [guestId, stdStepper.currentStep]);
+
+
+
+  return (
+    <Box
+      data-testid={'attendance-button'}
+      sx={{
+        display: 'flex',
+        flexWrap: 'no-wrap',
+        height: 175,
+        // blur and add 0.5 opacity
+        backdropFilter: 'blur(16px)',
+        // backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: semiTransparentBackgroundColor,
+        width: '100%',
+        mr: 0,
+        [theme.breakpoints.up('sm')]: {
+          mr: 'auto',
+        },
+      }}
+    >
+      <Button
+        disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching}
+        onClick={() => handleClick(guest?.rsvp.invitationResponse)}
+        sx={{
+          alignItems: 'flex-start',
+          boxShadow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 2,
+          position: 'relative',
+          minWidth: 175,
+          maxWidth: 175,
+          height: 175,
+          ...imgButtonSxProps,
+          [theme.breakpoints.up('sm')]: {
+            minWidth: 250,
+            maxWidth: 250,
+          },
+          width: '100%',
+        }}
+
+      >
+        <Box display="flex" alignItems="center">
+          {guest &&
+            <LargeAttendanceButton guestId={guest.guestId} isPending={familyActions.patchFamilyMutation.isPending}
+                                   error={familyActions.patchFamilyMutation.error} />}
+        </Box>
+
+      </Button>
+      <Box sx={{ overflowX: 'auto', my: 'auto', mx: 'auto' }}>
+        {guest.rsvp.invitationResponse === InvitationResponseEnum.Interested && stdStepper.tabIndex < stdStepper.totalTabs && (
+          CurrentComponent
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+
+const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({}));
+
+export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.error.main,
+  fontWeight: 700,
+  fontSize: '1.5rem',
+  [theme.breakpoints.up('sm')]: {},
+}));
+
+export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
   const guest = useRecoilValue(guestSelector(guestId));
   const theme = useTheme();
   const [_, familyActions] = useFamily();
 
-  // const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
-  const darkenCoefficent = 0;
+  const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
+
   const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
     console.log('setting user is attending');
 
     familyActions.patchFamilyGuestMutation.mutate({
       updatedGuest: {
         guestId: guestId,
-        rsvp: { ...guest.rsvp, invitationResponse: interestedResponse },
+        invitationResponse: interestedResponse,
       },
     });
   };
@@ -82,7 +187,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     switch (guest?.rsvp.invitationResponse) {
       case InvitationResponseEnum.Interested:
         // theme primary within rgba
-       return themePaletteToRgba(theme.palette.primary.main, 0.1);
+        return themePaletteToRgba(theme.palette.primary.main, 0.1);
       case InvitationResponseEnum.Declined:
         return themePaletteToRgba(theme.palette.error.main, 0.1);
       case InvitationResponseEnum.Pending:
@@ -104,64 +209,5 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     };
   }, [buttonProps, darkenCoefficent]);
 
-  return (
-    <Box
-      data-testid={'attendance-button'}
-      sx={{
-        display: 'flex',
-        flexWrap: 'no-wrap',
-        // blur and add 0.5 opacity
-        backdropFilter: 'blur(2px)',
-        // backgroundColor: 'rgba(0,0,0,0.5)',
-        backgroundColor: semiTransparentBackgroundColor,
-        width: '100%',
-        mr: 0,
-        [theme.breakpoints.up('sm')]: {
-          mr: 'auto',
-        },
-      }}
-    >
-      <Button
-        disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching}
-        onClick={() => handleClick(guest?.rsvp.invitationResponse)}
-        sx={{
-          alignItems: 'flex-start',
-          boxShadow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: 2,
-          position: 'relative',
-          minWidth: 175,
-          maxWidth: 175,
-          height: 175,
-          ...imgButtonSxProps,
-          [theme.breakpoints.up('sm')]: {
-            minWidth: 250,
-            maxWidth: 250,
-          },
-          width: '100%',
-        }}
-
-      >
-        <Box display="flex" alignItems="center">
-          {guest &&
-            <LargeAttendanceButton guestId={guest.guestId} isPending={familyActions.patchFamilyMutation.isPending}
-                                   error={familyActions.patchFamilyMutation.error} />}
-        </Box>
-
-      </Button>
-      {guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested && <AgeSelector guestId={guest?.guestId} />}
-    </Box>
-  );
+  return { semiTransparentBackgroundColor, theme, familyActions, handleClick, guest, imgButtonSxProps };
 };
-
-
-const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({}));
-
-export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
-  color: theme.palette.error.main,
-  fontWeight: 700,
-  fontSize: '1.5rem',
-  [theme.breakpoints.up('sm')]: {},
-}));

@@ -7,6 +7,7 @@ import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanst
 import { AddressDto, FamilyUnitDto, GuestDto } from '@/types/api';
 import { familyState } from '@/store/family';
 import { addressState } from '@/store/address';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 interface ApiContextProps {
   findUserIdQuery: UseQueryResult<string | undefined, ApiError>;
