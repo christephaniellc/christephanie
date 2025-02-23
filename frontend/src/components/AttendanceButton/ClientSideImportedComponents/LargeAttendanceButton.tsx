@@ -20,9 +20,9 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
   const guest = useRecoilValue(guestSelector(guestId));
   return (
     <Box height='100%' display="flex" flexWrap="wrap" id={`large-attendance-button-${guest.firstName}`}>
-      <Box display="flex" width="100%" id={`wedding-attendance-radios-${guestId}`} justifyContent="center">
-        <WeddingAttendanceRadios guestId={guestId} />
-      </Box>
+      <Typography variant="h6" sx={{ mx: 'auto' }} width='100%'>
+        {guest?.auth0Id === user?.sub ? `You${guest.rsvp.invitationResponse === 'Pending' ? `, Maybe.` : ""}` : guest?.firstName}
+      </Typography>
       {/*<Box id="spacer" height={20} border={'1px dashed white'}/>*/}
       <Box
         mb={1}
@@ -35,9 +35,9 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
         />
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
-      <Typography variant="h6" sx={{ mx: 'auto' }} width='100%'>
-        {guest?.auth0Id === user?.sub ? `You${guest.rsvp.invitationResponse === 'Pending' ? `, Maybe.` : ""}` : guest?.firstName}
-      </Typography>
+      <Box display="flex" width="100%" id={`wedding-attendance-radios-${guestId}`} justifyContent="center">
+        <WeddingAttendanceRadios guestId={guestId} />
+      </Box>
     </Box>
   );
 };

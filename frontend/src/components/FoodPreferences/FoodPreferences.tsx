@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Shark from '@/assets/shark.svg';
 import Omnivore from '@/assets/Omnivore.png';
-import Vegetarian from '@/assets/Vegetariant.png';
+import Vegetarian from '@/assets/Vegetarian.png';
 import Vegan from '@/assets/Vegan.png';
 import { Stack } from '@mui/system';
 import React from 'react';
@@ -15,7 +15,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
   const guest = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
   const handleSetFoodPreference = (foodPreference: FoodPreferenceEnum) => {
-    familyActions.patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, preferences: { foodPreference } } });
+    familyActions.patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodPreference } });
   };
 
   const filterColorPrimary = 'brightness(0) saturate(100%) invert(9%) sepia(100%) saturate(7453%) hue-rotate(278deg) brightness(106%) contrast(114%);';

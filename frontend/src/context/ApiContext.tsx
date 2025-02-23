@@ -4,7 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
-import { AddressDto, FamilyUnitDto, GuestDto } from '@/types/api';
+import { AddressDto, FamilyUnitDto, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { familyState } from '@/store/family';
 import { addressState } from '@/store/address';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
@@ -13,8 +13,9 @@ interface ApiContextProps {
   findUserIdQuery: UseQueryResult<string | undefined, ApiError>;
   getMeQuery: UseQueryResult<GuestDto, ApiError>;
   getFamilyUnitQuery: UseQueryResult<FamilyUnitDto, ApiError>;
-  patchFamilyMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>;
-  patchFamilyGuestMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedGuest: Partial<GuestDto> }, unknown>;
+
+  patchFamilyMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: PatchFamilyUnitRequest }, unknown>;
+  patchFamilyGuestMutation: UseMutationResult<FamilyUnitDto, ApiError, { updatedGuest: PatchGuestRequest }, unknown>;
   validateAddressMutation: UseMutationResult<AddressDto, ApiError, AddressDto, unknown>;
 }
 
@@ -69,9 +70,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     enabled: !!auth0User,
   }) as UseQueryResult<FamilyUnitDto, ApiError>;
 
-  const patchFamilyGuestMutation = useMutation<GuestDto, ApiError, { updatedGuest: Partial<GuestDto> }, unknown>({
+  const patchFamilyGuestMutation = useMutation<GuestDto, ApiError, { updatedGuest: PatchGuestRequest }, unknown>({
     mutationKey: ['patchFamilyGuest', JSON.stringify(family)],
-    mutationFn: ({ updatedGuest }: {updatedGuest: Partial<GuestDto>}) => apiRef.current.patchGuestDto(updatedGuest),
+    mutationFn: ({ updatedGuest }: {updatedGuest: PatchGuestRequest}) => apiRef.current.patchGuestDto(updatedGuest),
     onSuccess: data => {
       getFamilyUnitQuery.refetch();
     },
@@ -79,17 +80,17 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       console.error('Failed to update family', error);
       setFamily(family);
     },
-  }) as UseMutationResult<FamilyUnitDto, ApiError, { updatedGuest: GuestDto }, unknown>;
+  })
 
-  const patchFamilyMutation = useMutation<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>({
+  const patchFamilyMutation = useMutation<FamilyUnitDto, ApiError, { updatedFamily: PatchFamilyUnitRequest }, unknown>({
     mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
-    mutationFn: ({ updatedFamily }: {updatedFamily: Partial<FamilyUnitDto>}) => apiRef.current.patchFamilyUnit(updatedFamily),
+    mutationFn: ({ updatedFamily }: {updatedFamily: PatchFamilyUnitRequest}) => apiRef.current.patchFamilyUnit(updatedFamily),
     onSuccess: data => setFamily(data),
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
       setFamily(family);
     },
-  }) as UseMutationResult<FamilyUnitDto, ApiError, { updatedFamily: FamilyUnitDto }, unknown>;
+  })
 
   const validateAddressMutation = useMutation<AddressDto, ApiError, AddressDto, unknown>({
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],

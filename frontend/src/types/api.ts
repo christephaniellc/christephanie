@@ -142,12 +142,19 @@ export interface PatchFamilyUnitRequest {
 
 export interface PatchGuestRequest {
   guestId: string | null;
+  ageGroup?: AgeGroupEnum;
   auth0Id?: string | null;
   email?: string | null;
   phone?: string | null;
-  rsvp?: RsvpDto;
-  preferences?: PreferencesDto;
-  ageGroup?: AgeGroupEnum;
+  invitationResponse?: InvitationResponseEnum;
+  rehearsalDinner?: RsvpEnum;
+  fourthOfJuly?: RsvpEnum;
+  wedding?: RsvpEnum;
+  rsvpNotes?: string | null;
+  notificationPreference?: NotificationPreferenceEnum[] | null;
+  sleepPreference?: SleepPreferenceEnum;
+  foodPreference?: FoodPreferenceEnum;
+  foodAllergies?: string[] | null;
 }
 
 export interface PreferencesDto {
