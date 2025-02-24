@@ -10,6 +10,7 @@ import {
   zipCodeAddressState,
 } from '@/store/address';
 import Button from '@mui/material/Button';
+import { rem } from 'polished';
 
 const AddressEnvelope: React.FC = ({guestId}: {guestId: string}) => {
   const [familyUnit, familyActions] = useFamily();
@@ -52,11 +53,11 @@ const AddressEnvelope: React.FC = ({guestId}: {guestId: string}) => {
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography mb={4} gutterBottom variant="h5">Where should we send your formal invitation?</Typography>
       <Box
         sx={{
-          width: '100%',
-          maxWidth: '400px',
+          minWidth: '100%',
+          width: rem(400),
+          maxWidth: '100%',
           height: '350px',
           borderRadius: '10px',
           margin: 'auto',

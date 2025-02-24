@@ -2,12 +2,13 @@ import { Box, darken, Slider, SliderThumb, Typography, useTheme } from '@mui/mat
 import React, { useEffect, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { getEnumValueByIndex } from '@/utils/utils';
 import Button from '@mui/material/Button';
 import { useAuth0 } from '@auth0/auth0-react';
 import Stepper from '@mui/material/Stepper';
+import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/steppers';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -15,11 +16,7 @@ interface AttendanceButtonProps {
 
 function AgeGroupThumbComponent(props: React.HTMLAttributes<unknown>) {
   const { children, ...other } = props;
-  return (
-    <SliderThumb {...other}>
-      {children}
-    </SliderThumb>
-  );
+  return <SliderThumb {...other}>{children}</SliderThumb>;
 }
 
 const CustomStepper = styled(Stepper)(({ theme }) => ({
@@ -42,9 +39,13 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const theme = useTheme();
   const [_, familyActions] = useFamily();
   const { user } = useAuth0();
+  const stdStepper = useRecoilValue(stdStepperState);
+  const { currentStep } = stdStepper;
+
+  const [stdSteps, setStdSteps] = useRecoilState(saveTheDateStepsState);
 
   const isPending = familyActions.patchFamilyMutation.isPending;
-  const darkenCoefficent = isPending ? .5 : 0;
+  const darkenCoefficent = isPending ? 0.5 : 0;
 
   useEffect(() => {
     if (guest?.ageGroup) {
@@ -59,7 +60,18 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   };
 
   useEffect(() => {
-    if (guest && guest.ageGroup) setUserAgeGroup(guest.ageGroup);
+    if (guest && guest.ageGroup) {
+      setUserAgeGroup(guest.ageGroup);
+      setStdSteps((prev) => {
+        return {
+          ...prev,
+          [currentStep[0]]: {
+            ...prev[currentStep[0]],
+            completed: true,
+          },
+        };
+      });
+    }
   }, [guest, familyActions.updateFamilyGuestAgeGroup]);
 
   const userAgeGroupIndex = useMemo(() => {
@@ -94,9 +106,18 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           border: `2px solid ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
         };
       default:
-        return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
+        return {
+          color: 'default',
+          fontSize: 'medium',
+          border: `2px solid ${theme.palette.info.main}`,
+        };
     }
-  }, [userAgeGroupIndex, theme.palette.primary.main, theme.palette.secondary.main, darkenCoefficent]);
+  }, [
+    userAgeGroupIndex,
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+    darkenCoefficent,
+  ]);
 
   const imgButtonSxProps = useMemo(() => {
     return {
@@ -106,16 +127,24 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
     };
   }, [buttonProps.fontSize, buttonProps.border, theme.palette.text.primary, darkenCoefficent]);
 
-  const disabled = useMemo(() => familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching, [familyActions.patchFamilyMutation.isPending, familyActions.getFamilyUnitQuery.isFetching]);
+  useEffect(() => {}, []);
+
+  const disabled = useMemo(
+    () =>
+      familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching,
+    [familyActions.patchFamilyMutation.isPending, familyActions.getFamilyUnitQuery.isFetching],
+  );
 
   return (
-    <Box display="flex"
-         flexWrap="nowrap"
-         sx={{
-           backdropFilter: 'none',
-           backgroundColor: 'transparent',
-           boxShadow: 'none',
-         }}>
+    <Box
+      display="flex"
+      flexWrap="nowrap"
+      sx={{
+        backdropFilter: 'none',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+      }}
+    >
       <Button
         sx={{
           alignItems: 'flex-start',
@@ -147,7 +176,9 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             height: '100%',
           }}
         >
-          <Typography variant="caption" width={'100%'}>Someone who's</Typography>
+          <Typography variant="caption" width={'100%'}>
+            Someone who's
+          </Typography>
           <AgeSlider
             sx={{ pointerEvents: disabled ? 'none' : 'auto', mt: 3 }}
             track="inverted"
@@ -162,10 +193,17 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
               thumb: AgeGroupThumbComponent,
             }}
             onChange={(_, value) => setUserAge(guestId, value as number as unknown as AgeGroupEnum)}
-            onChangeCommitted={(_event, value) => familyActions.updateFamilyGuestAgeGroup(guestId, value as number as unknown as AgeGroupEnum)}
+            onChangeCommitted={(_event, value) =>
+              familyActions.updateFamilyGuestAgeGroup(
+                guestId,
+                value as number as unknown as AgeGroupEnum,
+              )
+            }
           />
         </Box>
-        <Typography ml='auto' variant="caption">...That's who.</Typography>
+        <Typography ml="auto" variant="caption">
+          ...That's who.
+        </Typography>
       </Button>
     </Box>
   );

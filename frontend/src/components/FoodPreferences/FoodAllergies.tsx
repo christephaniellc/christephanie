@@ -166,9 +166,9 @@ function FoodAllergies({ guestId }: { guestId: string }) {
           width: '100%',
         }}
         icon={<>{activeEatingIcon}</>}
-        label={'Nope'}
+        label={`Nothing.  I can eat anything.  Just watch me.`}
         disabled={
-          familyActions.patchFamilyMutation.status === 'pending' ||
+          familyActions.patchFamilyGuestMutation.status === 'pending' ||
           familyActions.getFamilyUnitQuery.isFetching
         }
         color={
@@ -218,7 +218,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
               }
               icon={<allergy.icon />}
               disabled={
-                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.patchFamilyGuestMutation.status === 'pending' ||
                 familyActions.getFamilyUnitQuery.isFetching
               }
               label={allergy.allergyName}
