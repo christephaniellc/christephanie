@@ -7,12 +7,9 @@ import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import Button from '@mui/material/Button';
 import { stdStepperState } from '@/store/steppers/steppers';
-import AddressEnvelope from '@/components/AddressEnvelope';
-import { AgeSlider } from '@/components/AgeSelector/AgeSelector';
 import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';
 import CommunicationPreferences from '@/components/CommunicationPreferences';
 import CampingPreferences from '@/components/CampingPreferences';
-import AutosizedTextArea from '@/components/TextArea';
 import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
 
@@ -38,6 +35,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     guest,
     imgButtonSxProps,
   } = useAttendanceButton({ guestId });
+  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
 
   const stdStepper = useRecoilValue(stdStepperState);
   const CurrentComponent = useMemo(() => {
@@ -57,19 +55,32 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     }
   }, [guestId, stdStepper.currentStep]);
 
+  const handleMouseMove = (event: React.MouseEvent) => {
+    setMousePosition({ x: event.clientX, y: event.clientY });
+  };
 
+  const calculateShadow = () => {
+    const { x, y } = mousePosition;
+    const shadowX = (x / window.innerWidth) * 10 + 5
+    const shadowY = (y / window.innerHeight) *10 + 5;
+    return `${shadowX}px ${shadowY}px 0px ${guest.rsvp.invitationResponse === InvitationResponseEnum.Interested ? theme.palette.primary.dark : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending ? theme.palette.secondary.dark : theme.palette.error.dark}`;
+  };
 
   return (
     <Box
+      onMouseMove={handleMouseMove}
       data-testid={'attendance-button'}
       sx={{
-        pr: 2,
+        p: 2,
         display: 'flex',
         flexWrap: 'no-wrap',
-        height: 175,
+        height: 'auto',
         // blur and add 0.5 opacity
         backdropFilter: 'blur(16px)',
         // backgroundColor: 'rgba(0,0,0,0.5)',
+        borderTop: `2px solid ${semiTransparentBackgroundColor}`,
+        borderRight: `2px solid ${semiTransparentBackgroundColor}`,
+        borderBottom: `2px solid ${semiTransparentBackgroundColor}`,
         backgroundColor: semiTransparentBackgroundColor,
         width: '100%',
         mr: 0,
@@ -91,14 +102,17 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
           position: 'relative',
           minWidth: 175,
           maxWidth: 175,
-          height: 175,
+          height: 'auto',
           ...imgButtonSxProps,
           [theme.breakpoints.up('sm')]: {
             minWidth: 250,
             maxWidth: 250,
           },
+          background: 'rgba(0,0,0,1)',
           width: '100%',
+          filter: `drop-shadow(${calculateShadow()})`,
         }}
+
 
       >
         <Box display="flex" alignItems="center">
@@ -136,14 +150,10 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
 
   const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
     console.log('setting user is attending');
-
-    familyActions.patchFamilyGuestMutation.mutate({
-      updatedGuest: {
-        guestId: guestId,
-        invitationResponse: interestedResponse,
-      },
-    });
+    familyActions.updateFamilyGuestInterest(guestId, interestedResponse);
   };
+
+
 
   const handleClick = (invitationResponse: InvitationResponseEnum) => {
     console.log('clicky');
@@ -164,7 +174,7 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
         return {
           color: 'primary',
           fontSize: 'large',
-          border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}; border-right-style: dotted; elevation:5;`,
+          border: `2px solid ${darken(theme.palette.primary.main, darkenCoefficent)}; elevation:5;`,
         };
       case InvitationResponseEnum.Declined:
         return {

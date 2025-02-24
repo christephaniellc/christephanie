@@ -127,6 +127,59 @@ export const guestSelector = selectorFamily<GuestDto | null, string>({
     },
 });
 
+const somethingFamilySelector = selector({
+  key: 'somethingFamilySelector',
+  get: ({ get }) => {
+    const family = get(familyState);
+    const ageIsSelected = family?.guests?.every((guest: GuestDto) => guest.ageGroup !== undefined);
+      const foodPreferencesAreSelected = family?.guests?.every((guest: GuestDto) => guest.preferences.foodPreference !== null);
+      const foodAllergiesAreSelected = family?.guests?.every((guest: GuestDto) => !!guest.preferences.foodAllergies);
+      const campingPreferencesAreSelected = family?.guests?.every((guest: GuestDto) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown);
+      const addressIsSelected = family?.mailingAddress !== undefined;
+      const commentsAreSelected = family?.invitationResponseNotes !== undefined;
+    return {
+      ageIsSelected,
+      foodPreferencesAreSelected,
+      foodAllergiesAreSelected,
+      campingPreferencesAreSelected,
+      addressIsSelected,
+      commentsAreSelected,
+    };
+      //   updateSteps((prev) => ({
+    //     ...prev,
+    //     ageGroup: {
+    //       ...prev.ageGroup,
+    //       completed: ageIsSelected,
+    //     },
+    //     foodPreferences: {
+    //       ...prev.foodPreferences,
+    //       completed: foodPreferencesAreSelected,
+    //     },
+    //     foodAllergies: {
+    //       ...prev.foodAllergies,
+    //       completed: foodAllergiesAreSelected,
+    //     },
+    //     communicationPreference: {
+    //       ...prev.communicationPreference,
+    //       completed: true,
+    //     },
+    //     camping: {
+    //       ...prev.camping,
+    //       completed: campingPreferencesAreSelected,
+    //     },
+    //     mailingAddress: {
+    //       ...prev.mailingAddress,
+    //       completed: addressIsSelected,
+    //     },
+    //     comments: {
+    //       ...prev.comments,
+    //       completed: commentsAreSelected,
+    //     },
+    //   }));
+  },
+})
+
+
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
@@ -205,7 +258,7 @@ export const useFamily = () => {
   }, []);
 
   useEffect(() => {
-    if (getFamilyUnitQuery.data && family !== getFamilyUnitQuery.data) {
+    if (getFamilyUnitQuery.data && !family) {
       console.log('setting family from getFamilyUnitQuery');
       setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
     }

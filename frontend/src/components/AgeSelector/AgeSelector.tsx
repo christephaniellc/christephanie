@@ -59,21 +59,6 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
     setUserAgeGroup(Object.values(AgeGroupEnum)[ageGroup]);
   };
 
-  useEffect(() => {
-    if (guest && guest.ageGroup) {
-      setUserAgeGroup(guest.ageGroup);
-      setStdSteps((prev) => {
-        return {
-          ...prev,
-          [currentStep[0]]: {
-            ...prev[currentStep[0]],
-            completed: true,
-          },
-        };
-      });
-    }
-  }, [guest, familyActions.updateFamilyGuestAgeGroup]);
-
   const userAgeGroupIndex = useMemo(() => {
     return Object.values(AgeGroupEnum).indexOf(userAgeGroup);
   }, [userAgeGroup]);
@@ -156,7 +141,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           width: 150,
           minWidth: 150,
           maxWidth: 150,
-          height: 175,
+          height: 165,
           ...imgButtonSxProps,
           boxShadow: 'none',
           backgroundColor: 'transparent',
@@ -176,12 +161,12 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             height: '100%',
           }}
         >
-          <Typography variant="caption" width={'100%'}>
+          <Typography variant="caption" width={'100%'} color='secondary'>
             Someone who's
           </Typography>
           <AgeSlider
             sx={{ pointerEvents: disabled ? 'none' : 'auto', mt: 3 }}
-            track="inverted"
+            // track="inverted"
             disabled={disabled}
             orientation="vertical"
             defaultValue={0}
@@ -201,7 +186,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             }
           />
         </Box>
-        <Typography ml="auto" variant="caption">
+        <Typography ml="auto" variant="caption" color='secondary'>
           ...That's who.
         </Typography>
       </Button>
@@ -210,10 +195,13 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
 };
 
 export const AgeSlider = styled(Slider)(({ theme }) => ({
+  ...theme.applyStyles('dark', {}),
   '& .MuiSlider-track': {
-    background: 'linear-gradient(to top, transparent 0%, transparent 80%, black 100%)',
+    background: `linear-gradient(to bottom, ${theme.palette.secondary.dark} 0%, transparent 80%, black 100%)`,
     width: '20px',
     transform: 'translateX(-50%)',
+    height: '100% !important',
+    border: `1px solid ${theme.palette.secondary.main}`,
   },
   '& .MuiSlider-rail': {
     backgroundColor: 'transparent',
@@ -221,8 +209,9 @@ export const AgeSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-thumb': {
     height: 27,
     width: 27,
-    backgroundColor: '#fff',
-    border: '1px solid currentColor',
+    backgroundColor: `rgba(255, 255, 255,.98)`,
+    backdropFilter: 'blur(80)',
+    border: `1px solid ${theme.palette.secondary.main}`,
     '&:hover': {
       boxShadow: '0 0 0 8px rgba(58, 133, 137, 0.16)',
     },
@@ -231,10 +220,18 @@ export const AgeSlider = styled(Slider)(({ theme }) => ({
     },
   },
   '& .MuiSlider-thumb svg': {
-    color: 'white',
+    // color: 'white',
   },
   '& .MuiSlider-mark': {
     display: 'none',
   },
-  ...theme.applyStyles('dark', {}),
+  '& .MuiSlider-markLabel': {
+    color: theme.palette.grey.A700,
+    fontWeight: 'bold',
+    '&.MuiSlider-markLabelActive': {
+      color: theme.palette.secondary.main,
+    },
+  },
+
+
 }));

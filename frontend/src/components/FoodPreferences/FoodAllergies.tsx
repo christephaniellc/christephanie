@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useRecoilValue } from 'recoil';
 import { FoodAllergyIconProps, seriousFoodAllergies } from '@/components/Allergies';
 import Button from '@mui/material/Button';
-import { ButtonGroup, Chip, InputAdornment, TextField, useTheme } from '@mui/material';
+import { ButtonGroup, Chip, darken, InputAdornment, TextField, useTheme } from '@mui/material';
 import { guestSelector, useFamily } from '@/store/family';
 import { userState } from '@/store/user';
 import Vegetarian from '@/assets/Vegetarian.png';
@@ -18,6 +18,7 @@ import SharkIcon from '@/components/SharkIcon/SharkIcon';
 import ListItem from '@mui/material/ListItem';
 
 function FoodAllergies({ guestId }: { guestId: string }) {
+  const mousePosition = useRef({ x: 0, y: 0 });
   const filterColorPrimary =
     'brightness(0) saturate(100%) invert(9%) sepia(100%) saturate(7453%) hue-rotate(278deg) brightness(106%) contrast(114%);';
   const filterColorSecondary =
@@ -144,8 +145,21 @@ function FoodAllergies({ guestId }: { guestId: string }) {
     setAllergyIconProps(allAllergiesSelectedFalse);
   };
 
+
+  const handleMouseMove = (event: React.MouseEvent) => {
+    mousePosition.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const calculateShadow = () => {
+    const { x, y } = mousePosition.current;
+    const shadowX = (x / window.innerWidth) * 15 + 5;
+    const shadowY = (y / window.innerHeight) * 15 + 5;
+    return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
+  };
+
   return (
     <Box
+      onMouseMove={handleMouseMove}
       sx={{
         maxHeight: '100%',
         height: '100%',
@@ -154,8 +168,11 @@ function FoodAllergies({ guestId }: { guestId: string }) {
         p: 1,
         m: 0,
         flexWrap: 'wrap',
-        border: `1px dashed ${theme.palette.secondary.main}`,
-        // overflow: 'hidden',
+        background: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(20px)',
+        border: `1px solid ${theme.palette.secondary.main}`,
+        borderRadius: 1,
+        boxShadow: 1,
       }}
     >
       <Chip

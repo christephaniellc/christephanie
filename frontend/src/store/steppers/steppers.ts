@@ -12,12 +12,19 @@ export interface SaveTheDateStep {
 
 export const stdTabIndex = atom<number>({
   key: 'saveTheDateStepperState',
-  default: 1,
+  default: 0,
 });
 
 export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
   key: 'saveTheDateStepper',
   default: {
+    attendence: {
+      id: 0,
+      completed: false,
+      label: 'Are you interested in attending the wedding?',
+      description: '',
+      component: null,
+    },
     ageGroup: {
       id: 1,
       completed: false,
@@ -27,14 +34,14 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     },
     foodPreferences: {
       id: 2,
-      completed: false,
+      completed: true,
       label: 'What kind of life is being sacrificed for your meal?',
       description: '',
       component: null,
     },
     foodAllergies: {
       id: 3,
-      completed: false,
+      completed: true,
       label: 'Which of these things will kill you if you eat them?',
       description: '',
       component: null,
@@ -46,15 +53,15 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       description: '(we have bathrooms!)',
       component: null,
     },
-    // communicationPreference: {
-    //   id: 5,
-    //   completed: false,
-    //   label: 'How should we contact you?',
-    //   description: '',
-    //   component: null,
-    // },
+    communicationPreference: {
+      id: 5,
+      completed: false,
+      label: 'How should we contact you?',
+      description: '',
+      component: null,
+    },
     mailingAddress: {
-      id: 2,
+      id: 5,
       completed: false,
       label: 'Where should we send your invitation?',
       description: '',
