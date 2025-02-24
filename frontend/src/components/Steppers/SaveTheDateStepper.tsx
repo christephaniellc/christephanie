@@ -40,7 +40,7 @@ export default function SaveTheDateStepper() {
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
 
-  const guests = useMemo(() => family.guests, [family.guests]);
+  const guests = useMemo(() => family?.guests, [family]);
 
   useEffect(() => {
     if (urlParams) {
@@ -71,7 +71,7 @@ export default function SaveTheDateStepper() {
         </IconButton>
       </Box>
       {/* Linear Progress across top */}
-      <Box width={'100%'} overflow={'auto'}>
+      <Box width={'100%'}>
         <Stepper
           activeStep={tabIndex}
           alternativeLabel

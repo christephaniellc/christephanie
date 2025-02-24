@@ -42,7 +42,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const [family, setFamily] = useRecoilState(familyState);
   const address = useRecoilValue(addressState);
 
-  const { getAccessTokenSilently, user: auth0User } = useAuth0();
+  const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
 
   const getTokenFunc = React.useCallback(async () => {
     try {
@@ -73,7 +73,14 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const getMeQuery = useQuery<GuestDto, ApiError>({
     queryKey: ['getMeQuery', `${user.guestNumber}`],
     queryFn: () => apiRef.current!.getMe(),
-    retry: false,
+      retry: (failureCount, error) => {
+        if (error.status === 401) {
+          logout();
+        }
+        if (failureCount > 2) {
+          return false;
+        }
+      },
     enabled: !!auth0User && !user.lastActivity && !!apiRef.current.getMe,
   }) as UseQueryResult<GuestDto, ApiError>;
 

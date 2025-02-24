@@ -8,8 +8,16 @@ import Typography from '@mui/material/Typography';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { email, messages } from '@/config';
 import resetApp from '@/utils/reset-app';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 function AppErrorBoundaryFallback() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    setTimeout(() => {
+      navigate('/');
+    }, 5000);
+  }, []);
   return (
     <Box height={400}>
       <FullSizeCenteredFlexBox>

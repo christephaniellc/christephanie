@@ -15,6 +15,8 @@ import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import Container from '@mui/material/Container';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
@@ -23,6 +25,7 @@ function SaveTheDatePage() {
   const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
+  const { screenWidth } = useAppLayout();
 
   const genericQuestions = useMemo(
     () => ['comments', 'mailingAddress'].includes(stdStepper.currentStep[0]),
@@ -52,6 +55,7 @@ function SaveTheDatePage() {
 
   return (
     <Box
+      component={Container}
       display="flex"
       flexDirection="column"
       justifyContent=""
@@ -60,86 +64,95 @@ function SaveTheDatePage() {
       pt={2}
       px={2}
     >
-      {(!family?.guests || !family?.guests.length) && (
+      {((!family?.guests || !family?.guests?.length) && (
         <div onClick={() => familyActions.getFamily()}>No guests found</div>
-      )}
-      <Box mb={4}>
-        <SaveTheDateStepper />
-      </Box>
-      <StephsFavoriteTypography variant="h4" sx={{ ml: 'auto', pl: '200px', mr: 'auto', mb: 2, fontSize: '2.5rem' }}>
-        {Object.values(saveTheDateSteps)[tabIndex]?.label}
-      </StephsFavoriteTypography>
-      <ButtonsContainer>
-        {!genericQuestions &&
-          family.guests.map((guest: GuestDto) => (
-            <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-          ))}
-        {genericQuestions && <>{FamilyQueryQuestion}</>}
-        {tabIndex < 7 && (
-          <Box
-            width={'100%'}
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            pt={4}
-            pr={2}
-          >
-            <Button
-              variant="outlined"
-              color="error"
-              sx={{
-                backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                display: tabIndex > 0 ? 'inherit' : 'none',
-              }}
-            >
-              <StephsFavoriteTypography
-                sx={{
-                  fontSize: '50px',
-                }}
-                onClick={() => setTabIndex(tabIndex - 1)}
-              >
-                Wait, go back
-              </StephsFavoriteTypography>
-            </Button>
-            <Box id={'spacer'} display={'flex'} width={1}></Box>
-            <Button
-              variant="outlined"
-              color={
-                stdStepper.currentStep[1].completed ? 'success' : ('error' as 'success' | 'error')
-              }
-              sx={{
-                backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                display: tabIndex < 6 ? 'inherit' : 'none',
-              }}
-            >
-              <StephsFavoriteTypography
-                sx={{
-                  fontSize: '50px',
-                  paddingX: 4,
-                }}
-                onClick={() => setTabIndex(tabIndex + 1)}
-              >
-                Next
-              </StephsFavoriteTypography>
-            </Button>
+      )) || (
+        <>
+          <Box mb={4}>
+            <SaveTheDateStepper />
           </Box>
-        )}
-      </ButtonsContainer>
-      <Box
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        sx={{
-          backgroundImage: `url(${ElPulpo})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'top',
-          height: 400,
-          zIndex: -1,
-        }}
-      ></Box>
+          <StephsFavoriteTypography
+            variant="h4"
+            sx={{
+              ml: 'auto',
+              pl: screenWidth > 830 ? '200px' : 0,
+              mr: 'auto',
+              mb: 2,
+              fontSize: screenWidth > 830 ? '2.5rem' : '1.5rem',
+            }}
+          >
+            {Object.values(saveTheDateSteps)[tabIndex]?.label}
+          </StephsFavoriteTypography>
+          <ButtonsContainer>
+            {!genericQuestions &&
+              family?.guests?.map((guest: GuestDto) => (
+                <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+              ))}
+            {genericQuestions && <>{FamilyQueryQuestion}</>}
+            {tabIndex < 7 && (
+              <Box
+                width={'100%'}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                pt={4}
+              >
+                <Button
+                  variant="outlined"
+                  color="error"
+                  sx={{
+                    backdropFilter: 'blur(20px)',
+                    backgroundColor: 'rgba(0,0,0,.1)',
+                    display: tabIndex > 0 ? 'inherit' : 'none',
+                    flexShrink: 0,
+                  }}
+                >
+                  <StephsFavoriteTypography sx={{}} onClick={() => {
+                    familyActions.getFamily();
+                    setTabIndex(tabIndex - 1)
+                  }}>
+                    Wait, go back
+                  </StephsFavoriteTypography>
+                </Button>
+                <Box id={'spacer'} display={'flex'} width={1}></Box>
+                <Button
+                  variant="outlined"
+                  color={
+                    stdStepper.currentStep[1].completed
+                      ? 'success'
+                      : ('error' as 'success' | 'error')
+                  }
+                  sx={{
+                    flexShrink: 0,
+                    backdropFilter: 'blur(20px)',
+                    backgroundColor: 'rgba(0,0,0,.1)',
+                    display: tabIndex < 6 ? 'inherit' : 'none',
+                  }}
+                  onClick={() => {
+                    familyActions.getFamily();
+                    setTabIndex(tabIndex + 1)
+                  }}
+                >
+                  <StephsFavoriteTypography>Next</StephsFavoriteTypography>
+                </Button>
+              </Box>
+            )}
+          </ButtonsContainer>
+          <Box
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            sx={{
+              backgroundImage: `url(${ElPulpo})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'top',
+              height: 400,
+              zIndex: -1,
+            }}
+          ></Box>
+        </>
+      )}
     </Box>
   );
 }
