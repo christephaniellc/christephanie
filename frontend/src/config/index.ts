@@ -4,9 +4,11 @@ import type { Notifications } from './types';
 
 const title = 'Christephanie Wedding';
 
-const email = 'steph.stubler@gmail.com';
+const email = 'whatever email you have for us';
 
 const repository = 'https://wedding.christephanie.com';
+
+
 
 const messages = {
   app: {

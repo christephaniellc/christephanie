@@ -10,6 +10,8 @@ import GrainIcon from '@mui/icons-material/Grain';          // wheat
 import SetMealIcon from '@mui/icons-material/SetMeal';      // fish
 import LunchDiningIcon from '@mui/icons-material/LunchDining'; // shellfish
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+import { Agriculture, AgricultureTwoTone, Directions, DirectionsBoat, GrassSharp, Science } from '@mui/icons-material';
+import MenuIcon from '@mui/icons-material/Menu';
 
 export interface FoodAllergyIconProps {
   allergyName: string;
@@ -66,6 +68,31 @@ export const seriousFoodAllergies: FoodAllergyIconProps[] = [
   {
     allergyName: 'Gluten',
     icon: GrainIcon,
+    selected: false,
+  },
+  {
+    allergyName: 'Celery',
+    icon: GrassSharp, // Represents plant-based nature of celery
+    selected: false,
+  },
+  {
+    allergyName: 'Mustard',
+    icon: MenuIcon, // Suggestive of condiments and sauces
+    selected: false,
+  },
+  {
+    allergyName: 'Sulphites',
+    icon: Science, // Conveys a chemical or additive aspect
+    selected: false,
+  },
+  {
+    allergyName: 'Lupin',
+    icon: AgricultureTwoTone, // Relates to agricultural produce
+    selected: false,
+  },
+  {
+    allergyName: 'Molluscs',
+    icon: DirectionsBoat, // Represents seafood and marine origin
     selected: false,
   },
 ].sort((a, b) => a.allergyName.localeCompare(b.allergyName));

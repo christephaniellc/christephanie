@@ -121,7 +121,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           alignItems: 'flex-start',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
           padding: theme.spacing(2),
           position: 'relative',
           width: 150,
@@ -139,15 +139,15 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             color: darken(theme.palette.text.primary, darkenCoefficent),
             position: 'relative',
             marginBottom: theme.spacing(2),
-            mx: theme.spacing(1),
+            mr: theme.spacing(1),
             display: 'flex',
             flexDirection: 'column',
-            px: 2,
+            px: 1,
             width: '100%',
             height: '100%',
           }}
         >
-          <Typography variant="caption" mr={'auto'}>And {isMe ? 'You\'re' : 'They\'re'}</Typography>
+          <Typography variant="caption" width={'100%'}>Someone who's</Typography>
           <AgeSlider
             sx={{ pointerEvents: disabled ? 'none' : 'auto', mt: 3 }}
             track="inverted"
@@ -165,6 +165,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             onChangeCommitted={(_event, value) => familyActions.updateFamilyGuestAgeGroup(guestId, value as number as unknown as AgeGroupEnum)}
           />
         </Box>
+        <Typography ml='auto' variant="caption">...That's who.</Typography>
       </Button>
     </Box>
   );
