@@ -15,13 +15,13 @@ import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
 import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
 import IconButton from '@mui/material/IconButton';
-import { Check, CloseTwoTone } from '@mui/icons-material';
+import { Check, Circle, CloseTwoTone } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import StickFigureIcon from '@/components/StickFigureIcon';
-import { SaveTheDateStep, saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { SaveTheDateStep, saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
 import FoodAllergies from '@/components/FoodPreferences';
 import { userState } from '@/store/user';
@@ -38,6 +38,7 @@ export default function SaveTheDateStepper() {
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
+  const stdStepper = useRecoilValue(stdStepperState);
 
   const guests = useMemo(() => family.guests, [family.guests]);
 
@@ -57,6 +58,7 @@ export default function SaveTheDateStepper() {
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
+    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
     navigate(`/save-the-date?step=${step}`);
   };
 
@@ -89,7 +91,6 @@ export default function SaveTheDateStepper() {
                 }}
                 StepIconComponent={StepperIcon}
               >
-                <Box display="flex" alignItems="flex-end">{step.label}</Box>
               </CustomStepLabel>
             </Step>
           ))}
@@ -152,10 +153,7 @@ function StepperIcon(props: StepIconProps) {
       {completed ? (
         <Check color="success" />
       ) : (
-        <Box color={'gold'} display={'flex'} flexDirection="column" mb={3}>
-          <Typography variant="caption"></Typography>
-          <StickFigureIcon rotation={0} ageGroup={user.ageGroup} />
-        </Box>
+        <Circle color="secondary" />
       )}
     </StepperIconRoot>
   );

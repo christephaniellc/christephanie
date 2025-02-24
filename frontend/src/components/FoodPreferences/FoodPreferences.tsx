@@ -9,63 +9,77 @@ import Omnivore from '@/assets/Omnivore.png';
 import Vegetarian from '@/assets/Vegetarian.png';
 import Vegan from '@/assets/Vegan.png';
 import { Stack } from '@mui/system';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+
 
 const FoodPreferences = ({ guestId }: { guestId: string }) => {
+  const { screenWidth } = useAppLayout();
+  const [clientButtonValue, setClientButtonValue] = React.useState<FoodPreferenceEnum | null>(null);
   const guest = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
+
   const handleSetFoodPreference = (foodPreference: FoodPreferenceEnum) => {
-    familyActions.patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodPreference } });
+    setClientButtonValue(foodPreference);
+    familyActions.updateFamilyGuestFoodPreferences(guestId, foodPreference);
   };
+
+  useEffect(() => {
+
+  }, [clientButtonValue]);
 
   const filterColorPrimary = 'brightness(0) saturate(100%) invert(9%) sepia(100%) saturate(7453%) hue-rotate(278deg) brightness(106%) contrast(114%);';
   const filterColorSecondary = 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%);';
 
+  useEffect(() => {
+    setClientButtonValue(guest?.preferences?.foodPreference);
+  }, [guest]);
 
   return (
-    <Stack display="flex" width="100%" height="100%">
-      <ButtonGroup fullWidth orientation='vertical' sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)' }}>
+    <Stack display="flex" width="100%" height="100%" my="auto" justifyContent="center" alignItems="center">
+      <ButtonGroup fullWidth orientation={screenWidth > 830 ? 'horizontal':'vertical'}
+                   sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)' }}>
         <Button
           color="secondary"
           disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
-          variant={(guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Unknown) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
-          onClick={() => familyActions.updateFamilyGuestFoodPreferences(guestId, FoodPreferenceEnum.Unknown)}
+          variant={(clientButtonValue?.includes(FoodPreferenceEnum.Unknown) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+          onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Unknown)}
           value={FoodPreferenceEnum.Unknown}
           endIcon={<Box component={'img'} src={`${Shark}`} width={24} height={24}
-                        sx={{ filter: !guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Unknown) ? filterColorSecondary : '' }} />}>
-          Carnivore
+                        sx={{ filter: !clientButtonValue?.includes(FoodPreferenceEnum.Unknown) ? filterColorSecondary : '' }} />}>
+          Only animals
         </Button>
         <Button
           color="secondary"
-          variant={(guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Omnivore) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+          variant={(clientButtonValue?.includes(FoodPreferenceEnum.Omnivore) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
           // key={value}
           disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
           value={FoodPreferenceEnum.Omnivore}
-          onClick={() => familyActions.updateFamilyGuestFoodPreferences(guestId, FoodPreferenceEnum.Omnivore)}
+          onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Omnivore)}
           endIcon={<Box component={'img'} src={`${Omnivore}`} width={24} height={24}
-                        sx={{ filter: !guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Omnivore) ? filterColorSecondary : '' }} />}>
-          Omnivore</Button>
+                        sx={{ filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore) ? filterColorSecondary : '' }} />}>
+          All Life</Button>
         <Button
           color="secondary"
           disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
-          variant={(guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegetarian) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+          variant={(clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
           value={FoodPreferenceEnum.Vegetarian}
           endIcon={<Box
-            sx={{ filter: !guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegetarian) ? filterColorSecondary : '' }}
+            sx={{ filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian) ? filterColorSecondary : '' }}
             component={'img'} src={`${Vegetarian}`} width={20}
             height={20} mr={1} />}
-          onClick={() => familyActions.updateFamilyGuestFoodPreferences(guestId, FoodPreferenceEnum.Vegetarian)}
-        >Vegetarian</Button>
+          onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegetarian)}
+        >Mostly Plants</Button>
         <Button
           color="secondary"
           endIcon={<Box
-            sx={{ filter: !guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegan) ? filterColorSecondary : '' }}
+            sx={{ filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegan) ? filterColorSecondary : '' }}
             component={'img'} src={`${Vegan}`} width={20}
             height={20} mr={1} />}
           disabled={familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
           value={FoodPreferenceEnum.Vegan}
-          variant={(guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegan) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
-          onClick={() => familyActions.updateFamilyGuestFoodPreferences(guestId, FoodPreferenceEnum.Vegan)}>Vegan</Button>
+          variant={(clientButtonValue?.includes(FoodPreferenceEnum.Vegan) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+          onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegan)}>Vegan</Button>
       </ButtonGroup>
     </Stack>
   );

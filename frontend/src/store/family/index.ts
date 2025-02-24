@@ -1,10 +1,9 @@
+import { atom, selector, selectorFamily, useRecoilState } from 'recoil';
 import {
-  atom, selector,
-  selectorFamily, useRecoilState,
-} from 'recoil';
-import {
-  AddressDto, AgeGroupEnum,
-  FamilyUnitDto, FoodPreferenceEnum,
+  AddressDto,
+  AgeGroupEnum,
+  FamilyUnitDto,
+  FoodPreferenceEnum,
   GuestDto,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
@@ -16,6 +15,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
+import { saveTheDateStepsState } from '@/store/steppers/steppers';
 
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
@@ -41,7 +41,6 @@ export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
   default: null,
 });
 
-
 export const familyGuestsStates = selector<FamilyGuestsStates | null>({
   key: 'familyMembers',
   get: ({ get }) => {
@@ -51,14 +50,22 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
     }
 
     const guests = familyUnit.guests || [];
-    const nobodyComing = guests.every((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
-    const attendingLastNames = guests.filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested).map((user) => user.lastName);
-    const allUsersAttendanceResponded = !guests.some((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending);
+    const nobodyComing = guests.every(
+      (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined,
+    );
+    const attendingLastNames = guests
+      .filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested)
+      .map((user) => user.lastName);
+    const allUsersAttendanceResponded = !guests.some(
+      (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Pending,
+    );
     const allAllergiesResponded = !guests.some((user) => !user.preferences?.foodAllergies?.length);
 
     const mailingAddressEntered = !!familyUnit.mailingAddress;
     const mailingAddressUspsVerified = familyUnit.mailingAddress?.uspsVerified;
-    const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName))).map((lastName) => `${lastName}s`).join(' & ');
+    const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName)))
+      .map((lastName) => `${lastName}s`)
+      .join(' & ');
     const saveTheDateComplete = mailingAddressUspsVerified && allUsersAttendanceResponded;
 
     return {
@@ -77,48 +84,53 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
 
 export const guestSelector = selectorFamily<GuestDto | null, string>({
   key: 'guestSelector',
-  get: (guestId) => ({ get }) => {
-    const familyUnit = get(familyState);
-    if (!familyUnit || !familyUnit.guests) {
-      return null;
-    }
-    const matchingGuest = familyUnit.guests.find((g) => g.guestId === guestId) || null;
-    console.log(`updating ${matchingGuest?.firstName} to ${matchingGuest?.rsvp.invitationResponse}`);
-    return matchingGuest || null;
-  },
+  get:
+    (guestId) =>
+    ({ get }) => {
+      const familyUnit = get(familyState);
+      if (!familyUnit || !familyUnit.guests) {
+        return null;
+      }
+      const matchingGuest = familyUnit.guests.find((g) => g.guestId === guestId) || null;
+      console.log(
+        `updating ${matchingGuest?.firstName} to ${matchingGuest?.rsvp.invitationResponse}`,
+      );
+      return matchingGuest || null;
+    },
   set:
     (guestId) =>
-      ({ get, set }, newValue) => {
-        // newValue is whatever you pass to set(guestSelector('id'), newValue)
-        // If it's null, you might decide to do nothing or remove the guest.
-        // In this example, let's assume `newValue` is a partial or complete GuestDto.
-        if (!newValue) return;
+    ({ get, set }, newValue) => {
+      // newValue is whatever you pass to set(guestSelector('id'), newValue)
+      // If it's null, you might decide to do nothing or remove the guest.
+      // In this example, let's assume `newValue` is a partial or complete GuestDto.
+      if (!newValue) return;
 
-        const familyUnit = get(familyState);
-        if (!familyUnit?.guests) return;
+      const familyUnit = get(familyState);
+      if (!familyUnit?.guests) return;
 
-        // Overwrite only the changed fields (shallow merge) or do a full replace:
-        console.log('unexpectedly setting guest stuff here');
-        const updatedGuests = familyUnit.guests.map((guest) => {
-          if (guest.guestId === guestId) {
-            return {
-              ...guest,
-              ...newValue, // merges the updates onto the original guest
-            };
-          }
-          return guest;
-        });
+      // Overwrite only the changed fields (shallow merge) or do a full replace:
+      console.log('unexpectedly setting guest stuff here');
+      const updatedGuests = familyUnit.guests.map((guest) => {
+        if (guest.guestId === guestId) {
+          return {
+            ...guest,
+            ...newValue, // merges the updates onto the original guest
+          };
+        }
+        return guest;
+      });
 
-        set(familyState, {
-          ...familyUnit,
-          guests: updatedGuests,
-        } as FamilyUnitDto);
-      },
+      set(familyState, {
+        ...familyUnit,
+        guests: updatedGuests,
+      } as FamilyUnitDto);
+    },
 });
 
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
+  const [saveTheDateSteps, setSaveTheDateSteps] = useRecoilState(saveTheDateStepsState);
   const { user: auth0User } = useAuth0();
   const {
     getFamilyUnitQuery,
@@ -127,37 +139,58 @@ export const useFamily = () => {
     patchFamilyGuestMutation,
   } = useApiContext();
 
-  const getFamily = useCallback(() => getFamilyUnitQuery.refetch()
-    .then((res) => {
-      if (!res.data || !res.data.guests) return;
+  const getFamily = useCallback(
+    () =>
+      getFamilyUnitQuery.refetch().then((res) => {
+        if (!res.data || !res.data.guests) return;
 
-      const matchingUser = res.data.guests.find((value: GuestDto) => {
-        return value.guestId === user.guestId;
+        const matchingUser = res.data.guests.find((value: GuestDto) => {
+          return value.guestId === user.guestId;
+        });
+        if (matchingUser) {
+          setUser(matchingUser);
+        }
+      }),
+    [],
+  );
+
+  const updateFamilyGuestSleepingPreference = useCallback(
+    (guestId: string, sleepPreference: SleepPreferenceEnum) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId: guestId, sleepPreference } });
+    },
+    [],
+  );
+
+  const updateFamilyGuestCommunicationPreference = useCallback(
+    (guestId: string, notificationPreference: NotificationPreferenceEnum[]) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, notificationPreference } });
+    },
+    [],
+  );
+
+  const updateFamilyGuestInterest = useCallback(
+    (guestId: string, interested: InvitationResponseEnum) => {
+      patchFamilyGuestMutation.mutate({
+        updatedGuest: { guestId, invitationResponse: interested },
       });
-      if (matchingUser) {
-        setUser(matchingUser);
-      }
-    }), []);
+    },
+    [],
+  );
 
-  const updateFamilyGuestSleepingPreference = useCallback((guestId: string, sleepPreference: SleepPreferenceEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId: guestId, sleepPreference } });
-  }, []);
+  const updateFamilyGuestFoodPreferences = useCallback(
+    (guestId: string, foodPreference: FoodPreferenceEnum) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodPreference } });
+    },
+    [],
+  );
 
-  const updateFamilyGuestCommunicationPreference = useCallback((guestId: string, notificationPreference: NotificationPreferenceEnum[]) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, notificationPreference } });
-  }, []);
-
-  const updateFamilyGuestInterest = useCallback((guestId: string, interested: InvitationResponseEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, invitationResponse: interested } });
-  }, []);
-
-  const updateFamilyGuestFoodPreferences = useCallback((guestId: string, foodPreference: FoodPreferenceEnum) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodPreference } });
-  }, []);
-
-  const updateFamilyGuestFoodAllergies = useCallback((guestId: string, allergies: string[]) => {
-    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, foodAllergies: allergies } });
-  }, []);
+  const updateFamilyGuestFoodAllergies = useCallback(
+    async (guestId: string, allergies: string[]) => {
+      await patchFamilyGuestMutation
+        .mutate({ updatedGuest: { guestId, foodAllergies: allergies } })
+    },
+    [],
+  );
 
   const updateFamilyGuestAgeGroup = useCallback((guestId: string, ageGroup: AgeGroupEnum) => {
     patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, ageGroup } });
@@ -172,7 +205,7 @@ export const useFamily = () => {
   }, []);
 
   useEffect(() => {
-    if (getFamilyUnitQuery.data) {
+    if (getFamilyUnitQuery.data && family !== getFamilyUnitQuery.data) {
       console.log('setting family from getFamilyUnitQuery');
       setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
     }
@@ -184,7 +217,8 @@ export const useFamily = () => {
     }
   }, [family, auth0User, getFamily]);
 
-  const familyActions = useMemo(() => ({
+  const familyActions = useMemo(
+    () => ({
       getFamily,
       updateFamilyGuestSleepingPreference,
       getFamilyUnitQuery,
@@ -201,7 +235,22 @@ export const useFamily = () => {
       patchFamilyGuestMutation,
     }),
     [
-      updateFamilyGuestFoodPreferences, patchFamilyGuestMutation, updateFamilyGuestFoodAllergies, updateFamilyGuestSleepingPreference, updateFamilyGuestCommunicationPreference, getFamilyUnitQuery, getFamily, updateFamilyGuestInterest, updateFamilyAddress, patchFamilyMutation, validateAddressMutation, updateFamilyComment, updateFamilyGuestAgeGroup, setFamily]);
+      updateFamilyGuestFoodPreferences,
+      patchFamilyGuestMutation,
+      updateFamilyGuestFoodAllergies,
+      updateFamilyGuestSleepingPreference,
+      updateFamilyGuestCommunicationPreference,
+      getFamilyUnitQuery,
+      getFamily,
+      updateFamilyGuestInterest,
+      updateFamilyAddress,
+      patchFamilyMutation,
+      validateAddressMutation,
+      updateFamilyComment,
+      updateFamilyGuestAgeGroup,
+      setFamily,
+    ],
+  );
 
   return [family, familyActions] as const;
 };
