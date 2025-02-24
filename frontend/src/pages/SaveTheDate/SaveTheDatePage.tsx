@@ -1,7 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import { useFamily } from '@/store/family';
+import { familyState, useFamily } from '@/store/family';
 import React, { useEffect, useMemo } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
@@ -42,16 +42,16 @@ function SaveTheDatePage() {
     }
   }, [stdStepper.currentStep]);
 
-  useEffect(() => {
-    if (!getFamilyUnitQuery.isPending) {
-      familyActions.getFamily();
-      // return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
-    }
-
-    // if (getFamilyUnitQuery.isError) {
-    //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
-    // }
-  }, []);
+  // useEffect(() => {
+  //   if (!getFamilyUnitQuery.isPending) {
+  //     familyActions.getFamily();
+  //     // return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
+  //   }
+  //
+  //   // if (getFamilyUnitQuery.isError) {
+  //   //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
+  //   // }
+  // }, []);
 
   return (
     <Box
@@ -64,95 +64,102 @@ function SaveTheDatePage() {
       pt={2}
       px={2}
     >
-      {((!family?.guests || !family?.guests?.length) && (
-        <div onClick={() => familyActions.getFamily()}>No guests found</div>
-      )) || (
-        <>
-          <Box mb={4}>
-            <SaveTheDateStepper />
-          </Box>
-          <StephsFavoriteTypography
-            variant="h4"
-            sx={{
-              ml: 'auto',
-              pl: screenWidth > 830 ? '200px' : 0,
-              mr: 'auto',
-              mb: 2,
-              fontSize: screenWidth > 830 ? '2.5rem' : '1.5rem',
-            }}
-          >
-            {Object.values(saveTheDateSteps)[tabIndex]?.label}
-          </StephsFavoriteTypography>
-          <ButtonsContainer>
-            {!genericQuestions &&
-              family?.guests?.map((guest: GuestDto) => (
-                <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-              ))}
-            {genericQuestions && <>{FamilyQueryQuestion}</>}
-            {tabIndex < 7 && (
-              <Box
-                width={'100%'}
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                pt={4}
-              >
-                <Button
-                  variant="outlined"
-                  color="error"
-                  sx={{
-                    backdropFilter: 'blur(20px)',
-                    backgroundColor: 'rgba(0,0,0,.1)',
-                    display: tabIndex > 0 ? 'inherit' : 'none',
-                    flexShrink: 0,
-                  }}
-                >
-                  <StephsFavoriteTypography sx={{}} onClick={() => {
-                    familyActions.getFamily();
-                    setTabIndex(tabIndex - 1)
-                  }}>
-                    Wait, go back
-                  </StephsFavoriteTypography>
-                </Button>
-                <Box id={'spacer'} display={'flex'} width={1}></Box>
-                <Button
-                  variant="outlined"
-                  color={
-                    stdStepper.currentStep[1].completed
-                      ? 'success'
-                      : ('error' as 'success' | 'error')
-                  }
-                  sx={{
-                    flexShrink: 0,
-                    backdropFilter: 'blur(20px)',
-                    backgroundColor: 'rgba(0,0,0,.1)',
-                    display: tabIndex < 6 ? 'inherit' : 'none',
-                  }}
-                  onClick={() => {
-                    familyActions.getFamily();
-                    setTabIndex(tabIndex + 1)
-                  }}
-                >
-                  <StephsFavoriteTypography>Next</StephsFavoriteTypography>
-                </Button>
-              </Box>
-            )}
-          </ButtonsContainer>
+      <Box mb={4}>
+        <SaveTheDateStepper />
+      </Box>
+      <StephsFavoriteTypography
+        variant="h4"
+        sx={{
+          ml: 'auto',
+          pl: screenWidth > 830 ? '200px' : 0,
+          mr: 'auto',
+          mb: 2,
+          color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+          fontSize: screenWidth > 830 ? '2.5rem' : '1.5rem',
+        }}
+      >
+        {Object.values(saveTheDateSteps)[tabIndex]?.label}
+      </StephsFavoriteTypography>
+      <ButtonsContainer>
+        {!genericQuestions && family && family.guests.length === 0 && (
+          <AttendanceButton guestId={'0'} />
+        )}
+        {!genericQuestions && family && family.guests.length &&
+          family.guests.map((guest: GuestDto) => (
+            <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+          ))}
+        {genericQuestions && <>{FamilyQueryQuestion}</>}
+        {tabIndex < 7 && (
           <Box
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            sx={{
-              backgroundImage: `url(${ElPulpo})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'top',
-              height: 400,
-              zIndex: -1,
-            }}
-          ></Box>
-        </>
-      )}
+            width={'100%'}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            pt={4}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              sx={{
+                backdropFilter: 'blur(20px)',
+                backgroundColor: 'rgba(0,0,0,.1)',
+                display: tabIndex > 0 ? 'inherit' : 'none',
+                flexShrink: 0,
+              }}
+            >
+              <StephsFavoriteTypography
+                sx={{
+                  color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+                }}
+                onClick={() => {
+                  familyActions.getFamily();
+                  setTabIndex(tabIndex - 1);
+                }}
+              >
+                Wait, go back
+              </StephsFavoriteTypography>
+            </Button>
+            <Box id={'spacer'} display={'flex'} width={1}></Box>
+            <Button
+              variant="outlined"
+              color={
+                stdStepper.currentStep[1].completed ? 'success' : ('error' as 'success' | 'error')
+              }
+              sx={{
+                flexShrink: 0,
+                backdropFilter: 'blur(20px)',
+                backgroundColor: 'rgba(0,0,0,.1)',
+                display: tabIndex > 0 && tabIndex < 6 ? 'inherit' : 'none',
+              }}
+              onClick={() => {
+                familyActions.getFamily();
+                setTabIndex(tabIndex + 1);
+              }}
+            >
+              <StephsFavoriteTypography
+                sx={{
+                  color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+                }}
+              >
+                Next
+              </StephsFavoriteTypography>
+            </Button>
+          </Box>
+        )}
+      </ButtonsContainer>
+      <Box
+        position="absolute"
+        bottom={0}
+        left={0}
+        right={0}
+        sx={{
+          backgroundImage: `url(${ElPulpo})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'top',
+          height: 400,
+          zIndex: -1,
+        }}
+      ></Box>
     </Box>
   );
 }

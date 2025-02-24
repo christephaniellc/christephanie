@@ -10,7 +10,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useFamily } from '@/store/family';
-import { GuestDto } from '@/types/api';
+import { GuestDto, InvitationResponseEnum, SleepPreferenceEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
 import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
@@ -34,13 +34,19 @@ export default function SaveTheDateStepper() {
   const location = useLocation();
   const theme = useTheme();
 
+
   const [family, familyActions] = useFamily();
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
 
+  const [interestedStep, setInterestedStep] = useState<number>(1)
+  const [pendingSteps, setPendingSteps] = useState<number>(1);
+  const [declinedSteps, setDeclinedSteps] = useState<number>(1);
+
   const guests = useMemo(() => family?.guests, [family]);
+
 
   useEffect(() => {
     if (urlParams) {
@@ -52,6 +58,7 @@ export default function SaveTheDateStepper() {
     }
   }, [saveTheDateSteps, urlParams]);
 
+
   useEffect(() => {
     setUrlParams(new URLSearchParams(location.search));
   }, [location]);
@@ -61,6 +68,7 @@ export default function SaveTheDateStepper() {
     setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
     navigate(`/save-the-date?step=${step}`);
   };
+
 
   return (
     <Box sx={{ width: '100%', mx: 'auto' }} display="flex" flexDirection="column"
