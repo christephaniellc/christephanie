@@ -69,7 +69,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
         >
           <Button
             sx={{
-              width: screenWidth > 600 ? '25%' : '100%',
+              width: '100%',
             }}
             color="secondary"
             disabled={
@@ -101,7 +101,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           </Button>
           <Button
             sx={{
-              width: screenWidth > 600 ? '25%' : '100%',
+              width: '100%',
             }}
             color="secondary"
             variant={
@@ -133,7 +133,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           </Button>
           <Button
             sx={{
-              width: screenWidth > 600 ? '25%' : '100%',
+              width: '100%',
             }}
             color="secondary"
             disabled={
@@ -166,7 +166,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           </Button>
           <Button
             sx={{
-              width: screenWidth > 600 ? '25%' : '100%',
+              width: '100%',
             }}
             color="secondary"
             endIcon={

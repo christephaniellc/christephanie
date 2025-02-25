@@ -1366,6 +1366,11 @@
   resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.9.tgz"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
+"@fontsource/orbitron@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@fontsource/orbitron/-/orbitron-5.1.1.tgz#ffd87b8348296714cc95cc3a044dcbbeadd3c4c3"
+  integrity sha512-hcxfRCJ8ITacRPLh66f4f/pZOKY2FdaEWMUQsQMR/oE8oaiPcNaXLi4F4fksV+7dVytfMnA2+ORMgKUkqmUONg==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.yarnpkg.com/@humanfs/core/-/core-0.19.1.tgz#17c55ca7d426733fe3c561906b8173c336b40a77"

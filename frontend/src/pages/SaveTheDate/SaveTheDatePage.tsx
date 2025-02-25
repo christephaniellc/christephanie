@@ -2,13 +2,13 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { familyState, useFamily } from '@/store/family';
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestDto } from '@/types/api';
+import { GuestDto, InvitationResponseEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
-import { ButtonBase, Typography } from '@mui/material';
+import { ButtonBase, Typography, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
@@ -17,6 +17,7 @@ import { StephsFavoriteTypography } from '@/components/AttendanceButton/Attendan
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
@@ -26,7 +27,8 @@ function SaveTheDatePage() {
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
   const { screenWidth } = useAppLayout();
-
+  const mousePosition = useRef({ x: 0, y: 0 });
+  const theme = useTheme();
   const genericQuestions = useMemo(
     () => ['comments', 'mailingAddress'].includes(stdStepper.currentStep[0]),
     [stdStepper.currentStep],
@@ -52,39 +54,58 @@ function SaveTheDatePage() {
   //   //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
   //   // }
   // }, []);
+  const handleMouseMove = (event: React.MouseEvent) => {
+    mousePosition.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const calculateShadow = () => {
+    console.log('mousePosition', mousePosition.current);
+    const { x, y } = mousePosition.current;
+    const shadowX = 2;
+    const shadowY = 2;
+    return `${shadowX}px ${shadowY}px 0px ${theme.palette.error.main}`;
+  };
 
   return (
     <Box
       component={Container}
+      onMouseMove={handleMouseMove}
       display="flex"
       flexDirection="column"
       justifyContent=""
       pb={10}
-      border={'0px dashed yellow'}
       pt={2}
       px={2}
+      sx={{
+        backdropFilter: 'blur(20px)',
+      }}
     >
       <Box mb={4}>
         <SaveTheDateStepper />
       </Box>
-      <StephsFavoriteTypography
-        variant="h4"
-        sx={{
-          ml: 'auto',
-          pl: screenWidth > 830 ? '200px' : 0,
-          mr: 'auto',
-          mb: 2,
-          color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
-          fontSize: screenWidth > 830 ? '2.5rem' : '1.5rem',
-        }}
-      >
-        {Object.values(saveTheDateSteps)[tabIndex]?.label}
-      </StephsFavoriteTypography>
+      <Box p={2}>
+          <StephsFavoriteTypography
+            variant="h4"
+            sx={{
+              ml: 'auto',
+              pl: '200px',
+              mr: 'auto',
+              mb: 2,
+              color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+              fontSize: '1.5rem',
+              // filter: `drop-shadow(${calculateShadow()})`,
+            }}
+          >
+            {Object.values(saveTheDateSteps)[tabIndex]?.label}
+          </StephsFavoriteTypography>
+      </Box>
       <ButtonsContainer>
         {!genericQuestions && family && family.guests.length === 0 && (
           <AttendanceButton guestId={'0'} />
         )}
-        {!genericQuestions && family && family.guests.length &&
+        {!genericQuestions &&
+          family &&
+          family.guests.length &&
           family.guests.map((guest: GuestDto) => (
             <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
           ))}
