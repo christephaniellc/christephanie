@@ -9,9 +9,15 @@ export const useAppLayout = () => {
   useLayoutEffect(() => {
     const handleResize = () => {
       const minWidth = 475;
+      const maxWidth = 1400;
       let screenWidth = window.innerWidth;
       if (screenWidth < minWidth) {
         const zoomLevel = screenWidth / minWidth;
+        console.log('setting new zoomLevel', zoomLevel);
+        document.body.style.zoom = `${zoomLevel}`;
+      }
+      if (screenWidth > maxWidth) {
+        const zoomLevel = screenWidth / maxWidth;
         console.log('setting new zoomLevel', zoomLevel);
         document.body.style.zoom = `${zoomLevel}`;
       }

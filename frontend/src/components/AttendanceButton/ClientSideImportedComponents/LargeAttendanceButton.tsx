@@ -28,7 +28,7 @@ const LargeAttendanceButton = ({
       flexWrap="wrap"
       id={`large-attendance-button-${guest.firstName}`}
     >
-      <Box display="flex" width="100%" flexWrap={'wrap' }>
+      <Box display="flex" width="100%" flexWrap="wrap">
         <Typography variant="h6" sx={{ mx: 'auto' }} width="100%">
           {guest?.auth0Id === user?.sub
             ? `You${guest.rsvp.invitationResponse === 'Pending' ? `, Maybe.` : ''}`

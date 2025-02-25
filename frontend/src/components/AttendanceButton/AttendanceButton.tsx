@@ -55,20 +55,15 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     }
   }, [guestId, stdStepper.currentStep]);
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    setMousePosition({ x: event.clientX, y: event.clientY });
-  };
-
   const calculateShadow = () => {
     const { x, y } = mousePosition;
-    const shadowX = (x / window.innerWidth) * 10 + 5
-    const shadowY = (y / window.innerHeight) *10 + 5;
+    const shadowX = 10
+    const shadowY = 10;
     return `${shadowX}px ${shadowY}px 0px ${guest.rsvp.invitationResponse === InvitationResponseEnum.Interested ? theme.palette.primary.dark : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending ? theme.palette.secondary.dark : theme.palette.error.dark}`;
   };
 
   return (
     <Box
-      onMouseMove={handleMouseMove}
       data-testid={'attendance-button'}
       sx={{
         p: 2,
@@ -105,8 +100,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
           height: 'auto',
           ...imgButtonSxProps,
           [theme.breakpoints.up('sm')]: {
-            minWidth: 250,
-            maxWidth: 250,
+            minWidth: '100%',
+            maxWidth: '`100%`',
           },
           background: 'rgba(0,0,0,1)',
           width: '100%',
