@@ -54,7 +54,7 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
             if (command.Auth0Id != null)
             {
                 _logger.LogInformation($"Updating Auth0Id from '{existingGuestEntity.Auth0Id ?? "<empty>"}' to '{command.Auth0Id}'");
-                existingGuestEntity.AgeGroup = command.AgeGroup;
+                existingGuestEntity.Auth0Id = command.Auth0Id;
             }
 
             if (command.InvitationResponse != null)
