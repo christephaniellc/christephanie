@@ -8,6 +8,13 @@ export const useAppLayout = () => {
 
   useLayoutEffect(() => {
     const handleResize = () => {
+      const minWidth = 475;
+      let screenWidth = window.innerWidth;
+      if (screenWidth < minWidth) {
+        const zoomLevel = screenWidth / minWidth;
+        console.log('setting new zoomLevel', zoomLevel);
+        document.body.style.zoom = `${zoomLevel}`;
+      }
       setScreenWidth(window.innerWidth);
       setContentHeight(window.innerHeight - bottomNavHeight);
     };
