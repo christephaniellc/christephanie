@@ -41,8 +41,8 @@ export default class Api {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(GuestDto: PatchGuestRequest): Promise<GuestDto> {
-    return this.patch(`/guest`, GuestDto);
+  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestDto> {
+    return this.patch(`/guest`, PatchGuestRequest);
   }
 
   deleteGuestDto(id: number): Promise<GuestDto> {

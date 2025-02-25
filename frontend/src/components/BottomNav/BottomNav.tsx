@@ -49,14 +49,12 @@ export const BottomNav = () => {
           icon={<ConnectWithoutContactIcon />}
         />
         <BottomNavigationAction
-          disabled={!auth0User}
           label="Privacy Policy"
           showLabel={true}
           icon={<ShieldIcon />}
           onClick={() => handleNavigation(routes[Pages.PrivacyPolicy].path!)}
         />
-        <BottomNavigationAction
-          disabled={!auth0User}
+        <BottomNavigationAction        
           label="Terms of Service"
           showLabel={true}
           icon={<GavelIcon />}
@@ -64,7 +62,6 @@ export const BottomNav = () => {
         />
         <BottomNavigationAction
           label={auth0User ? 'Logout' : 'Login'}
-          sx={{ ml: 'auto' }}
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => (auth0User ? logOutFromAuth0() : loginWithRedirect())}
