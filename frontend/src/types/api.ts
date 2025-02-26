@@ -83,6 +83,11 @@ export interface FamilyUnitViewModel {
   familyUnitLastLogin?: string | null;
 }
 
+export interface FindUserResponse {
+  guestId?: string | null;
+  auth0Id?: string | null;
+}
+
 export enum FoodPreferenceEnum {
   Unknown = 'Unknown',
   Omnivore = 'Omnivore',
@@ -710,7 +715,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<string, ProblemDetails | void>({
+      this.request<FindUserResponse, ProblemDetails | void>({
         path: `/api/user/find`,
         method: 'GET',
         query: query,
