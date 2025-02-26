@@ -82,7 +82,7 @@ export const useUser = () => {
   }, [auth0User]);
 
   useEffect(() => {
-    setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<string | undefined, ApiError>);
+    setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<FindUserResponse | undefined, ApiError>);
     queryClient.resetQueries({ queryKey: [`findUserIdQuery`] });
   }, [user.firstName, user.invitationCode]);
 
