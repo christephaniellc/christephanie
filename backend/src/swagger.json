@@ -750,7 +750,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/FindUserResponse"
                 }
               }
             }
@@ -1071,6 +1071,20 @@
           "familyUnitLastLogin": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FindUserResponse": {
+        "type": "object",
+        "properties": {
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "auth0Id": {
+            "type": "string",
             "nullable": true
           }
         },
