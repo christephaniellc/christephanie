@@ -47,11 +47,11 @@ namespace Wedding.PublicApi.Controllers
 
         [AllowAnonymous]
         [HttpGet("find")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FindUserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<string>> FindGuest(string invitationCode, string firstName, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<FindUserResponse>> FindGuest(string invitationCode, string firstName, CancellationToken cancellationToken = default)
         {
             try
             {
