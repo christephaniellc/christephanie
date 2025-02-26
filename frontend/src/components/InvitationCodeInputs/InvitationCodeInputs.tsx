@@ -65,11 +65,11 @@ export const InvitationCodeInputs = () => {
           title={
             !user?.guestId
               ? 'Please enter your invitation to get started.'
-              : `Welcome back ${user?.firstName}`
+              : `Welcome back ${user?.firstName.toUpperCase()}!`
           }
           subheader={
-            !accessToken
-              ? `Please login or finish creating your account to get started`
+            !accessToken && !user?.guestId
+              ? `Or click Login below, if you've already created an account`
               : ''
           }
         />
@@ -122,7 +122,7 @@ export const InvitationCodeInputs = () => {
         </CardContent>
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
-            {user?.auth0Id && (
+            {(
               <Button
                 sx={{ width: '100%' }}
                 disabled={!user?.firstName || !user?.invitationCode}
@@ -132,7 +132,7 @@ export const InvitationCodeInputs = () => {
                   user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser()
                 }
               >
-                {invitationButtonText || 'Login With your Existing Account'}
+                {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
               </Button>
             )}
           </Box>
