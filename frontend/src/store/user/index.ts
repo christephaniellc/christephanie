@@ -1,12 +1,12 @@
 import { atom, useRecoilState } from 'recoil';
-import { GuestDto } from '@/types/api';
+import { FindUserResponse, GuestDto } from '@/types/api';
 import { UseMutationResult, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useMemo } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { ApiError } from '@/api/Api';
 
-export const userIdQueryState = atom<Partial<UseQueryResult<string | undefined, ApiError>> | null>({
+export const userIdQueryState = atom<Partial<UseQueryResult<FindUserResponse | undefined, ApiError>> | null>({
   key: 'userIdQueryState',
   default: null,
 });
