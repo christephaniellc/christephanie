@@ -20,7 +20,7 @@ export const InvitationCodeInputs = () => {
   const api = useApiContext();
   const [user, userActions] = useUser();
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
-  const { user: auth0User, isAuthenticated, getAccessTokenSilently, loginWithRedirect } = useAuth0();
+  const { user: auth0User, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
 
   // Store the access token in state so we don't trigger errors during render.
@@ -49,8 +49,11 @@ export const InvitationCodeInputs = () => {
     fetchToken();
   }, [isAuthenticated, getAccessTokenSilently]);
 
-  const handleFindUser = () => {
-    userActions.findUserIdQuery?.refetch();
+  const handleFindUser = async () => {
+    const result = await userActions.findUserIdQuery?.refetch();
+    if (result && result.data && result.data.auth0Id) {
+      userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
+    }
   };
 
   if (!user) return null;
@@ -119,7 +122,7 @@ export const InvitationCodeInputs = () => {
         </CardContent>
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
-            {!user?.auth0Id && (
+            {user?.auth0Id && (
               <Button
                 sx={{ width: '100%' }}
                 disabled={!user?.firstName || !user?.invitationCode}
