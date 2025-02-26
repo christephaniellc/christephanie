@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -21,7 +21,7 @@ export default class Api {
     return this.get('/user/me');
   }
 
-  async findUserId(queryKey: string): Promise<string> {
+  async findUserId(queryKey: string): Promise<FindUserResponse> {
     return this.getPublic(`/user/find?${queryKey}`);
   }
 
