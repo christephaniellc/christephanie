@@ -29,7 +29,7 @@ export const InvitationCodeInputs = () => {
   useEffect(() => {
     const fetchToken = async () => {
       if (!isAuthenticated) {
-        console.warn('User is not authenticated; skipping token refresh.');
+        console.debug('User is not authenticated; skipping token refresh.');
         setAccessToken(null);
         return;
       }
@@ -69,7 +69,7 @@ export const InvitationCodeInputs = () => {
           }
           subheader={
             !accessToken
-              ? `Please login or finish creating your account to get started auth: ${user?.auth0Id}`
+              ? `Please login or finish creating your account to get started`
               : ''
           }
         />
