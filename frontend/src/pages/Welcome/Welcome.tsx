@@ -31,7 +31,7 @@ const Welcome = () => {
   }, [welcomeBannerRef, contentHeight]);
 
   useEffect(() => {
-    if (user.auth0Id && family === null) {
+    if (auth0User && family === null) {
       familyActions.getFamily();
     }
   }, [user, family, familyActions]);

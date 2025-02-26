@@ -57,7 +57,8 @@ export const useUser = () => {
     if (findUserIdQuery.data) {
       const newUser = {
         ...user,
-        guestId: findUserIdQuery.data,
+        guestId: findUserIdQuery.data.guestId,
+        auth0Id: findUserIdQuery.data.auth0Id,
       };
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
