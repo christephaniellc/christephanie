@@ -138,7 +138,7 @@ namespace Wedding.Lambdas.Authorize.Providers
 
             if (missingAuthenticatedInfo)
             {
-                var emailVerifiedState = _mapper.Map<VerifiedDto>(matchingGuest.Email);
+                var emailVerifiedState = _mapper.Map<VerifiedDto>(matchingGuest.Email) ?? new VerifiedDto();
                 var authenticatedUser = await _authenticationProvider.GetUserInfo(token);
                 _logger.LogInformation($"Saving authenticated user info: {JsonSerializer.Serialize(authenticatedUser)}");
 

@@ -40,7 +40,7 @@ export const useAuth0Queries = () => {
   };
 
   useEffect(() => {
-    console.log('auth0User', auth0User);
+    console.debug('auth0User', auth0User);
     if (auth0User && !user.auth0Id) {
       const newUser = {
         ...user,

@@ -67,7 +67,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
     }
 
     if (!family.mailingAddress) {
-      overallResponse += `who hasn't shared their address yet. `;
+      overallResponse += ` who hasn't shared their address yet. `;
     }
 
     if (family.mailingAddress) {
