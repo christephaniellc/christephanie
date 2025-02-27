@@ -137,7 +137,7 @@ jobs:
           fi
 
           # Remove duplicates
-          dirs=$(echo "$changed_dirs" | tr ' ' ',' | sort -u | tr ',' ' ')
+          dirs=$(echo "$changed_dirs" | tr ' ' '\n' | grep -v -E "(UnitTests|tests)" | tr '\n' ' ')
           echo "Lambda directories to deploy after removing dupes: $dirs"
 
           if [[ -z "$dirs" ]]; then

@@ -49,7 +49,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
                 Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName,
-                IpAddress = "127.0.0.1"
+                IpAddress = "127.0.0.1" 
             };
             _query = new GetFamilyUnitQuery(_fakeAuthContext);
         }
