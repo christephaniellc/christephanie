@@ -48,11 +48,20 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 _logger.LogInformation($"Raw GetFamily results: {JsonSerializer.Serialize(results)}");
 
                 // If not an admin, and auth-ed user is not a part of this family
-                if (results!.Guests!.All(result => result.GuestId != query.AuthContext.GuestId) 
+                if (results!.Guests!.All(result => result.GuestId != query.AuthContext.GuestId && result.Rsvp.InvitationResponse == InvitationResponseEnum.Pending) 
                     && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
                 {
                     throw new UnauthorizedAccessException("Access denied");
                 }
+
+                var sortedGuests = results!.Guests!
+                    .OrderBy(g =>
+                        g.GuestId == query.AuthContext.GuestId ? 0 :
+                            (g.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending ? 1 : 2))
+                    .ThenBy(g => g.GuestNumber)
+                    .ToList();
+
+                results.Guests = sortedGuests;
 
                 return _mapper.Map<FamilyUnitViewModel>(results);
             }
