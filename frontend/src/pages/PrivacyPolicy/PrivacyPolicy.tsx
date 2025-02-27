@@ -41,7 +41,7 @@ function PrivacyPolicy() {
       <Divider sx={{ mb: 4 }} />
 
       <Typography variant="body1" paragraph>
-        We’re delighted to welcome you to our wedding website. Your privacy is very important to us, and we’ve created this policy to explain how we collect, use, and protect your personal information as you interact with our site. This document covers all three phases of our website—from the initial “Save the Date” page through to the guestbook and photo upload feature prior to our wedding day.
+        We’re delighted to welcome you to our wedding website. Your privacy is very important to us, and we’ve created this policy to explain how we collect, use, and protect your personal information as you interact with our site. This document covers all three phases of our website—from the initial “Save the Date” page through to the guestbook and photo upload feature available by our wedding day.
       </Typography>
 
       <Typography variant="h5" gutterBottom>
@@ -63,7 +63,7 @@ function PrivacyPolicy() {
         </li>
         <li>
           <Typography variant="body1">
-            <strong>Pre-Wedding Day Phase:</strong> Upload photos and write guestbook entries to share memories and well wishes.
+            <strong>Wedding Event Phase:</strong> Upload photos, videos, and write guestbook entries to share memories and well wishes.
           </Typography>
         </li>
       </Box>

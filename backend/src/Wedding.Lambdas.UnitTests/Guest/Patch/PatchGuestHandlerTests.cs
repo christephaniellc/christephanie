@@ -114,6 +114,46 @@ namespace Wedding.Lambdas.UnitTests.Guest.Patch
             _mockDynamoDbProvider.Verify(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, invitationCode, guestId, It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
+
+        [Test]
+        public async Task ExecuteAsync_Should_UpdateAuth0Id()
+        {
+            // ARRANGE
+            var invitationCode = TestDataHelper.FAMILY_DOE.InvitationCode;
+            var guestId = TestDataHelper.GUEST_JOHN.GuestId;
+
+            var mutableDto = TestDataHelper.GUEST_JOHN;
+
+            var command = new PatchGuestCommand(_fakeAuthContext!, guestId, Auth0Id: "verifiedauth0id");
+
+            _mockDynamoDbProvider!
+                .Setup(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, invitationCode, guestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mapper!.Map<WeddingEntity>(mutableDto));
+
+            _mockDynamoDbProvider!
+                .Setup(x => x.SaveAsync(_testTokenHelper!.JwtAudience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()))
+                .Callback<string, WeddingEntity, CancellationToken>((aud, updatedEntity, ct) =>
+                {
+                    mutableDto = _mapper.Map<GuestDto>(updatedEntity);
+                })
+                .Returns(Task.CompletedTask);
+
+            _mockDynamoDbProvider!
+                .Setup(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, guestId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => _mapper.Map<WeddingEntity>(mutableDto));
+
+            // Act
+            var result = await Sut!.ExecuteAsync(command);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.InvitationCode.Should().Be(invitationCode);
+            result.Auth0Id.Should().Be("verifiedauth0id");
+
+            _mockDynamoDbProvider.Verify(x => x.SaveAsync(_testTokenHelper!.JwtAudience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockDynamoDbProvider.Verify(x => x.LoadGuestByGuestIdAsync(_testTokenHelper!.JwtAudience, invitationCode, guestId, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
         [Test]
         public async Task ExecuteAsync_Should_UpdateFoodPreferences()
         {

@@ -7,6 +7,7 @@ import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanst
 import {
   AddressDto,
   FamilyUnitDto,
+  FindUserResponse,
   GuestDto,
   PatchFamilyUnitRequest,
   PatchGuestRequest,
@@ -16,7 +17,7 @@ import { addressState } from '@/store/address';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 interface ApiContextProps {
-  findUserIdQuery: UseQueryResult<string | undefined, ApiError>;
+  findUserIdQuery: UseQueryResult<FindUserResponse | undefined, ApiError>;
   getMeQuery: UseQueryResult<GuestDto, ApiError>;
   getFamilyUnitQuery: UseQueryResult<FamilyUnitDto, ApiError>;
 
@@ -63,12 +64,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   const queryKey = `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
 
-  const findUserIdQuery = useQuery<string | undefined, ApiError>({
+  const findUserIdQuery = useQuery<FindUserResponse | undefined, ApiError>({
     queryKey: [`findUserIdQuery`, `${queryKey}`],
     queryFn: () => apiRef.current?.findUserId(queryKey),
     retry: false,
     enabled: false,
-  }) as UseQueryResult<string | undefined, ApiError>;
+  }) as UseQueryResult<FindUserResponse | undefined, ApiError>;
 
   const getMeQuery = useQuery<GuestDto, ApiError>({
     queryKey: ['getMeQuery', `${user.guestNumber}`],
