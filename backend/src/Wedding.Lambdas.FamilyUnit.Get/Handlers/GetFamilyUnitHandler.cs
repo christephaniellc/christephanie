@@ -51,7 +51,7 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
                 if (results!.Guests!.All(result => result.GuestId != query.AuthContext.GuestId && result.Rsvp.InvitationResponse == InvitationResponseEnum.Pending) 
                     && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
                 {
-                    throw new UnauthorizedAccessException("Access denied");
+                    throw new UnauthorizedAccessException("Access denied"); 
                 }
 
                 var sortedGuests = results!.Guests!
