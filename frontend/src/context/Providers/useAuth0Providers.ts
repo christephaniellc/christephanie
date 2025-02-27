@@ -16,6 +16,7 @@ export const useAuth0Providers = () => {
     authorizationParams: {
       redirect_uri: window.location.origin,
       ...(config.audience ? {audience: config.audience} : { }),
+      scope: 'openid profile email offline_access',
     },
   };
 
