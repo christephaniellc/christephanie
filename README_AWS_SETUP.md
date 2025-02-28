@@ -120,6 +120,7 @@ cdk deploy RoleStack-dev --context env=dev --profile dev
 SET UP BOOTSTRAP FOR EACH PROFILE:
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
+cdk destroy ApiStack-prod --context env=prod --profile prod
 cdk deploy ApiStack-prod --context env=prod --profile prod
 cdk deploy RoleStack-prod --context env=prod --profile prod
 cdk deploy FrontendStack-prod --context env=prod --profile prod
@@ -167,14 +168,15 @@ Redeploy prod:
 	x deploy DNS
 	x deploy Dynamo + Throttle
 	x update System Params with values for USPS
+	
 	x turn off authorizer caching (done in CDK)
+	x in API gateway, allow Access-Control-Allow-Origin (updated CDK)
 	x create an S3 bucket called christephanie-wedding-setup-prod (done in CDK), 
 		add folder called Data/ (upload whole folder of guest .jsons and delete items you don't want)
 	x Add prod secrets in github
+		AWS_ROLE_ARN (role created in RoleStack for github deploy), CLOUDFROUNT_DISTRIBUTION_ID
 	x Add new auth0 prod app
 	Test new auth0 prod app 
-	x in API gateway, allow Access-Control-Allow-Origin
-	x (update CDK)
 
 
 
