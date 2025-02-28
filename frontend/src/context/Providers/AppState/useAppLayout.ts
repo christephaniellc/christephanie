@@ -24,6 +24,9 @@ export const useAppLayout = () => {
         console.log('setting new zoomLevel', zoomLevel);
         document.body.style.zoom = `${zoomLevel}`;
       }
+      if (screenWidth >= minWidth && screenWidth <= maxWidth) {
+        document.body.style.zoom = `1`;
+      }
       setScreenWidth(window.innerWidth);
       setContentHeight(newHeightBasedOnZoom - bottomNavHeight);
       console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
