@@ -58,6 +58,6 @@ export const queryKeySelector = selector<string>({
   key: 'queryKey',
   get: ({ get }) => {
     const user= get(userState);
-    return `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
+    return `invitationCode=${user?.invitationCode.trim()}&firstName=${user?.firstName.trim()}`;
   },
 });

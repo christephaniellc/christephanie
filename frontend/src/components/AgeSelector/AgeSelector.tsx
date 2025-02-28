@@ -9,6 +9,8 @@ import Button from '@mui/material/Button';
 import { useAuth0 } from '@auth0/auth0-react';
 import Stepper from '@mui/material/Stepper';
 import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/steppers';
+import Paper from '@mui/material/Paper';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -36,6 +38,7 @@ const CustomStepper = styled(Stepper)(({ theme }) => ({
 export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   const guest = useRecoilValue(guestSelector(guestId));
   const [userAgeGroup, setUserAgeGroup] = useState(guest.ageGroup);
+  const { boxShadow } = useBoxShadow();
   const theme = useTheme();
   const [_, familyActions] = useFamily();
   const { user } = useAuth0();
@@ -123,49 +126,61 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
   return (
     <Box
       display="flex"
-      flexWrap="nowrap"
+      flexWrap='wrap'
       sx={{
+        p: 2,
+        height: '100%',
+        overflow: 'hidden',
+        border: `2px solid rgba(${theme.palette.secondary.main}, .5)`,
+        alignContent: 'space-between',
         backdropFilter: 'none',
         backgroundColor: 'transparent',
         boxShadow: 'none',
+        width: 200,
       }}
     >
+      <Typography variant="body1" width={'100%'} color='secondary'>
+        Someone who's
+      </Typography>
       <Button
+        component={Paper}
+        elevation={10}
         sx={{
-          alignItems: 'flex-start',
+          ...imgButtonSxProps,
+          my: 2,
+          alignItems: 'center',
+          pt: 5,
+          pb: 3,
+          pr: 6,
+          pl: 4,
+          mx: 'auto',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          padding: theme.spacing(2),
+          justifyContent: 'center',
+          // padding: theme.spacing(2),
           position: 'relative',
           width: 150,
           minWidth: 150,
           maxWidth: 150,
-          height: 165,
-          ...imgButtonSxProps,
-          boxShadow: 'none',
+          boxShadow: boxShadow,
           backgroundColor: 'transparent',
+          flexGrow: 2,
+          height: 135,
         }}
       >
         <Box
           sx={{
+
             fontSize: buttonProps.fontSize,
             color: darken(theme.palette.text.primary, darkenCoefficent),
             position: 'relative',
             marginBottom: theme.spacing(2),
-            mr: theme.spacing(1),
             display: 'flex',
-            flexDirection: 'column',
-            px: 1,
             width: '100%',
             height: '100%',
           }}
         >
-          <Typography variant="caption" width={'100%'} color='secondary'>
-            Someone who's
-          </Typography>
           <AgeSlider
-            sx={{ pointerEvents: disabled ? 'none' : 'auto', mt: 3 }}
+            sx={{ pointerEvents: disabled ? 'none' : 'auto' }}
             // track="inverted"
             disabled={disabled}
             orientation="vertical"
@@ -186,10 +201,10 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             }
           />
         </Box>
-        <Typography ml="auto" variant="caption" color='secondary'>
-          ...That's who.
-        </Typography>
       </Button>
+      <Typography ml="auto" variant="caption" color='secondary'>
+        ...That's who.
+      </Typography>
     </Box>
   );
 };

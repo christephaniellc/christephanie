@@ -24,7 +24,7 @@ export class AuthStack extends cdk.Stack {
     };
     const functionLambdaName = lambdaConfig.name.toLowerCase().replace(/\./g, '-').replace("wedding-lambdas", "");
     const functionName = `${apiGatewayName}${functionLambdaName}`;
-    const lambdaRole = attachIamPoliciesToRole(this, lambdaConfig, props.env.account, props.env.region);
+    const lambdaRole = attachIamPoliciesToRole(this, environment, lambdaConfig, props.env.account, props.env.region);
 
     const authorizerLambda = new lambda.Function(this, lambdaConfig.name, {
       ...lambdaAuthDefaults,
