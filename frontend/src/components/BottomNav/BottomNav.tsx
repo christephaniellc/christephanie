@@ -10,6 +10,7 @@ import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
+import Paper from '@mui/material/Paper';
 
 export const BottomNav = () => {
   const [navValue, setNavValue] = useState();
@@ -28,14 +29,16 @@ export const BottomNav = () => {
   };
 
   return (
-    <Box position="fixed" bottom={0} width="100%">
+    <Box position="fixed" bottom={0} width="100%" sx={{ backgroundColor: 'transparent', zIndex: 100, height: 65}} component={Paper} elevation={5}>
       <BottomNavigation
+        sx={{ backgroundColor: 'rgba(0,0,0,.5)', backdropFilter: 'blur(20px)', borderTop: '4px solid rgba(255,255,255,.1)', height: 65 }}
         value={navValue}
         onChange={(event, newValue) => setNavValue(newValue)}
       >
         <BottomNavigationAction
           label="Home"
           component={Link}
+          sx={{ lineHeight: 1}}
           showLabel={true}
           to={routes[Pages.Welcome].path!}
           icon={<HomeIcon />}
@@ -49,12 +52,14 @@ export const BottomNav = () => {
           icon={<ConnectWithoutContactIcon />}
         />
         <BottomNavigationAction
+          sx={{ height: '100%', marginLeft: 'auto', color: 'background.paper', backgroundColor: 'rgba(255, 255, 255, .1)' }}
           label="Privacy Policy"
           showLabel={true}
           icon={<ShieldIcon />}
           onClick={() => handleNavigation(routes[Pages.PrivacyPolicy].path!)}
         />
-        <BottomNavigationAction        
+        <BottomNavigationAction
+          sx={{ height: '100%', marginRight: 'auto', color: 'background.paper', backgroundColor: 'rgba(255, 255, 255, .1)' }}
           label="Terms of Service"
           showLabel={true}
           icon={<GavelIcon />}

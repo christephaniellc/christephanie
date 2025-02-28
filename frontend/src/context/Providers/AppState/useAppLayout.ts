@@ -11,19 +11,24 @@ export const useAppLayout = () => {
       const minWidth = 475;
       const maxWidth = 1400;
       let screenWidth = window.innerWidth;
+      let newHeightBasedOnZoom = window.innerHeight;
       if (screenWidth < minWidth) {
         const zoomLevel = screenWidth / minWidth;
         console.log('setting new zoomLevel', zoomLevel);
+        newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         document.body.style.zoom = `${zoomLevel}`;
       }
       if (screenWidth > maxWidth) {
         const zoomLevel = screenWidth / maxWidth;
+        newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         console.log('setting new zoomLevel', zoomLevel);
         document.body.style.zoom = `${zoomLevel}`;
       }
       setScreenWidth(window.innerWidth);
-      setContentHeight(window.innerHeight - bottomNavHeight);
+      setContentHeight(newHeightBasedOnZoom - bottomNavHeight);
+      console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
     };
+    handleResize();
 
     window.addEventListener('resize', handleResize);
 

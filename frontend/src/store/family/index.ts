@@ -20,20 +20,6 @@ import { saveTheDateStepsState } from '@/store/steppers/steppers';
 export const familyState = atom<FamilyUnitDto | null>({
   key: 'familyUnit',
   default: null,
-  effects: [
-    ({ setSelf }) => {
-      // 1. On atom initialization, check localStorage
-      const savedValue = localStorage.getItem('familyUnit');
-      if (savedValue != null) {
-        try {
-          // Restore the atom's value from localStorage
-          setSelf(JSON.parse(savedValue));
-        } catch (error) {
-          console.error('Error parsing localStorage value', error);
-        }
-      }
-    },
-  ],
 });
 
 export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
@@ -132,11 +118,17 @@ const somethingFamilySelector = selector({
   get: ({ get }) => {
     const family = get(familyState);
     const ageIsSelected = family?.guests?.every((guest: GuestDto) => guest.ageGroup !== undefined);
-      const foodPreferencesAreSelected = family?.guests?.every((guest: GuestDto) => guest.preferences.foodPreference !== null);
-      const foodAllergiesAreSelected = family?.guests?.every((guest: GuestDto) => !!guest.preferences.foodAllergies);
-      const campingPreferencesAreSelected = family?.guests?.every((guest: GuestDto) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown);
-      const addressIsSelected = family?.mailingAddress !== undefined;
-      const commentsAreSelected = family?.invitationResponseNotes !== undefined;
+    const foodPreferencesAreSelected = family?.guests?.every(
+      (guest: GuestDto) => guest.preferences.foodPreference !== null,
+    );
+    const foodAllergiesAreSelected = family?.guests?.every(
+      (guest: GuestDto) => !!guest.preferences.foodAllergies,
+    );
+    const campingPreferencesAreSelected = family?.guests?.every(
+      (guest: GuestDto) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+    );
+    const addressIsSelected = family?.mailingAddress !== undefined;
+    const commentsAreSelected = family?.invitationResponseNotes !== undefined;
     return {
       ageIsSelected,
       foodPreferencesAreSelected,
@@ -145,7 +137,7 @@ const somethingFamilySelector = selector({
       addressIsSelected,
       commentsAreSelected,
     };
-      //   updateSteps((prev) => ({
+    //   updateSteps((prev) => ({
     //     ...prev,
     //     ageGroup: {
     //       ...prev.ageGroup,
@@ -177,8 +169,21 @@ const somethingFamilySelector = selector({
     //     },
     //   }));
   },
-})
+});
 
+export function reorderArrayByKey(array, key, matchValue) {
+  // Find the index of the element where the property matches the provided value
+  const index = array.findIndex(item => item[key] === matchValue);
+
+  // If a matching element is found, remove it and place it at the beginning of the array
+  if (index !== -1) {
+    const [matchingElement] = array.splice(index, 1);
+    array.unshift(matchingElement);
+  }
+  console.log('sorted array', array);
+
+  return array;
+}
 
 export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
@@ -198,10 +203,11 @@ export const useFamily = () => {
         if (!res.data || !res.data.guests) return;
 
         const matchingUser = res.data.guests.find((value: GuestDto) => {
-          return value.guestId === user.guestId;
+          return value.auth0Id === user.auth0Id;
         });
         if (matchingUser) {
-          setUser(matchingUser);
+          const sortedGuests = reorderArrayByKey(res.data.guests, 'guestId', auth0User.sub);
+          setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitDto);
         }
       }),
     [],
@@ -239,8 +245,9 @@ export const useFamily = () => {
 
   const updateFamilyGuestFoodAllergies = useCallback(
     async (guestId: string, allergies: string[]) => {
-      await patchFamilyGuestMutation
-        .mutate({ updatedGuest: { guestId, foodAllergies: allergies } })
+      await patchFamilyGuestMutation.mutate({
+        updatedGuest: { guestId, foodAllergies: allergies },
+      });
     },
     [],
   );
@@ -260,9 +267,17 @@ export const useFamily = () => {
   useEffect(() => {
     if (getFamilyUnitQuery.data && !family) {
       console.log('setting family from getFamilyUnitQuery');
-      setFamily(getFamilyUnitQuery.data as FamilyUnitDto);
+      const sortedGuests =
+        getFamilyUnitQuery.data.guests &&
+        getFamilyUnitQuery.data.guests.length > 1 &&
+        reorderArrayByKey(getFamilyUnitQuery.data.guests, 'guestId', auth0User.sub);
+      console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
+      setFamily({
+        ...getFamilyUnitQuery.data,
+        guests: sortedGuests,
+      });
     }
-  }, [getFamilyUnitQuery.data]);
+  }, [getFamilyUnitQuery.data, user]);
 
   useEffect(() => {
     if (auth0User && !family) {

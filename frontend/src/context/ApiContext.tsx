@@ -12,7 +12,7 @@ import {
   PatchFamilyUnitRequest,
   PatchGuestRequest,
 } from '@/types/api';
-import { familyState } from '@/store/family';
+import { familyState, reorderArrayByKey } from '@/store/family';
 import { addressState } from '@/store/address';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
@@ -104,12 +104,18 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     onSuccess: (data) => {
       console.log('patchFamilyGuestMutation success', data);
       setFamily((prev) => {
+        const sortedGuests = reorderArrayByKey(prev.guests, 'guestId', auth0User.sub);
         return { ...prev, guests: prev.guests.map((g) => (g.guestId === data.guestId ? data : g)) };
       });
     },
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
-      setFamily(family);
+      const sortedGuests = reorderArrayByKey(
+        family.guests,
+        'guestId',
+        auth0User.sub
+      )
+      setFamily({ ...family, guests: sortedGuests });
     },
   });
 
@@ -122,10 +128,22 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['updateFamilyUnit', JSON.stringify(family)],
     mutationFn: ({ updatedFamily }: { updatedFamily: PatchFamilyUnitRequest }) =>
       apiRef.current.patchFamilyUnit(updatedFamily),
-    onSuccess: (data) => setFamily(data),
+    onSuccess: (data) => {
+      const sortedGuests = reorderArrayByKey(
+        data.guests,
+        'guestId',
+        auth0User.sub
+      )
+      setFamily({...data, guests: sortedGuests})
+    },
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
-      setFamily(family);
+      const sortedGuests = reorderArrayByKey(
+        family.guests,
+        'guestId',
+        auth0User.sub
+      )
+      setFamily({...family, guests: sortedGuests});
     },
   });
 
