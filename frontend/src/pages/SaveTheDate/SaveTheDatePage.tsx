@@ -83,9 +83,8 @@ function SaveTheDatePage() {
           flexWrap: 'wrap',
           backdropFilter: 'blur(20px)',
           position: 'relative',
-          height: `${contentHeight - 200}px`,
+          height: `${contentHeight - 175}px`,
           overflow: 'hidden',
-          paddingBottom: rem(30),
         }}
       >
         <Box p={2} height={85}>
@@ -144,7 +143,7 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '75px',
+              paddingBottom: '85px',
             }}
           >
             <Button
@@ -212,7 +211,7 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   mx: 'auto',
   maxHeight: '80vh',
-  paddingBottom: '200px',
+  paddingBottom: '140px',
   position: 'relative',
   overflow: 'auto',
 }));
