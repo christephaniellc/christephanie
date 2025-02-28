@@ -13,7 +13,7 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 const CampingPreferences = ({ guestId }: { guestId: string }) => {
-  const { boxShadow } = useBoxShadow();
+  const { boxShadow, handleMouseMove } = useBoxShadow();
   const { screenWidth } = useAppLayout();
   const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
@@ -55,7 +55,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
         sx={{
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(0,0,0,.1)',
-          filter: `drop-shadow(${boxShadow()})`,
+          filter: `drop-shadow(${boxShadow})`,
         }}
       >
         <ButtonGroup
