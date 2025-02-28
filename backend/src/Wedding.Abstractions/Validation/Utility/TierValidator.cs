@@ -9,11 +9,11 @@ namespace Wedding.Abstractions.Validation.Utility
         {
             RuleFor(tier => tier)
                 .NotEmpty()
-                .Matches(@"^[A-F]{1}[+-]?$").WithMessage("Invalid tier.");
+                .Matches(@"^[A-Za-z]+[+-]?$").WithMessage("Invalid tier.");
         }
 
         /// <summary>
-        /// Validates the specified object.
+        /// Validates the specified object. 
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <param name="_">The .</param>

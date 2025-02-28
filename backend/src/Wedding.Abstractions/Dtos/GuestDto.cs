@@ -20,12 +20,11 @@ namespace Wedding.Abstractions.Dtos
 
         public string LastName { get; set; } = "";
 
-        public List<RoleEnum> Roles { get; set; }
+        public required List<RoleEnum> Roles { get; set; }
 
-        public string? Email { get; set; }
-        public bool EmailVerified { get; set; }
+        public VerifiedDto? Email { get; set; }
 
-        public string? Phone { get; set; }
+        public VerifiedDto? Phone { get; set; }
 
         public RsvpDto? Rsvp { get; set; }
 

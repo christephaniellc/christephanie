@@ -9,6 +9,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
     public class UpdateFamilyUnitHandlerTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

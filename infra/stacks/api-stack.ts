@@ -2,12 +2,12 @@ import { Construct } from 'constructs';
 import { LambdaConfig, lambdaDefaults } from './config/lambda-config';
 import { EnvStackProps } from './config/env-config';
 import { ApplicationProps } from './config/application-config';
+import { attachIamPoliciesToRole } from './helpers/iam-helper';
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2';
 import * as auth from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigatewayintegration from 'aws-cdk-lib/aws-apigatewayv2-integrations';
-import { attachIamPoliciesToRole } from './helpers/iam-helper';
 
 export interface AllStackProps extends EnvStackProps {
     httpLambdaAuthorizer: auth.HttpLambdaAuthorizer;
@@ -27,10 +27,21 @@ export class ApiStack extends cdk.Stack {
     //----------------------------
     // CREATE API PROXY GATEWAY
     //----------------------------
+    const corsOptions = props.env.allowOrigins ?
+    {
+        corsPreflight: {
+        allowOrigins: props.env.allowOrigins,
+        allowHeaders: ['authorization', 'content-type'],
+        allowMethods: [apigateway.CorsHttpMethod.ANY], // *
+        allowCredentials: true,
+        },
+    } : {};
+
     this.apiGateway = new apigateway.HttpApi(this, `${applicationName}-http-api`, {
         apiName: `${apiGatewayName}-${environment}`,
         description: `API for ${applicationName}-${environment} website`,
         createDefaultStage: false,
+        ...corsOptions
     });
     console.log(`HttpApi: ${this.apiGateway.apiEndpoint}`);
 
@@ -39,6 +50,7 @@ export class ApiStack extends cdk.Stack {
         stageName: environment,
         autoDeploy: true,
     });
+
     (this.apiGateway as any).defaultStage = stage;
 
     console.log(`HttpStage: ${stage.stageName}`);
@@ -55,9 +67,13 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me` },
         { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit` },
         { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit` },
+        { name: 'Wedding.Lambdas.FamilyUnit.Patch', method: apigateway.HttpMethod.PATCH, path: `/familyunit` },
+        { name: 'Wedding.Lambdas.Guest.Patch', method: apigateway.HttpMethod.PATCH, path: `/guest` },
         { name: 'Wedding.Lambdas.Validate.Address', method: apigateway.HttpMethod.POST, path: `/validate/address` },
+        { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone` },
         { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true },
         { name: 'Wedding.Lambdas.Helloworld', method: apigateway.HttpMethod.GET, path: `/helloworld`, unauthorized: true },
+        { name: 'Wedding.Lambdas.Admin.Setup', method: apigateway.HttpMethod.PUT, path: `/admin/setup`, unauthorized: true },
       ];
 
       lambdaConfigs.forEach(lambdaConfig => {

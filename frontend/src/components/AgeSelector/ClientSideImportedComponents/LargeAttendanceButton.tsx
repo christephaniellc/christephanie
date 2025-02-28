@@ -8,7 +8,7 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector } from '@/store/family';
 import { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
-import { CountdownMessage } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
 
 type AsyncAttendanceButtonProps = {
@@ -33,7 +33,9 @@ const LargeAttendanceButton = ({ guestId, isPending = true, error = null }: Asyn
       >
         <StickFigureIcon hidden={interested === 'Declined'}
                          fontSize={interested === 'Interested' && 'large' || 'medium'}
-                         loading={isPending} />
+                         loading={isPending}
+                          ageGroup={guest?.ageGroup}
+        />
         <StickFigureIcon fontSize={'large'} hidden={true} />
       </Box>
       <Typography variant="h6" sx={{ mx: 'auto' }} width='100%'>

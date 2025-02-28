@@ -180,7 +180,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             var result = _mapper.Map<AddressDto>(uspsAddressDto);
 
             // Assert
-            result.Should().BeNull();
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(new AddressDto());
         }
     }
 }

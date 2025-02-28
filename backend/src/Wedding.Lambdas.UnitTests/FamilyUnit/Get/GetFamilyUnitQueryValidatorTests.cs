@@ -13,8 +13,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
     [UnitTestsFor(typeof(GetFamilyUnitQueryValidator))]
     public class GetFamilyUnitQueryValidatorTests
     {
-        private TestTokenHelper _testTokenHelper;
-        private GetFamilyUnitQueryValidator _validator;
+        private TestTokenHelper? _testTokenHelper;
+        private GetFamilyUnitQueryValidator? Sut;
 
         [SetUp]
         public void SetUp()
@@ -24,7 +24,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 .Build();
 
             _testTokenHelper = new TestTokenHelper(configuration);
-            _validator = new GetFamilyUnitQueryValidator();
+            Sut = new GetFamilyUnitQueryValidator();
         }
 
         [Test]
@@ -33,15 +33,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = "",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.AuthContext.InvitationCode);
         }
 
@@ -51,15 +52,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = "sdfsdfsdfsd",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.AuthContext.InvitationCode);
         }
 
@@ -69,15 +71,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = "",
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.AuthContext.GuestId);
         }
 
@@ -87,15 +90,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = "sdfsdfsdfsd",
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.AuthContext.GuestId);
         }
 
@@ -105,15 +109,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = "324oijsoifj",
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldHaveValidationErrorFor(q => q.AuthContext.InvitationCode);
         }
 
@@ -123,15 +128,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()
+                Roles = TestDataHelper.GUEST_ADMIN.Roles.ToString()!,
+                IpAddress = "127.0.0.1"
             };
             var query = new GetFamilyUnitQuery(authContext);
 
             // Act & Assert
-            var result = _validator.TestValidate(query);
+            var result = Sut!.TestValidate(query);
             result.ShouldNotHaveValidationErrorFor(q => q.AuthContext.InvitationCode);
             result.ShouldNotHaveValidationErrorFor(q => q.AuthContext.GuestId);
             result.ShouldNotHaveValidationErrorFor(q => q.AuthContext.Roles);

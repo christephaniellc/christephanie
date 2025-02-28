@@ -23,8 +23,8 @@ namespace Wedding.Lambdas.Authorize;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private static string _authority;
-    private static string _audience;
+    private static string _authority = "";
+    private static string _audience = "";
 
     public Function() : this(BuildDefaultServiceProvider())
     {
@@ -93,7 +93,9 @@ public class Function
             throw new UnauthorizedAccessException("Unauthorized");
         }
 
-        var routeKey = request.RequestContext.RouteKey;
+        var methodArn = request.MethodArn ?? LambdaArnTranslations.ConvertToArn(request.RequestContext.RouteKey);
+
+        var ipAddress = request.GetIpAddressFromRequest();
 
         if (string.IsNullOrEmpty(_authority))
         {
@@ -110,20 +112,27 @@ public class Function
         {
             var multitenancySettingsProvider = scope.ServiceProvider.GetRequiredService<IMultitenancySettingsProvider>();
             var origin = request.GetOriginFromRequest();
+            if (string.IsNullOrEmpty(origin))
+            {
+                throw new ApplicationException("Unable to determine origin.");
+            }
             _audience =  multitenancySettingsProvider.GetMappedAudience(origin) ?? throw new InvalidOperationException();
         }
 
         context.Logger.LogDebug($"Authorization header: {authorizationHeader}");
         context.Logger.LogDebug($"Authority: {_authority}");
         context.Logger.LogDebug($"Audience: {_audience}");
-        context.Logger.LogDebug($"RouteKey: {routeKey}");
-        context.Logger.LogDebug($"Arn: {LambdaArnTranslations.ConvertToArn(routeKey)}");
+        context.Logger.LogDebug($"Request.RouteKey: {request.RequestContext.RouteKey ?? "(null)"}");
+        context.Logger.LogDebug($"Request.MethodArn: {request.MethodArn ?? "(null)"}");
+        context.Logger.LogDebug($"MethodArn : {methodArn}");
+        context.Logger.LogDebug($"IpAddress : {ipAddress}");
 
         var query = new ValidateAuthQuery(
             _authority,
             _audience,
-            LambdaArnTranslations.ConvertToArn(routeKey),
-            authorizationHeader.Replace("Bearer ", ""));
+            methodArn,
+            ipAddress,
+        authorizationHeader.Replace("Bearer ", ""));
 
         try
         {

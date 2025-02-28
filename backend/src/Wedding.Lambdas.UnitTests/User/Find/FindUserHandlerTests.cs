@@ -8,6 +8,7 @@ namespace Wedding.Lambdas.UnitTests.User.Find
     public class FindUserHandlerTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

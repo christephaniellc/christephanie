@@ -51,6 +51,7 @@ namespace Wedding.Common.DI
             {
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                 cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
             });
 
             IMapper mapper = mapperConfig.CreateMapper();

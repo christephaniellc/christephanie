@@ -15,7 +15,13 @@ namespace Wedding.Common.Helpers
         public static string GetToken(IHeaderDictionary headerDictionary)
         {
             var headers = GetHeaders(headerDictionary);
-            return headers["Authorization"].Replace("Bearer ", "");
+            return headers!["Authorization"].Replace("Bearer ", "");
+        }
+        public static string? GetIpAddress(HttpContext httpContext)
+        {
+            return httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                   ?? httpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
+                   ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? null;
         }
     }
 }

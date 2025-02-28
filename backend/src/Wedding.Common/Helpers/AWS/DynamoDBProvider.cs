@@ -20,10 +20,10 @@ namespace Wedding.Common.Helpers.AWS
         private readonly IDynamoDBContext _repository;
         private readonly IMapper _mapper;
         private readonly IMultitenancySettingsProvider _multitenancySettingsProvider;
-
-        public DynamoDBProvider(ILogger<DynamoDBProvider> logger, 
-            IDynamoDBContext repository, 
-            IMapper mapper, 
+        
+        public DynamoDBProvider(ILogger<DynamoDBProvider> logger,
+            IDynamoDBContext repository,
+            IMapper mapper,
             IMultitenancySettingsProvider multitenancySettingsProvider)
         {
             _logger = logger;
@@ -32,13 +32,94 @@ namespace Wedding.Common.Helpers.AWS
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        public DynamoDBOperationConfig GetTableConfig(string audience)
+        public DynamoDBOperationConfig GetTableConfig(string audience, bool rateLimit = false)
         {
             return new DynamoDBOperationConfig
             {
-                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience)
+                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience, rateLimit)
             };
         }
+
+        /// <summary> 
+        /// Checks if an IP has exceeded the rate limit for a given route.
+        /// </summary>
+        /// <param name="audience"></param>
+        /// <param name="ipAddress"></param>
+        /// <param name="route"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<bool> CheckRateLimitAsync(string audience, string ipAddress, string route, 
+            int rateLimit = 3, double rateLimitPerSeconds = 1.0, CancellationToken cancellationToken = default)
+        {
+            var config = GetTableConfig(audience, rateLimit:true);
+            var now = DateTime.UtcNow;
+
+            // Retrieve existing rate limit record
+            var entity = await _repository.LoadAsync<RateLimitEntity>(route, ipAddress, config, cancellationToken);
+            if (entity != null)
+            {
+                var requestCount = entity.RequestCount; var lastRequestTime = entity.LastRequestTime;
+                if (lastRequestTime.Kind == DateTimeKind.Unspecified)
+                {
+                    lastRequestTime = DateTime.SpecifyKind(lastRequestTime, DateTimeKind.Utc);
+                }
+                else if (lastRequestTime.Kind == DateTimeKind.Local)
+                {
+                    lastRequestTime = lastRequestTime.ToUniversalTime();
+                }
+
+                Console.WriteLine($"Request count: {requestCount} / Rate limit: {rateLimit} / Rate limit per seconds: {rateLimitPerSeconds}");
+                Console.WriteLine($"NOW: {now} - LRT: {lastRequestTime} {now.Subtract(lastRequestTime).TotalSeconds
+                }.  Test: {now.Subtract(lastRequestTime).TotalSeconds >= rateLimitPerSeconds}");
+
+                var difference = now.Subtract(lastRequestTime);
+                if (difference.TotalSeconds >= rateLimitPerSeconds)
+                {
+                    Console.WriteLine("Resetting request count.");
+                    entity.RequestCount = 1; // Reset count after rate limit window expires
+                    entity.LastRequestTime = now;
+                    entity.ExpirationTime = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
+                }
+                else if (requestCount >= rateLimit)
+                {
+                    Console.WriteLine($"Rate-limiting triggered: RequestCount={entity.RequestCount}, TimeDiff={now.Subtract(entity.LastRequestTime).TotalSeconds}");
+                    return true; // Rate limited
+                }
+                else
+                {
+                    entity.RequestCount = requestCount + 1;
+                    entity.LastRequestTime = now;
+                }
+
+                // Allow 3 requests per second
+                // if (requestCount >= RATE_LIMIT &&
+                //     (now - lastRequestTime).TotalSeconds < RATE_LIMIT_PER_SECONDS)
+                // {
+                //     return true; // Rate limited
+                // }
+
+                // entity.RequestCount = requestCount + 1;
+                // entity.LastRequestTime = now;
+
+                await _repository.SaveAsync(entity, config, cancellationToken);
+            }
+            else
+            {
+                var newRecord = new RateLimitEntity
+                {
+                    Route = route,
+                    IpAddress = ipAddress,
+                    RequestCount = 1,
+                    LastRequestTime = now,
+                    ExpirationTime = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds() // Auto-clean (table has TTL)
+                };
+
+                await _repository.SaveAsync(newRecord, config, cancellationToken);
+            }
+
+            return false; // Not rate limited
+        }
+
 
         public async Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string audience, string invitationCode, CancellationToken cancellationToken = default)
         {
@@ -61,7 +142,7 @@ namespace Wedding.Common.Helpers.AWS
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
             var guestSortKey = DynamoKeys.GetGuestSortKey(guestId);
-        
+
             return await _repository.LoadAsync<WeddingEntity>(
                 partitionKey, guestSortKey, GetTableConfig(audience), cancellationToken);
         }
@@ -124,7 +205,7 @@ namespace Wedding.Common.Helpers.AWS
             var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
             if (numFamilies.Count > 1)
             {
-                _logger.LogError("Multiple family units with Invitation code '{query.InvitationCode}' found.");
+                _logger.LogError($"Multiple family units with Invitation code '{invitationCode}' found.");
                 throw new ApplicationException($"Multiple family units with Invitation code '{invitationCode}' found.");
             }
 
@@ -151,7 +232,7 @@ namespace Wedding.Common.Helpers.AWS
             var scanConfig = new ScanOperationConfig
             {
                 // Add any optional filters here, if needed
-            }; 
+            };
 
             var results = await _repository.FromScanAsync<WeddingEntity>(scanConfig, GetTableConfig(audience)).GetRemainingAsync();
 
@@ -161,7 +242,7 @@ namespace Wedding.Common.Helpers.AWS
 
             foreach (var familyUnit in familyUnitEntities)
             {
-                var guests = results.Where(x => 
+                var guests = results.Where(x =>
                         x.SortKey.StartsWith(DynamoKeys.Guest) && x.InvitationCode.Equals(familyUnit.InvitationCode))
                     .Select(x => _mapper.Map<GuestDto>(x))
                     .ToList();

@@ -10,14 +10,14 @@ namespace Wedding.Common.Helpers
         {
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var queryParams = properties
-                .Where(p => p.GetValue(address, null) != null)
+                .Where(p =>
+                    p.GetValue(address, null) != null &&
+                    p.GetCustomAttributes(typeof(QueryStringIgnoreAttribute), false).Length == 0)
                 .Select(p =>
                 {
                     var propertyName = ShouldCamelCase(p.Name, toCamelCase) ? ToCamelCase(p.Name) : p.Name;
                     var propertyValue = p.GetValue(address, null)?.ToString() ?? string.Empty;
-
                     return $"{Uri.EscapeDataString(propertyName)}={Uri.EscapeDataString(propertyValue)}";
-
                 });
             return string.Join("&", queryParams);
         }

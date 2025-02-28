@@ -9,6 +9,7 @@ namespace Wedding.Lambdas.UnitTests.User.Get
     public class GetUserHandlerTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

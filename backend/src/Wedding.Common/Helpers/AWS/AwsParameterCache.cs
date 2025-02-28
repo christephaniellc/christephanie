@@ -11,14 +11,16 @@ namespace Wedding.Common.Helpers.AWS
     {
         /// <summary>
         /// 300 seconds = 5 minutes
+        /// 3600 seconds = 60 minutes
         /// </summary>
-        private const int _defaultCacheDurationInSeconds = 300;
+        private const int _defaultCacheDurationInSeconds = 3600;
         private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         
         private static readonly Dictionary<Type, string> _configParameterMap = new Dictionary<Type, string>
         {
             { typeof(Auth0Configuration), "/config/auth0/properties" },
             { typeof(UspsConfiguration), "/config/usps/api-credentials" },
+            { typeof(TwilioSmsConfiguration), "/config/twilio/api-credentials" },
         };
 
         public static async Task<T> GetConfigAsync<T>(int? cacheDurationInSeconds = null, bool forceRefresh = false)
@@ -32,14 +34,19 @@ namespace Wedding.Common.Helpers.AWS
 
             if (forceRefresh)
             {
-                InvalidateCache<T>(parameterName);
+                InvalidateCache<T>(cacheKey);
             }
 
-            if (_cache.TryGetValue(parameterName, out T cachedValue))
+            if (_cache.TryGetValue(cacheKey, out T? cachedValue))
             {
-                return cachedValue;
+                if (cachedValue != null)
+                {
+                    return cachedValue;
+                }
             }
-            
+
+            Console.WriteLine($"Cache expired. Fetching parameter store parameter: {cacheKey}");
+
             try
             {
                 var region = AwsRegionHelper.GetRegionEndpointFromEnvironment();

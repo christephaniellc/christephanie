@@ -44,12 +44,13 @@ namespace Wedding.PublicApi.Controllers
             string? firstName = null,
             string? arn = null, CancellationToken cancellationToken = default)
         {
-            arn = arn ?? LambdaArns.Auth;
+            arn = arn ?? "arn:aws:lambda:us-east-1:390403858788:function:christephanie-wedding-api-authorize";
             invitationCode = invitationCode?.ToUpper() ?? "RVMBL";
             firstName = firstName ?? "Steph";
 
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var query = new ValidateAuthQuery(_authConfiguration.Authority, _authConfiguration.Audience, arn, token);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var query = new ValidateAuthQuery(_authConfiguration.Authority ?? string.Empty, _authConfiguration.Audience ?? string.Empty, arn, ipAddress, token);
             var result = await _dispatcher.GetAsync<ValidateAuthQuery, APIGatewayCustomAuthorizerResponse>(query, cancellationToken);
         
             return Ok(result);

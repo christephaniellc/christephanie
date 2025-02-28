@@ -4,12 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
+	  <!-- <Platforms>x64</Platforms> -->
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Validate\Post\**" />
-    <EmbeddedResource Remove="Validate\Post\**" />
-    <None Remove="Validate\Post\**" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="appsettings.Development.json" />
   </ItemGroup>
@@ -27,24 +23,32 @@
 	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    		<PackageReference Include="Moq" Version="4.20.72" />
+		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+		<PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
+		<PackageReference Include="coverlet.collector" Version="6.0.0" />
+	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wedding.Common.Utility.Testing\Wedding.Common.Utility.Testing.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Get\Wedding.Lambdas.Admin.FamilyUnit.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Update\Wedding.Lambdas.Admin.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.Setup\Wedding.Lambdas.Admin.Setup.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Authorize\Wedding.Lambdas.Authorize.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Patch\Wedding.Lambdas.FamilyUnit.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.Phone\Wedding.Lambdas.Validate.Phone.csproj" />
   </ItemGroup>
 </Project>

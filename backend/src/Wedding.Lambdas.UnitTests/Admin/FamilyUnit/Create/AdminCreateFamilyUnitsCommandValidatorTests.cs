@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Create.Validation;
@@ -14,14 +15,18 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
     [UnitTestsFor(typeof(AdminCreateFamilyUnitsCommandValidator))]
     public class AdminCreateFamilyUnitsCommandValidatorTests
     {
-        private TestTokenHelper _testTokenHelper;
-        private AdminCreateFamilyUnitsCommandValidator _validator;
+        private TestTokenHelper? _testTokenHelper;
+        private AdminCreateFamilyUnitsCommandValidator? _validator;
 
         private static readonly GuestDto VALID_GUEST = new GuestDto
         {
             FirstName = "John",
             LastName = "Doe",
-            Email = ""
+            Email = new VerifiedDto
+            {
+                Value = ""
+            },
+            Roles = new List<RoleEnum> { RoleEnum.Guest }
         };
 
         [SetUp]
@@ -40,10 +45,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(null!, authContext);
             var result = _validator.TestValidate(command);
@@ -55,10 +61,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> {
@@ -77,10 +84,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> {
@@ -99,17 +107,18 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> {
                 new FamilyUnitDto
                 {
                     InvitationCode = "ABCDE",
-                    Tier = "Animal"
+                    Tier = "123"
                 }},
                 authContext
             );
@@ -122,10 +131,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> {
@@ -144,10 +154,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> {
@@ -168,10 +179,11 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         {
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new AdminCreateFamilyUnitsCommand(
                 new List<FamilyUnitDto> { new FamilyUnitDto

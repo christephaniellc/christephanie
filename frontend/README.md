@@ -278,7 +278,7 @@ The latest version of [eslint](https://eslint.org/) with the latest recommended 
 - react/recommended
 - @typescript-eslint/recommended
 
-Check the [.eslintrc.json](./eslintrc.json) file for more information.
+Check the [.eslintrc.jsonon](./eslintrc.json) file for more information.
 
 #### Prettier
 

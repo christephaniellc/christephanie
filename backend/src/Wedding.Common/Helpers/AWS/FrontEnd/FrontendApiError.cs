@@ -16,13 +16,13 @@ namespace Wedding.Common.Helpers.AWS.Frontend
         /// Exception type
         /// </summary>
         [JsonPropertyName("error")]
-        public string Error { get; set; }
+        public required string Error { get; set; }
 
         /// <summary>
         /// Error string (user-facing)
         /// </summary>
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
         /// <summary>
         /// 

@@ -1,19 +1,22 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
-import { familyState } from '@/store/family';
-import { InvitationResponseEnum } from '@/types/api';
+import { familyState, guestSelector } from '@/store/family';
+import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { rem } from 'polished';
 import { useUser } from '@/store/user';
-import { ForestRounded } from '@mui/icons-material';
+import { ForestRounded, ForestSharp, ForestTwoTone } from '@mui/icons-material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import StickFigureIcon from '@/components/StickFigureIcon';
 
-export const Countdowns = ({ event = 'Wedding', interested }: {
+export const Countdowns = ({ event = 'Wedding', interested, guestId }: {
   event: 'Wedding' | 'Invitation',
   interested: InvitationResponseEnum
+  guestId?: string
 }) => {
-  const { contentHeight, screenWidth } = useAppLayout();
-  const shortScreen = contentHeight < 800;
+  const { screenWidth } = useAppLayout();
+  const guest = useRecoilValue(guestSelector(guestId));
+  // const shortScreen = contentHeight < 800;
   const [user] = useUser();
   const familyUnit = useRecoilValue(familyState);
   const addressValidated = familyUnit?.mailingAddress;
@@ -23,14 +26,14 @@ export const Countdowns = ({ event = 'Wedding', interested }: {
   const myDate = event === 'Wedding' ? weddingDay : invitationDay;
   const daysUntil = Math.floor((myDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const daysUntilMessage = useMemo(() => {
-    if (!familyUnit) return `Are waiting for you to Create an Account!`;
+    if (!familyUnit) return 'Are waiting for you to Create an Account!';
     switch (interested) {
       case 'Pending':
         return `Let us know when you know!`;
       case 'Interested':
         return addressValidated ? `${daysUntil} days until the ${event}!` : `${daysUntil} days to provide your address!`;
       case 'Declined':
-        return `Sorry to miss you at the Wedding!`;
+        return 'Sorry to miss you at the Wedding!';
     }
   }, [interested, addressValidated, familyUnit]);
 
@@ -54,38 +57,19 @@ export const Countdowns = ({ event = 'Wedding', interested }: {
 
     }}
          ref={centerTreesWidthRef}>
-      {event === 'Invitation' && daysUntilMessage || (
+      {event === 'Invitation' && <Typography>{daysUntilMessage}</Typography> || (
         <>
-          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems='center'>
-            <Typography width="38%" mx="auto" variant="h3" fontSize={rem(18)} textAlign="end">
+          <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center" justifyContent='center' flexWrap='wrap'>
+            <Typography mx="auto" variant="h3" fontSize={rem(18)} textAlign="center" width='100%'>
               July 5, 2025
             </Typography>
-            <Box display="flex" mx="auto" flexGrow={1} justifyContent="center">
-              {Array(Math.floor(numberOfTrees * 0.75)).fill(undefined)
-                .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                  sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-            </Box>
-            <Typography variant="h3" fontSize={rem(18)} mx="auto" textAlign="start" width={'38%'}>
-              {user.auth0Id && user.guestId && 'Lovettsville, VA' || Array(numberOfTrees).fill(<ForestRounded
-                sx={{ mx: 'auto' }} fontSize="small" />).map(e => e)}
-            </Typography>
-          </Box>
-          <Typography textAlign="center" variant="caption"
-                      width="100%">
-            {Array(Math.floor(numberOfTrees/3)).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-            in {daysUntil} days
-            {Array(Math.floor(numberOfTrees/4)).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-          </Typography>
-          <Box display="flex" mx="auto" flexGrow={1} justifyContent="center" width={'100%'}>
-            {Array(numberOfTrees).fill(undefined)
-              .map((_, index) => <ForestRounded key={index} fontSize="small"
-                                                sx={{ color: colors[Math.floor(Math.random() * colors.length)] }} />)}
-          </Box>
 
+            {user.auth0Id && user.guestId && <Typography variant="h3" fontSize={rem(18)} mx="auto" textAlign="start" width={'38%'}>
+              'Lovettsville, VA'
+            </Typography>}
+
+            in {daysUntil} days
+          </Box>
         </>
       )}
     </Box>

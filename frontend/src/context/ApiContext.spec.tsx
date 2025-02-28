@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
-import { ApiContext, useApiContext } from '@/context/ApiContext';
-import { mockContextProvider } from '@/../test-utils/mockContextProviders';
+import { ApiContext, ApiContextProvider, useApiContext } from '@/context/ApiContext';
 
 jest.mock('@auth0/auth0-react', () => ({
   useApiContext: jest.fn(),
@@ -9,13 +8,13 @@ jest.mock('@auth0/auth0-react', () => ({
 
 describe('ApiContext', () => {
   it('should work', () => {
-    mockContextProvider<ReturnType<typeof useApiContext>>({
+    (useApiContext as jest.Mock).mockReturnValue({
       getTokenFunc: jest.fn(),
     });
     const { getByTestId } = render(
-      <ApiContext>
+      <ApiContextProvider>
         <div data-testid="apiContext" />
-      </ApiContext>,
+      </ApiContextProvider>,
     );
     expect(getByTestId('apiContext')).toBeTruthy();
   });

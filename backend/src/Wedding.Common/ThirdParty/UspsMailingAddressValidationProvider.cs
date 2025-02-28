@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -12,12 +13,14 @@ namespace Wedding.Common.ThirdParty
 {
     public class UspsMailingAddressValidationProvider : IUspsMailingAddressValidationProvider
     {
+        private readonly ILogger<UspsMailingAddressValidationProvider> _logger;
         private readonly string _uspsApiUrl;
         private readonly string _consumerKey;
         private readonly string _consumerSecret;
 
-        public UspsMailingAddressValidationProvider(string uspsApiUrl, string consumerKey, string consumerSecret)
+        public UspsMailingAddressValidationProvider(ILogger<UspsMailingAddressValidationProvider> logger, string uspsApiUrl, string consumerKey, string consumerSecret)
         {
+            _logger = logger;
             _uspsApiUrl = uspsApiUrl;
             _consumerKey = consumerKey;
             _consumerSecret = consumerSecret;
@@ -53,17 +56,23 @@ namespace Wedding.Common.ThirdParty
 
         public async Task<AddressDto> ValidateAddress(AddressDto address)
         {
+            _logger.LogInformation($"Getting USPS access token...");
             var accessToken = await GetAccessToken();
+            _logger.LogInformation($"USPS AccessToken received.");
 
             var requestUri = string.Format("{0}/addresses/v3/", _uspsApiUrl);
             var requestParams = address.ToQueryString(toCamelCase: true);
             requestUri += "address?" + requestParams;
+
+            _logger.LogInformation($"requestUri: {requestUri}");
+            _logger.LogInformation($"Validate address: {JsonSerializer.Serialize(address)}");
 
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
                 var uspsResponse = await client.GetAsync(requestUri);
+                _logger.LogInformation($"uspsResponse: {JsonSerializer.Serialize(uspsResponse)}");
                 uspsResponse.EnsureSuccessStatusCode();
 
                 var json = await uspsResponse.Content.ReadAsStringAsync();

@@ -9,13 +9,13 @@ namespace Wedding.Abstractions.Entities
     public class WeddingEntity
     {
         [DynamoDBHashKey]
-        public string PartitionKey { get; set; }
+        public required string PartitionKey { get; set; }
 
         [DynamoDBRangeKey]
-        public string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
+        public required string SortKey { get; set; } = ""; // e.g., "INFO", "GUEST#GuestId"
 
         [DynamoDBProperty]
-        public string InvitationCode { get; set; } = ""; // e.g., "FAMILY#InvitationCode"
+        public required string InvitationCode { get; set; } = ""; // e.g., "FAMILY#InvitationCode"
 
         #region Family-specific fields
         /// <summary>
@@ -67,13 +67,10 @@ namespace Wedding.Abstractions.Entities
         public string Tier { get; set; } = "";
 
         [DynamoDBProperty(typeof(ListEnumToStringConverter<RoleEnum>))]
-        public List<RoleEnum> Roles { get; set; }
+        public List<RoleEnum>? Roles { get; set; }
 
         [DynamoDBProperty]
         public string? Email { get; set; }
-
-        [DynamoDBProperty]
-        public bool EmailVerified { get; set; }
 
         [DynamoDBProperty]
         public string? Phone { get; set; }
@@ -115,6 +112,10 @@ namespace Wedding.Abstractions.Entities
         /// <summary>
         /// RSVP-specific fields (used when SortKey = "PREFS")
         /// </summary>
+        /// 
+        [DynamoDBProperty(typeof(ListEnumToStringConverter<NotificationPreferenceEnum>))]
+        public List<NotificationPreferenceEnum>? PrefNotification { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
         public SleepPreferenceEnum? PrefSleep { get; set; }
 
@@ -122,7 +123,7 @@ namespace Wedding.Abstractions.Entities
         public FoodPreferenceEnum? PrefFood { get; set; }
 
         [DynamoDBProperty]
-        public string? PrefFoodAllergies { get; set; }
+        public List<string>? PrefFoodAllergies { get; set; }
         #endregion
     }
 

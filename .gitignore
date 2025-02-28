@@ -396,7 +396,7 @@ dotnet-tools.json
 /src/Delinea.EnginePool.Data.Domain.IntegrationTests/Properties/launchSettings.json
 
 # Auto-generated swagger files
-swagger.json
+#swagger.json
 **/*.sln.startup.json
 
 **/.DS_Store
@@ -467,3 +467,4 @@ aws-exports.js
 
 .dockerignore
 Dockerfile
+/backend/src/Wedding.Lambdas.Admin.Setup/Data

@@ -26,9 +26,21 @@ const routes: Routes = {
     icon: AddTaskIcon,
   },
   [Pages.FoodPreferences]: {
-    component: asyncComponentLoader(() => import('@/pages/FoodPreferences')),
+    component: asyncComponentLoader(() => import('@/pages/Page4')),
     path: '/food-preferences',
     title: 'Food Preferences',
+    icon: AddTaskIcon,
+  },
+  [Pages.PrivacyPolicy]: {
+    component: asyncComponentLoader(() => import('@/pages/PrivacyPolicy')),
+    path: '/privacy-policy',
+    title: 'Privacy Policy',
+    icon: AddTaskIcon,
+  },
+  [Pages.TermsOfService]: {
+    component: asyncComponentLoader(() => import('@/pages/TermsOfService')),
+    path: '/terms-of-service',
+    title: 'TermsOfService',
     icon: AddTaskIcon,
   },
   [Pages.NotFound]: {

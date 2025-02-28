@@ -11,10 +11,11 @@ export const useAuth0Providers = () => {
 
   const providerConfig: Auth0ProviderOptions = {
     domain: config.domain,
-    clientId: config.clientId,
+    clientId: config.clientId,    
     onRedirectCallback,
     authorizationParams: {
       redirect_uri: window.location.origin,
+      scope: 'openid profile email offline_access',
       ...(config.audience ? {audience: config.audience} : { }),
     },
   };

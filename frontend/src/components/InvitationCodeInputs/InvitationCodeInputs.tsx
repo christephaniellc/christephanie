@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Card,
@@ -6,30 +6,55 @@ import {
   CardContent,
   CardHeader,
   TextField,
-
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
-import {
-  invitationButtonSelectorState,
-
-} from '@/store/invitationInputs';
+import { invitationButtonSelectorState } from '@/store/invitationInputs';
 import { useUser } from '@/store/user';
 import { useApiContext } from '@/context/ApiContext';
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
-
+import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
 export const InvitationCodeInputs = () => {
   const api = useApiContext();
   const [user, userActions] = useUser();
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
+  const { user: auth0User, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
 
-  const handleFindUser = () => {
-    userActions.findUserIdQuery?.refetch();
+  // Store the access token in state so we don't trigger errors during render.
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (!isAuthenticated) {
+        console.debug('User is not authenticated; skipping token refresh.');
+        setAccessToken(null);
+        return;
+      }
+      try {
+        const token = await getAccessTokenSilently();
+        setAccessToken(token);
+      } catch (error: any) {
+        if (error.message && error.message.includes('Missing Refresh Token')) {
+          console.warn('No refresh token available. User might need to log in again.');
+          setAccessToken(null);
+        } else {
+          console.error('Error retrieving access token:', error);
+          setAccessToken(null);
+        }
+      }
+    };
+    fetchToken();
+  }, [isAuthenticated, getAccessTokenSilently]);
+
+  const handleFindUser = async () => {
+    const result = await userActions.findUserIdQuery?.refetch();
+    if (result && result.data && result.data.auth0Id) {
+      userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
+    }
   };
-
-  const { user: auth0User, loginWithPopup, logout } = useAuth0();
 
   if (!user) return null;
 
@@ -37,11 +62,20 @@ export const InvitationCodeInputs = () => {
     <Box display="flex" flexWrap="wrap">
       <Card padding={3} width={'100%'} mb={2} component={Box}>
         <CardHeader
-          title={!user?.guestId ? 'Please enter your invitation to get started.' : `Welcome back ${user?.firstName}`}
-          subheader={!api.getJwt() ? 'Please login or finish creating your account to get started' : ''} />
+          title={
+            !user?.guestId
+              ? 'Please enter your invitation to get started.'
+              : `Welcome back ${user?.firstName.toUpperCase()}!`
+          }
+          subheader={
+            !accessToken && !user?.guestId
+              ? `Or click Login below, if you've already created an account`
+              : ''
+          }
+        />
         <CardContent>
           <>
-            {!user?.auth0Id &&
+            {!user?.auth0Id && (
               <>
                 <TextField
                   autoComplete={'off'}
@@ -49,7 +83,9 @@ export const InvitationCodeInputs = () => {
                   fullWidth
                   value={user?.invitationCode}
                   label="Enter your Invitation Code"
-                  onChange={(e) => userActions.setUser({ ...user, invitationCode: e.target.value })}
+                  onChange={(e) =>
+                    userActions.setUser({ ...user, invitationCode: e.target.value })
+                  }
                   variant="outlined"
                   sx={{
                     mb: 2,
@@ -67,7 +103,9 @@ export const InvitationCodeInputs = () => {
                   autoComplete={'off'}
                   value={user?.firstName}
                   label="First Name"
-                  onChange={(e) => userActions.setUser({ ...user, firstName: e.target.value })}
+                  onChange={(e) =>
+                    userActions.setUser({ ...user, firstName: e.target.value })
+                  }
                   variant="outlined"
                   sx={{
                     marginBottom: 2,
@@ -79,41 +117,51 @@ export const InvitationCodeInputs = () => {
                   }}
                 />
               </>
-            }
+            )}
           </>
         </CardContent>
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
-            {!user?.auth0Id && <Button sx={{ width: '100%' }}
-                                       disabled={!user?.firstName || !user?.invitationCode}
-                                       fullWidth
-                                       variant="contained" onClick={() =>
-
-              user?.guestId ? loginWithPopup() : handleFindUser()}
-            >
-              {invitationButtonText || 'Login With your Existing Account'}
-            </Button>}
+            {(
+              <Button
+                sx={{ width: '100%' }}
+                disabled={!user?.firstName || !user?.invitationCode}
+                fullWidth
+                variant="contained"
+                onClick={() =>
+                  user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser()
+                }
+              >
+                {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
+              </Button>
+            )}
           </Box>
         </CardActions>
       </Card>
-      {api.getJwt() && !user.guestId && (
-        <Card mt={2} sx={{ width: '100%' }} pb={2}>
-          <CardHeader subheader="Login with your existing account" />
-          <CardActions>
-            <Button
-              fullWidth
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                auth0User ? logout() : loginWithPopup();
-              }}
-            >
-              {auth0User ? 'Logout' : 'Login'}
-            </Button>
-          </CardActions>
-        </Card>
+      {accessToken && user.guestId && (
+        <>
+          <StephsFavoriteTypography mx="auto">OR</StephsFavoriteTypography>
+          <Card sx={{ width: '100%', mt: 2, pb: 2 }}>
+            <CardHeader subheader="Login with your existing account" />
+            <CardActions>
+              <Button
+                fullWidth
+                color="primary"
+                variant="contained"
+                onClick={() => {
+                  auth0User
+                    ? logOutFromAuth0()
+                    : user.guestId
+                    ? signInWithAuth0(user.guestId)
+                    : console.log('no guestId');
+                }}
+              >
+                {auth0User ? 'Logout' : 'Login'}
+              </Button>
+            </CardActions>
+          </Card>
+        </>
       )}
     </Box>
-  )
-    ;
+  );
 };

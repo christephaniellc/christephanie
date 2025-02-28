@@ -5,9 +5,12 @@ import * as cdk from 'aws-cdk-lib';
         profile: string;
         account: string;
         region: string;
+        githubRepo: string; // Format: "your-org/your-repo"
+        githubBranch: string;
         delegateHostedNameServers: string[] | undefined;
         subDomainPrefix: string;
         authAuthority: string;
+        allowOrigins: string[] | undefined;
         existingHostedZoneId: string | undefined;
         existingCertificateArn: string | undefined;
         existingDomainNameAliasApi: string | undefined;

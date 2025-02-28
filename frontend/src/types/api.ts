@@ -48,10 +48,10 @@ export interface AddressDto {
 }
 
 export enum AgeGroupEnum {
-  Adult = 'Adult',
-  Under21 = 'Under21',
-  Under13 = 'Under13',
   Baby = 'Baby',
+  Under13 = 'Under13',
+  Under21 = 'Under21',
+  Adult = 'Adult',
 }
 
 export interface DeleteResponse {
@@ -72,7 +72,24 @@ export interface FamilyUnitDto {
   familyUnitLastLogin?: string | null;
 }
 
+export interface FamilyUnitViewModel {
+  invitationCode?: string | null;
+  unitName?: string | null;
+  guests?: GuestDto[] | null;
+  mailingAddress?: AddressDto;
+  additionalAddresses?: AddressDto[] | null;
+  invitationResponseNotes?: string | null;
+  /** @format date-time */
+  familyUnitLastLogin?: string | null;
+}
+
+export interface FindUserResponse {
+  guestId?: string | null;
+  auth0Id?: string | null;
+}
+
 export enum FoodPreferenceEnum {
+  Unknown = 'Unknown',
   Omnivore = 'Omnivore',
   Vegetarian = 'Vegetarian',
   Vegan = 'Vegan',
@@ -87,10 +104,9 @@ export interface GuestDto {
   firstName?: string | null;
   additionalFirstNames?: string[] | null;
   lastName?: string | null;
-  roles?: RoleEnum[] | null;
-  email?: string | null;
-  emailVerified?: boolean;
-  phone?: string | null;
+  roles: RoleEnum[] | null;
+  email?: VerifiedDto;
+  phone?: VerifiedDto;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
   ageGroup?: AgeGroupEnum;
@@ -116,13 +132,41 @@ export enum InvitationResponseEnum {
 export interface LastUpdateAuditDto {
   /** @format date-time */
   lastUpdate?: string;
-  username?: string | null;
+  username: string | null;
+}
+
+export enum NotificationPreferenceEnum {
+  Email = 'Email',
+  Text = 'Text',
+}
+
+export interface PatchFamilyUnitRequest {
+  mailingAddress?: AddressDto;
+  invitationResponseNotes?: string | null;
+}
+
+export interface PatchGuestRequest {
+  guestId: string | null;
+  ageGroup?: AgeGroupEnum;
+  auth0Id?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  invitationResponse?: InvitationResponseEnum;
+  rehearsalDinner?: RsvpEnum;
+  fourthOfJuly?: RsvpEnum;
+  wedding?: RsvpEnum;
+  rsvpNotes?: string | null;
+  notificationPreference?: NotificationPreferenceEnum[] | null;
+  sleepPreference?: SleepPreferenceEnum;
+  foodPreference?: FoodPreferenceEnum;
+  foodAllergies?: string[] | null;
 }
 
 export interface PreferencesDto {
+  notificationPreference?: NotificationPreferenceEnum[] | null;
   sleepPreference?: SleepPreferenceEnum;
   foodPreference?: FoodPreferenceEnum;
-  foodAllergies?: string | null;
+  foodAllergies?: string[] | null;
 }
 
 export interface ProblemDetails {
@@ -138,8 +182,10 @@ export interface ProblemDetails {
 export enum RoleEnum {
   Guest = 'Guest',
   Party = 'Party',
+  FourthOfJuly = 'FourthOfJuly',
   Rehearsal = 'Rehearsal',
   Staff = 'Staff',
+  Manor = 'Manor',
   Admin = 'Admin',
 }
 
@@ -163,6 +209,15 @@ export enum SleepPreferenceEnum {
   Unknown = 'Unknown',
   Camping = 'Camping',
   Hotel = 'Hotel',
+  Other = 'Other',
+}
+
+export interface VerifiedDto {
+  value?: string | null;
+  verified?: boolean;
+  verificationCode?: string | null;
+  /** @format date-time */
+  verificationCodeExpiration?: string | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -528,7 +583,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitList: (params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails | void>({
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'GET',
         secure: true,
@@ -545,9 +600,47 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     familyunitCreate: (data: FamilyUnitDto, params: RequestParams = {}) =>
-      this.request<FamilyUnitDto, ProblemDetails | void>({
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags FamilyUnit
+     * @name FamilyunitPartialUpdate
+     * @request PATCH:/api/familyunit
+     * @secure
+     */
+    familyunitPartialUpdate: (data: PatchFamilyUnitRequest, params: RequestParams = {}) =>
+      this.request<FamilyUnitViewModel, ProblemDetails | void>({
+        path: `/api/familyunit`,
+        method: 'PATCH',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guest
+     * @name GuestPartialUpdate
+     * @request PATCH:/api/guest
+     * @secure
+     */
+    guestPartialUpdate: (data: PatchGuestRequest, params: RequestParams = {}) =>
+      this.request<GuestDto, ProblemDetails | void>({
+        path: `/api/guest`,
+        method: 'PATCH',
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -622,7 +715,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<string, ProblemDetails | void>({
+      this.request<FindUserResponse, ProblemDetails | void>({
         path: `/api/user/find`,
         method: 'GET',
         query: query,

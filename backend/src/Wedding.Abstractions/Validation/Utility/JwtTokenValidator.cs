@@ -12,14 +12,15 @@ namespace Wedding.Abstractions.Validation.Utility
     /// Implements the <see cref="AbstractValidator{T}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    public class JwtTokenValidator : AbstractValidator<string>, IValidate<string>
+    public class JwtTokenValidator : AbstractValidator<string?>, IValidate<string?>
     {
         public JwtTokenValidator(string authority, string audience)
         {
             RuleFor(jwtToken => jwtToken)
+                .NotNull()
                 .NotEmpty()
                 .WithMessage("Token cannot be empty.")
-                .Must(token => BeAValidJwt(token, authority, audience))
+                .Must((token) => token != null && BeAValidJwt(token, authority, audience))
                 .WithMessage("Invalid JWT token.");
         }
 
@@ -29,7 +30,7 @@ namespace Wedding.Abstractions.Validation.Utility
         /// <param name="obj">The object.</param>
         /// <param name="_">The .</param>
         public void IsValid(string? obj, object? _ = null)
-            => this!.ValidateAndThrow(obj);
+            => this!.ValidateAndThrow(obj ?? "");
             
         /// <summary>
         /// Validates JwtToken

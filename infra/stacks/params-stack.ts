@@ -38,13 +38,23 @@ export class ParamsStack extends cdk.Stack {
                 "ApiUrl": "https://api.usps.com",
                 "ConsumerKey": "<todo>",
                 "ConsumerSecret": "<todo>"
-                }) },
+                }) 
+        },
+        { 
+            name: "/config/twilio/api-credentials", 
+            value: JSON.stringify({        
+                "ApiUrl": "https://api.usps.com",
+                "SID": "<todo>",
+                "Secret": "<todo>"
+                }) 
+        },
         { 
             name: "/config/auth0/properties", 
             value: JSON.stringify({
                 "Authority": props.env.authAuthority,
                 "Audience": `https://${props.apiUrl}`
-                }) }
+                }) 
+        }
     ];
 
     secureParams.forEach(secureParam => {

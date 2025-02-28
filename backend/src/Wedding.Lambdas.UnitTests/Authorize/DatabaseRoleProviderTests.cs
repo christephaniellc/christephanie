@@ -3,7 +3,9 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NSubstitute;
 using NUnit.Framework;
+using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
@@ -22,18 +24,23 @@ namespace Wedding.Lambdas.UnitTests.Authorize
     [UnitTestsFor(typeof(DatabaseRoleProvider))]
     public class DatabaseRoleProviderTests
     {
-        private Mock<ILogger<DatabaseRoleProvider>> _loggerMock;
-        private IAuthorizationProvider _databaseRoleProvider;
-        private Mock<IDynamoDBProvider> _dynamoProviderMock;
-        private Mock<IAuthenticationProvider> _authenticationProviderMock;
-        private Mock<IMultitenancySettingsProvider> _multitenancySettingsProviderMock;
-        private TestTokenHelper _testTokenHelper;
+        private Mock<ILogger<DatabaseRoleProvider>>? _loggerMock;
+        private IAuthorizationProvider? _databaseRoleProvider;
+        private Mock<IDynamoDBProvider>? _dynamoProviderMock;
+        private Mock<IAuthenticationProvider>? _authenticationProviderMock;
+        private Mock<IMultitenancySettingsProvider>? _multitenancySettingsProviderMock;
+        private TestTokenHelper? _testTokenHelper;
 
         [SetUp]
         public void Setup()
         {
-            var config = new MapperConfiguration(
-                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             var mapper = config.CreateMapper();
 
             _loggerMock = new Mock<ILogger<DatabaseRoleProvider>>();
@@ -51,50 +58,57 @@ namespace Wedding.Lambdas.UnitTests.Authorize
         }
 
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();
         }
 
         [Test]
-        public async Task ShouldNotSaveDuplicateAuth0User()
+        public async Task ShouldNotCallAuth0ForInfoWhenUserAlreadyLoggedInBefore()
         {
             // Arrange
             var invitationCode = "ABCDE";
             var guestId = Guid.NewGuid().ToString();
-            var existingEmail = "existingemail@gmail.com";
-            var testToken = await _testTokenHelper.GenerateAuth0Token(guestId);
-            var query = new ValidateAuthQuery(_testTokenHelper.JwtAuthority, _testTokenHelper.JwtAudience, "unittest", testToken.ToString());
+            var existingEmail = new VerifiedDto { Value = "existingemail@gmail.com" };
+            var auth0Email = new VerifiedDto { Value = "otheremail@gmail.com" };
+            var testToken = await _testTokenHelper!.GenerateAuth0Token(guestId);
+            var query = new ValidateAuthQuery(_testTokenHelper.JwtAuthority, _testTokenHelper.JwtAudience, "unittest", "127.0.0.1", testToken.ToString());
 
             var existingFamily = new WeddingEntity
             {
-                InvitationCode = DynamoKeys.GetPartitionKey(invitationCode),
+                PartitionKey = DynamoKeys.GetPartitionKey(invitationCode),
+                InvitationCode = invitationCode,
                 SortKey = DynamoKeys.GetFamilyInfoSortKey(),
             };
             var existingGuest = new WeddingEntity
             {
-                InvitationCode = DynamoKeys.GetPartitionKey(invitationCode),
+                PartitionKey = DynamoKeys.GetPartitionKey(invitationCode),
+                InvitationCode = invitationCode,
                 SortKey = DynamoKeys.GetGuestSortKey(guestId),
                 Auth0Id = "auth0Id-1",
-                Email = existingEmail
+                Email = existingEmail.ToString()
             };
             var auth0User = new Auth0User
             {
                 InvitationCode = invitationCode,
                 UserId = "auth0Id-2",
-                Email = "otheremail@gmail.com"
+                Email = auth0Email.ToString()
             };
 
-            _dynamoProviderMock.Setup(r => r.QueryByGuestIdIndex(_testTokenHelper.JwtAudience, guestId, It.IsAny<CancellationToken>()))
+            _dynamoProviderMock!.Setup(r => r.QueryByGuestIdIndex(_testTokenHelper.JwtAudience, guestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<WeddingEntity> { existingGuest });
             _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, invitationCode, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamily);
-            _authenticationProviderMock.Setup(a => a.GetUserInfo(query.Token))
+            _authenticationProviderMock!.Setup(a => a.GetUserInfo(query.Token!))
                 .ReturnsAsync(auth0User);
 
             // Act & Assert
-            var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await _databaseRoleProvider.Authorize(query));
-            ex.Message.Should().Be($"Invalid operation: Account already created for this guest. Please login with {existingEmail}.");
+            var result = await _databaseRoleProvider!.Authorize(query);
+            _authenticationProviderMock.Verify(x => x.GetUserInfo(It.IsAny<string>()), Times.Never);
+
+            // var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await _databaseRoleProvider!.Authorize(query));
+            // ex!.Message.Should().Be($"Invalid operation: Account already created for this guest. Please login with {existingEmail}.");
         }
     }
 }

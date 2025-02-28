@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { Box, TextField, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useMemo } from 'react';
+import { Box, FormGroup, TextField, Typography, useTheme } from '@mui/material';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { familyGuestsStates, useFamily } from '@/store/family';
+import { useFamily } from '@/store/family';
 import {
   addressState,
   cityAddressState,
@@ -10,10 +10,10 @@ import {
   zipCodeAddressState,
 } from '@/store/address';
 import Button from '@mui/material/Button';
+import { rem } from 'polished';
 
-const AddressEnvelope: React.FC = () => {
+const AddressEnvelope: React.FC = ({guestId}: {guestId: string}) => {
   const [familyUnit, familyActions] = useFamily();
-  const { callByLastNames } = useRecoilValue(familyGuestsStates);
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
   const setSecondaryAddress = useSetRecoilState(secondaryAddressState);
@@ -44,15 +44,21 @@ const AddressEnvelope: React.FC = () => {
     }
   }, [familyUnit]);
 
+  const saveAddressState = useMemo(() => {
+    return familyActions.validateFamilyAddress.status;
+  }, [familyActions.patchFamilyMutation]);
+
+  const disabled = useMemo(() => familyActions.patchFamilyMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching || familyActions.validateFamilyAddress.status === 'pending', [familyActions.patchFamilyMutation.status, familyActions.getFamilyUnitQuery.isFetching, familyActions.validateFamilyAddress.status]);
+
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography mb={4} gutterBottom variant="h5">Where should we send your formal invitation?</Typography>
       <Box
         sx={{
-          width: '100%',
-          maxWidth: '400px',
+          minWidth: '100%',
+          width: rem(400),
+          maxWidth: '100%',
           height: '350px',
-          // backgroundColor: "#ffffff",
           borderRadius: '10px',
           margin: 'auto',
           position: 'relative',
@@ -68,37 +74,42 @@ const AddressEnvelope: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-          The {callByLastNames}
+          {/*The {callByLastNames}*/}
         </Typography>
         <Box
-          component="form"
+          component={FormGroup}
           sx={{
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
           }}
         >
-          <TextField color="secondary"
-                     label="Street Address"
-                     variant="standard"
-                     fullWidth
-                     value={address.streetAddress}
-                     onChange={(e) => {
-                       setStreetAddress(e.target.value);
-                     }}
-                     error={!!familyActions.validateFamilyAddress.error}
-                     size="small"
+          <TextField
+            color="secondary"
+            label="Street Address"
+            disabled={disabled}
+            variant="standard"
+            fullWidth
+            value={address.streetAddress}
+            onChange={(e) => {
+              setStreetAddress(e.target.value);
+            }}
+            error={!!familyActions.validateFamilyAddress.error}
+            size="small"
           />
           <TextField
+            disabled={disabled}
             value={address.secondaryAddress}
             color="secondary" label="Apt/Unit" variant="standard" fullWidth size="small"
             onChange={(e) => setSecondaryAddress(e.target.value)} />
           <TextField
+            disabled={disabled}
             value={address.city}
             color="secondary" label="City" variant="standard" fullWidth size="small"
             onChange={(e) => setCity(e.target.value)} />
           <Box width="100%" textAlign="start">
             <TextField
+              disabled={disabled}
               value={address?.state}
 
               sx={{ width: '100px', display: 'inline-flex' }}
@@ -108,6 +119,7 @@ const AddressEnvelope: React.FC = () => {
                 setState(value);
               }} />
             <TextField
+              disabled={disabled}
               sx={{ width: '100px', display: 'inline-flex' }}
 
               value={address.zipCode}
@@ -117,9 +129,20 @@ const AddressEnvelope: React.FC = () => {
                 setZipCode(value);
               }} />
           </Box>
-          <Button variant='contained' color='secondary' onClick={() => {
-            if (address !== null) familyActions.validateFamilyAddress.mutate(address)
-          }}>Update Address</Button>
+          <Button
+            disabled={disabled}
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              if (address !== null) familyActions.validateFamilyAddress.mutate(address);
+            }}
+          >
+
+            {saveAddressState === 'idle' && 'Save'}
+            {saveAddressState === 'pending' && 'Saving...'}
+            {saveAddressState === 'success' && 'Saved'}
+            {saveAddressState === 'error' && 'Please enter a valid address'}
+          </Button>
         </Box>
       </Box>
     </Box>

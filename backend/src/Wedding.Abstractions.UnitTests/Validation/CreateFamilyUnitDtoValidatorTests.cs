@@ -30,7 +30,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     new GuestDto
                     {
                         FirstName = "Joe",
-                        LastName = "Blow"
+                        LastName = "Blow",
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
@@ -48,7 +49,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
             {
                 InvitationCode = "ABCDE",
                 Tier = "A",
-                Guests = new List<GuestDto> { new GuestDto { FirstName = null! } }
+                Guests = new List<GuestDto> { new GuestDto { FirstName = null!,
+                    Roles = new List<RoleEnum> { RoleEnum.Guest } } }
             };
 
             // Act & Assert
@@ -68,9 +70,9 @@ namespace Wedding.Abstractions.UnitTests.Validation
         [TestCase("A+-", false)]
         [TestCase("A-+", false)]
         [TestCase("", false)]
-        [TestCase("AA", false)]
-        [TestCase("Z", false)]
-        [TestCase("G-", false)]
+        [TestCase("1234", false)]
+        [TestCase("#$#@%", false)]
+        [TestCase("G-FEWEF", false)]
         [TestCase("F+extra", false)]
         [TestCase("1A", false)]
         public void Should_Have_Valid_Tier(string tier, bool isValid)
@@ -85,7 +87,8 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     {
                         FirstName = "John",
                         LastName = "Doe",
-                        AgeGroup = AgeGroupEnum.Adult
+                        AgeGroup = AgeGroupEnum.Adult,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
@@ -115,11 +118,13 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     {
                         FirstName = "John",
                         LastName = "Doe",
-                        AgeGroup = AgeGroupEnum.Adult
+                        AgeGroup = AgeGroupEnum.Adult,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     },
                     new GuestDto
                     {
-                        FirstName = string.Empty
+                        FirstName = string.Empty,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
@@ -143,13 +148,15 @@ namespace Wedding.Abstractions.UnitTests.Validation
                     {
                         FirstName = "John",
                         LastName = "Doe",
-                        AgeGroup = AgeGroupEnum.Adult
+                        AgeGroup = AgeGroupEnum.Adult,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     },
                     new GuestDto
                     {
                         FirstName = "Jane",
                         LastName = "Doe",
-                        AgeGroup = AgeGroupEnum.Adult
+                        AgeGroup = AgeGroupEnum.Adult,
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
