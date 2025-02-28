@@ -3,7 +3,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { LambdaConfig } from '../config/lambda-config';
 import { ApplicationProps } from '../config/application-config';
 
-export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaConfig, account: string, region: string): iam.IRole {
+export function attachIamPoliciesToRole(stack: cdk.Stack, environment: string, lambdaConfig: LambdaConfig, account: string, region: string): iam.IRole {
     console.log(`Attaching IAM policies for Lambda: ${lambdaConfig.name}`);
 
     const { applicationName } = ApplicationProps;
@@ -59,7 +59,7 @@ export function attachIamPoliciesToRole(stack: cdk.Stack, lambdaConfig: LambdaCo
                 actions: [
                     "s3:GetObject"
                 ],
-                resources: [`arn:aws:s3:::${applicationName}-setup/*`]
+                resources: [`arn:aws:s3:::${applicationName}-setup-${environment}/*`]
             }),
 
             // Attach Simple messaging service permissions
