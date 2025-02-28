@@ -57,8 +57,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 
   const calculateShadow = () => {
     const { x, y } = mousePosition;
-    const shadowX = 10
-    const shadowY = 10;
+    const shadowX = stdStepper.tabIndex > 0 ? 0 : 10
+    const shadowY = stdStepper.tabIndex > 0 ? 0 : 10;
     return `${shadowX}px ${shadowY}px 0px ${guest.rsvp.invitationResponse === InvitationResponseEnum.Interested ? theme.palette.primary.dark : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending ? theme.palette.secondary.dark : theme.palette.error.dark}`;
   };
 
@@ -85,7 +85,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       }}
     >
       <Button
-        disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching}
+        disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching || stdStepper.tabIndex > 0}
         onClick={() => handleClick(guest?.rsvp.invitationResponse)}
         sx={{
           alignItems: 'flex-start',
@@ -103,6 +103,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
             minWidth: '100%',
             maxWidth: '`100%`',
           },
+          color: !familyActions.patchFamilyMutation.isIdle || stdStepper.tabIndex > 0  ? 'white !important' : 'inherit',
           background: 'rgba(0,0,0,1)',
           width: '100%',
           filter: `drop-shadow(${calculateShadow()})`,
@@ -140,8 +141,8 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
   const guest = useRecoilValue(guestSelector(guestId));
   const theme = useTheme();
   const [_, familyActions] = useFamily();
-
-  const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
+  const stdStepper = useRecoilValue(stdStepperState);
+  const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending || stdStepper.tabIndex > 0  ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
 
   const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
     console.log('setting user is attending');
@@ -187,7 +188,7 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
         return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
 
     }
-  }, [guest]);
+  }, [guest, darkenCoefficent]);
 
   const semiTransparentBackgroundColor = useMemo(() => {
     switch (guest?.rsvp.invitationResponse) {

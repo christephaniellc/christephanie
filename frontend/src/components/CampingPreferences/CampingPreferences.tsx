@@ -10,8 +10,10 @@ import React, { useEffect, useRef } from 'react';
 import { Stack } from '@mui/system';
 import Paper from '@mui/material/Paper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 const CampingPreferences = ({ guestId }: { guestId: string }) => {
+  const { boxShadow, handleMouseMove } = useBoxShadow();
   const { screenWidth } = useAppLayout();
   const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
@@ -31,16 +33,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
     }
   };
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    mousePosition.current = { x: event.clientX, y: event.clientY };
-  };
 
-  const calculateShadow = () => {
-    const { x, y } = mousePosition.current;
-    const shadowX = (x / window.innerWidth) * 10 + 5;
-    const shadowY = (y / window.innerHeight) * 10 + 5;
-    return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.dark, 0.85)}`;
-  };
 
   useEffect(() => {
     setCampingValue(guest?.preferences?.sleepPreference || SleepPreferenceEnum.Unknown);
@@ -62,7 +55,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
         sx={{
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(0,0,0,.1)',
-          filter: `drop-shadow(${calculateShadow()})`,
+          filter: `drop-shadow(${boxShadow})`,
         }}
       >
         <ButtonGroup

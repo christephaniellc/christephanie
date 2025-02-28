@@ -18,9 +18,12 @@ import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
+import LoadingBox from '@/components/LoadingBox';
+import { rem } from 'polished';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
+  const { contentHeight } = useAppLayout();
   const { user: auth0User } = useAuth0();
   const { getFamilyUnitQuery } = familyActions;
   const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
@@ -67,56 +70,82 @@ function SaveTheDatePage() {
   };
 
   return (
-    <Box
-      component={Container}
-      onMouseMove={handleMouseMove}
-      display="flex"
-      flexDirection="column"
-      justifyContent=""
-      pb={10}
-      pt={2}
-      px={2}
-      sx={{
-        backdropFilter: 'blur(20px)',
-      }}
-    >
-      <Box mb={4}>
-        <SaveTheDateStepper />
-      </Box>
-      <Box p={2}>
+    <Box>
+      <SaveTheDateStepper />
+      <Box
+        component={Container}
+        onMouseMove={handleMouseMove}
+        pb={10}
+        px={2}
+        sx={{
+          zIndex: 50,
+          display: 'flex',
+          flexWrap: 'wrap',
+          backdropFilter: 'blur(20px)',
+          position: 'relative',
+          height: `${contentHeight - 200}px`,
+          overflow: 'hidden',
+          paddingBottom: rem(30),
+        }}
+      >
+        <Box p={2} height={85}>
           <StephsFavoriteTypography
             variant="h4"
             sx={{
               ml: 'auto',
-              pl: '200px',
               mr: 'auto',
               mb: 2,
+              width: 'fit-content',
               color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
               fontSize: '1.5rem',
+              [theme.breakpoints.up('md')]: {
+                pl: '200px',
+              },
               // filter: `drop-shadow(${calculateShadow()})`,
             }}
           >
             {Object.values(saveTheDateSteps)[tabIndex]?.label}
           </StephsFavoriteTypography>
+        </Box>
+        <ButtonsContainer>
+          {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
+          {!genericQuestions && family && family.guests.length === 0 && (
+            <AttendanceButton guestId={'0'} />
+          )}
+          {!genericQuestions &&
+            family &&
+            family.guests &&
+            family.guests.length > 1 &&
+            family.guests.map((guest: GuestDto) => (
+              <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+            ))}
+          {genericQuestions && <>{FamilyQueryQuestion}</>}
+        </ButtonsContainer>
       </Box>
-      <ButtonsContainer>
-        {!genericQuestions && family && family.guests.length === 0 && (
-          <AttendanceButton guestId={'0'} />
-        )}
-        {!genericQuestions &&
-          family &&
-          family.guests.length &&
-          family.guests.map((guest: GuestDto) => (
-            <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-          ))}
-        {genericQuestions && <>{FamilyQueryQuestion}</>}
-        {tabIndex < 7 && (
+      <Box
+        position="absolute"
+        component={Container}
+        bottom={0}
+        left={0}
+        right={0}
+        sx={{
+          backgroundImage: `url(${ElPulpo})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'top',
+          height: 400,
+          zIndex: 49,
+        }}
+      >
+        {tabIndex < 10 && (
           <Box
-            width={'100%'}
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            pt={4}
+            sx={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'flex-end',
+              paddingBottom: '75px',
+            }}
           >
             <Button
               variant="outlined"
@@ -124,7 +153,7 @@ function SaveTheDatePage() {
               sx={{
                 backdropFilter: 'blur(20px)',
                 backgroundColor: 'rgba(0,0,0,.1)',
-                display: tabIndex > 0 ? 'inherit' : 'none',
+                // display: tabIndex > 0 ? 'inherit' : 'none',
                 flexShrink: 0,
               }}
             >
@@ -150,7 +179,7 @@ function SaveTheDatePage() {
                 flexShrink: 0,
                 backdropFilter: 'blur(20px)',
                 backgroundColor: 'rgba(0,0,0,.1)',
-                display: tabIndex > 0 && tabIndex < 6 ? 'inherit' : 'none',
+                display: tabIndex < stdStepper.totalTabs ? 'inherit' : 'none',
               }}
               onClick={() => {
                 familyActions.getFamily();
@@ -167,20 +196,7 @@ function SaveTheDatePage() {
             </Button>
           </Box>
         )}
-      </ButtonsContainer>
-      <Box
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        sx={{
-          backgroundImage: `url(${ElPulpo})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'top',
-          height: 400,
-          zIndex: -1,
-        }}
-      ></Box>
+      </Box>
     </Box>
   );
 }
@@ -195,4 +211,8 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   width: '100%',
   mx: 'auto',
+  maxHeight: '80vh',
+  paddingBottom: '200px',
+  position: 'relative',
+  overflow: 'auto',
 }));

@@ -4,7 +4,13 @@ import {
   Typography,
   LinearProgress,
   linearProgressClasses,
-  StepConnector, stepConnectorClasses, stepLabelClasses, StepIconProps, StepLabelProps, useTheme, StepButton,
+  StepConnector,
+  stepConnectorClasses,
+  stepLabelClasses,
+  StepIconProps,
+  StepLabelProps,
+  useTheme,
+  StepButton,
 } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -21,19 +27,24 @@ import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import StickFigureIcon from '@/components/StickFigureIcon';
-import { SaveTheDateStep, saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
+import {
+  SaveTheDateStep,
+  saveTheDateStepsState,
+  stdStepperState,
+  stdTabIndex,
+} from '@/store/steppers/steppers';
 import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
 import FoodAllergies from '@/components/FoodPreferences';
 import { userState } from '@/store/user';
 import CommunicationPreferences from '@/components/CommunicationPreferences/CommunicationPreferences';
 import { useAuth0 } from '@auth0/auth0-react';
 import CampingPreferences from '@/components/CampingPreferences/CampingPreferences';
+import Container from '@mui/material/Container';
 
 export default function SaveTheDateStepper() {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-
 
   const [family, familyActions] = useFamily();
   const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
@@ -41,12 +52,11 @@ export default function SaveTheDateStepper() {
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
 
-  const [interestedStep, setInterestedStep] = useState<number>(1)
+  const [interestedStep, setInterestedStep] = useState<number>(1);
   const [pendingSteps, setPendingSteps] = useState<number>(1);
   const [declinedSteps, setDeclinedSteps] = useState<number>(1);
 
   const guests = useMemo(() => family?.guests, [family]);
-
 
   useEffect(() => {
     if (urlParams) {
@@ -58,7 +68,6 @@ export default function SaveTheDateStepper() {
     }
   }, [saveTheDateSteps, urlParams]);
 
-
   useEffect(() => {
     setUrlParams(new URLSearchParams(location.search));
   }, [location]);
@@ -69,42 +78,46 @@ export default function SaveTheDateStepper() {
     navigate(`/save-the-date?step=${step}`);
   };
 
-
   return (
-    <Box sx={{ width: '100%', mx: 'auto' }} display="flex" flexDirection="column"
-         alignItems="center">
-      <Box display={'flex'} justifyContent="flex-end" mb={2} pr={4} width="100%">
-        <IconButton onClick={() => navigate('/')}>
-          <CloseTwoTone />
-        </IconButton>
-      </Box>
-      {/* Linear Progress across top */}
-      <Box width={'100%'}>
+    <Box
+      component={Container}
+      pt={4}
+      display="flex"
+      alignItems="center"
+      justifyContent="space-between"
+    >
+      <Box flexGrow={1} display="flex" alignItems="center" width="100%">
         <Stepper
           activeStep={tabIndex}
-          alternativeLabel
           nonLinear
           orientation="horizontal"
-          sx={{ px: 2, width: '90vw' }}
-          connector={<StyledConnector />
-          }>
+          connector={<StyledConnector />}
+        >
           {Object.entries(saveTheDateSteps).map(([key, step]) => (
-            <Step
-              completed={step.completed}
-              key={key}>
+            <Step completed={step.completed} key={key}>
               <CustomStepLabel
                 onClick={() => handleNavigateToStep(key)}
                 sx={{
                   cursor: 'pointer',
                 }}
                 StepIconComponent={StepperIcon}
-              >
-              </CustomStepLabel>
+              ></CustomStepLabel>
             </Step>
           ))}
         </Stepper>
       </Box>
-
+      <Box
+        display={'flex'}
+        flexGrow={1}
+        minWidth={40}
+        justifyContent="flex-end"
+        pr={2}
+        width="100%"
+      >
+        <IconButton onClick={() => navigate('/')}>
+          <CloseTwoTone />
+        </IconButton>
+      </Box>
     </Box>
   );
 }
@@ -158,45 +171,39 @@ function StepperIcon(props: StepIconProps) {
   const user = useRecoilValue(userState);
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
-      {completed ? (
-        <Check color="success" />
-      ) : (
-        <Circle color="secondary" />
-      )}
+      {completed ? <Check color="success" /> : <Circle color="secondary" />}
     </StepperIconRoot>
   );
 }
 
-const StepperIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(
-  ({ theme }) => ({
-    color: '#eaeaf0',
-    display: 'flex',
-    height: 22,
-    alignItems: 'center',
-    '& .QontoStepIcon-completedIcon': {
-      color: '#784af4',
-      zIndex: 1,
-      fontSize: 18,
-    },
-    '& .QontoStepIcon-circle': {
-      width: 8,
-      height: 8,
-      borderRadius: '50%',
-      backgroundColor: 'currentColor',
-    },
-    ...theme.applyStyles('dark', {
-      color: theme.palette.grey[700],
-    }),
-    variants: [
-      {
-        props: ({ ownerState }) => ownerState.active,
-        style: {
-          color: '#784af4',
-        },
-      },
-    ],
+const StepperIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(({ theme }) => ({
+  color: '#eaeaf0',
+  display: 'flex',
+  height: 22,
+  alignItems: 'center',
+  '& .QontoStepIcon-completedIcon': {
+    color: '#784af4',
+    zIndex: 1,
+    fontSize: 18,
+  },
+  '& .QontoStepIcon-circle': {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
+  },
+  ...theme.applyStyles('dark', {
+    color: theme.palette.grey[700],
   }),
-);
+  variants: [
+    {
+      props: ({ ownerState }) => ownerState.active,
+      style: {
+        color: '#784af4',
+      },
+    },
+  ],
+}));
 
 const CustomStepLabel = styled(StepLabel)<StepLabelProps>(({ theme }) => ({
   [`& .${stepLabelClasses.label}`]: {

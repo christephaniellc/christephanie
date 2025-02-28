@@ -82,7 +82,7 @@ export class ApiStack extends cdk.Stack {
         const functionName = `${apiGatewayName}${functionLambdaName}`;
         console.log(`Lambda function name: ${functionName}`);
 
-        const lambdaRole = attachIamPoliciesToRole(this, lambdaConfig, props.env.account, props.env.region);
+        const lambdaRole = attachIamPoliciesToRole(this, environment, lambdaConfig, props.env.account, props.env.region);
 
         const lambdaFunction = new lambda.Function(this, `${lambdaConfig.name.replace(/\./g, '-')}-function`, {
             ...lambdaDefaults,
