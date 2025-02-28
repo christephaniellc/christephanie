@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
-using Wedding.Abstractions.Enums;
 using Wedding.Common.Auth;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Common.Multitenancy;
-using Wedding.Lambdas.Authorize.Commands;
 
 namespace Wedding.Lambdas.Authorize.Providers
 {
@@ -35,18 +32,18 @@ namespace Wedding.Lambdas.Authorize.Providers
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        private string GetRequiredPermissionByEndpoint(string methodArn)
-        {
-            switch (methodArn)
-            {
-                case (LambdaArns.AdminFamilyUnitCreate):
-                case (LambdaArns.AdminFamilyUnitUpdate):
-                case (LambdaArns.AdminFamilyUnitDelete):
-                    return RoleEnum.Admin.ToString();
-                default:
-                    return RoleEnum.Guest.ToString();
-            }
-        }
+        // private string GetRequiredPermissionByEndpoint(string methodArn)
+        // {
+        //     switch (methodArn)
+        //     {
+        //         case (LambdaArns.AdminFamilyUnitCreate):
+        //         case (LambdaArns.AdminFamilyUnitUpdate):
+        //         case (LambdaArns.AdminFamilyUnitDelete):
+        //             return RoleEnum.Admin.ToString();
+        //         default:
+        //             return RoleEnum.Guest.ToString();
+        //     }
+        // }
 
         private bool IsAuthorizedToViewThisPage(GuestDto authenticatedUser, bool requiresFamilyBelonging, string methodInvitationCode)
         {
@@ -97,11 +94,12 @@ namespace Wedding.Lambdas.Authorize.Providers
                 }
 
                 entity = results.FirstOrDefault();
+                if (entity == null)
+                {
+                    throw new UnauthorizedAccessException($"Could not find matching user. Ip: {query.IpAddress}");
+                }
 
-                var authenticatedUser = await _authenticationProvider.GetUserInfo(query.Token);
-                _logger.LogInformation($"RoleProvider authenticated User: {JsonSerializer.Serialize(authenticatedUser)}");
-
-                await TryUpdateUser(entity, authenticatedUser);
+                await TryUpdateUser(entity, query.Token!);
                 await TryUpdateFamilyUnit(query.JwtAudience, entity.InvitationCode);
 
                 entity.LastActivity = DateTime.UtcNow;
@@ -114,12 +112,12 @@ namespace Wedding.Lambdas.Authorize.Providers
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, $"InvalidOperationException {ex.Message}");
-                throw ex;
+                throw new InvalidOperationException(ex.Message, ex);
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogError(ex, $"UnauthorizedAccessException {ex.Message}");
-                throw ex;
+                throw new UnauthorizedAccessException(ex.Message, ex);
             }
             catch (Exception ex)
             {
@@ -128,34 +126,43 @@ namespace Wedding.Lambdas.Authorize.Providers
             }
         }
 
-        public async Task TryUpdateUser(WeddingEntity matchingGuest, Auth0User user)
+        public async Task TryUpdateUser(WeddingEntity matchingGuest, string token)
         {
             if (matchingGuest == null || string.IsNullOrEmpty(matchingGuest.InvitationCode))
             {
                 throw new UnauthorizedAccessException($"Guest not found.");
             }
 
-            if (matchingGuest.AdditionalFirstNames == null)
+            var missingAuthenticatedInfo = string.IsNullOrEmpty(matchingGuest.Auth0Id);
+            _logger.LogInformation($"Has saved auth info: {!missingAuthenticatedInfo}");
+
+            if (missingAuthenticatedInfo)
             {
-                matchingGuest.AdditionalFirstNames = new List<string>();
+                var emailVerifiedState = _mapper.Map<VerifiedDto>(matchingGuest.Email) ?? new VerifiedDto();
+                var authenticatedUser = await _authenticationProvider.GetUserInfo(token);
+                _logger.LogInformation($"Saving authenticated user info: {JsonSerializer.Serialize(authenticatedUser)}");
+
+                if (matchingGuest.AdditionalFirstNames == null)
+                {
+                    matchingGuest.AdditionalFirstNames = new List<string>();
+                }
+
+                if (!string.IsNullOrEmpty(authenticatedUser.Nickname) && !matchingGuest.AdditionalFirstNames.Contains(authenticatedUser.Nickname))
+                {
+                    matchingGuest.AdditionalFirstNames.Add(authenticatedUser.Nickname);
+                }
+
+                if (!string.IsNullOrEmpty(matchingGuest.Auth0Id) && !matchingGuest.Auth0Id.Equals(authenticatedUser.UserId))
+                {
+                    var message = $"Invalid operation: Account already created for this guest. Please login with {matchingGuest.Email}.";
+                    throw new InvalidOperationException(message);
+                }
+
+                emailVerifiedState.Value = authenticatedUser.Email;
+                emailVerifiedState.Verified = authenticatedUser.EmailVerified ?? false;
+                matchingGuest.Email = emailVerifiedState.ToString();
+                matchingGuest.Auth0Id = authenticatedUser.UserId;
             }
-
-            if (!string.IsNullOrEmpty(user.Nickname) && !matchingGuest.AdditionalFirstNames.Contains(user.Nickname))
-            {
-                matchingGuest.AdditionalFirstNames.Add(user.Nickname);
-            }
-
-            if (!string.IsNullOrEmpty(matchingGuest.Auth0Id) && !matchingGuest.Auth0Id.Equals(user.UserId))
-            {
-                var message = $"Invalid operation: Account already created for this guest. Please login with {matchingGuest.Email}.";
-                throw new InvalidOperationException(message);
-            }
-
-            //matchingGuest.InvitationCode = entity.InvitationCode;
-
-            matchingGuest.Auth0Id = user.UserId;
-            matchingGuest.Email = user.Email;
-            matchingGuest.EmailVerified = user.EmailVerified ?? false;
         }
 
         public async Task TryUpdateFamilyUnit(string audience, string invitationCode)
@@ -163,14 +170,17 @@ namespace Wedding.Lambdas.Authorize.Providers
             try
             {
                 var familyUnit = await _dynamoDBProvider.LoadFamilyUnitOnlyAsync(audience, invitationCode);
+                if (familyUnit == null)
+                {
+                    throw new Exception($"Family unit not found. Audience: {audience}, InvitationCode: {invitationCode}");
+                }
 
                 familyUnit.FamilyUnitLastLogin = DateTime.UtcNow;
-                _dynamoDBProvider.SaveAsync(audience, familyUnit);
+                await _dynamoDBProvider.SaveAsync(audience, familyUnit);
             }
             catch (Exception ex)
             {
-                // nothing
-                var test = ex.Message;
+                Console.WriteLine($"Exception: {ex.Message}");
             }
         }
     }

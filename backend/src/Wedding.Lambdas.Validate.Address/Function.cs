@@ -6,6 +6,7 @@ using Amazon.Lambda.Core;
 using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration;
 using Wedding.Common.DI;
@@ -20,7 +21,6 @@ namespace Wedding.Lambdas.Validate.Address;
 public class Function
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly IMapper _mapper;
 
     public Function()
     {
@@ -33,8 +33,9 @@ public class Function
         {
             return new Lazy<Task<IUspsMailingAddressValidationProvider>>(async () =>
             {
+                var logger = sp.GetRequiredService<ILogger<UspsMailingAddressValidationProvider>>();
                 var uspsConfig = await AwsParameterCache.GetConfigAsync<UspsConfiguration>();
-                return new UspsMailingAddressValidationProvider(uspsConfig.ApiUrl, uspsConfig.ConsumerKey, uspsConfig.ConsumerSecret);
+                return new UspsMailingAddressValidationProvider(logger,uspsConfig.ApiUrl, uspsConfig.ConsumerKey, uspsConfig.ConsumerSecret);
             });
         });
 

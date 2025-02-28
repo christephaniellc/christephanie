@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, GuestDto } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -21,7 +21,7 @@ export default class Api {
     return this.get('/user/me');
   }
 
-  async findUserId(queryKey: string): Promise<string> {
+  async findUserId(queryKey: string): Promise<FindUserResponse> {
     return this.getPublic(`/user/find?${queryKey}`);
   }
 
@@ -29,24 +29,24 @@ export default class Api {
     return this.get('/familyunit');
   }
 
-  async updateFamilyUnit(familyUnit: FamilyUnitDto): Promise<FamilyUnitDto> {
-    return this.post(`/familyunit`, familyUnit);
+  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
+    return this.patch(`/familyunit`, familyUnit);
   }
 
   getGuestDto(id: number): Promise<GuestDto> {
-    return this.get(`/GuestDtos/${id}`);
+    return this.get(`/guest/${id}`);
   }
 
   postGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(GuestDto: GuestDto): Promise<GuestDto> {
-    return this.patch(`/GuestDtos/${GuestDto.guestId}`, GuestDto);
+  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestDto> {
+    return this.patch(`/guest`, PatchGuestRequest);
   }
 
   deleteGuestDto(id: number): Promise<GuestDto> {
-    return this.delete(`/GuestDtos/${id}/change-password`);
+    return this.delete(`/guest/${id}/change-password`);
   }
 
   validateAddress(address: AddressDto): Promise<AddressDto> {
@@ -83,7 +83,7 @@ export default class Api {
       default:
 
         if (response.headers.has('Content-Length')
-          && parseInt(response.headers.get('Content-Length')) === 0) {
+          && parseInt((response.headers.get('Content-Length') || '0')) === 0) {
 
           return this.handleUnRecoverableErrorWithoutErrorMessage(response, () => {
           });
@@ -184,46 +184,45 @@ export default class Api {
   }
 
   private async compositeResponseHandler<T>(
-    promise: Promise<Response>,
-    callback?: (_response: T) => T
-  ): Promise<T> {
-    try {
-      const response = await promise;
-      let result = await this.handleResponse<T>(response);
-      if (callback) {
-        result = callback(result);
-      }
-      return result;
-    } catch (reason) {
-      return this.handleRejected<T>(reason);
+  promise: Promise<Response>,
+  callback?: (_response: Awaited<T>) => Awaited<T>
+): Promise<Awaited<T>> {
+  try {
+    const response = await promise;
+    let result = await this.handleResponse<Awaited<T>>(response);
+    if (callback) {
+      result = callback(result);
     }
+    return result;
+  } catch (reason) {
+    return this.handleRejected<Awaited<T>>(reason);
   }
-
-  async get<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+}
+  async get<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
   }
 
-  async getPublic<T>(path: string, callback?: (_response: T) => T): Promise<T> {
+  async getPublic<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, false)), callback);
   }
 
-  async post<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async post<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
   }
 
-  async patch<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async patch<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PATCH', data, true)), callback);
   }
 
-  async put<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async put<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PUT', data, true)), callback);
   }
 
-  async delete<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async delete<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('DELETE', data, true)), callback);
   }
 
-  async postForm<T>(path: string, data?: any, callback?: (_response: T) => T): Promise<T> {
+  async postForm<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildMutipartFormConfig('POST', data)), callback);
   }
 }

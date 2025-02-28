@@ -8,6 +8,7 @@ namespace Wedding.Abstractions.UnitTests.Validation
     public class MailingAddressValidatorTests
     {
         [Test]
+        [Ignore("Write test")]
         public void ShouldWriteTests()
         {
             Assert.Fail();

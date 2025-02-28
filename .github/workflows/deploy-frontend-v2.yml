@@ -1,0 +1,122 @@
+name: Deploy Frontend (v2)
+
+on:
+  push:
+    branches:
+      - main.dev
+      - main
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy Frontend to S3    
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
+      BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.environment == 'prod' && 'main' || 'main.dev') || github.ref_name }}
+
+    steps:
+      - name: Debug Environment
+        run: |
+          echo "GitHub Repository: ${{ github.repository }}"
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "Branch Name: ${{ env.BRANCH_NAME }}"
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - name: Load Vars Based on DEPLOY_ENV
+        run: |
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            echo "VITE_ENV=production" >> $GITHUB_ENV
+            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.PROD_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.PROD_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "AUDIENCE=${{ secrets.PROD_AUDIENCE }}" >> $GITHUB_ENV
+            echo "WEBSERVICE_URL=${{ secrets.PROD_WEBSERVICE_URL }}" >> $GITHUB_ENV
+            echo "RETURN_TO=${{ secrets.PROD_RETURN_TO }}" >> $GITHUB_ENV
+            echo "S3_BUCKET=${{ vars.PROD_S3_BUCKET }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+          else
+            echo "VITE_ENV=development" >> $GITHUB_ENV
+            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.DEV_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.DEV_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "AUDIENCE=${{ vars.DEV_AUDIENCE }}" >> $GITHUB_ENV
+            echo "WEBSERVICE_URL=${{ vars.DEV_WEBSERVICE_URL }}" >> $GITHUB_ENV
+            echo "RETURN_TO=${{ secrets.DEV_RETURN_TO }}" >> $GITHUB_ENV
+            echo "S3_BUCKET=${{ vars.DEV_S3_BUCKET }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+          fi
+
+      - name: Debug Loaded Vars
+        run: |
+          echo "VITE_ENV: $VITE_ENV"
+          echo "DEPLOY_ENV: $DEPLOY_ENV"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "AWS_ROLE: $AWS_ROLE"
+          echo "AUTH0_DOMAIN: $AUTH0_DOMAIN"
+          echo "AUTH0_CLIENT_ID: $AUTH0_CLIENT_ID"
+          echo "AUDIENCE: $AUDIENCE"
+          echo "WEBSERVICE_URL: $WEBSERVICE_URL"
+          echo "RETURN_TO: $RETURN_TO"
+          echo "S3_BUCKET: $S3_BUCKET"
+          echo "CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID"
+
+      - name: Reset OIDC Token
+        run: rm -rf ~/.aws/
+          
+      - name: Setup AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: "${{ env.AWS_ROLE }}"
+          role-session-name: GitHubActionsSession
+          aws-region: us-east-1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install Dependencies
+        run: yarn install
+        working-directory: frontend/src
+
+      - name: Build React App
+        run: yarn build
+        working-directory: frontend
+        env:
+          VITE_ENV: "${{ env.VITE_ENV }}"
+          DOMAIN: "${{ env.AUTH0_DOMAIN }}"
+          CLIENT_ID: "${{ env.AUTH0_CLIENT_ID }}"
+          AUDIENCE: "${{ env.AUDIENCE }}"
+          WEBSERVICE_URL: "${{ env.WEBSERVICE_URL }}"
+          RETURN_TO: "${{ env.WEBSERVICE_URL }}"
+
+      - name: Deploy to S3
+        run: aws s3 sync frontend/dist s3://$S3_BUCKET --delete
+
+      - name: Invalidate CloudFront Cache (if using CloudFront)
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

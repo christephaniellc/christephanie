@@ -4,6 +4,7 @@
     {
         Unknown,
         Camping,
-        Hotel
+        Hotel,
+        Other   // Airbnb, Manor, etc.
     }
 }

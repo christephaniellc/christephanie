@@ -23,17 +23,22 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
     [UnitTestsFor(typeof(AdminCreateFamilyUnitHandler))]
     public class AdminCreateFamilyUnitHandlerTests
     {
-        private Mock<ILogger<AdminCreateFamilyUnitHandler>> _loggerMock;
-        private Mock<IDynamoDBProvider> _dynamoProviderMock;
-        private AdminCreateFamilyUnitHandler _handler;
-        private IMapper _mapper;
-        private TestTokenHelper _testTokenHelper;
+        private Mock<ILogger<AdminCreateFamilyUnitHandler>>? _loggerMock;
+        private Mock<IDynamoDBProvider>? _dynamoProviderMock;
+        private AdminCreateFamilyUnitHandler? _handler;
+        private IMapper? _mapper;
+        private TestTokenHelper? _testTokenHelper;
 
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(
-                cfg => cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                }
+            );
             _mapper = config.CreateMapper();
 
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
@@ -48,7 +53,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         }
 
         [Test]
-        public async Task ExecuteAsync_Should_Throw_Exception_When_FamilyUnit_Already_Exists()
+        public Task ExecuteAsync_Should_Throw_Exception_When_FamilyUnit_Already_Exists()
         {
             // Arrange
             var command = new AdminCreateFamilyUnitsCommand(
@@ -63,35 +68,38 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             new GuestDto
                             {
                                 FirstName = "John",
-                                LastName = "Doe"
+                                LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest }
                             }
                         }
                     }},
                     new AuthContext
                     {
-                        Audience = _testTokenHelper.JwtAudience,
+                        Audience = _testTokenHelper!.JwtAudience,
                         GuestId = Guid.NewGuid().ToString(),
                         InvitationCode = "CCCCC",
-                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin }),
+                        IpAddress = "127.0.0.1"
                     }
             );
 
             var existingFamilyUnit = new WeddingEntity
             {
-                InvitationCode = $"{DynamoKeys.FamilyUnit}#ABCDE",
-                SortKey = DynamoKeys.FamilyInfo
+                PartitionKey = DynamoKeys.GetPartitionKey("ABCDE"),
+                InvitationCode = "ABCDE",
+                SortKey = DynamoKeys.GetFamilyInfoSortKey()
             };
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, command.FamilyUnits[0].InvitationCode,It.IsAny<CancellationToken>()))
+            _dynamoProviderMock!.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, command.FamilyUnits[0].InvitationCode,It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingFamilyUnit);
 
             // Act & Assert
-            Assert.DoesNotThrowAsync(async () => await _handler.ExecuteAsync(command));
+            Assert.DoesNotThrowAsync(async () => await _handler!.ExecuteAsync(command));
             _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(0));
+            return Task.CompletedTask;
         }
 
         [Test]
-        public async Task ExecuteAsync_Should_Throw_Exception_When_NotAdmin()
+        public Task ExecuteAsync_Should_Throw_Exception_When_NotAdmin()
         {
             // Arrange
             var command = new AdminCreateFamilyUnitsCommand(
@@ -106,22 +114,24 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                         new GuestDto
                         {
                             FirstName = "Horst",
-                            LastName = "Klu"
+                            LastName = "Klu", Roles = new List<RoleEnum> { RoleEnum.Guest }
                         }
                     }
                 }},
                 new AuthContext
                 {
-                    Audience = _testTokenHelper.JwtAudience,
+                    Audience = _testTokenHelper!.JwtAudience,
                     GuestId = Guid.NewGuid().ToString(),
                     InvitationCode = "ABCDE",
-                    Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Guest })
+                    Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Guest }),
+                    IpAddress = "127.0.0.1"
                 }
             );
 
             // Act & Assert
-            var ex = Assert.ThrowsAsync<ValidationException>(async () => await _handler.ExecuteAsync(command));
+            var ex = Assert.ThrowsAsync<ValidationException>(async () => await _handler!.ExecuteAsync(command));
             Assert.That(ex!.Message, Does.Contain("AuthContext: No admin permissions."));
+            return Task.CompletedTask;
         }
 
         [Test]
@@ -137,25 +147,26 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             Tier = "A",
                             Guests = new List<GuestDto>
                             {
-                                new GuestDto { FirstName = "John", LastName = "Doe" },
-                                new GuestDto { FirstName = "Jane", LastName = "Doe" }
+                                new GuestDto { FirstName = "John", LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest } },
+                                new GuestDto { FirstName = "Jane", LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest } }
                             }
                         }},
                         new AuthContext
                         {
-                            Audience = _testTokenHelper.JwtAudience,
+                            Audience = _testTokenHelper!.JwtAudience,
                             GuestId = Guid.NewGuid().ToString(),
                             InvitationCode = "CCCCC",
-                            Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                            Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin }),
+                            IpAddress = "127.0.0.1"
                         }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
+            _dynamoProviderMock!.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
-            var result = await _handler.ExecuteAsync(command);
+            var result = await _handler!.ExecuteAsync(command);
 
             // Assert
             _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
@@ -178,31 +189,35 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                         Tier = "A",
                         Guests = new List<GuestDto>
                         {
-                            new GuestDto { FirstName = "Barney", LastName = "Doe", GuestId = guestId.ToString()},
+                            new GuestDto { FirstName = "Barney", LastName = "Doe", GuestId = guestId.ToString(), Roles = new List<RoleEnum>
+                                {
+                                    RoleEnum.Guest
+                                }},
                         }
                     }},
                     new AuthContext
                     {
-                        Audience = _testTokenHelper.JwtAudience,
+                        Audience = _testTokenHelper!.JwtAudience,
                         GuestId = Guid.NewGuid().ToString(),
                         InvitationCode = "CCCCC",
-                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin }),
+                        IpAddress = "127.0.0.1"
                     }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
+            _dynamoProviderMock!.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
-            var result = await _handler.ExecuteAsync(command);
+            var result = await _handler!.ExecuteAsync(command);
 
             // Assert
             _dynamoProviderMock.Verify(r => r.SaveAsync(command.AuthContext.Audience, It.IsAny<WeddingEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             Assert.AreEqual("ABCDE", result[0].InvitationCode);
             Assert.AreEqual("Doe_Barney Family", result[0].UnitName);
             Assert.AreEqual(1, result[0].Guests!.Count);
-            result[0].Guests[0].GuestId.Should().Be(guestId.ToString());
+            result![0].Guests![0].GuestId.Should().Be(guestId.ToString());
         }
 
         [Test]
@@ -223,24 +238,25 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                      }},
                     new AuthContext
                     {
-                        Audience = _testTokenHelper.JwtAudience,
+                        Audience = _testTokenHelper!.JwtAudience,
                         GuestId = Guid.NewGuid().ToString(),
                         InvitationCode = "CCCCC",
-                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin })
+                        Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Admin }),
+                        IpAddress = "127.0.0.1"
                     }
             );
 
-            _dynamoProviderMock.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
+            _dynamoProviderMock!.Setup(r => r.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience,
                     It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
             // Act
 
-            var result = await _handler.ExecuteAsync(command);
+            var result = await _handler!.ExecuteAsync(command);
 
             // Assert
             Assert.AreEqual(1, result[0].Guests![0].Roles.Count);
-            Assert.AreEqual(RoleEnum.Guest, result[0].Guests[0].Roles[0]);
+            Assert.AreEqual(RoleEnum.Guest, result![0].Guests![0].Roles[0]);
         }
 
         [Test]
@@ -250,7 +266,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = null! };
 
             // Act
-            _handler.AddDefaultRolesIfEmpty(guest);
+            _handler!.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles!.Count);
@@ -264,7 +280,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = new List<RoleEnum>() };
 
             // Act
-            _handler.AddDefaultRolesIfEmpty(guest);
+            _handler!.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);
@@ -278,7 +294,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             var guest = new GuestDto { Roles = new List<RoleEnum> { RoleEnum.Admin } };
 
             // Act
-            _handler.AddDefaultRolesIfEmpty(guest);
+            _handler!.AddDefaultRolesIfEmpty(guest);
 
             // Assert
             Assert.AreEqual(1, guest.Roles.Count);

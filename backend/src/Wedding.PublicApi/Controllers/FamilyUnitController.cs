@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -11,6 +12,9 @@ using Wedding.Common.Helpers;
 using Wedding.Lambdas.Authorize.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
 using Wedding.Lambdas.FamilyUnit.Get.Validation;
+using Wedding.Lambdas.FamilyUnit.Patch.Commands;
+using Wedding.Lambdas.FamilyUnit.Patch.Requests;
+using Wedding.Lambdas.FamilyUnit.Patch.Validation;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.FamilyUnit.Update.Validation;
 using Wedding.PublicApi.Logic.Services.Auth;
@@ -34,15 +38,16 @@ namespace Wedding.PublicApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitViewModel))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FamilyUnitDto>> GetFamilyUnit(CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
-                LambdaArns.AdminFamilyUnitCreate, token);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
             var query = new GetFamilyUnitQuery(authContext);
@@ -54,21 +59,46 @@ namespace Wedding.PublicApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitViewModel))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<FamilyUnitDto>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<FamilyUnitViewModel>> UpdateFamilyUnit(FamilyUnitDto familyUnit, CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
-            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority, _auth0Configuration.Audience,
-                LambdaArns.AdminFamilyUnitCreate, token);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 
             var command = new UpdateFamilyUnitCommand(familyUnit, authContext);
             command.Validate();
             var result = await _dispatcher.ExecuteAsync<UpdateFamilyUnitCommand, FamilyUnitDto>(command, cancellationToken);
+
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FamilyUnitViewModel))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<FamilyUnitViewModel>> PatchFamilyUnit([FromBody] PatchFamilyUnitRequest patchRequest, CancellationToken cancellationToken = default)
+        {
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+
+            var command = new PatchFamilyUnitCommand(authContext, 
+                patchRequest.MailingAddress, 
+                patchRequest.InvitationResponseNotes);
+            command.Validate();
+            var result = await _dispatcher.ExecuteAsync<PatchFamilyUnitCommand, FamilyUnitViewModel>(command, cancellationToken);
 
             return Ok(result);
         }

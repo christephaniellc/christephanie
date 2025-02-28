@@ -8,12 +8,11 @@
 	IAM > User groups > Create group > (added CDK permissions to json policy) cdk-group
 	Moved this user under this group 
 - Gave CDK permissions to this user.
-	TODO
-- ?Run UserStack to set up all deploy permissions for this user
-	cdk deploy --context env=dev UserStack
-- Prod: in Route53 owner account: gave dev AWS account permissions to assume role for Route53 zone
-	IAM > Roles > Create Role > AWS Account > (dev account ID) > added Route53 permissions as json policy		
-		arn:aws:iam::<prod account id>:role/Route53_TrustChristephanieDev
+	copy policy from dev 
+- Generate access key for local CLI use
+	aws configure --profile your-profile-name
+	Saves to C:\Users\<username>\.aws\credentials
+
 # Set up local aws cli
 ## aws cli profile: C:\Users\Steph Stubler\.aws\config
 	aws configure --profile dev
@@ -53,7 +52,7 @@ cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 # Bootstrap for the production account
 cdk bootstrap aws://<prod account id>/us-east-1 --profile prod
 
-# Added role to aws cli profile: C:\Users\Steph Stubler\.aws\config
+x Added role to aws cli profile: C:\Users\Steph Stubler\.aws\config
 	[profile dev]
 	region = us-east-1
 	output = json
@@ -68,7 +67,7 @@ cdk bootstrap aws://<prod account id>/us-east-1 --profile prod
 
 # ONE TIME CDK DEPLOYMENT (initial deploy)
 cdk deploy HostedzoneStack-create-dev --context env=dev --profile dev
-	add "existingHostedZoneId": "Z07880633EU429771T27L" to dev.json
+	add "existingHostedZoneId": "Z...T27L" to dev.json
 	add named entries to prod hosted zone 
 	add named entries to prod.json
 		"delegateHostedNameServers": ["name1","name2"]
@@ -96,6 +95,12 @@ Prod > Route 53 > Hosted Zones > christephanie.com > Create record
 	Record type: NS 
 	Value: (addresses above)
 	TTL: 300 (short for change quick updates)
+	
+# Onetime setup Auth0:
+
+# Onetime setup Github Actions 
+Github > Repo > Actions > Settings > Secrets
+	Add prod secrets
 --------------------------------------	
 DESTROY STEPS:
 cdk destroy --all --context env=dev --profile dev
@@ -109,50 +114,67 @@ cdk deploy DnsStack-dev --context env=dev --profile dev
 
 cdk deploy ParamsStack-dev --context env=dev --profile dev
 
-If you want to keep backup:
-dynamoTable.addBackup({
-  backupName: `${applicationName}-backup-${environment}`,
-});
+cdk destroy RoleStack-dev --context env=dev --profile dev
+cdk deploy RoleStack-dev --context env=dev --profile dev
 
+SET UP BOOTSTRAP FOR EACH PROFILE:
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
+cdk deploy ApiStack-prod --context env=prod --profile prod
+cdk deploy RoleStack-prod --context env=prod --profile prod
+cdk deploy FrontendStack-prod --context env=prod --profile prod
+cdk deploy DatabaseStack-prod --context env=prod --profile prod
+cdk deploy ParamsStack-prod --context env=prod --profile prod
+cdk deploy ThrottleStack-prod --context env=prod --profile prod
+
 ----------------------	
+# Frontend
+
+Update 
+	auth_config.ts
+
+Update NPM packages:
+- VSCode > frontend/src > 
+	yarn install
+	yarn run dev	
+-----------------------
+# Backend
+
+Deploy single Lambda:
+Visual Studio > Open file for Wedding.Lambdas.[project name] > Deploy Lambda button
+	Update "dev" param
+-----------------------
 	./infra/scripts/deploy.sh dev	# Initial infra deploy
 REPEATING DEPLOY (publish lambdas and frontend)
 	./infra/scripts/build.sh dev	# Deploy all lambdas 
-	TODO: frontend 
+
+Deploy all lambdas:
+Github > Actions > Deploy Backend Lambdas > Run (select Deploy All checkbox)
+
+Deploy single lambda from local:
+Visual Studio > Deploy Lambda (button top right)
+
+Deploy lambdas changed:
+Github > Pull request > watch Actions 
 
 
-Step 4: Automating with CI/CD
-You can integrate these scripts into a CI/CD pipeline using GitHub Actions, AWS CodePipeline, or Jenkins:
-name: Deploy to AWS
+-----------------------
+# Prod deploy:
+Redeploy prod:
+	x destroy everything but first two steps
+	x delete API gateway
+	x delete dynamo tables
+	x deploy DNS
+	x deploy Dynamo + Throttle
+	x update System Params with values for USPS
+	x turn off authorizer caching (done in CDK)
+	x create an S3 bucket called christephanie-wedding-setup-prod (done in CDK), 
+		add folder called Data/ (upload whole folder of guest .jsons and delete items you don't want)
+	x Add prod secrets in github
+	x Add new auth0 prod app
+	Test new auth0 prod app 
+	x in API gateway, allow Access-Control-Allow-Origin
+	x (update CDK)
 
-Example GitHub Actions workflow:
-on:
-  push:
-    branches:
-      - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install AWS CDK
-        run: npm install -g aws-cdk
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Build Lambdas
-        run: ./infra/scripts/build.sh dev
-
-      - name: Deploy Infrastructure
-        run: ./deploy.sh dev
 

@@ -42,17 +42,17 @@ const grey = {
   900: '#1C2025',
 };
 
-export default function BetterTextField() {
+export default function AutosizedTextArea() {
   console.log('steelin your focus');
   const [comment, setComment] = useRecoilState(userCommentState);
   const [family, familyActions] = useFamily();
   // Styled MUI BaseTextareaAutosize
 
   useEffect(() => {
-    familyActions.updateFamilyMutation.reset();
+    familyActions.patchFamilyMutation.reset();
   }, [comment]);
 
-  const mutationState: UseMutationResult<FamilyUnitDto> = familyActions.updateFamilyMutation
+  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> = familyActions.patchFamilyMutation
   // Handler to invoke the query
   const handleSend = () => {
     // Clear any previous data if you wish, or handle it differently
@@ -82,7 +82,7 @@ export default function BetterTextField() {
         placeholder={family?.invitationResponseNotes || 'Tell us your feelings...'}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        disabled={isFetching}
+        disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
       />
 
       {/* Row for the send button and any extra info */}
@@ -91,7 +91,7 @@ export default function BetterTextField() {
           variant="contained"
           color="secondary"
           onClick={handleSend}
-          disabled={mutationState.status === 'pending' || !comment}
+          disabled={mutationState.status === 'pending' || !comment || familyActions.getFamilyUnitQuery.isFetching}
         >
           {isError ? `${error}` : ''}
           {isFetching ? 'Sending...' : ''}

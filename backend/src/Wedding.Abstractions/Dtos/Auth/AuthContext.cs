@@ -9,18 +9,21 @@ namespace Wedding.Abstractions.Dtos.Auth
     public class AuthContext
     {
         [JsonPropertyName("guestId")]
-        public string GuestId { get; set; }
+        public required string GuestId { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
         [JsonPropertyName("audience")]
-        public string Audience { get; set; }
+        public required string Audience { get; set; }
 
         [JsonPropertyName("invitationCode")]
-        public string InvitationCode { get; set; }
+        public required string InvitationCode { get; set; }
 
         [JsonPropertyName("roles")]
-        public string Roles { get; set; }
+        public required string Roles { get; set; }
+
+        [JsonPropertyName("ipAddress")]
+        public required string IpAddress { get; set; }
         
         public List<RoleEnum> ParseRoles()
         {
@@ -42,7 +45,7 @@ namespace Wedding.Abstractions.Dtos.Auth
                     return (RoleEnum?)null; // Return null if parsing fails
                 })
                 .Where(role => role.HasValue) // Filter out null values
-                .Select(role => role.Value)  // Select the actual enum values
+                .Select(role => role!.Value)  // Select the actual enum values
                 .ToList();
 
             return roles;

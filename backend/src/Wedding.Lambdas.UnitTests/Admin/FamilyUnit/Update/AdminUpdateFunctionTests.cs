@@ -23,10 +23,10 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update;
 [UnitTestsFor(typeof(Lambdas.Admin.FamilyUnit.Update.Function))]
 public class GetFunctionTests
 {
-    private IMapper _mapper;
-    private TestAuthorizer _testAuthorizer;
-    private TestTokenHelper _testTokenHelper;
-    private Wedding.Lambdas.Admin.FamilyUnit.Update.Function _function;
+    private IMapper? _mapper;
+    private TestAuthorizer? _testAuthorizer;
+    private TestTokenHelper? _testTokenHelper;
+    private Wedding.Lambdas.Admin.FamilyUnit.Update.Function? _function;
 
     [SetUp]
     public void SetUp()
@@ -39,7 +39,12 @@ public class GetFunctionTests
         var dynamoDBProvider = new Mock<IDynamoDBProvider>();
 
         var config = new MapperConfiguration(cfg =>
-            cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles()));
+            {
+                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
+                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
+                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+            }
+        );
         _mapper = config.CreateMapper();
 
         var familyUnit = new List<WeddingEntity>
@@ -81,16 +86,16 @@ public class GetFunctionTests
         try
         {
             var dto = TestDataHelper.FAMILY_DOE;
-            dto.Guests[0].LastName = "Doe-Smith";
+            dto.Guests![0].LastName = "Doe-Smith";
 
             var context = new TestLambdaContext();
-            var authContext = await _testAuthorizer.MockAuthorize(TestDataHelper.GUEST_ADMIN);
+            var authContext = await _testAuthorizer!.MockAuthorize(TestDataHelper.GUEST_ADMIN);
             var request = new APIGatewayProxyRequest 
             {
                 Body = JsonSerializer.Serialize(dto, JsonSerializationHelper.FromFrontendOptions)
             }.AddAuthToRequest(authContext);
 
-            var response = await _function.FunctionHandler(request, context);
+            var response = await _function!.FunctionHandler(request, context);
             var result = response.GetResponseBodyData<FamilyUnitDto>();
 
             result.Guests.Should().NotBeNull();

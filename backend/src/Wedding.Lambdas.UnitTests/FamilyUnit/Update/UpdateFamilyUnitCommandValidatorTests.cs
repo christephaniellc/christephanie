@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.FamilyUnit.Update.Validation;
@@ -14,8 +15,8 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
     [UnitTestsFor(typeof(UpdateFamilyUnitCommandValidator))]
     public class UpdateFamilyUnitCommandValidatorTests
     {
-        private UpdateFamilyUnitCommandValidator _validator;
-        private TestTokenHelper _testTokenHelper;
+        private UpdateFamilyUnitCommandValidator? _validator;
+        private TestTokenHelper? _testTokenHelper;
 
         [SetUp]
         public void SetUp()
@@ -34,10 +35,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new UpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
@@ -52,10 +54,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new UpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
@@ -70,10 +73,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
                 GuestId = Guid.NewGuid().ToString(),
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new UpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
@@ -88,10 +92,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = "BADCO",
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var command = new UpdateFamilyUnitCommand(TestDataHelper.FAMILY_DOE, authContext);
 
@@ -106,12 +111,13 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = "BADCO",
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_JOHN.Roles),
+                IpAddress = "127.0.0.1"
             };
-            var command = new UpdateFamilyUnitCommand(null, authContext);
+            var command = new UpdateFamilyUnitCommand(null!, authContext);
 
             // Act & Assert
             var result = _validator.TestValidate(command);
@@ -125,10 +131,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var invalidFamilyUnit = new FamilyUnitDto
             {
@@ -150,10 +157,11 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
             // Arrange
             var authContext = new AuthContext
             {
-                Audience = _testTokenHelper.JwtAudience,
+                Audience = _testTokenHelper!.JwtAudience,
                 InvitationCode = TestDataHelper.GUEST_ADMIN.InvitationCode,
                 GuestId = TestDataHelper.GUEST_ADMIN.GuestId,
-                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles)
+                Roles = string.Join(',', TestDataHelper.GUEST_ADMIN.Roles),
+                IpAddress = "127.0.0.1"
             };
             var invalidFamilyUnit = new FamilyUnitDto
             {
@@ -161,7 +169,12 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 Tier = "Tier1",
                 Guests = new List<GuestDto>
                 {
-                    new GuestDto { FirstName = "Guest1", Email = "guest1@example.com" }
+                    new GuestDto 
+                    { 
+                        FirstName = "Guest1", 
+                        Email = new VerifiedDto { Value = "guest1@example.com" },
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
+                    }
                 }
             };
             var command = new UpdateFamilyUnitCommand(invalidFamilyUnit, authContext);

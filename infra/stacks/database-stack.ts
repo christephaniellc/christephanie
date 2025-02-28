@@ -8,8 +8,10 @@ interface DatabaseStackProps extends EnvStackProps {
 }
 
 export class DatabaseStack extends cdk.Stack {
+  public readonly guestTable: dynamodb.Table;
+
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
-    super(scope, id, {...props, description: "Creats DynamoDB table with index. (Destroy does not delete table)"});
+    super(scope, id, {...props, description: "Creates DynamoDB table with index. (Destroy does not delete table)"});
 
     const environment = this.node.tryGetContext('env') || 'dev';
     const { applicationName } = ApplicationProps;
@@ -18,14 +20,15 @@ export class DatabaseStack extends cdk.Stack {
 
     console.log(`Environment account: ${props.env.account}`);
 
-    const dynamoTable = new dynamodb.Table(this, `${applicationName}-table-${environment}`, {
-      tableName: `${applicationName}-table-${environment}`,
+    this.guestTable = new dynamodb.Table(this, `${applicationName}-table-${environment}`, {
+      tableName: `${applicationName}-guests-${environment}`,
       partitionKey: { name: 'PartitionKey', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PROVISIONED
+      billingMode: dynamodb.BillingMode.PROVISIONED,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
     });
 
-    dynamoTable.addGlobalSecondaryIndex({
+    this.guestTable.addGlobalSecondaryIndex({
         indexName: 'GuestIdIndex',
         partitionKey: { name: 'GuestId', type: dynamodb.AttributeType.STRING },
         projectionType: cdk.aws_dynamodb.ProjectionType.ALL,
@@ -33,7 +36,7 @@ export class DatabaseStack extends cdk.Stack {
 
     // Print outputs
     new cdk.CfnOutput(this, 'DynamoDBTableArn', {
-        value: `${dynamoTable.tableArn}`,
+        value: `${this.guestTable.tableArn}`,
         description: 'DynamoDBTable ARN',
     });
   }

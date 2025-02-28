@@ -44,9 +44,9 @@ namespace Wedding.Lambdas.Authorize.Handlers
 
             try
             {
-                var token = query.Token.Replace("Bearer ", "");
+                var token = query!.Token!.Replace("Bearer ", "");
                 var authorizedUser = await _databaseRoleProvider.Authorize(query);
-                var isAuthorized = authorizedUser.Roles != null && authorizedUser.Roles.Count > 0;
+                var isAuthorized = authorizedUser?.Roles != null && authorizedUser.Roles.Count > 0;
 
                 _logger.LogInformation($"AuthHandler authorized user [audience: {query.JwtAudience}] (authorized? {isAuthorized}): {JsonSerializer.Serialize(authorizedUser)}");
 
@@ -57,6 +57,7 @@ namespace Wedding.Lambdas.Authorize.Handlers
                     query.MethodArn, 
                     audience: query.JwtAudience,
                     token, 
+                    query.IpAddress,
                     authorizedUser);
 
                 _logger.LogInformation($"Policy: {JsonSerializer.Serialize(policy)}");

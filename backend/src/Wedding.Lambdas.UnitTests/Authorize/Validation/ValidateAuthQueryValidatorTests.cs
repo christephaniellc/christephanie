@@ -12,8 +12,8 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
     [UnitTestsFor(typeof(ValidateAuthQueryValidator))]
     public class ValidateAuthQueryValidatorTests
     {
-        private TestTokenHelper _testTokenHelper;
-        private ValidateAuthQueryValidator _validator;
+        private TestTokenHelper? _testTokenHelper;
+        private ValidateAuthQueryValidator? _validator;
 
         [SetUp]
         public void Setup()
@@ -30,11 +30,12 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         public async Task Should_Validate_When_All_Fields_Are_Valid()
         {
             // Arrange
-            var authority = _testTokenHelper.JwtAuthority;
+            var authority = _testTokenHelper!.JwtAuthority;
             var audience = _testTokenHelper.JwtAudience;
             var query = new ValidateAuthQuery(authority,
                 audience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
+                "127.0.0.1",
                 await _testTokenHelper.GenerateAuth0Token());
 
             // Act & Assert
@@ -47,7 +48,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         {
             // Arrange
             var query = new ValidateAuthQuery(
-                _testTokenHelper.JwtAuthority,
+                _testTokenHelper!.JwtAuthority,
                 _testTokenHelper.JwtAudience,
                "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
                 "sdfsdfsdf");
@@ -62,7 +63,7 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         {
             // Arrange
             var query = new ValidateAuthQuery(
-                _testTokenHelper.JwtAuthority,
+                _testTokenHelper!.JwtAuthority,
                 _testTokenHelper.JwtAudience,
                 "",
                 await _testTokenHelper.GenerateAuth0Token(Guid.NewGuid().ToString()));
@@ -78,9 +79,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         {
             // Arrange
             var query = new ValidateAuthQuery(
-                _testTokenHelper.JwtAuthority,
+                _testTokenHelper!.JwtAuthority,
                 _testTokenHelper.JwtAudience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
+                "127.0.0.1",
                 null);
 
             // Act & Assert
@@ -93,9 +95,10 @@ namespace Wedding.Lambdas.UnitTests.Authorize.Validation
         {
             // Arrange
             var query = new ValidateAuthQuery(
-                _testTokenHelper.JwtAuthority,
+                _testTokenHelper!.JwtAuthority,
                 _testTokenHelper.JwtAudience,
                 "arn:aws:lambda:us-east-1:123456789012:function:MyFunction",
+                "127.0.0.1",
                 "");
 
             // Act & Assert

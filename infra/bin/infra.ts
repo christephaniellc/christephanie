@@ -10,6 +10,8 @@ import { HostedZoneStack } from '../stacks/hostedzone-stack';
 import * as cdk from 'aws-cdk-lib';
 import * as fs from 'fs'
 import { ParamsStack } from '../stacks/params-stack';
+import { RoleStack } from '../stacks/role-stack';
+import { ThrottleStack } from '../stacks/throttle-stack';
 
 const app = new cdk.App();
 
@@ -52,7 +54,17 @@ const certificateStack = new CertificateStack(app, `CertificateStack-${certifica
 //----------------------------------------------------------------
 const frontendStack = new FrontendStack(app, `FrontendStack-${env}`, { 
   env: config, 
-  certificate: certificateStack.certificate 
+  certificate: certificateStack.certificate,
+  frontendUrl: hostedzoneStack.frontendUrl
+});
+
+//----------------------------------------------------------------
+// Set up Github Deploy IAM role
+//----------------------------------------------------------------
+const roleStack = new RoleStack(app, `RoleStack-${env}`, {
+  env: config,
+  frontendUrl: hostedzoneStack.frontendUrl,
+  apiUrl: hostedzoneStack.apiUrl
 });
 
 //----------------------------------------------------------------
@@ -94,3 +106,4 @@ new ParamsStack(app, `ParamsStack-${env}`, {
 // Set up DynamoDB
 //----------------------------------------------------------------
 new DatabaseStack(app, `DatabaseStack-${env}`, { env: config });
+new ThrottleStack(app, `ThrottleStack-${env}`, { env: config });

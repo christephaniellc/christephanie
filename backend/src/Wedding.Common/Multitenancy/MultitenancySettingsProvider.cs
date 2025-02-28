@@ -19,17 +19,17 @@ namespace Wedding.Common.Multitenancy
                     break;
                 case ("https://www.wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
+                case ("fianceapi.wedding.christephanie.com"):
                     audience = $"https://fianceapi.wedding.christephanie.com";
                     break;
                 case ("https://www.dev.wedding.christephanie.com"):
                 case ("https://fianceapi.dev.wedding.christephanie.com"):
-                    audience = $"https://fianceapi.dev.wedding.christephanie.com";
-                    break;
+                case ("fianceapi.dev.wedding.christephanie.com"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
                 case ("localhost:5000"):
-                    audience = $"https://wedding.christephanie.com/api";
+                    audience = $"https://fianceapi.dev.wedding.christephanie.com";
                     break;
                 default:
                     throw new Exception("Invalid audience.");
@@ -37,28 +37,51 @@ namespace Wedding.Common.Multitenancy
             return audience;
         }
 
-        public string GetMappedTableName(string tenantId)
+        public string GetMappedTableName(string tenantId, bool rateLimit = false)
         {
             string? databaseTable;
             switch (tenantId.ToLower())
             {
                 // Unit tests only
                 case ("https://api.christephanie.com"):
-                    databaseTable = $"christephanie-wedding-unittests";
+                    if (rateLimit)
+                    {
+                        databaseTable = $"christephanie-wedding-unittests-rate-limit";
+                    }
+                    else
+                    {
+                        databaseTable = $"christephanie-wedding-unittests";
+                    }
+
                     break;
                 case ("https://www.wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
-                    databaseTable = $"christephanie-wedding-table-prod";
+                case ("fianceapi.wedding.christephanie.com"):
+                    if (rateLimit)
+                    {
+                        databaseTable = $"christephanie-wedding-rate-limit";
+                    }
+                    else
+                    {
+                        databaseTable = $"christephanie-wedding-guests-prod";
+                    }
+
                     break;
                 case ("https://www.dev.wedding.christephanie.com"):
                 case ("https://fianceapi.dev.wedding.christephanie.com"):
-                    databaseTable = $"christephanie-wedding-table-dev";
-                    break;
+                case ("fianceapi.dev.wedding.christephanie.com"):
                 case ("http://localhost:5173"):
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
                 case ("localhost:5000"):
-                    databaseTable = $"christephanie-wedding";
+                    if (rateLimit)
+                    {
+                        databaseTable = $"christephanie-wedding-rate-limit";
+                    }
+                    else
+                    {
+                        databaseTable = $"christephanie-wedding-guests-dev";
+                    }
                     break;
                 default:
                     throw new Exception($"Database tenant not found. {tenantId.ToLower()}");

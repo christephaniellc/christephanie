@@ -1,4 +1,5 @@
 import { atom, selector } from 'recoil';
+import { useAuth0 } from '@auth0/auth0-react';
 import { userIdQueryState, userState } from '@/store/user';
 
 export const findUserState = atom<boolean>({
@@ -16,14 +17,13 @@ export const invitationButtonSelectorState = selector<string>({
     const firstName = user?.firstName;
     const invitationCode = user?.invitationCode;
 
-    if (userIdQuery?.isLoading) return 'Checking guest list';
-    if (userIdQuery?.error && userIdQuery?.error?.status) {
+    if (userIdQuery?.isLoading) return 'Checking guest list...';
+    if (userIdQuery?.error) {
       switch (userIdQuery.error.status) {
         case 404:
         case 400:
-          return userIdQuery.error.description;
         default:
-          return userIdQuery.error.status;
+          return userIdQuery.error.description;
 
       }
     }
@@ -36,7 +36,15 @@ export const invitationButtonSelectorState = selector<string>({
       return "Check Guest List";
     }
     if (!userIdQuery) return 'Check Guest List';
-    if (user.guestId) return `Guest Found! Login or Create Acct`;
+    if (user.guestId) {
+      let buttonText = "Guest Found! ";
+      if (user?.auth0Id) {
+        return buttonText += `Login to existing account (or create new)`;
+      }
+      else {
+        return buttonText += `Create Acct`;
+      }
+    }
 
     if (user?.guestId && !user?.auth0Id) {
       if (user.auth0Id) return 'Account Created!';

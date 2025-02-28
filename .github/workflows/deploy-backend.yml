@@ -1,0 +1,181 @@
+name: Deploy Backend Lambdas
+
+on:
+  push:
+    branches:
+      - main.dev
+      - main
+    # Only run if files under backend/src (or its subdirectories) have changed.
+    paths:
+      - 'backend/src/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment (dev or prod)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+      force_deploy:
+        description: "Deploy all Wedding.Lambdas projects (excluding unittests)?"
+        required: false
+        default: "false"
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy Backend Lambdas
+    runs-on: ubuntu-latest
+    env:        
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
+      BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.environment == 'prod' && 'main' || 'main.dev') || github.ref_name }}
+
+    steps:
+      - name: Debug Environment
+        run: |
+          echo "GitHub Repository: ${{ github.repository }}"
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "BRANCH_NAME: ${{ env.BRANCH_NAME }}"
+          echo "DEPLOY_ENV: ${{ env.DEPLOY_ENV }}"
+          
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          
+      - name: Load Vars Based on DEPLOY_ENV
+        run: |
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            echo "AWS_ROLE=${{ secrets.PROD_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.PROD_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.PROD_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          else
+            echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AUTH0_DOMAIN=${{ secrets.DEV_AUTH0_DOMAIN }}" >> $GITHUB_ENV
+            echo "AUTH0_CLIENT_ID=${{ secrets.DEV_AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          fi
+
+      - name: Debug Loaded Vars
+        run: |
+          echo "DEPLOY_ENV: $DEPLOY_ENV"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "AWS_ROLE: $AWS_ROLE"
+          echo "AUTH0_DOMAIN: $AUTH0_DOMAIN"
+          echo "AUTH0_CLIENT_ID: $AUTH0_CLIENT_ID"
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+          
+      - name: Reset OIDC Token
+        run: rm -rf ~/.aws/
+
+      - name: Setup AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: "${{ env.AWS_ROLE }}"
+          role-session-name: GitHubActionsSession
+          aws-region: us-east-1
+
+      - name: Determine Lambda Projects to Deploy
+        id: changes
+        run: |
+          echo "Determining deployment mode..."
+
+          # Set default branch based on environment
+          if [[ "${{ github.event.inputs.environment }}" == "prod" ]]; then
+            branch="main"
+            force_deploy=true  # Always deploy everything in prod
+          else
+            branch="main.dev"
+            force_deploy="${{ github.event.inputs.force_deploy }}"
+          fi
+
+          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+          echo "Watching branch: $branch"
+          echo "Force deploy: $force_deploy"
+
+          # Ensure full Git history is available
+          git fetch --prune --unshallow
+
+          # Detect Lambda project changes
+          if [[ "$force_deploy" == "true" ]]; then
+            echo "Force deploy enabled: Deploying all Wedding.Lambdas projects."
+            dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" ! -iname "*unittests*" ! -iname "*tests*" | xargs -n 1 basename)
+            changed_dirs=$(echo "$dirs")
+          else
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              previous_commit="HEAD~1"
+            else
+              previous_commit=$(git rev-list --max-parents=0 HEAD)
+            fi
+
+            changed_dirs=$(git diff --name-only $previous_commit HEAD backend/src | grep "Wedding.Lambdas." | cut -d'/' -f3 | sort -u | grep -E "^Wedding\.Lambdas\." | grep -v -E "(unittests|tests)" || true)
+
+            # Detect Wedding.Common and Wedding.Abstractions changes
+            common_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Common/ || true)
+            abstractions_changed=$(git diff --name-only $previous_commit HEAD backend/src/Wedding.Abstractions/ || true)
+
+            if [[ -n "$abstractions_changed" ]]; then
+              echo "Wedding.Abstractions changed, deploying all Lambdas..."
+              dirs=$(find backend/src -maxdepth 1 -mindepth 1 -type d -name "Wedding.Lambdas.*" | grep -i -v -E "(unittests|tests)" | xargs -n 1 basename)
+              changed_dirs=$(echo "$dirs")
+              echo "Found lambda directories: $dirs"
+            elif [[ -n "$common_changed" ]]; then
+              echo "Wedding.Common changed, deploying all dependent Lambdas..."
+              dependent_lambdas=$(grep -rl "Wedding.Common" backend/src/Wedding.Lambdas.*/*.csproj | cut -d'/' -f3 | sort -u)
+              changed_dirs="$changed_dirs $dependent_lambdas"
+              echo "Found changed lambda directories: $changed_dirs"
+            fi
+          fi
+
+          # Remove duplicates
+          dirs=$(echo "$changed_dirs" | tr ' ' '\n' | grep -v -E "(UnitTests|tests)" | tr '\n' ' ')
+          echo "Lambda directories to deploy after removing dupes: $dirs"
+
+          if [[ -z "$dirs" ]]; then
+            echo "No Lambda changes detected. Skipping deployment."
+            echo "deploy=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          echo "Lambdas to deploy: $dirs"
+          echo "deploy=true" >> $GITHUB_ENV
+          echo "dirs=$dirs" >> $GITHUB_ENV
+          echo "branch=$branch" >> $GITHUB_ENV
+
+      - name: Build & Deploy Lambda Functions
+        if: env.deploy == 'true'
+        run: |
+          application_name="christephanie-wedding-api"
+
+          for dir in $dirs; do
+            lower_dir=${dir,,}  # convert to lowercase
+            if [[ "$lower_dir" == *"unittests"* || "$lower_dir" == *"tests"* ]]; then
+              echo "Skipping unit test project: $dir"
+              continue
+            fi
+            full_path="backend/src/$dir"
+            base_name=$(basename "$full_path" | sed 's/^Wedding\.Lambdas\.//')
+            function_name="${application_name}-$(echo "$base_name" | tr '.' '-' | tr '[:upper:]' '[:lower:]')"
+            
+            echo "Building $function_name"
+            dotnet publish "$full_path" -c Release -o "$full_path/bin/publish"
+            
+            echo "Packaging Lambda (excluding .pdb files): $function_name"
+            cd "$full_path/bin/publish" || exit 1
+            zip -r "../$function_name.zip" . -x "*.pdb"
+            cd - || exit 1
+            
+            echo "Updating Lambda: $function_name"
+            aws lambda update-function-code \
+              --function-name "$function_name" \
+              --zip-file "fileb://$full_path/bin/$function_name.zip"
+          done

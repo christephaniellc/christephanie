@@ -12,7 +12,7 @@ using Wedding.Lambdas.User.Find.Validation;
 
 namespace Wedding.Lambdas.User.Find.Handlers
 {
-    public class FindUserHandler : IAsyncQueryHandler<FindUserQuery, string>
+    public class FindUserHandler : IAsyncQueryHandler<FindUserQuery, FindUserResponse>
     {
         private readonly ILogger<FindUserHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -23,7 +23,7 @@ namespace Wedding.Lambdas.User.Find.Handlers
             _dynamoDBProvider = dynamoDBProvider;
         }
 
-        public async Task<string> GetAsync(FindUserQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<FindUserResponse> GetAsync(FindUserQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             query.Validate(nameof(query));
 
@@ -48,7 +48,11 @@ namespace Wedding.Lambdas.User.Find.Handlers
                     throw new KeyNotFoundException($"Could not find invitation {query.InvitationCode} with first name {query.FirstName}. Family exists, guest does not.");
                 }
 
-                return matchingGuest.GuestId;
+                return new FindUserResponse
+                {
+                    GuestId = matchingGuest.GuestId,
+                    Auth0Id = matchingGuest.Auth0Id
+                };
             }
             catch (KeyNotFoundException ex)
             {

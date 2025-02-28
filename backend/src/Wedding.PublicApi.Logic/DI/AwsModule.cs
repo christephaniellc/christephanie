@@ -11,7 +11,6 @@ using Amazon.Lambda.APIGatewayEvents;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Multitenancy;
-using Wedding.Lambdas.Authorize.Commands;
 using Wedding.PublicApi.Logic.Services.Auth;
 
 namespace Wedding.PublicApi.Logic.DI
@@ -20,10 +19,12 @@ namespace Wedding.PublicApi.Logic.DI
     public class AwsModule : Module
     {
         AWSOptions _awsOptions;
+        //private readonly MultitenancyConfiguration _multitenancyConfiguration;
 
-        public AwsModule(AWSOptions awsOptions)
+        public AwsModule(AWSOptions awsOptions)//, MultitenancyConfiguration multitenancyConfiguration)
         {
             _awsOptions = awsOptions;
+            //_multitenancyConfiguration = multitenancyConfiguration;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -54,8 +55,9 @@ namespace Wedding.PublicApi.Logic.DI
                 .InstancePerDependency();
 
             builder.Register(c =>
-                {
-                    return new MultitenancySettingsProvider();
+            {
+                return new MultitenancySettingsProvider();
+                //return new MultitenancySettingsProvider(_multitenancyConfiguration);
                 }).As<IMultitenancySettingsProvider>()
                 .AsImplementedInterfaces()
                 .InstancePerDependency();
@@ -67,6 +69,13 @@ namespace Wedding.PublicApi.Logic.DI
             }).As<ILambdaAuthorizer>()
             .AsImplementedInterfaces()
             .InstancePerDependency();
+
+            builder.Register(c =>
+                {
+                    return new AwsSmsHelper();
+                }).As<IAwsSmsHelper>()
+                .AsImplementedInterfaces()
+                .InstancePerDependency();
         }
     }
 }

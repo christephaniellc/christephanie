@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
@@ -14,7 +16,7 @@ using Wedding.Lambdas.FamilyUnit.Get.Validation;
 
 namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
 {
-    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitDto>
+    public class GetFamilyUnitHandler : IAsyncQueryHandler<GetFamilyUnitQuery, FamilyUnitViewModel>
     {
         private readonly ILogger<GetFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
@@ -27,25 +29,41 @@ namespace Wedding.Lambdas.FamilyUnit.Get.Handlers
             _mapper = mapper;
         }
 
-        public async Task<FamilyUnitDto> GetAsync(GetFamilyUnitQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<FamilyUnitViewModel> GetAsync(GetFamilyUnitQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _logger.LogInformation("Validating GetFamily query...");
             query.Validate(nameof(query));
+            _logger.LogInformation("GetFamily query validated.");
 
             try
             {
                 var results = await _dynamoDbProvider.GetFamilyUnitAsync(query.AuthContext.Audience, query.AuthContext.InvitationCode, cancellationToken);
-                
+
                 if (results == null)
                 {
                     throw new KeyNotFoundException($"Family unit with invitation code '{query.AuthContext.InvitationCode}' not found.");
                 }
 
-                if (results.Guests.Any(result => result.GuestId == query.AuthContext.GuestId) == null && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
+                _logger.LogInformation($"GetFamily after results");
+                _logger.LogInformation($"Raw GetFamily results: {JsonSerializer.Serialize(results)}");
+
+                // If not an admin, and auth-ed user is not a part of this family
+                if (results!.Guests!.All(result => result.GuestId != query.AuthContext.GuestId && result.Rsvp.InvitationResponse == InvitationResponseEnum.Pending) 
+                    && !query.AuthContext.ParseRoles().Contains(RoleEnum.Admin))
                 {
-                    throw new UnauthorizedAccessException("Access denied");
+                    throw new UnauthorizedAccessException("Access denied"); 
                 }
 
-                return results;
+                var sortedGuests = results!.Guests!
+                    .OrderBy(g =>
+                        g.GuestId == query.AuthContext.GuestId ? 0 :
+                            (g.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending ? 1 : 2))
+                    .ThenBy(g => g.GuestNumber)
+                    .ToList();
+
+                results.Guests = sortedGuests;
+
+                return _mapper.Map<FamilyUnitViewModel>(results);
             }
             catch (KeyNotFoundException ex)
             {

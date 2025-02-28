@@ -33,7 +33,21 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     AdditionalFirstNames = new List<string> { "Jacob" },
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest },
-                    EmailVerified = false
+                    AgeGroup = AgeGroupEnum.Adult,
+                    Email = new VerifiedDto
+                    {
+                        Value = "john.doe@gmail.com",
+                        Verified = false,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
+                    Phone = new VerifiedDto
+                    {
+                        Value = "202-555-5555",
+                        Verified = false,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
                 };
             }
         }
@@ -50,7 +64,21 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Jane",
                     LastName = "Smith",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Party },
-                    EmailVerified = false
+                    AgeGroup = AgeGroupEnum.Adult,
+                    Email = new VerifiedDto
+                    {
+                        Value = "jane.doe@gmail.com",
+                        Verified = false,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
+                    Phone = new VerifiedDto
+                    {
+                        Value = "202-555-5555",
+                        Verified = false,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
                 };
             }
         }
@@ -67,7 +95,21 @@ namespace Wedding.Lambdas.UnitTests.TestData
                     FirstName = "Admin",
                     LastName = "Dude",
                     Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Admin },
-                    EmailVerified = true
+                    AgeGroup = AgeGroupEnum.Adult,
+                    Email = new VerifiedDto
+                    {
+                        Value = "admin.doe@gmail.com",
+                        Verified = true,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
+                    Phone = new VerifiedDto
+                    {
+                        Value = "202-555-5555",
+                        Verified = false,
+                        VerificationCode = null,
+                        VerificationCodeExpiration = null
+                    },
                 };
             }
         }
@@ -80,11 +122,17 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 {
                     InvitationCode = TEST_INVITATION_CODE,
                     UnitName = "Smiths",
-                    Tier = "A",
+                    Tier = "Platinum",
                     Guests = new List<GuestDto>
                     {
                         GUEST_JOHN,
                         GUEST_JANE
+                    },
+                    MailingAddress = new AddressDto
+                    {
+                        StreetAddress = "123 Main St.",
+                        City = "New York",
+                        State = "NY"
                     }
                 };
             }

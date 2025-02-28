@@ -1,48 +1,55 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import { LogoutOptions, useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
-import { useRecoilState } from 'recoil';
-import { userState } from '@/store/user';
-import { useEffect } from 'react';
+import { useUser } from '@/store/user';
+import { useCallback, useEffect } from 'react';
 
 export const useAuth0Queries = () => {
-  const { getAccessTokenSilently, loginWithPopup, user: auth0User, isAuthenticated, logout } = useAuth0();
+  const { getAccessTokenSilently, loginWithRedirect, user: auth0User, isAuthenticated, logout,  } = useAuth0();
   const config = getConfig();
-  const [user, setUser] = useRecoilState(userState);
+  const [user, userActions] = useUser();
+
 
   const logOutFromAuth0 = async () => {
-    return await logout().then(() => {
-      localStorage.removeItem('jwt');
+    return await logout({ returnTo: config.returnTo } as LogoutOptions).then(() => {
+      localStorage.removeItem('user');
+      localStorage.removeItem('family');
     });
   };
 
+  const signInWithAuth0 = useCallback(async (guestId: string) => {
+    return await loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup',
+        guest_id: guestId,
+      },
+    });
+  }, []);
   const getAccessTokenPleasePleasePlease = async () => {
     try {
       if (!isAuthenticated) throw Error('User is not authenticated');
     } catch (_e) {
-      await loginWithPopup();
+      await loginWithRedirect();
     } finally {
       console.log('getting access token');
       await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
         },
-      })
+      });
     }
   };
 
   useEffect(() => {
-    if (auth0User) {
+    console.debug('auth0User', auth0User);
+    if (auth0User && !user.auth0Id) {
       const newUser = {
         ...user,
         auth0Id: auth0User?.sub,
       };
-      setUser(newUser);
+      userActions.setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
     }
-    if (!auth0User) {
-      setUser({ ...user, auth0Id: null });
-    }
-  }, [auth0User]);
+  }, [auth0User, userActions.setUser, user]);
 
-  return { getAccessTokenPleasePleasePlease, logOutFromAuth0 };
+  return { getAccessTokenPleasePleasePlease, logOutFromAuth0, signInWithAuth0 };
 };
