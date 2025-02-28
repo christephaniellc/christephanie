@@ -69,7 +69,7 @@ export const InvitationCodeInputs = () => {
           }
           subheader={
             !accessToken && !user?.guestId
-              ? `Or click Login below, if you've already created an account`
+              ? `...or click Login below, if you've already created an account`
               : ''
           }
         />
