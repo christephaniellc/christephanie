@@ -173,7 +173,7 @@ const somethingFamilySelector = selector({
 
 export function reorderArrayByKey(array, key, matchValue) {
   // Find the index of the element where the property matches the provided value
-  const index = array.findIndex(item => item[key] === matchValue);
+  const index = array.findIndex((item) => item[key] === matchValue);
 
   // If a matching element is found, remove it and place it at the beginning of the array
   if (index !== -1) {
@@ -284,6 +284,53 @@ export const useFamily = () => {
       getFamily();
     }
   }, [family, auth0User, getFamily]);
+
+  useEffect(() => {
+    if (!family || !family.guests || !saveTheDateSteps) return;
+    const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+    );
+    console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
+    setSaveTheDateSteps((prev) => ({
+      // attendance
+      attendance: {
+        ...prev.attendance,
+        completed: !family.guests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending),
+      },
+      ageGroup: {
+        ...prev.ageGroup,
+        completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
+      },
+      foodPreferences: {
+        ...prev.foodPreferences,
+        completed: attendingGuests.every(
+          (guest) => guest.preferences.foodPreference !== null,
+        ),
+      },
+      foodAllergies: {
+        ...prev.foodAllergies,
+        completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
+      },
+      communicationPreference: {
+        ...prev.communicationPreference,
+        completed: attendingGuests.some((value) => value.phone.verified || value.email.verified),
+      },
+      camping: {
+        ...prev.camping,
+        completed: attendingGuests.every(
+          (guest) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+        ),
+      },
+      mailingAddress: {
+        ...prev.mailingAddress,
+        completed: !!family.mailingAddress,
+      },
+      comments: {
+        ...prev.comments,
+        completed: !!family.invitationResponseNotes,
+      },
+    }));
+  }, [family]);
 
   const familyActions = useMemo(
     () => ({

@@ -8,7 +8,7 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 function Pages() {
   const { contentHeight } = useAppLayout();
   return (
-    <Box sx={{ height: contentHeight, border: '1px solid blue' }}>
+    <Box sx={{ height: contentHeight, overflow: 'hidden' }}>
       <Routes>
         {Object.values(routes).map(({ path, component: Component }) => {
           return <Route key={path} path={path} element={<Component />} />;

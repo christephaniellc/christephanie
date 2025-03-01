@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 export const useAppLayout = () => {
   const [screenWidth, setScreenWidth] = useState(0)
-  const bottomNavHeight = 56;
+  const bottomNavHeight = 65;
   const [contentHeight, setContentHeight] = React.useState(0);
 
 
