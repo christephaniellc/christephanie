@@ -1,10 +1,10 @@
-import {GuestDto} from "@/types/api";
+import {GuestDto, GuestViewModel} from "@/types/api";
 
 export interface FamilyGuestsStates {
   allUsersResponded: boolean;
   attendingLastNames: string[];
   callByLastNames: string;
-  guests: GuestDto[];
+  guests: GuestViewModel[];
   mailingAddressEntered: boolean;
   mailingAddressUspsVerified: boolean;
   nobodyComing: boolean;
