@@ -62,7 +62,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     apiRef.current = new Api(getTokenFunc);
   }, [user]);
 
-  const queryKey = `invitationCode=${user?.invitationCode}&firstName=${user?.firstName}`;
+  const queryKey = `invitationCode=${user?.invitationCode.trim()}&firstName=${user?.firstName.trim()}`;
 
   const findUserIdQuery = useQuery<FindUserResponse | undefined, ApiError>({
     queryKey: [`findUserIdQuery`, `${queryKey}`],
