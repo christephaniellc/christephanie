@@ -23,6 +23,7 @@ import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { useNavigate } from 'react-router-dom';
 import { dark } from '@mui/material/styles/createPalette';
+import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
@@ -75,24 +76,7 @@ function SaveTheDatePage() {
           overflow: 'hidden',
         }}
       >
-        <Box p={2} height={110} display={'flex'} alignItems={'center'} width={1}>
-          <StephsActualFavoriteTypography
-            variant="h6"
-            sx={{
-              ml: 'auto',
-              mr: 'auto',
-              mb: 2,
-              width: 'fit-content',
-              color: 'palette.secondary',
-              [theme.breakpoints.up('md')]: {
-                pl: '200px',
-              },
-              filter: `drop-shadow(${boxShadow})`,
-            }}
-          >
-            {Object.values(saveTheDateSteps)[tabIndex]?.label}
-          </StephsActualFavoriteTypography>
-        </Box>
+        <MtvAnimatedTitle />
         <ButtonsContainer>
           {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
           {!genericQuestions && family && family.guests.length === 0 && (

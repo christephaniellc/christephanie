@@ -137,37 +137,6 @@ const somethingFamilySelector = selector({
       addressIsSelected,
       commentsAreSelected,
     };
-    //   updateSteps((prev) => ({
-    //     ...prev,
-    //     ageGroup: {
-    //       ...prev.ageGroup,
-    //       completed: ageIsSelected,
-    //     },
-    //     foodPreferences: {
-    //       ...prev.foodPreferences,
-    //       completed: foodPreferencesAreSelected,
-    //     },
-    //     foodAllergies: {
-    //       ...prev.foodAllergies,
-    //       completed: foodAllergiesAreSelected,
-    //     },
-    //     communicationPreference: {
-    //       ...prev.communicationPreference,
-    //       completed: true,
-    //     },
-    //     camping: {
-    //       ...prev.camping,
-    //       completed: campingPreferencesAreSelected,
-    //     },
-    //     mailingAddress: {
-    //       ...prev.mailingAddress,
-    //       completed: addressIsSelected,
-    //     },
-    //     comments: {
-    //       ...prev.comments,
-    //       completed: commentsAreSelected,
-    //     },
-    //   }));
   },
 });
 
