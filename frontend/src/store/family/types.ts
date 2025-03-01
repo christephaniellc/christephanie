@@ -1,4 +1,4 @@
-import {GuestDto, GuestViewModel} from "@/types/api";
+import {GuestViewModel} from "@/types/api";
 
 export interface FamilyGuestsStates {
   allUsersResponded: boolean;

@@ -576,7 +576,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GuestDto"
+                  "$ref": "#/components/schemas/GuestViewModel"
                 }
               }
             }
@@ -1497,6 +1497,7 @@
       "SleepPreferenceEnum": {
         "enum": [
           "Unknown",
+          "Manor",
           "Camping",
           "Hotel",
           "Other"

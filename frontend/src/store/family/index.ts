@@ -5,7 +5,6 @@ import {
   FamilyUnitDto,
   FamilyUnitViewModel,
   FoodPreferenceEnum,
-  GuestDto,
   GuestViewModel,
   InvitationResponseEnum,
   NotificationPreferenceEnum,

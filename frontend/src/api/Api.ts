@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, GuestViewModel, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -41,7 +41,7 @@ export default class Api {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestDto> {
+  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestViewModel> {
     return this.patch(`/guest`, PatchGuestRequest);
   }
 
