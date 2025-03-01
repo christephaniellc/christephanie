@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { GuestDto, SleepPreferenceEnum } from '@/types/api';
+import { GuestDto, GuestViewModel, SleepPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, darken, useTheme } from '@mui/material';
 import { Apartment, Festival, HotelOutlined } from '@mui/icons-material';
@@ -15,7 +15,7 @@ import { useBoxShadow } from '@/hooks/useBoxShadow';
 const CampingPreferences = ({ guestId }: { guestId: string }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
   const { screenWidth } = useAppLayout();
-  const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
+  const guest: GuestViewModel | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
   const campingPreferences = Object.keys(SleepPreferenceEnum);
   const mousePosition = useRef({ x: 0, y: 0 });

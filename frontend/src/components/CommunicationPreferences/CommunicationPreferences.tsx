@@ -2,24 +2,24 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { GuestDto, NotificationPreferenceEnum } from '@/types/api';
+import { GuestDto, GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup } from '@mui/material';
 import { EmailOutlined, PhoneAndroid } from '@mui/icons-material';
 import { useMemo } from 'react';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
-  const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
+  const guest: GuestViewModel | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
   const contactPreferences = Object.keys(NotificationPreferenceEnum);
   const guestCommunicationPreferences = useMemo(() => {
     return guest?.preferences?.notificationPreference || [];
   }, [guest]);
   const guestEmailAddress = useMemo(() => {
-    return guest?.email?.value;
+    return guest?.email?.maskedValue;
   }, [guest]);
   const guestPhoneNumber = useMemo(() => {
-    return guest?.phone?.value;
+    return guest?.phone?.maskedValue;
   }, [guest]);
 
   const handleUpdateCommunicationPreference = (notificationPreference: NotificationPreferenceEnum) => {

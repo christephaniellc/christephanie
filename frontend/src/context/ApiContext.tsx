@@ -7,6 +7,7 @@ import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanst
 import {
   AddressDto,
   FamilyUnitDto,
+  FamilyUnitViewModel,
   FindUserResponse,
   GuestDto,
   PatchFamilyUnitRequest,
@@ -19,7 +20,7 @@ import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 interface ApiContextProps {
   findUserIdQuery: UseQueryResult<FindUserResponse | undefined, ApiError>;
   getMeQuery: UseQueryResult<GuestDto, ApiError>;
-  getFamilyUnitQuery: UseQueryResult<FamilyUnitDto, ApiError>;
+  getFamilyUnitQuery: UseQueryResult<FamilyUnitViewModel, ApiError>;
 
   patchFamilyMutation: UseMutationResult<
     FamilyUnitDto,
@@ -85,12 +86,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     enabled: !!auth0User && !user.lastActivity && !!apiRef.current.getMe,
   }) as UseQueryResult<GuestDto, ApiError>;
 
-  const getFamilyUnitQuery = useQuery<FamilyUnitDto, ApiError>({
+  const getFamilyUnitQuery = useQuery<FamilyUnitViewModel, ApiError>({
     queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
     queryFn: () => apiRef.current!.getFamilyUnit(),
     retry: false,
     enabled: !!auth0User,
-  }) as UseQueryResult<FamilyUnitDto, ApiError>;
+  }) as UseQueryResult<FamilyUnitViewModel, ApiError>;
 
   const patchFamilyGuestMutation = useMutation<
     GuestDto,
