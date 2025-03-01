@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Guest.Patch.Commands;
@@ -13,7 +14,7 @@ using Wedding.Lambdas.Guest.Patch.Validation;
 
 namespace Wedding.Lambdas.Guest.Patch.Handlers
 {
-    public class PatchGuestHandler : IAsyncCommandHandler<PatchGuestCommand, GuestDto>
+    public class PatchGuestHandler : IAsyncCommandHandler<PatchGuestCommand, GuestViewModel>
     {
         private readonly ILogger<PatchGuestHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
@@ -26,7 +27,7 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
             _mapper = mapper;
         }
 
-        public async Task<GuestDto> ExecuteAsync(PatchGuestCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<GuestViewModel> ExecuteAsync(PatchGuestCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation("PatchGuestHandler");
             command.Validate(nameof(command));
@@ -178,7 +179,9 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
 
             var result = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.GuestId, cancellationToken);
             _logger.LogInformation($"Got updated existing guest entity: {JsonSerializer.Serialize(result)}");
-            return _mapper.Map<GuestDto>(result);
+
+            var guestDto = _mapper.Map<GuestDto>(result);
+            return _mapper.Map<GuestViewModel>(guestDto);
         }
     }
 }
