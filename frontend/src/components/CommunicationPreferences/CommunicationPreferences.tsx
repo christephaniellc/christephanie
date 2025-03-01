@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { GuestDto, GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
+import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup } from '@mui/material';
 import { EmailOutlined, PhoneAndroid } from '@mui/icons-material';
