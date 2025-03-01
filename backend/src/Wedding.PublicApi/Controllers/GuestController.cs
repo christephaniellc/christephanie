@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -33,12 +34,12 @@ namespace Wedding.PublicApi.Controllers
 
         [Authorize]
         [HttpPatch]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestViewModel))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<GuestDto>> PatchGuest([FromBody] PatchGuestRequest patchRequest, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<GuestViewModel>> PatchGuest([FromBody] PatchGuestRequest patchRequest, CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
             var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;

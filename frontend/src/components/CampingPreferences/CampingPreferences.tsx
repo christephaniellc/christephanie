@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { GuestDto, GuestViewModel, SleepPreferenceEnum } from '@/types/api';
+import { GuestViewModel, SleepPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, darken, useTheme } from '@mui/material';
 import { Apartment, Festival, HotelOutlined } from '@mui/icons-material';

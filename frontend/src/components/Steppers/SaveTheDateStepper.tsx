@@ -16,7 +16,6 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useFamily } from '@/store/family';
-import { GuestDto, InvitationResponseEnum, SleepPreferenceEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
 import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
