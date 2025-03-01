@@ -663,7 +663,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     guestPartialUpdate: (data: PatchGuestRequest, params: RequestParams = {}) =>
-      this.request<GuestDto, ProblemDetails | void>({
+      this.request<GuestViewModel, ProblemDetails | void>({
         path: `/api/guest`,
         method: 'PATCH',
         body: data,
