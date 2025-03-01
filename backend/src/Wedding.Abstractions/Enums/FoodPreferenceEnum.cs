@@ -5,6 +5,7 @@
         Unknown,
         Omnivore,
         Vegetarian,
-        Vegan
+        Vegan,
+        BYOB // Bring Your Own Booby, I mean, Bottle
     }
 }
