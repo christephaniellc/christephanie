@@ -74,7 +74,7 @@ function SaveTheDatePage() {
           overflow: 'hidden',
         }}
       >
-        <Box p={2} height={85}>
+        <Box p={2} height={110} display={'flex'} alignItems={'center'} width={1}>
           <StephsActualFavoriteTypography
             variant="h6"
             sx={{
@@ -83,8 +83,6 @@ function SaveTheDatePage() {
               mb: 2,
               width: 'fit-content',
               color: 'palette.secondary',
-              //color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
-              fontSize: '0.2rem',
               [theme.breakpoints.up('md')]: {
                 pl: '200px',
               },
