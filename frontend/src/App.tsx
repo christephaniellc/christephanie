@@ -11,6 +11,7 @@ import SW from '@/sections/SW';
 import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
+import './assets/styles/fonts.css';
 
 function App() {
   return (

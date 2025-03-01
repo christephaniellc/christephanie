@@ -1,0 +1,6 @@
+@font-face {
+    font-family: 'Snowstorm';
+    src: url('@/assets/fonts/snowstorm/snowstorm.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
