@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestDto, InvitationResponseEnum } from '@/types/api';
+import { GuestDto, GuestViewModel, InvitationResponseEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import { ButtonBase, Typography, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
