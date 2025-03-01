@@ -75,7 +75,7 @@ export interface FamilyUnitDto {
 export interface FamilyUnitViewModel {
   invitationCode?: string | null;
   unitName?: string | null;
-  guests?: GuestDto[] | null;
+  guests?: GuestViewModel[] | null;
   mailingAddress?: AddressDto;
   additionalAddresses?: AddressDto[] | null;
   invitationResponseNotes?: string | null;
@@ -93,6 +93,7 @@ export enum FoodPreferenceEnum {
   Omnivore = 'Omnivore',
   Vegetarian = 'Vegetarian',
   Vegan = 'Vegan',
+  BYOB = 'BYOB',
 }
 
 export interface GuestDto {
@@ -107,6 +108,25 @@ export interface GuestDto {
   roles: RoleEnum[] | null;
   email?: VerifiedDto;
   phone?: VerifiedDto;
+  rsvp?: RsvpDto;
+  preferences?: PreferencesDto;
+  ageGroup?: AgeGroupEnum;
+  /** @format date-time */
+  lastActivity?: string | null;
+}
+
+export interface GuestViewModel {
+  invitationCode?: string | null;
+  guestId?: string | null;
+  /** @format int32 */
+  guestNumber?: number | null;
+  auth0Id?: string | null;
+  firstName?: string | null;
+  additionalFirstNames?: string[] | null;
+  lastName?: string | null;
+  roles: RoleEnum[] | null;
+  email?: MaskedVerifiedModel;
+  phone?: MaskedVerifiedModel;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
   ageGroup?: AgeGroupEnum;
@@ -218,6 +238,11 @@ export interface VerifiedDto {
   verificationCode?: string | null;
   /** @format date-time */
   verificationCodeExpiration?: string | null;
+}
+
+export interface MaskedVerifiedModel {
+  maskedValue?: string | null;
+  verified?: boolean;
 }
 
 export type QueryParamsType = Record<string | number, any>;

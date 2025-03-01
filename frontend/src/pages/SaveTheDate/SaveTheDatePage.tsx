@@ -103,7 +103,7 @@ function SaveTheDatePage() {
             family &&
             family.guests &&
             family.guests.length > 1 &&
-            family.guests.map((guest: GuestDto) => (
+            family.guests.map((guest: GuestViewModel) => (
               <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
             ))}
           {genericQuestions && <>{FamilyQueryQuestion}</>}
@@ -144,7 +144,7 @@ function SaveTheDatePage() {
                 flexShrink: 0,
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
@@ -154,7 +154,7 @@ function SaveTheDatePage() {
                 }}
               >
                 Wait, go back
-              </StephsFavoriteTypography>
+              </StephsActualFavoriteTypography>
             </Button>
             <Box id={'spacer'} display={'flex'} width={1}></Box>
             <Button
@@ -174,13 +174,13 @@ function SaveTheDatePage() {
                   navigate('/');
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
                 {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
-              </StephsFavoriteTypography>
+              </StephsActualFavoriteTypography>
             </Button>
           </Box>
         )}
