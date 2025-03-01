@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestDto, InvitationResponseEnum } from '@/types/api';
+import { GuestDto, GuestViewModel, InvitationResponseEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import { ButtonBase, Typography, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -101,7 +101,7 @@ function SaveTheDatePage() {
             family &&
             family.guests &&
             family.guests.length > 1 &&
-            family.guests.map((guest: GuestDto) => (
+            family.guests.map((guest: GuestViewModel) => (
               <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
             ))}
           {genericQuestions && <>{FamilyQueryQuestion}</>}
@@ -142,7 +142,7 @@ function SaveTheDatePage() {
                 flexShrink: 0,
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
@@ -152,7 +152,7 @@ function SaveTheDatePage() {
                 }}
               >
                 Wait, go back
-              </StephsFavoriteTypography>
+              </StephsActualFavoriteTypography>
             </Button>
             <Box id={'spacer'} display={'flex'} width={1}></Box>
             <Button
@@ -172,13 +172,13 @@ function SaveTheDatePage() {
                   navigate('/');
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
                 {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
-              </StephsFavoriteTypography>
+              </StephsActualFavoriteTypography>
             </Button>
           </Box>
         )}

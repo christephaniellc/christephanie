@@ -98,7 +98,9 @@ jobs:
           cache: yarn
           
       - name: Generate application version hash
-        run: echo "REACT_APP_VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: | 
+          echo "REACT_APP_VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "App release version: $REACT_APP_VERSION"
 
       - name: Install Dependencies
         run: yarn install
