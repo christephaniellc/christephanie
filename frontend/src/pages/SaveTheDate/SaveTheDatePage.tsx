@@ -20,9 +20,12 @@ import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import LoadingBox from '@/components/LoadingBox';
 import { rem } from 'polished';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { useNavigate } from 'react-router-dom';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
+  const { handleMouseMove, boxShadow } = useBoxShadow();
   const { contentHeight } = useAppLayout();
   const { user: auth0User } = useAuth0();
   const { getFamilyUnitQuery } = familyActions;
@@ -30,8 +33,8 @@ function SaveTheDatePage() {
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
   const { screenWidth } = useAppLayout();
-  const mousePosition = useRef({ x: 0, y: 0 });
   const theme = useTheme();
+  const navigate = useNavigate();
   const genericQuestions = useMemo(
     () => ['comments', 'mailingAddress'].includes(stdStepper.currentStep[0]),
     [stdStepper.currentStep],
@@ -47,26 +50,10 @@ function SaveTheDatePage() {
     }
   }, [stdStepper.currentStep]);
 
-  // useEffect(() => {
-  //   if (!getFamilyUnitQuery.isPending) {
-  //     familyActions.getFamily();
-  //     // return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
-  //   }
-  //
-  //   // if (getFamilyUnitQuery.isError) {
-  //   //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
-  //   // }
-  // }, []);
-  const handleMouseMove = (event: React.MouseEvent) => {
-    mousePosition.current = { x: event.clientX, y: event.clientY };
-  };
-
-  const calculateShadow = () => {
-    console.log('mousePosition', mousePosition.current);
-    const { x, y } = mousePosition.current;
-    const shadowX = 2;
-    const shadowY = 2;
-    return `${shadowX}px ${shadowY}px 0px ${theme.palette.error.main}`;
+  const handleNavigateToStep = (step: string) => {
+    familyActions.getFamily();
+    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
+    navigate(`/save-the-date?step=${step}`);
   };
 
   return (
@@ -83,7 +70,7 @@ function SaveTheDatePage() {
           flexWrap: 'wrap',
           backdropFilter: 'blur(20px)',
           position: 'relative',
-          height: `${contentHeight - 175}px`,
+          height: rem(`${contentHeight - 155}px`),
           overflow: 'hidden',
         }}
       >
@@ -100,7 +87,7 @@ function SaveTheDatePage() {
               [theme.breakpoints.up('md')]: {
                 pl: '200px',
               },
-              // filter: `drop-shadow(${calculateShadow()})`,
+              filter: `drop-shadow(${boxShadow})`,
             }}
           >
             {Object.values(saveTheDateSteps)[tabIndex]?.label}
@@ -152,7 +139,7 @@ function SaveTheDatePage() {
               sx={{
                 backdropFilter: 'blur(20px)',
                 backgroundColor: 'rgba(0,0,0,.1)',
-                // display: tabIndex > 0 ? 'inherit' : 'none',
+                display: tabIndex > 0 ? 'inherit' : 'none',
                 flexShrink: 0,
               }}
             >
@@ -162,7 +149,7 @@ function SaveTheDatePage() {
                 }}
                 onClick={() => {
                   familyActions.getFamily();
-                  setTabIndex(tabIndex - 1);
+                  handleNavigateToStep(Object.keys(saveTheDateSteps)[tabIndex - 1]);
                 }}
               >
                 Wait, go back
@@ -182,7 +169,8 @@ function SaveTheDatePage() {
               }}
               onClick={() => {
                 familyActions.getFamily();
-                setTabIndex(tabIndex + 1);
+                tabIndex < stdStepper.totalTabs - 1 ? handleNavigateToStep(Object.keys(saveTheDateSteps)[tabIndex + 1]) :
+                  navigate('/');
               }}
             >
               <StephsFavoriteTypography
@@ -190,7 +178,7 @@ function SaveTheDatePage() {
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
-                Next
+                {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
               </StephsFavoriteTypography>
             </Button>
           </Box>
@@ -210,8 +198,8 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   width: '100%',
   mx: 'auto',
-  maxHeight: '80vh',
-  paddingBottom: '140px',
+  maxHeight: '84vh',
+  paddingBottom: rem('200px'),
   position: 'relative',
   overflow: 'auto',
 }));

@@ -177,6 +177,7 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
             display: 'flex',
             width: '100%',
             height: '100%',
+            paddingRight: theme.spacing(12),
           }}
         >
           <AgeSlider

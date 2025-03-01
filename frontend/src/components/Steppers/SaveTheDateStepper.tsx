@@ -21,7 +21,14 @@ import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
 import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
 import IconButton from '@mui/material/IconButton';
-import { Check, Circle, CloseTwoTone } from '@mui/icons-material';
+import {
+  Check, CheckCircleOutlineTwoTone,
+  Circle,
+  CloseTwoTone, Publish,
+  PublishedWithChangesTwoTone, RadioButtonUnchecked, TaskAltTwoTone, TripOrigin,
+  Unpublished,
+  UnpublishedTwoTone,
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
@@ -63,14 +70,19 @@ export default function SaveTheDateStepper() {
       const step = urlParams.get('step');
       if (step) {
         const index = Object.keys(saveTheDateSteps).indexOf(step);
+        console.log('setting step index from urlParams', step, index);
         setTabIndex(index);
       }
     }
   }, [saveTheDateSteps, urlParams]);
 
-  useEffect(() => {
-    setUrlParams(new URLSearchParams(location.search));
-  }, [location]);
+  // useEffect(() => {
+  //   console.log('tabIndex', tabIndex);
+  //   console.log('saveTheDateSteps', Object.keys(saveTheDateSteps)[tabIndex]);
+  //   console.log('location', location.search);
+  //   console.log('urlParams', new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`))
+  //   setUrlParams(new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`));
+  // }, [tabIndex]);
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
@@ -81,13 +93,15 @@ export default function SaveTheDateStepper() {
   return (
     <Box
       component={Container}
-      pt={4}
+      pt={2}
       display="flex"
       alignItems="center"
+      height={60}
       justifyContent="space-between"
     >
-      <Box flexGrow={1} display="flex" alignItems="center" width="100%">
+      <Box flexGrow={2} display="flex" alignItems="center" width="100%" >
         <Stepper
+          sx={{ width: '100%', height: 40 }}
           activeStep={tabIndex}
           nonLinear
           orientation="horizontal"
@@ -108,11 +122,10 @@ export default function SaveTheDateStepper() {
       </Box>
       <Box
         display={'flex'}
-        flexGrow={1}
+        flexGrow={0}
         minWidth={40}
         justifyContent="flex-end"
-        pr={2}
-        width="100%"
+        px={2}
       >
         <IconButton onClick={() => navigate('/')}>
           <CloseTwoTone />
@@ -171,7 +184,7 @@ function StepperIcon(props: StepIconProps) {
   const user = useRecoilValue(userState);
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
-      {completed ? <Check color="success" /> : <Circle color="secondary" />}
+      {completed ? <CheckCircleOutlineTwoTone fontWeight={800} color="success" /> : <TripOrigin color="secondary" />}
     </StepperIconRoot>
   );
 }
@@ -207,13 +220,16 @@ const StepperIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(({ t
 
 const CustomStepLabel = styled(StepLabel)<StepLabelProps>(({ theme }) => ({
   [`& .${stepLabelClasses.label}`]: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    fontSize: '0.8rem',
     ...theme.applyStyles('dark', {}),
   },
-
+  [`& .Mui-active`]: {
+    color: `${theme.palette.primary.main} !important`,
+    '& svg': {
+      fill: theme.palette.primary.main,
+      width: 30,
+      height: 30,
+    }
+  },
   [`& .${stepLabelClasses.completed}`]: {
     color: theme.palette.success.main,
   },

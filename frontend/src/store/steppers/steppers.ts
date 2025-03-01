@@ -18,7 +18,7 @@ export const stdTabIndex = atom<number>({
 export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
   key: 'saveTheDateStepper',
   default: {
-    attendence: {
+    attendance: {
       id: 0,
       completed: false,
       label: 'Are you interested in attending the wedding?',
@@ -46,18 +46,18 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       description: '',
       component: null,
     },
-    camping: {
-      id: 4,
-      completed: false,
-      label: 'Accomodations',
-      description: '(we have bathrooms!)',
-      component: null,
-    },
     communicationPreference: {
       id: 5,
       completed: false,
       label: 'How should we contact you?',
       description: '',
+      component: null,
+    },
+    camping: {
+      id: 4,
+      completed: false,
+      label: 'Accomodations',
+      description: '(we have bathrooms!)',
       component: null,
     },
     mailingAddress: {

@@ -118,7 +118,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         </Box>
 
       </Button>
-      <Box sx={{ overflowX: 'auto', ml: "2vw",  }}>
+      <Box sx={{ overflowY: 'auto', ml: "2vw",  }}>
         {guest.rsvp.invitationResponse === InvitationResponseEnum.Interested && stdStepper.tabIndex < stdStepper.totalTabs && (
           CurrentComponent
         )}
