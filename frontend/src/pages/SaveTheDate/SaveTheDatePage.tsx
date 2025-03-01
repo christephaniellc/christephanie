@@ -13,7 +13,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
-import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
@@ -75,15 +75,16 @@ function SaveTheDatePage() {
         }}
       >
         <Box p={2} height={85}>
-          <StephsFavoriteTypography
-            variant="h4"
+          <StephsActualFavoriteTypography
+            variant="h6"
             sx={{
               ml: 'auto',
               mr: 'auto',
               mb: 2,
               width: 'fit-content',
-              color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
-              fontSize: '1.5rem',
+              color: 'palette.secondary',
+              //color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+              fontSize: '0.2rem',
               [theme.breakpoints.up('md')]: {
                 pl: '200px',
               },
@@ -91,7 +92,7 @@ function SaveTheDatePage() {
             }}
           >
             {Object.values(saveTheDateSteps)[tabIndex]?.label}
-          </StephsFavoriteTypography>
+          </StephsActualFavoriteTypography>
         </Box>
         <ButtonsContainer>
           {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
