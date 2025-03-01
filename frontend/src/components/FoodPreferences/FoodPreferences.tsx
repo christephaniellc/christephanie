@@ -62,7 +62,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
       >
         <ButtonGroup
           fullWidth
-          orientation={screenWidth > 600 ? 'horizontal' : 'vertical'}
+          orientation={screenWidth > 800 ? 'horizontal' : 'vertical'}
           sx={{
             backgroundColor: 'rgba(0,0,0,.8)',
           }}
@@ -102,6 +102,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           <Button
             sx={{
               width: '100%',
+              lineHeight: 0.7,
             }}
             color="secondary"
             variant={
@@ -125,6 +126,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
                     ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
                     : '',
+                  lineHeight: .7,
                 }}
               />
             }
