@@ -27,7 +27,7 @@ const LoadingBox = () => {
         elements.push(<>&nbsp;</>);
       } else if (random < 0.4) {
         elements.push(
-          <StickFigureIcon loading={true} fontSize='large' key={i} sx={{ color: generateRandomColor(), fontSize: '2rem' }} />
+          <StickFigureIcon loading={true} fontSize='large' key={i} color={generateRandomColor()} />
         );
       } else if (random < 0.8) {
         if (i % 3 === 0) {

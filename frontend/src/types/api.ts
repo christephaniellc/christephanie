@@ -93,6 +93,7 @@ export enum FoodPreferenceEnum {
   Omnivore = 'Omnivore',
   Vegetarian = 'Vegetarian',
   Vegan = 'Vegan',
+  BYOB = 'BYOB',
 }
 
 export interface GuestDto {
