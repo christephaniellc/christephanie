@@ -3,8 +3,10 @@ import {
   AddressDto,
   AgeGroupEnum,
   FamilyUnitDto,
+  FamilyUnitViewModel,
   FoodPreferenceEnum,
   GuestDto,
+  GuestViewModel,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
   SleepPreferenceEnum,
@@ -17,12 +19,12 @@ import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
 import { saveTheDateStepsState } from '@/store/steppers/steppers';
 
-export const familyState = atom<FamilyUnitDto | null>({
+export const familyState = atom<FamilyUnitViewModel | null>({
   key: 'familyUnit',
   default: null,
 });
 
-export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
+export const familyQueryState = atom<UseQueryResult<FamilyUnitViewModel> | null>({
   key: 'familyQuery',
   default: null,
 });
@@ -68,7 +70,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
   },
 });
 
-export const guestSelector = selectorFamily<GuestDto | null, string>({
+export const guestSelector = selectorFamily<GuestViewModel | null, string>({
   key: 'guestSelector',
   get:
     (guestId) =>
@@ -109,7 +111,7 @@ export const guestSelector = selectorFamily<GuestDto | null, string>({
       set(familyState, {
         ...familyUnit,
         guests: updatedGuests,
-      } as FamilyUnitDto);
+      } as FamilyUnitViewModel);
     },
 });
 
@@ -117,15 +119,15 @@ const somethingFamilySelector = selector({
   key: 'somethingFamilySelector',
   get: ({ get }) => {
     const family = get(familyState);
-    const ageIsSelected = family?.guests?.every((guest: GuestDto) => guest.ageGroup !== undefined);
+    const ageIsSelected = family?.guests?.every((guest: GuestViewModel) => guest.ageGroup !== undefined);
     const foodPreferencesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => guest.preferences.foodPreference !== null,
+      (guest: GuestViewModel) => guest.preferences.foodPreference !== null,
     );
     const foodAllergiesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => !!guest.preferences.foodAllergies,
+      (guest: GuestViewModel) => !!guest.preferences.foodAllergies,
     );
     const campingPreferencesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+      (guest: GuestViewModel) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
     );
     const addressIsSelected = family?.mailingAddress !== undefined;
     const commentsAreSelected = family?.invitationResponseNotes !== undefined;
@@ -202,12 +204,12 @@ export const useFamily = () => {
       getFamilyUnitQuery.refetch().then((res) => {
         if (!res.data || !res.data.guests) return;
 
-        const matchingUser = res.data.guests.find((value: GuestDto) => {
+        const matchingUser = res.data.guests.find((value: GuestViewModel) => {
           return value.auth0Id === user.auth0Id;
         });
         if (matchingUser) {
           const sortedGuests = reorderArrayByKey(res.data.guests, 'guestId', auth0User.sub);
-          setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitDto);
+          setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitViewModel);
         }
       }),
     [],

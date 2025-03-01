@@ -1050,7 +1050,7 @@
           "guests": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/GuestDto"
+              "$ref": "#/components/schemas/GuestViewModel"
             },
             "nullable": true
           },
@@ -1168,6 +1168,74 @@
         },
         "additionalProperties": false
       },
+      "GuestViewModel": {
+        "required": [
+          "roles"
+        ],
+        "type": "object",
+        "properties": {
+          "invitationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "auth0Id": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalFirstNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleEnum"
+            },
+            "nullable": true
+          },
+          "email": {
+            "$ref": "#/components/schemas/MaskedVerifiedModel"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/MaskedVerifiedModel"
+          },
+          "rsvp": {
+            "$ref": "#/components/schemas/RsvpDto"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesDto"
+          },
+          "ageGroup": {
+            "$ref": "#/components/schemas/AgeGroupEnum"
+          },
+          "lastActivity": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "IAMPolicyStatement": {
         "type": "object",
         "properties": {
@@ -1224,6 +1292,19 @@
           "username": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MaskedVerifiedModel": {
+        "type": "object",
+        "properties": {
+          "maskedValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "verified": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

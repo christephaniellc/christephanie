@@ -2,7 +2,7 @@ import { familyState, guestSelector } from './index';
 import { mockFamilyUnitDto } from '../../../test-utils/mockResponses';
 import { RecoilRoot, RecoilState, snapshot_UNSTABLE } from 'recoil';
 import { useEffect } from 'react';
-import { FamilyUnitDto, GuestDto, InvitationResponseEnum } from '@/types/api';
+import { FamilyUnitDto, GuestDto, GuestViewModel, InvitationResponseEnum } from '@/types/api';
 import { render } from '@testing-library/react';
 import { RecoilObserver } from '@/utils/RecoilObserver';
 
@@ -44,7 +44,7 @@ describe('guestSelector selector', () => {
       // 2) Modify that snapshot by setting the selector
       const updatedSnapshot = baseSnapshot.map(({ set }) => {
         // We update the guest with ID 'guest-001' by changing firstName
-        set(guestSelector('guest-001'), { firstName: 'UpdatedName' } as GuestDto);
+        set(guestSelector('guest-001'), { firstName: 'UpdatedName' } as GuestViewModel);
       });
 
       // 3) Now read the updated value out of the snapshot
@@ -71,7 +71,7 @@ describe('guestSelector selector', () => {
       // 2) Attempt to set the guest in that snapshot
       const updatedSnapshot = baseSnapshot.map(({ set }) => {
 
-        set(guestSelector('guest-999'), { firstName: 'DoesNotMatter' } as GuestDto);
+        set(guestSelector('guest-999'), { firstName: 'DoesNotMatter' } as GuestViewModel);
       });
 
       // 3) No error should occur, but obviously no data changes
@@ -120,7 +120,7 @@ describe('useUpdateFamilyGuest', () => {
     // The updated value of familyState is in the second call:
     const updatedFamily = onChange.mock.calls[1][0];
     const updatedGuest = updatedFamily.guests?.find(
-      (g: GuestDto) => g.guestId === 'guest-001',
+      (g: GuestViewModel) => g.guestId === 'guest-001',
     );
 
     // Confirm the RSVP has changed to "Declined"
