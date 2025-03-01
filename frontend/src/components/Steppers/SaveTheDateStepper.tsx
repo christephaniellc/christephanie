@@ -107,7 +107,9 @@ export default function SaveTheDateStepper() {
           orientation="horizontal"
           connector={<StyledConnector />}
         >
-          {Object.entries(saveTheDateSteps).map(([key, step]) => (
+          {Object.entries(saveTheDateSteps)
+            .filter(([key, step]) => step.display)
+            .map(([key, step]) => (
             <Step completed={step.completed} key={key}>
               <CustomStepLabel
                 onClick={() => handleNavigateToStep(key)}
