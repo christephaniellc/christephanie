@@ -12,6 +12,7 @@ import CommunicationPreferences from '@/components/CommunicationPreferences';
 import CampingPreferences from '@/components/CampingPreferences';
 import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
+import { rgba } from 'polished';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -135,6 +136,28 @@ export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   fontSize: '1.5rem',
   [theme.breakpoints.up('sm')]: {},
+}));
+
+export const StephsActualFavoriteTypography = styled(Typography)(({ theme }) => ({
+  fontFamily: 'Snowstorm, sans-serif',
+  //color: theme.palette.secondary.main,
+  //color: 'theme.palette.secondary',
+  color: rgba(255,255,255,.98),
+  textShadow: '3px 3px 0 #E9950C', 
+  fontWeight: 300,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  // Adjust font sizes for responsiveness:
+  fontSize: '2.2rem',
+  [theme.breakpoints.up('sm')]: {
+      fontSize: '2rem',
+    },
+  // [theme.breakpoints.up('sm')]: {
+  //   fontSize: '3rem',
+  // },
+  // [theme.breakpoints.up('md')]: {
+  //   fontSize: '4rem',
+  // },
 }));
 
 export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
