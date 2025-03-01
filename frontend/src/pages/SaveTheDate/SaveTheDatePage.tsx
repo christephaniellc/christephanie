@@ -8,7 +8,7 @@ import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
 import { GuestDto, GuestViewModel, InvitationResponseEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
-import { ButtonBase, Typography, useTheme } from '@mui/material';
+import { ButtonBase, darken, Typography, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
@@ -22,6 +22,7 @@ import LoadingBox from '@/components/LoadingBox';
 import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { useNavigate } from 'react-router-dom';
+import { dark } from '@mui/material/styles/createPalette';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
@@ -137,13 +138,14 @@ function SaveTheDatePage() {
               color="error"
               sx={{
                 backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
+                backgroundColor: 'rgba(0,0,0,.8)',
                 display: tabIndex > 0 ? 'inherit' : 'none',
                 flexShrink: 0,
               }}
             >
               <StephsActualFavoriteTypography
                 sx={{
+                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
                 onClick={() => {
@@ -163,7 +165,7 @@ function SaveTheDatePage() {
               sx={{
                 flexShrink: 0,
                 backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
+                backgroundColor: 'rgba(0,0,0,.8)',
                 display: tabIndex < stdStepper.totalTabs ? 'inherit' : 'none',
               }}
               onClick={() => {
@@ -174,6 +176,7 @@ function SaveTheDatePage() {
             >
               <StephsActualFavoriteTypography
                 sx={{
+                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >

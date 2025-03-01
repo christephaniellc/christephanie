@@ -2,10 +2,8 @@ import { atom, selector, selectorFamily, useRecoilState } from 'recoil';
 import {
   AddressDto,
   AgeGroupEnum,
-  FamilyUnitDto,
   FamilyUnitViewModel,
   FoodPreferenceEnum,
-  GuestDto,
   GuestViewModel,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
@@ -297,38 +295,46 @@ export const useFamily = () => {
       // attendance
       attendance: {
         ...prev.attendance,
+        display: true,
         completed: !family.guests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending),
       },
       ageGroup: {
         ...prev.ageGroup,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
       },
       foodPreferences: {
         ...prev.foodPreferences,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every(
           (guest) => guest.preferences.foodPreference !== null,
         ),
       },
       foodAllergies: {
         ...prev.foodAllergies,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
       },
       communicationPreference: {
         ...prev.communicationPreference,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.some((value) => value.phone?.verified || value.email?.verified),
       },
       camping: {
         ...prev.camping,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every(
           (guest) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
         ...prev.mailingAddress,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: !!family.mailingAddress,
       },
       comments: {
         ...prev.comments,
+        display: true,
         completed: !!family.invitationResponseNotes,
       },
     }));
