@@ -1,17 +1,17 @@
+// MtvAnimatedTitle.jsx
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import Box from '@mui/material/Box';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { useRecoilValue } from 'recoil';
-import { useFamily } from '@/store/family';
 import { useApiContext } from '@/context/ApiContext';
+import TvSnow from './TvSnow';
 
 const digitalTitieRotations = [15, 33, 40, 22, 65, 13, 80, 88];
 
 const MtvAnimatedTitle = () => {
-  const loading = useRef(false);
   const {
     findUserIdQuery,
     getMeQuery,
@@ -21,22 +21,15 @@ const MtvAnimatedTitle = () => {
     patchFamilyGuestMutation,
   } = useApiContext();
 
-  useEffect(() => {
-    loading.current =
-      findUserIdQuery.isFetching ||
-      getMeQuery.isFetching ||
-      getFamilyUnitQuery.isFetching ||
-      !patchFamilyMutation.isIdle ||
-      !patchFamilyGuestMutation.isIdle ||
-      !validateAddressMutation.isIdle;
-  }, [
-    findUserIdQuery.isFetching,
-    getMeQuery.isFetching,
-    getFamilyUnitQuery.isFetching,
-    patchFamilyMutation.isIdle,
-    patchFamilyGuestMutation.isIdle,
-    validateAddressMutation.isPending,
-  ]);
+  // Compute a loading flag from our API queries/mutations.
+  const isLoading =
+    findUserIdQuery.isFetching ||
+    getMeQuery.isFetching ||
+    getFamilyUnitQuery.isFetching ||
+    !patchFamilyMutation.isIdle ||
+    !patchFamilyGuestMutation.isIdle ||
+    !validateAddressMutation.isIdle;
+
   const theme = useTheme();
   const { boxShadow } = useBoxShadow();
   const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
@@ -44,14 +37,17 @@ const MtvAnimatedTitle = () => {
 
   // State to hold the current rotation value.
   const [rotationX, setRotationX] = useState(15);
+  // State for controlling the flashing TV snow
+  const [showSnow, setShowSnow] = useState(false);
 
+  // Effect for animating the title’s rotation
   useEffect(() => {
     let isCancelled = false;
     const timeouts = [];
     const cycleDuration = 170; // shorter cycle for faster flicker
 
     const animateTitle = () => {
-      if (!loading.current) return;
+      if (!isLoading) return;
 
       // Determine the starting rotation value.
       const currentValue = rotationX;
@@ -101,10 +97,10 @@ const MtvAnimatedTitle = () => {
       timeouts.push(nextCycle);
     };
 
-    if (loading.current) {
+    if (isLoading) {
       animateTitle();
     } else {
-      // When not loading, ensure the rotation resets to 0.
+      // When not loading, ensure the rotation resets.
       setRotationX(0);
     }
 
@@ -112,10 +108,45 @@ const MtvAnimatedTitle = () => {
       isCancelled = true;
       timeouts.forEach(clearTimeout);
     };
-  }, [loading.current, rotationX, getMeQuery.isFetching, findUserIdQuery.isFetching, getFamilyUnitQuery.isFetching, patchFamilyMutation.isIdle, patchFamilyGuestMutation.isIdle, validateAddressMutation.isPending]);
+  }, [
+    isLoading,
+    rotationX,
+    getMeQuery.isFetching,
+    findUserIdQuery.isFetching,
+    getFamilyUnitQuery.isFetching,
+    patchFamilyMutation.isIdle,
+    patchFamilyGuestMutation.isIdle,
+    validateAddressMutation.isPending,
+  ]);
+
+  // Effect for flashing the TV snow while loading.
+  useEffect(() => {
+    let snowTimer;
+    if (isLoading) {
+      const flashSnow = () => {
+        setShowSnow(true);
+        // Hide snow after a short flash duration (e.g., 50ms)
+        setTimeout(() => {
+          setShowSnow(false);
+        }, 50);
+        // Schedule the next flash at a random interval (e.g., between 100ms and 300ms)
+        const nextInterval = Math.floor(Math.random() * 200) + 100;
+        snowTimer = setTimeout(flashSnow, nextInterval);
+      };
+      flashSnow();
+    } else {
+      setShowSnow(false);
+    }
+    return () => {
+      clearTimeout(snowTimer);
+    };
+  }, [isLoading]);
+
+  // Compute the scaleX factor: a linear mapping from rotation 0-90 to scale 1-1.3.
+  const scaleX = 1 + (rotationX / 90) * 0.3;
 
   return (
-    <Box p={2} height={110} display="flex" alignItems="center" width={1}>
+    <Box p={2} height={110} display="flex" alignItems="center" width={1} position="relative">
       <StephsActualFavoriteTypography
         variant="h6"
         sx={{
@@ -124,7 +155,8 @@ const MtvAnimatedTitle = () => {
           mb: 2,
           width: 'fit-content',
           color: 'palette.secondary',
-          transform: `rotateX(${rotationX}deg)`,
+          // Combine rotateX and scaleX transforms
+          transform: `rotateX(${rotationX}deg) scaleX(${scaleX})`,
           [theme.breakpoints.up('md')]: {
             pl: '200px',
           },
@@ -133,6 +165,7 @@ const MtvAnimatedTitle = () => {
       >
         {Object.values(saveTheDateSteps)[tabIndex]?.label}
       </StephsActualFavoriteTypography>
+      {showSnow && <TvSnow />}
     </Box>
   );
 };
