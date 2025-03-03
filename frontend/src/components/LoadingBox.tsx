@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import StickFigureIcon from '@mui/icons-material/Accessibility';
 import TreeIcon from '@mui/icons-material/Nature';
 import GrainIcon from '@mui/icons-material/Grain';
 import { ForestRounded, ForestTwoTone, Park } from '@mui/icons-material';
+import { useFamily } from '@/store/family';
+import StickFigureIcon from '@/components/StickFigureIcon';
 
 const LoadingBox = () => {
+
   const generateRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -25,7 +27,7 @@ const LoadingBox = () => {
         elements.push(<>&nbsp;</>);
       } else if (random < 0.4) {
         elements.push(
-          <StickFigureIcon key={i} sx={{ color: generateRandomColor(), fontSize: '2rem' }} />
+          <StickFigureIcon loading={true} fontSize='large' key={i} color={generateRandomColor()} />
         );
       } else if (random < 0.8) {
         if (i % 3 === 0) {
@@ -46,7 +48,7 @@ const LoadingBox = () => {
           <GrainIcon
             key={i}
             sx={{
-              background: `linear-gradient(${random360deg}deg, ${color1}, ${color2}, ${color3})`,
+              color: `${[color1, color2, color3][Math.floor(Math.random()*3)]}`,
               fontSize: '2rem',
             }}
           />
@@ -54,7 +56,7 @@ const LoadingBox = () => {
       }
     }
     return elements;
-  };
+  }
 
   return (
     <StyledBox>
