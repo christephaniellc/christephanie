@@ -286,14 +286,14 @@ export const useFamily = () => {
       },
       communicationPreference: {
         ...prev.communicationPreference,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
-        completed: attendingGuests.some((value) => value.phone?.verified || value.email?.verified),
+          display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+          completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
       },
       camping: {
         ...prev.camping,
         display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every(
-          (guest) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+          (guest) => guest?.preferences?.sleepPreference ?? SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
