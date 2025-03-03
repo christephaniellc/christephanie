@@ -77,8 +77,9 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
       }
     }
 
-
-    if (guest.preferences.foodAllergies.join('') !== 'none' && (guest.preferences.foodAllergies !== null || guest.preferences.foodAllergies.join('') !== '')) {
+    let setAllergyResponse = guest.preferences.foodAllergies !== null 
+      && guest.preferences.foodAllergies.join('') !== '' && guest.preferences.foodAllergies.join('') !== 'none';
+    if (setAllergyResponse) {
       overallResponse += ` ${isMe ? 'You' : 'They'} will literally or figuratively die if ${isMe ? 'you' : 'they'} consume ${guest.preferences.foodAllergies.join(
         ' or ',
       )}.`;
