@@ -153,7 +153,8 @@ const MtvAnimatedTitle = () => {
           ml: 'auto',
           mr: 'auto',
           mb: 2,
-          width: 'fit-content',
+          fontStretch: 'expanded',
+          // width: ,
           color: 'palette.secondary',
           // Combine rotateX and scaleX transforms
           transform: `rotateX(${rotationX}deg) scaleX(${scaleX})`,
