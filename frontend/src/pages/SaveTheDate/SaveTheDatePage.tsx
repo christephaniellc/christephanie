@@ -184,8 +184,8 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   width: '100%',
   mx: 'auto',
-  maxHeight: '84vh',
-  paddingBottom: rem('200px'),
+  maxHeight: '100%',
+  paddingBottom: rem('40px'),
   position: 'relative',
   overflow: 'auto',
 }));
