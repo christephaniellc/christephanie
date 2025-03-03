@@ -87,7 +87,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   }) as UseQueryResult<GuestDto, ApiError>;
 
   const getFamilyUnitQuery = useQuery<FamilyUnitViewModel, ApiError>({
-    queryKey: [`getFamilyUnit`, `${auth0User?.sub}`],
+    queryKey: [`getFamilyUnit`],
     queryFn: () => apiRef.current!.getFamilyUnit(),
     retry: false,
     enabled: !!auth0User,

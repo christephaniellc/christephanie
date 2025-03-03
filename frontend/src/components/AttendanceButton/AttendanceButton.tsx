@@ -18,7 +18,6 @@ interface AttendanceButtonProps {
   guestId: string;
 }
 
-
 export const themePaletteToRgba = (colorHexString: string, opacity: number = 0.1) => {
   const hexToRgba = colorHexString.replace('#', '');
   const r = parseInt(hexToRgba.substring(0, 2), 16);
@@ -58,9 +57,15 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
 
   const calculateShadow = () => {
     const { x, y } = mousePosition;
-    const shadowX = stdStepper.tabIndex > 0 ? 0 : 10
+    const shadowX = stdStepper.tabIndex > 0 ? 0 : 10;
     const shadowY = stdStepper.tabIndex > 0 ? 0 : 10;
-    return `${shadowX}px ${shadowY}px 0px ${guest.rsvp.invitationResponse === InvitationResponseEnum.Interested ? theme.palette.primary.dark : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending ? theme.palette.secondary.dark : theme.palette.error.dark}`;
+    return `${shadowX}px ${shadowY}px 0px ${
+      guest.rsvp.invitationResponse === InvitationResponseEnum.Interested
+        ? theme.palette.primary.dark
+        : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending
+          ? theme.palette.secondary.dark
+          : theme.palette.error.dark
+    }`;
   };
 
   return (
@@ -86,7 +91,11 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       }}
     >
       <Button
-        disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching || stdStepper.tabIndex > 0}
+        disabled={
+          !familyActions.patchFamilyGuestMutation.isIdle ||
+          familyActions.getFamilyUnitQuery.isFetching ||
+          stdStepper.tabIndex > 0
+        }
         onClick={() => handleClick(guest?.rsvp.invitationResponse)}
         sx={{
           alignItems: 'flex-start',
@@ -104,30 +113,33 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
             minWidth: '100%',
             maxWidth: '`100%`',
           },
-          color: !familyActions.patchFamilyMutation.isIdle || stdStepper.tabIndex > 0  ? 'white !important' : 'inherit',
+          color:
+            !familyActions.patchFamilyMutation.isIdle || stdStepper.tabIndex > 0
+              ? 'white !important'
+              : 'inherit',
           background: 'rgba(0,0,0,1)',
           width: '100%',
           filter: `drop-shadow(${calculateShadow()})`,
         }}
-
-
       >
         <Box display="flex" alignItems="center">
-          {guest &&
-            <LargeAttendanceButton guestId={guest.guestId} isPending={familyActions.patchFamilyMutation.isPending}
-                                   error={familyActions.patchFamilyMutation.error} />}
+          {guest && (
+            <LargeAttendanceButton
+              guestId={guest.guestId}
+              isPending={familyActions.patchFamilyMutation.isPending}
+              error={familyActions.patchFamilyMutation.error}
+            />
+          )}
         </Box>
-
       </Button>
-      <Box sx={{ overflowY: 'auto', ml: "2vw",  }}>
-        {guest.rsvp.invitationResponse === InvitationResponseEnum.Interested && stdStepper.tabIndex < stdStepper.totalTabs && (
-          CurrentComponent
-        )}
+      <Box sx={{ overflowY: 'auto', ml: '2vw' }}>
+        {guest.rsvp.invitationResponse === InvitationResponseEnum.Interested &&
+          stdStepper.tabIndex < stdStepper.totalTabs &&
+          CurrentComponent}
       </Box>
     </Box>
   );
 };
-
 
 const ImageButton = styled(Button)<ButtonProps>(({ theme }) => ({}));
 
@@ -140,24 +152,13 @@ export const StephsFavoriteTypography = styled(Typography)(({ theme }) => ({
 
 export const StephsActualFavoriteTypography = styled(Typography)(({ theme }) => ({
   fontFamily: 'Snowstorm, sans-serif',
-  //color: theme.palette.secondary.main,
-  //color: 'theme.palette.secondary',
-  color: rgba(255,255,255,.98),
-  textShadow: '3px 3px 0 #E9950C', 
+  color: rgba(255, 255, 255, 0.98),
+  textShadow: '3px 3px 0 #E9950C',
   fontWeight: 300,
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  // Adjust font sizes for responsiveness:
-  fontSize: '2.2rem',
-  [theme.breakpoints.up('sm')]: {
-      fontSize: '2rem',
-    },
-  // [theme.breakpoints.up('sm')]: {
-  //   fontSize: '3rem',
-  // },
-  // [theme.breakpoints.up('md')]: {
-  //   fontSize: '4rem',
-  // },
+  fontSize: '1.5rem',
+  lineHeight: '2.5rem',
 }));
 
 export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
@@ -165,14 +166,15 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
   const theme = useTheme();
   const [_, familyActions] = useFamily();
   const stdStepper = useRecoilValue(stdStepperState);
-  const darkenCoefficent = useMemo(() => familyActions.patchFamilyGuestMutation.isPending || stdStepper.tabIndex > 0  ? .5 : 0, [familyActions.patchFamilyGuestMutation.isPending]);
+  const darkenCoefficent = useMemo(
+    () => (familyActions.patchFamilyGuestMutation.isPending || stdStepper.tabIndex > 0 ? 0.5 : 0),
+    [familyActions.patchFamilyGuestMutation.isPending],
+  );
 
   const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
     console.log('setting user is attending');
     familyActions.updateFamilyGuestInterest(guestId, interestedResponse);
   };
-
-
 
   const handleClick = (invitationResponse: InvitationResponseEnum) => {
     console.log('clicky');
@@ -184,7 +186,6 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
       setUserIsAttending(InvitationResponseEnum.Interested);
     }
   };
-
 
   const buttonProps = useMemo(() => {
     console.log('buttonPropping for ', guest?.rsvp.invitationResponse);
@@ -208,8 +209,11 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
           border: `2px dashed ${darken(theme.palette.secondary.main, darkenCoefficent)}`,
         };
       default:
-        return { color: 'default', fontSize: 'medium', border: `2px solid ${theme.palette.info.main}` };
-
+        return {
+          color: 'default',
+          fontSize: 'medium',
+          border: `2px solid ${theme.palette.info.main}`,
+        };
     }
   }, [guest, darkenCoefficent]);
 
@@ -233,11 +237,27 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
       fontSize: buttonProps.fontSize,
       border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
-      width: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '200px !important' : '100%',
-      minWidth: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '200px !important' : '100%',
-      maxWidth: guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested ? '200px !important' : '100%',
+      width:
+        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
+          ? '200px !important'
+          : '100%',
+      minWidth:
+        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
+          ? '200px !important'
+          : '100%',
+      maxWidth:
+        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
+          ? '200px !important'
+          : '100%',
     };
   }, [buttonProps, darkenCoefficent]);
 
-  return { semiTransparentBackgroundColor, theme, familyActions, handleClick, guest, imgButtonSxProps };
+  return {
+    semiTransparentBackgroundColor,
+    theme,
+    familyActions,
+    handleClick,
+    guest,
+    imgButtonSxProps,
+  };
 };
