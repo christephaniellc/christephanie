@@ -314,12 +314,12 @@ export const useFamily = () => {
       },
       communicationPreference: {
         ...prev.communicationPreference,
-        completed: attendingGuests.some((value) => value.phone.verified || value.email.verified),
+        completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
       },
       camping: {
         ...prev.camping,
         completed: attendingGuests.every(
-          (guest) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+          (guest) => guest?.preferences?.sleepPreference ?? SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
