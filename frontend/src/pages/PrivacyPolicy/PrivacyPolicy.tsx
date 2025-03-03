@@ -156,7 +156,7 @@ function PrivacyPolicy() {
         position: 'relative',
       }}
     >
-      <Box py={2} sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <Box my={2} sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.1)' }}>
         <Typography variant="h4" sx={{ textAlign: 'center' }}>
           {privacyPolicyItems.privacyPolicy.subheader}
         </Typography>
@@ -164,7 +164,7 @@ function PrivacyPolicy() {
           {privacyPolicyItems.privacyPolicy.content[0].subheader}
         </Typography>
       </Box>
-      <List sx={{ overflow: 'auto', height: contentHeight - 250 , backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <List sx={{ overflow: 'auto', py: 0, my: 2, height: contentHeight - 250 , backgroundColor: 'rgba(0,0,0,.1)' }}>
         {Object.entries(privacyPolicyItems)
           .slice(1)
           .map(([key, value]) => (

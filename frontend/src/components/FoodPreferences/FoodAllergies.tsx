@@ -11,11 +11,12 @@ import Vegan from '@/assets/Vegan.png';
 import Omnivore from '@/assets/Omnivore.png';
 import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/system';
-import { FoodPreferenceEnum } from '@/types/api';
+import { AgeGroupEnum, FoodPreferenceEnum } from '@/types/api';
 import { Inbox, LunchDining, SvgIconComponent, WarningAmber } from '@mui/icons-material';
 import AddAllergyButton from '@/components/AddAllergyButton/AddAllergyButton';
 import SharkIcon from '@/components/SharkIcon/SharkIcon';
 import ListItem from '@mui/material/ListItem';
+import BabyBottleIcon from '@/components/SharkIcon/BottleIcon';
 
 function FoodAllergies({ guestId }: { guestId: string }) {
   const mousePosition = useRef({ x: 0, y: 0 });
@@ -55,6 +56,19 @@ function FoodAllergies({ guestId }: { guestId: string }) {
   }, [allergyIconProps]);
 
   const activeEatingIcon = useMemo(() => {
+    if (guest.ageGroup === AgeGroupEnum.Baby) {
+      return (
+        <BabyBottleIcon
+          sx={{
+            filter:
+              'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)',
+          }}
+          width={32}
+          height={32}
+          mr={1}
+        />
+      );
+    }
     switch (guest.preferences.foodPreference) {
       case FoodPreferenceEnum.Vegan:
         return (
@@ -145,7 +159,6 @@ function FoodAllergies({ guestId }: { guestId: string }) {
     setAllergyIconProps(allAllergiesSelectedFalse);
   };
 
-
   const handleMouseMove = (event: React.MouseEvent) => {
     mousePosition.current = { x: event.clientX, y: event.clientY };
   };
@@ -175,75 +188,88 @@ function FoodAllergies({ guestId }: { guestId: string }) {
         boxShadow: 1,
       }}
     >
-      <Chip
-        sx={{
-          backdropFilter: 'blur(20px)',
-          backgroundColor: 'rgba(0,0,0,.6)',
-          my: 1,
-          width: '100%',
-        }}
-        icon={<>{activeEatingIcon}</>}
-        label={`Nothing.  I can eat anything.  Just watch me.`}
-        disabled={
-          familyActions.patchFamilyGuestMutation.status === 'pending' ||
-          familyActions.getFamilyUnitQuery.isFetching
-        }
-        color={
-          (chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as 'primary' | 'secondary'
-        }
-        variant={
-          (chosenAllergies.join('') === 'none' ? 'outlined' : 'filled') as 'outlined' | 'filled'
-        }
-        onClick={() => resetAllergies()}
-      />
-      <Box
-        height={110}
-        mb={2}
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 1,
-          flexWrap: 'wrap',
-          overflow: 'auto',
-        }}
-      >
-        {allergyIconProps.map((allergy) => {
-          const matchingAllergy = allergyIconProps.find((a) => a === allergy);
-          if (!matchingAllergy) return;
+      {guest.ageGroup === AgeGroupEnum.Baby && (
+        <Typography variant="h6" color="secondary" my="auto" width='80%' mx='auto'>
+          {guestName} is a baby. They are allergic to our nosy questions.
+        </Typography>
+      )}
+      {guest.ageGroup !== AgeGroupEnum.Baby && (
+        <>
+          <Chip
+            sx={{
+              backdropFilter: 'blur(20px)',
+              backgroundColor: 'rgba(0,0,0,.6)',
+              my: 1,
+              width: '100%',
+            }}
+            icon={<>{activeEatingIcon}</>}
+            label={`I can eat anything. Just watch me.`}
+            disabled={
+              familyActions.patchFamilyGuestMutation.status === 'pending' ||
+              familyActions.getFamilyUnitQuery.isFetching
+            }
+            color={
+              (chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as
+                | 'primary'
+                | 'secondary'
+            }
+            variant={
+              (chosenAllergies.join('') === 'none' ? 'outlined' : 'filled') as 'outlined' | 'filled'
+            }
+            onClick={() => resetAllergies()}
+          />
+          <Box
+            height={110}
+            mb={2}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 1,
+              flexWrap: 'wrap',
+              overflow: 'auto',
+            }}
+          >
+            {allergyIconProps.map((allergy) => {
+              const matchingAllergy = allergyIconProps.find((a) => a === allergy);
+              if (!matchingAllergy) return;
 
-          const newAllergies = allergyIconProps.filter((a) => a !== allergy);
-          if (!newAllergies) return;
+              const newAllergies = allergyIconProps.filter((a) => a !== allergy);
+              if (!newAllergies) return;
 
-          return (
-            <Chip
-              sx={{
-                backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.6)',
-                // my: 0.5,
-                cursor: 'pointer',
-                color: guest.preferences.foodAllergies.includes(allergy.allergyName) ? theme.palette.warning.main : theme.palette.success.light,
-              }}
-              variant={
-                guest.preferences.foodAllergies.includes(allergy.allergyName)
-                  ? 'outlined'
-                  : ('filled' as 'outlined' | 'filled')
-              }
-              color={
-                guest.preferences.foodAllergies.includes(allergy.allergyName)
-                  ? 'error'
-                  : ('success' as 'primary' | 'error' | 'success' | 'secondary')
-              }
-              icon={<allergy.icon />}
-              disabled={
-                familyActions.patchFamilyGuestMutation.status === 'pending' ||
-                familyActions.getFamilyUnitQuery.isFetching
-              }
-              label={allergy.allergyName}
-              onClick={() => handleGuestFoodAllergy(allergy.allergyName)}
-            />
-          );
-        })}
-      </Box>
+              return (
+                <Chip
+                  sx={{
+                    backdropFilter: 'blur(20px)',
+                    backgroundColor: 'rgba(0,0,0,.6)',
+                    // my: 0.5,
+                    cursor: 'pointer',
+                    color: guest.preferences.foodAllergies.includes(allergy.allergyName)
+                      ? theme.palette.warning.main
+                      : theme.palette.success.light,
+                  }}
+                  variant={
+                    guest.preferences.foodAllergies.includes(allergy.allergyName)
+                      ? 'outlined'
+                      : ('filled' as 'outlined' | 'filled')
+                  }
+                  color={
+                    guest.preferences.foodAllergies.includes(allergy.allergyName)
+                      ? 'error'
+                      : ('success' as 'primary' | 'error' | 'success' | 'secondary')
+                  }
+                  icon={<allergy.icon />}
+                  disabled={
+                    familyActions.patchFamilyGuestMutation.status === 'pending' ||
+                    familyActions.getFamilyUnitQuery.isFetching
+                  }
+                  label={allergy.allergyName}
+                  onClick={() => handleGuestFoodAllergy(allergy.allergyName)}
+                />
+              );
+            })}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }

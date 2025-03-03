@@ -61,183 +61,186 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
-        <ButtonGroup
-          fullWidth
-          orientation={screenWidth > 800 ? 'horizontal' : 'vertical'}
-          sx={{
-            backgroundColor: 'rgba(0,0,0,.8)',
-          }}
-        >
-          <>
-            {guest.ageGroup !== AgeGroupEnum.Baby && (
-              <>
-                <Button
+        {guest.ageGroup !== AgeGroupEnum.Baby && (
+          <ButtonGroup
+            fullWidth
+            orientation={screenWidth > 800 ? 'horizontal' : 'vertical'}
+            sx={{
+              backgroundColor: 'rgba(0,0,0,.8)',
+            }}
+          >
+            <Button
+              sx={{
+                width: '100%',
+              }}
+              color="secondary"
+              disabled={
+                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+              variant={
+                (clientButtonValue?.includes(FoodPreferenceEnum.Unknown)
+                  ? 'contained'
+                  : 'outlined') as 'contained' | 'outlined'
+              }
+              onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Unknown)}
+              value={FoodPreferenceEnum.Unknown}
+              endIcon={
+                <Box
+                  component={'img'}
+                  src={`${Shark}`}
+                  width={24}
+                  height={24}
                   sx={{
-                    width: '100%',
+                    filter: !clientButtonValue?.includes(FoodPreferenceEnum.Unknown)
+                      ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                      : '',
                   }}
-                  color="secondary"
-                  disabled={
-                    familyActions.patchFamilyMutation.status === 'pending' ||
-                    familyActions.getFamilyUnitQuery.isFetching
-                  }
-                  variant={
-                    (clientButtonValue?.includes(FoodPreferenceEnum.Unknown)
-                      ? 'contained'
-                      : 'outlined') as 'contained' | 'outlined'
-                  }
-                  onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Unknown)}
-                  value={FoodPreferenceEnum.Unknown}
-                  endIcon={
-                    <Box
-                      component={'img'}
-                      src={`${Shark}`}
-                      width={24}
-                      height={24}
-                      sx={{
-                        filter: !clientButtonValue?.includes(FoodPreferenceEnum.Unknown)
-                          ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
-                          : '',
-                      }}
-                    />
-                  }
-                >
-                  Only animals
-                </Button>
-                <Button
+                />
+              }
+            >
+              Only animals
+            </Button>
+            <Button
+              sx={{
+                width: '100%',
+                lineHeight: 0.7,
+              }}
+              color="secondary"
+              variant={
+                (clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
+                  ? 'contained'
+                  : 'outlined') as 'contained' | 'outlined'
+              }
+              disabled={
+                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+              value={FoodPreferenceEnum.Omnivore}
+              onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Omnivore)}
+              endIcon={
+                <Box
+                  component={'img'}
+                  src={`${Omnivore}`}
+                  width={24}
+                  height={24}
                   sx={{
-                    width: '100%',
+                    filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
+                      ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                      : '',
                     lineHeight: 0.7,
                   }}
-                  color="secondary"
-                  variant={
-                    (clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
-                      ? 'contained'
-                      : 'outlined') as 'contained' | 'outlined'
-                  }
-                  disabled={
-                    familyActions.patchFamilyMutation.status === 'pending' ||
-                    familyActions.getFamilyUnitQuery.isFetching
-                  }
-                  value={FoodPreferenceEnum.Omnivore}
-                  onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Omnivore)}
-                  endIcon={
-                    <Box
-                      component={'img'}
-                      src={`${Omnivore}`}
-                      width={24}
-                      height={24}
-                      sx={{
-                        filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
-                          ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
-                          : '',
-                        lineHeight: 0.7,
-                      }}
-                    />
-                  }
-                >
-                  All Life
-                </Button>
-                <Button
+                />
+              }
+            >
+              All Life
+            </Button>
+            <Button
+              sx={{
+                width: '100%',
+              }}
+              color="secondary"
+              disabled={
+                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+              variant={
+                (clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian)
+                  ? 'contained'
+                  : 'outlined') as 'contained' | 'outlined'
+              }
+              value={FoodPreferenceEnum.Vegetarian}
+              endIcon={
+                <Box
                   sx={{
-                    width: '100%',
+                    filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian)
+                      ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                      : '',
                   }}
-                  color="secondary"
-                  disabled={
-                    familyActions.patchFamilyMutation.status === 'pending' ||
-                    familyActions.getFamilyUnitQuery.isFetching
-                  }
-                  variant={
-                    (clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian)
-                      ? 'contained'
-                      : 'outlined') as 'contained' | 'outlined'
-                  }
-                  value={FoodPreferenceEnum.Vegetarian}
-                  endIcon={
-                    <Box
-                      sx={{
-                        filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegetarian)
-                          ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
-                          : '',
-                      }}
-                      component={'img'}
-                      src={`${Vegetarian}`}
-                      width={20}
-                      height={20}
-                      mr={1}
-                    />
-                  }
-                  onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegetarian)}
-                >
-                  Mostly Plants
-                </Button>
-                <Button
+                  component={'img'}
+                  src={`${Vegetarian}`}
+                  width={20}
+                  height={20}
+                  mr={1}
+                />
+              }
+              onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegetarian)}
+            >
+              Mostly Plants
+            </Button>
+            <Button
+              sx={{
+                width: '100%',
+              }}
+              color="secondary"
+              endIcon={
+                <Box
                   sx={{
-                    width: '100%',
+                    filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegan)
+                      ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                      : '',
                   }}
-                  color="secondary"
-                  endIcon={
-                    <Box
-                      sx={{
-                        filter: !clientButtonValue?.includes(FoodPreferenceEnum.Vegan)
-                          ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
-                          : '',
-                      }}
-                      component={'img'}
-                      src={`${Vegan}`}
-                      width={20}
-                      height={20}
-                      mr={1}
-                    />
-                  }
-                  disabled={
-                    familyActions.patchFamilyMutation.status === 'pending' ||
-                    familyActions.getFamilyUnitQuery.isFetching
-                  }
-                  value={FoodPreferenceEnum.Vegan}
-                  variant={
-                    (clientButtonValue?.includes(FoodPreferenceEnum.Vegan)
-                      ? 'contained'
-                      : 'outlined') as 'contained' | 'outlined'
-                  }
-                  onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegan)}
-                >
-                  Vegan
-                </Button>
-              </>
-            )}
-            {guest.ageGroup === AgeGroupEnum.Baby && (
-              <Button
-                sx={{
-                  width: '100%',
-                }}
-                color="secondary"
-                endIcon={
-                  <BabyBottleIcon
-                    sx={{
-                      filter: !clientButtonValue?.includes(FoodPreferenceEnum.BYOB)
-                        ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
-                        : '',
-                    }}
-                    width={32}
-                    height={32}
-                    mr={1}
-                  />
-                }
-                disabled={
-                  familyActions.patchFamilyMutation.status === 'pending' ||
-                  familyActions.getFamilyUnitQuery.isFetching
-                }
-                variant={
-                  (guest.ageGroup === AgeGroupEnum.Baby
-                    ? 'contained'
-                    : 'outlined') as 'contained' | 'outlined'
-                }
-              >
-                BYOB
-              </Button>
-            )}
-          </>
-        </ButtonGroup>
+                  component={'img'}
+                  src={`${Vegan}`}
+                  width={20}
+                  height={20}
+                  mr={1}
+                />
+              }
+              disabled={
+                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+              value={FoodPreferenceEnum.Vegan}
+              variant={
+                (clientButtonValue?.includes(FoodPreferenceEnum.Vegan)
+                  ? 'contained'
+                  : 'outlined') as 'contained' | 'outlined'
+              }
+              onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Vegan)}
+            >
+              Vegan
+            </Button>
+          </ButtonGroup>
+        )}
+        {guest.ageGroup === AgeGroupEnum.Baby && (
+          <ButtonGroup
+            fullWidth
+            sx={{
+              backgroundColor: 'rgba(0,0,0,.8)',
+            }}
+          >
+            <Button
+              sx={{
+                width: '100%',
+              }}
+              color="secondary"
+              endIcon={
+                <BabyBottleIcon
+                  sx={{
+                    filter: !clientButtonValue?.includes(FoodPreferenceEnum.BYOB)
+                      ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                      : '',
+                  }}
+                  width={32}
+                  height={32}
+                  mr={1}
+                />
+              }
+              disabled={
+                familyActions.patchFamilyMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+              variant={
+                (guest.ageGroup === AgeGroupEnum.Baby ? 'contained' : 'outlined') as
+                  | 'contained'
+                  | 'outlined'
+              }
+            >
+              BYOB
+            </Button>
+          </ButtonGroup>
+        )}
       </Paper>
     </Stack>
   );

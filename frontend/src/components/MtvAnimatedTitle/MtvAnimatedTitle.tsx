@@ -26,9 +26,9 @@ const MtvAnimatedTitle = () => {
     findUserIdQuery.isFetching ||
     getMeQuery.isFetching ||
     getFamilyUnitQuery.isFetching ||
-    !patchFamilyMutation.isIdle ||
-    !patchFamilyGuestMutation.isIdle ||
-    !validateAddressMutation.isIdle;
+    patchFamilyMutation.isPending ||
+    patchFamilyGuestMutation.isPending ||
+    validateAddressMutation.isPending;
 
   const theme = useTheme();
   const { boxShadow } = useBoxShadow();

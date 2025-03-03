@@ -30,7 +30,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     ageGroup: {
       id: 1,
       completed: false,
-      label: 'What kind of person are we doling out food and drink to?',
+      label: 'What kind of person are we catering to?',
       description: '',
       component: null,
       display: true,
