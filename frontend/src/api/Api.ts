@@ -30,11 +30,11 @@ export default class Api {
   }
   
   async getAllFamilies(): Promise<FamilyUnitViewModel[]> {
-    return this.get('/familyunit/all');
+    return this.get('/admin/familyunit/all');
   }
 
   async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
-    return this.patch(`/admin/familyunit/all`, familyUnit);
+    return this.patch(`/admin`, familyUnit);
   }
 
   getGuestDto(id: number): Promise<GuestDto> {
