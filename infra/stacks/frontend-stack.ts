@@ -80,18 +80,7 @@ export class FrontendStack extends cdk.Stack {
             viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             // For a standard (non-static) S3 bucket:
             // Use the S3BucketOrigin class. It's recommended to configure Origin Access Control (OAC) for enhanced security. 
-            origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket, { originAccessControlId: oac.attrId }),
-            // Forward query parameters to support React Router's query parameters
-            cachePolicy: new cloudfront.CachePolicy(this, `${applicationName}-cache-policy`, {
-                queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-                headerBehavior: cloudfront.CacheHeaderBehavior.none(),
-                cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-                defaultTtl: cdk.Duration.days(1),
-                maxTtl: cdk.Duration.days(365),
-                minTtl: cdk.Duration.minutes(1),
-                enableAcceptEncodingBrotli: true,
-                enableAcceptEncodingGzip: true,
-            }),
+            origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket, { originAccessControlId: oac.attrId })
         },
         defaultRootObject: 'index.html',
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100,  // Use cheapest edge locations
