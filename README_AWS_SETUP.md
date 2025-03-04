@@ -121,6 +121,7 @@ SET UP BOOTSTRAP FOR EACH PROFILE:
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
 cdk destroy ApiStack-prod --context env=prod --profile prod
+cdk deploy DnsStack-prod --context env=prod --profile prod
 cdk deploy ApiStack-prod --context env=prod --profile prod
 cdk deploy RoleStack-prod --context env=prod --profile prod
 cdk deploy FrontendStack-prod --context env=prod --profile prod
@@ -128,6 +129,12 @@ cdk deploy DatabaseStack-prod --context env=prod --profile prod
 cdk deploy ParamsStack-prod --context env=prod --profile prod
 cdk deploy ThrottleStack-prod --context env=prod --profile prod
 
+Redo frontend:
+cdk destroy FrontendStack-dev --context env=dev --profile dev
+cdk deploy DnsStack-dev --context env=dev --profile dev
+
+cdk destroy FrontendStack-prod --context env=prod --profile prod
+cdk deploy DnsStack-prod --context env=prod --profile prod
 ----------------------	
 # Frontend
 
