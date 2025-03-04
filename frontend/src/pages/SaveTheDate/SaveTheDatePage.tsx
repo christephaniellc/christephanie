@@ -154,8 +154,48 @@ function SaveTheDatePage() {
               }}
               onClick={() => {
                 familyActions.getFamily();
-                tabIndex < stdStepper.totalTabs - 1 ? handleNavigateToStep(Object.keys(saveTheDateSteps)[tabIndex + 1]) :
+                
+                // If we're at the last tab, navigate home
+                if (tabIndex >= stdStepper.totalTabs - 1) {
                   navigate('/');
+                  return;
+                }
+                
+                // Check if all users are declined or pending
+                const allDeclinedOrPending = family?.guests?.every(
+                  guest => guest.rsvp.invitationResponse === InvitationResponseEnum.Declined || 
+                         guest.rsvp.invitationResponse === InvitationResponseEnum.Pending
+                );
+
+                // If all declined/pending, go to last visible step
+                if (allDeclinedOrPending) {
+                  const visibleSteps = Object.entries(saveTheDateSteps)
+                    .filter(([_, step]) => step.display);
+                  if (visibleSteps.length > 0) {
+                    // Navigate to the last visible step
+                    handleNavigateToStep(visibleSteps[visibleSteps.length - 1][0]);
+                  } else {
+                    navigate('/');
+                  }
+                  return;
+                }
+
+                // Otherwise find next visible step
+                const stepsArray = Object.entries(saveTheDateSteps);
+                let nextIndex = tabIndex + 1;
+                
+                // Find the next visible step
+                while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
+                  nextIndex++;
+                }
+
+                // If we found a next visible step, navigate to it
+                if (nextIndex < stepsArray.length) {
+                  handleNavigateToStep(stepsArray[nextIndex][0]);
+                } else {
+                  // If no more visible steps, navigate home
+                  navigate('/');
+                }
               }}
             >
               <StephsActualFavoriteTypography
