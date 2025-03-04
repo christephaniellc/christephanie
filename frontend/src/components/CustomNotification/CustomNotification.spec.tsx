@@ -12,8 +12,8 @@ const baseProps = {
   className: 'test-class'
 };
 
-describe('CustomNotification Component', () => {
-  it('should render with primary variant .locked', () => {
+describe('CustomNotification Component.locked', () => {
+  it('should render with primary variant.locked', () => {
     render(
       <ThemeProvider theme={mockTheme}>
         <CustomNotification 
@@ -27,7 +27,7 @@ describe('CustomNotification Component', () => {
     expect(screen.getByText('Test notification')).toBeInTheDocument();
   });
 
-  it('should render with error variant .locked', () => {
+  it('should render with error variant.locked', () => {
     render(
       <ThemeProvider theme={mockTheme}>
         <CustomNotification 
@@ -41,7 +41,7 @@ describe('CustomNotification Component', () => {
     expect(screen.getByText('Error notification')).toBeInTheDocument();
   });
 
-  it('should render with title when provided .locked', () => {
+  it('should render with title when provided.locked', () => {
     render(
       <ThemeProvider theme={mockTheme}>
         <CustomNotification 
