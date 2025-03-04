@@ -34,7 +34,7 @@ function Header() {
         // `message` accepts string as well as ReactNode
         // If you want to show a fully customized notification, you can define
         // your own `variant`s, see @/sections/Notifications/Notifications.tsx
-        variant: 'customNotification',
+        variant: 'info',
       },
       message: getRandomJoke(),
     });
