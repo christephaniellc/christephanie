@@ -22,4 +22,5 @@ export const lambdaAuthDefaults = {
     method?: apigateway.HttpMethod;
     path?: string;
     unauthorized?: boolean;
+    keepWarm?: boolean;
 }
