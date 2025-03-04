@@ -37,7 +37,7 @@ export class FrontendStack extends cdk.Stack {
         ignorePublicAcls: true, 
         restrictPublicBuckets: true 
       }),
-      removalPolicy: environment === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false
      });
     console.log(`Setup bucket name: ${setupBucket.bucketName}`);
