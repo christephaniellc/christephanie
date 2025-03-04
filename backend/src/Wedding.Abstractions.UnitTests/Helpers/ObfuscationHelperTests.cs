@@ -8,7 +8,9 @@ namespace Wedding.Abstractions.UnitTests.Helpers
     [TestFixture]
     public class ObfuscationHelperTests
     {
-        [TestCase("+1234567890", "+x-xxx-xxx-7890")]
+        [TestCase("234567890", "+1-XXX-XXX-7890")]
+        [TestCase("+1234567890", "+1-XXX-XXX-7890")]
+        [TestCase("+491234567890", "+49-XXXX-XX7890")]
         [TestCase("123", "123")]
         [TestCase(null, "")]
         public void ShouldObfuscatePhone(string? number, string expectedResult)
@@ -21,10 +23,10 @@ namespace Wedding.Abstractions.UnitTests.Helpers
             result.Should().Be(expectedResult);
         }
 
-        [TestCase("john.doe@gmail.com", "j****e@gmail.com")]
-        [TestCase("a@gmail.com", "a****@gmail.com")]
-        [TestCase("ab@gmail.com", "a****@gmail.com")]
-        [TestCase("abc@gmail.com", "a****c@gmail.com")]
+        [TestCase("john.doe@gmail.com", "j***e@gmail.com")]
+        [TestCase("a@gmail.com", "a***@gmail.com")]
+        [TestCase("ab@gmail.com", "a***@gmail.com")]
+        [TestCase("abc@gmail.com", "a***c@gmail.com")]
         [TestCase("invalidemail", "invalidemail")]
         [TestCase(null, "")]
         [TestCase("", "")]
