@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using PhoneNumbers;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Wedding.Abstractions.Validation.Common;
 
 namespace Wedding.Abstractions.Validation.Utility

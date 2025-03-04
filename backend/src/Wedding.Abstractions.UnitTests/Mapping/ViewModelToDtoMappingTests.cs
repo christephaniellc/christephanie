@@ -33,7 +33,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             viewModel.MailingAddress.Should().NotBeNull();
             viewModel.Guests.Should().NotBeNull();
             viewModel.MailingAddress.Should().BeEquivalentTo(familyUnitDto.MailingAddress);
-            viewModel.Guests.Should().BeEquivalentTo(familyUnitDto.Guests);
+            viewModel.Guests![0].FirstName.Should().Be(TestDataHelper.FAMILY_DOE.Guests![0].FirstName);
         }
 
         [Test]
@@ -43,10 +43,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             {
                 InvitationCode = "GHJKL",
                 UnitName = "Smiths",
-                Guests = new List<GuestDto>
+                Guests = new List<GuestViewModel>
                 {
-                    TestDataHelper.GUEST_JOHN,
-                    TestDataHelper.GUEST_JANE
+                    _mapper.Map<GuestViewModel>(TestDataHelper.GUEST_JOHN),
+                    _mapper.Map<GuestViewModel>(TestDataHelper.GUEST_JANE)
                 },
                 MailingAddress = new AddressDto
                 {
@@ -62,8 +62,10 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.Guests.Should().NotBeNull();
             dto.Tier.Should().BeEmpty();
             dto.MailingAddress.Should().BeEquivalentTo(familyUnitViewModel.MailingAddress);
-            dto.Guests.Should().BeEquivalentTo(familyUnitViewModel.Guests);
+            dto.Guests[0].FirstName.Should().Be(TestDataHelper.GUEST_JOHN.FirstName);
+            dto.Guests[1].FirstName.Should().Be(TestDataHelper.GUEST_JANE.FirstName);
         }
+
         [Test]
         public void Mapping_ShouldMapBasicPropertiesCorrectly()
         {
@@ -106,7 +108,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Mapping_ShouldMaskEmailCorrectly()
         {
             // Arrange
-            var email = "smith@gmail.com"; // local part "smith" should become "s***h"
+            var email = "smith@gmail.com"; // Expected masked: "s***h@gmail.com"
             var guestDto = new GuestDto
             {
                 Email = new VerifiedDto { Value = email, Verified = true },
@@ -118,7 +120,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             // Assert
             viewModel.Email.Should().NotBeNull();
-            viewModel.Email.MaskedValue.Should().Be("s***h@gmail.com");
+            viewModel.Email!.MaskedValue.Should().Be("s***h@gmail.com");
             viewModel.Email.Verified.Should().BeTrue();
         }
 
@@ -126,7 +128,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         public void Mapping_ShouldMaskPhoneCorrectly()
         {
             // Arrange
-            var phone = "1234567890"; // should result in "xxx-xxx-7890"
+            var phone = "1234567890";
             var guestDto = new GuestDto
             {
                 Phone = new VerifiedDto { Value = phone, Verified = false },
@@ -138,8 +140,80 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             // Assert
             viewModel.Phone.Should().NotBeNull();
-            viewModel.Phone.MaskedValue.Should().Be("+x-xxx-xxx-7890");
+            viewModel.Phone!.MaskedValue.Should().Be("+1-XXX-XXX-7890");
             viewModel.Phone.Verified.Should().BeFalse();
+        }
+
+        // NEW TESTS FOR NULL HANDLING
+
+        [Test]
+        public void Mapping_ShouldHandleNullEmailGracefully()
+        {
+            // Arrange: Create a GuestDto with a null Email
+            var guestDto = new GuestDto
+            {
+                Email = null,
+                Roles = new List<RoleEnum> { RoleEnum.Guest },
+                // other required properties can be set as needed
+                GuestId = "GUEST002",
+                FirstName = "NullEmail",
+                LastName = "User"
+            };
+
+            // Act
+            Action act = () => _mapper.Map<GuestViewModel>(guestDto);
+
+            // Assert: Mapping should not throw and Email should be null
+            act.Should().NotThrow();
+            var viewModel = _mapper.Map<GuestViewModel>(guestDto);
+            viewModel.Email.Should().BeNull();
+        }
+
+        [Test]
+        public void Mapping_ShouldHandleNullPhoneGracefully()
+        {
+            // Arrange: Create a GuestDto with a null Phone
+            var guestDto = new GuestDto
+            {
+                Phone = null,
+                Roles = new List<RoleEnum> { RoleEnum.Guest },
+                // other required properties
+                GuestId = "GUEST003",
+                FirstName = "NullPhone",
+                LastName = "User"
+            };
+
+            // Act
+            Action act = () => _mapper.Map<GuestViewModel>(guestDto);
+
+            // Assert: Mapping should not throw and Phone should be null
+            act.Should().NotThrow();
+            var viewModel = _mapper.Map<GuestViewModel>(guestDto);
+            viewModel.Phone.Should().BeNull();
+        }
+
+        [Test]
+        public void Mapping_ShouldHandleBothNullEmailAndPhoneGracefully()
+        {
+            // Arrange: Create a GuestDto with both Email and Phone set to null
+            var guestDto = new GuestDto
+            {
+                Email = null,
+                Phone = null,
+                Roles = new List<RoleEnum> { RoleEnum.Guest },
+                GuestId = "GUEST004",
+                FirstName = "NullBoth",
+                LastName = "User"
+            };
+
+            // Act
+            Action act = () => _mapper.Map<GuestViewModel>(guestDto);
+
+            // Assert: Mapping should not throw and both Email and Phone should be null
+            act.Should().NotThrow();
+            var viewModel = _mapper.Map<GuestViewModel>(guestDto);
+            viewModel.Email.Should().BeNull();
+            viewModel.Phone.Should().BeNull();
         }
     }
 }

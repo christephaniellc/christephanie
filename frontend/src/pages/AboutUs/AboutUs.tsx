@@ -7,6 +7,8 @@ import ListItem from '@mui/material/ListItem';
 import { ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { rem } from 'polished';
+
 
 function AboutUs() {
   const { contentHeight } = useAppLayout();
@@ -186,7 +188,7 @@ function AboutUs() {
           {aboutUsItems.titleAboutUs.content[0].subheader}
         </Typography>
       </Box>
-      <List sx={{ overflow: 'auto', py: 0, my: 2, height: contentHeight - 250 , backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <List sx={{ overflow: 'auto', py: 0, my: 2, pb: 40, height: contentHeight/150, border: '1px dotted yellow', backgroundColor: 'rgba(0,0,0,.1)' }}>
         {Object.entries(aboutUsItems)
           .slice(1)
           .map(([key, value]) => (
