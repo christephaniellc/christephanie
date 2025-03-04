@@ -10,6 +10,7 @@ enum Pages {
   FoodPreferences,
   PrivacyPolicy,
   TermsOfService,
+  AboutUs,
   NotFound
 }
 
