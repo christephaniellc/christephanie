@@ -46,7 +46,7 @@ export class FrontendStack extends cdk.Stack {
         bucketName: `www.${props.frontendUrl}`,
         versioned: false,
         websiteIndexDocument: 'index.html',
-        websiteErrorDocument: 'error.html',
+        websiteErrorDocument: 'index.html', // Use index.html for both index and error document for SPA support
         publicReadAccess: true, // For static site hosting, otherwise consider CloudFront OAI
         blockPublicAccess: new s3.BlockPublicAccess({
           blockPublicAcls: false,   // Allows public ACLs
@@ -80,12 +80,38 @@ export class FrontendStack extends cdk.Stack {
             viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             // For a standard (non-static) S3 bucket:
             // Use the S3BucketOrigin class. It's recommended to configure Origin Access Control (OAC) for enhanced security. 
-            origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket, { originAccessControlId: oac.attrId })
+            origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket, { originAccessControlId: oac.attrId }),
+            // Forward query parameters to support React Router's query parameters
+            cachePolicy: new cloudfront.CachePolicy(this, `${applicationName}-cache-policy`, {
+                queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+                headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+                cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+                defaultTtl: cdk.Duration.days(1),
+                maxTtl: cdk.Duration.days(365),
+                minTtl: cdk.Duration.minutes(1),
+                enableAcceptEncodingBrotli: true,
+                enableAcceptEncodingGzip: true,
+            }),
         },
         defaultRootObject: 'index.html',
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100,  // Use cheapest edge locations
         domainNames: [`${fullDomainName}`, `www.${fullDomainName}`],
-        certificate: props.certificate
+        certificate: props.certificate,
+        // This is the most important part for SPA routing - handle 403/404 errors by returning the index.html file
+        errorResponses: [
+            {
+                httpStatus: 403,
+                responseHttpStatus: 200,
+                responsePagePath: '/index.html',
+                ttl: cdk.Duration.minutes(0)
+            },
+            {
+                httpStatus: 404,
+                responseHttpStatus: 200,
+                responsePagePath: '/index.html',
+                ttl: cdk.Duration.minutes(0)
+            }
+        ]
     });
     console.log(`CloudFrontDistribution domain name: ${this.cloudFrontDistribution.distributionDomainName}`); 
 
