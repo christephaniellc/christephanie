@@ -1,44 +1,152 @@
 import React, { useState } from 'react';
-import { Box, Button, Checkbox, TextField } from '@mui/material';
-import { WarningAmber } from '@mui/icons-material';
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions,
+  IconButton,
+  Typography
+} from '@mui/material';
+import { 
+  WarningAmber, 
+  Close, 
+  ReportProblem 
+} from '@mui/icons-material';
+import { useFamily } from '@/store/family';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
 
-const AddAllergyButton = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [allergyText, setAllergyText] = useState('Add Allergy');
-  const [inputValue, setInputValue] = useState('');
+interface AddAllergyButtonProps {
+  guestId?: string;
+}
 
-  const handleButtonClick = () => {
-    setIsEditing(true);
+const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
+  const [open, setOpen] = useState(false);
+  const [allergyName, setAllergyName] = useState('');
+  const [_, familyActions] = useFamily();
+  const loggedInUser = useRecoilValue(userState);
+  
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setAllergyName('');
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
+    setAllergyName(event.target.value);
   };
 
-  const handleCheckboxClick = () => {
-    setAllergyText(inputValue);
-    setIsEditing(false);
+  const handleAddAllergy = () => {
+    if (allergyName.trim() === '') return;
+    
+    const targetGuestId = guestId || loggedInUser.guestId;
+    
+    if (targetGuestId) {
+      // Get current allergies for the guest and add the new one
+      familyActions.updateFamilyGuestFoodAllergies(
+        targetGuestId,
+        [allergyName]
+      );
+    }
+    
+    handleClose();
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleAddAllergy();
+    }
   };
 
   return (
-    <Box display="flex" alignItems="center">
-      {isEditing ? (
-        <Box display="flex" alignItems="center">
+    <>
+      <Button 
+        onClick={handleOpen} 
+        variant="outlined" 
+        color="warning"
+        startIcon={<ReportProblem />}
+        size="small"
+        sx={{ 
+          mt: 1, 
+          backdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(0,0,0,.6)',
+        }}
+      >
+        Add Custom Allergy
+      </Button>
+      
+      <Dialog 
+        open={open} 
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backdropFilter: 'blur(20px)',
+            backgroundColor: 'rgba(0,0,0,.9)',
+            border: '1px solid',
+            borderColor: 'warning.main',
+          }
+        }}
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }}>
+          <Typography variant="h6" color="warning.main">
+            Add Custom Allergy
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent dividers>
           <TextField
-            value={inputValue}
+            autoFocus
+            margin="dense"
+            label="Allergy Name"
+            type="text"
+            fullWidth
+            variant="filled"
+            value={allergyName}
             onChange={handleInputChange}
-            placeholder="Type allergy"
-            variant="outlined"
-            size="small"
+            onKeyPress={handleKeyPress}
+            InputProps={{
+              startAdornment: <WarningAmber color="warning" sx={{ mr: 1 }} />,
+            }}
+            helperText="Enter a food allergy or dietary restriction that's not in the list"
+            color="warning"
           />
-          <Checkbox onClick={handleCheckboxClick} />
-        </Box>
-      ) : (
-        <Button onClick={handleButtonClick} variant="contained" startIcon={<WarningAmber />}>
-          {allergyText}
-        </Button>
-      )}
-    </Box>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button onClick={handleClose} variant="text">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleAddAllergy} 
+            variant="contained" 
+            color="warning" 
+            disabled={allergyName.trim() === ''}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

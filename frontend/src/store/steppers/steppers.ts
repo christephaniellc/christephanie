@@ -103,5 +103,4 @@ export const stdStepperState = selector<StdStepperProps>({
 
     return { steps, tabIndex, totalTabs, currentStep };
   },
-})
-
+});

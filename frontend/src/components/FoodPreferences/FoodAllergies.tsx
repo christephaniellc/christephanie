@@ -268,6 +268,11 @@ function FoodAllergies({ guestId }: { guestId: string }) {
               );
             })}
           </Box>
+          
+          {/* Add the AddAllergyButton component */}
+          <Box display="flex" justifyContent="center" width="100%" mt={2}>
+            <AddAllergyButton guestId={guestId} />
+          </Box>
         </>
       )}
     </Box>

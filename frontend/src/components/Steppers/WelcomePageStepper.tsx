@@ -8,14 +8,16 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useRecoilValue } from 'recoil';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
 import Tooltip from '@mui/material/Tooltip';
 import StickFigureIcon from '@/components/StickFigureIcon';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import { userState } from '@/store/user';
+import { saveTheDateStepsState } from '@/store/steppers/steppers';
+import { InvitationResponseEnum, RsvpEnum } from '@/types/api';
 
 export interface Step {
   id: number;
@@ -61,13 +63,40 @@ export default function WelcomePageStepper() {
   const [activeStep, setActiveStep] = React.useState(0);
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
+  const stdSteps = useRecoilValue(saveTheDateStepsState);
   const navigate = useNavigate();
-  const handleNext = useCallback((step: Step) => {
-    // Go to the next tab if possible
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  const location = useLocation();
 
-    // return setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  }, [rsvpSteps, activeStep]);
+  // Check for step query parameter on load
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const stepParam = params.get('step');
+    if (stepParam) {
+      // Navigate to the Save the Date page with the specified step
+      navigate(`${routes[Pages.SaveTheDate].path}?step=${stepParam}`);
+    }
+  }, [location.search]);
+
+  // Check if user is attending and all steps are completed
+  const isUserAttending = useMemo(() => {
+    return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested || 
+           user.rsvp?.wedding === RsvpEnum.Attending;
+  }, [user.rsvp]);
+
+  // Check if all steps are completed
+  const allStepsCompleted = useMemo(() => {
+    return Object.values(stdSteps).every(step => step.completed);
+  }, [stdSteps]);
+
+  // Find the first incomplete step
+  const firstIncompleteStep = useMemo(() => {
+    const incompleteStep = Object.entries(stdSteps).find(([_, step]) => !step.completed);
+    return incompleteStep ? incompleteStep[0] : null;
+  }, [stdSteps]);
+
+  const handleNext = useCallback((step: Step) => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  }, []);
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -77,14 +106,28 @@ export default function WelcomePageStepper() {
     setActiveStep(0);
   };
 
-  const continueText = () => {
-    return 'RSVP';
+  const handleActionButtonClick = () => {
+    if (isUserAttending && allStepsCompleted) {
+      // If user is attending and all steps are completed, go to RSVP
+      navigate(routes[Pages.FoodPreferences].path);
+    } else if (firstIncompleteStep) {
+      // If there are incomplete steps, navigate to the first incomplete step
+      navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
+    }
   };
+
+  const actionButtonText = useMemo(() => {
+    if (isUserAttending && allStepsCompleted) {
+      return 'RSVP';
+    } else if (firstIncompleteStep) {
+      return `Finish ${stdSteps[firstIncompleteStep].label}`;
+    }
+    return 'Continue';
+  }, [isUserAttending, allStepsCompleted, firstIncompleteStep, stdSteps]);
 
   useEffect(() => {
     setRsvpSteps((prev) => {
       const newSteps = { ...prev };
-
       newSteps.saveTheDate.stepCompleted = false;
       return newSteps;
     });
@@ -92,7 +135,12 @@ export default function WelcomePageStepper() {
 
   return (
     <Box width="100%" minWidth={330}>
-      <Stepper activeStep={activeStep} orientation="vertical" sx={{ pl: 2 }}>
+      <Stepper 
+        activeStep={activeStep} 
+        orientation="vertical" 
+        sx={{ pl: 2 }}
+        data-testid="vertical-stepper"
+      >
         {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
               icon={<StickFigureIcon rotation={0} fontSize={'large'} ageGroup={user.ageGroup} />}
@@ -109,11 +157,10 @@ export default function WelcomePageStepper() {
                 <Box sx={{ mb: 2 }}>
                   <Button
                     variant="contained"
-                    onClick={() => handleNext(step)}
+                    onClick={handleActionButtonClick}
                     sx={{ mt: 1, mr: 1 }}
-                    disabled={step.id !== 0}
                   >
-                    {continueText()}
+                    {actionButtonText}
                   </Button>
                   <Button
                     disabled={!step.stepCompleted}
@@ -133,6 +180,13 @@ export default function WelcomePageStepper() {
       {activeStep === Object.values(rsvpSteps).length && (
         <Paper square elevation={0} sx={{ p: 3 }}>
           <Typography>All steps completed - you&apos;re finished</Typography>
+          <Button 
+            variant="contained" 
+            onClick={handleActionButtonClick} 
+            sx={{ mt: 1, mr: 1 }}
+          >
+            {actionButtonText}
+          </Button>
           <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
             Reset
           </Button>
