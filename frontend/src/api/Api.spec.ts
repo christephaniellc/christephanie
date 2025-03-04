@@ -45,7 +45,7 @@ describe('Api.wip', () => {
       // Verify fetch was called correctly
       expect(globalAny.fetch).toHaveBeenCalledTimes(1);
       expect(globalAny.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/familyunit/all'),
+        expect.stringContaining('/admin/familyunit/all'),
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
