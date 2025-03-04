@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 
-import { SnackbarKey, useSnackbar } from 'notistack';
+import { OptionsObject, SnackbarKey, useSnackbar, VariantType } from 'notistack';
 
 import useNotifications from '@/store/notifications';
+import { CustomVariant } from '@/store/notifications/types';
 
 // NOTE: this is a workaround for a missing feature in notistack
 // This will be removed once the new version of notistack is released
@@ -33,14 +34,19 @@ function Notifier() {
 
       // display snackbar using notistack
       if (message) {
-        enqueueSnackbar(message, {
+        // Ensure variant is one of the accepted values
+        const safeOptions: OptionsObject<VariantType | 'primary' | 'secondary'> = {
           ...options,
+          // Cast our custom variant to the types expected by notistack
+          variant: (options.variant as VariantType | 'primary' | 'secondary') || 'default',
           onExited(event, key) {
-            // removen this snackbar from the store
+            // remove this snackbar from the store
             actions.remove(key);
             removeDisplayed(key);
           },
-        });
+        };
+        
+        enqueueSnackbar(message, safeOptions);
       }
 
       // keep track of snackbars that we've displayed

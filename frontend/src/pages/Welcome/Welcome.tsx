@@ -11,6 +11,7 @@ import { useRecoilValue } from 'recoil';
 import { useFamily } from '@/store/family';
 import WelcomePageStepper from '@/components/Steppers/WelcomePageStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { useQueryParamInvitationCode } from '@/hooks/useQueryParamInvitationCode';
 
 
 const Welcome = () => {
@@ -19,6 +20,9 @@ const Welcome = () => {
   const [family, familyActions] = useFamily();
   const [stepperHeight, setStepperHeight] = React.useState(0);
   const { user: auth0User } = useAuth0();
+  
+  // Use the hook to check for invitation code in URL
+  useQueryParamInvitationCode();
 
   const welcomeBannerRef = useRef<null | HTMLElement>(null);
 
