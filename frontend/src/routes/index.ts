@@ -43,6 +43,12 @@ const routes: Routes = {
     title: 'TermsOfService',
     icon: AddTaskIcon,
   },
+  [Pages.AboutUs]: {
+    component: asyncComponentLoader(() => import('@/pages/AboutUs')),
+    path: '/about-us',
+    title: 'AboutUs',
+    icon: AddTaskIcon,
+  },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
     path: '*',

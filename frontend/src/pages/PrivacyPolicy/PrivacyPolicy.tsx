@@ -7,6 +7,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
 function PrivacyPolicy() {
   const { contentHeight } = useAppLayout();
@@ -100,7 +101,7 @@ function PrivacyPolicy() {
                 'AWS: Provides hosting, infrastructure, and email notifications.',
                 'USPS API: Verifies mailing addresses.',
 
-                'Others: GitHub (private repository for our code), Jira (project management), and registry/payment providers such as Zora or Square.',
+                'Others: GitHub (private repository for our code), Jira (project management), and registry/payment providers such as Zola or Square.',
               ],
             },
           ],
@@ -157,9 +158,13 @@ function PrivacyPolicy() {
       }}
     >
       <Box my={2} sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.1)' }}>
-        <Typography variant="h4" sx={{ textAlign: 'center' }}>
+        <StephsActualFavoriteTypography 
+          sx={{ 
+          mt: 2, 
+          fontSize: '2rem',
+          textAlign: 'center' }}>
           {privacyPolicyItems.privacyPolicy.subheader}
-        </Typography>
+        </StephsActualFavoriteTypography>
         <Typography variant="body1" sx={{ mt: 2 }}>
           {privacyPolicyItems.privacyPolicy.content[0].subheader}
         </Typography>
