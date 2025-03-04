@@ -62,7 +62,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     camping: {
       id: 4,
       completed: false,
-      label: 'Accomodations',
+      label: 'Accommodations',
       description: '(we have bathrooms!)',
       component: null,
       display: true,
@@ -70,7 +70,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     mailingAddress: {
       id: 5,
       completed: false,
-      label: 'Where should we send your invitation?',
+      label: "What's your snail mail?",
       description: '',
       component: null,
       display: true,

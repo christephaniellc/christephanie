@@ -6,10 +6,8 @@ import { RecoilRoot } from 'recoil';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { familyState } from '@/store/family';
 import { InvitationResponseEnum } from '@/types/api';
-import { ThemeProvider } from '@mui/material';
-import { lightTheme } from '@/theme/themes';
+import { ThemeProvider, createTheme } from '@mui/material';
 
-// Mock useAuth0
 jest.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     isAuthenticated: true,
@@ -34,6 +32,17 @@ jest.mock('@/hooks/useBoxShadow', () => ({
   }),
 }));
 
+// Create a simple mock theme for testing
+const mockTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#9D00FF' },
+    secondary: { main: '#E9950C' },
+    error: { main: '#f44336', dark: '#d32f2f' },
+    success: { main: '#4caf50', dark: '#388e3c' },
+  },
+});
+
 const renderWithProviders = (
   ui: React.ReactElement,
   { 
@@ -48,7 +57,7 @@ const renderWithProviders = (
       snap.set(saveTheDateStepsState, initialStepsState);
       snap.set(stdTabIndex, initialTabIndex);
     }}>
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProvider theme={mockTheme}>
         <MemoryRouter initialEntries={['/save-the-date']}>
           <Routes>
             <Route path="/save-the-date" element={ui} />
@@ -173,6 +182,132 @@ describe('SaveTheDatePage navigation.locked', () => {
     fireEvent.click(nextButton);
 
     // It should skip to the last visible step (step4)
+    expect(screen.getByText('Finish')).toBeInTheDocument();
+  });
+  
+  it('should skip hidden steps when navigating with Back button.locked', () => {
+    // Create steps with hidden middle step
+    const mockStepsWithHiddenMiddle = {
+      'step1': {
+        id: 0,
+        completed: false,
+        label: 'Step 1',
+        description: '',
+        component: null,
+        display: true,
+      },
+      'step2': {
+        id: 1,
+        completed: false,
+        label: 'Step 2',
+        description: '',
+        component: null,
+        display: false, // Hidden step
+      },
+      'step3': {
+        id: 2,
+        completed: false,
+        label: 'Step 3',
+        description: '',
+        component: null,
+        display: true,
+      },
+    };
+    
+    renderWithProviders(<SaveTheDatePage />, {
+      initialFamilyState: mockFamily,
+      initialStepsState: mockStepsWithHiddenMiddle,
+      initialTabIndex: 2, // Start at step3
+    });
+
+    // Find the Back button and click it
+    const backButton = screen.getByText('Wait, go back');
+    fireEvent.click(backButton);
+
+    // It should skip step2 (hidden) and go back to step1
+    // Since we can't directly check the tabIndex state, we'll check that
+    // the back button is no longer visible (only visible if not on first step)
+    expect(screen.queryByText('Wait, go back')).not.toBeInTheDocument();
+  });
+  
+  it('should ensure mailingAddress step is always accessible when all guests are declined/pending.locked', () => {
+    // Create steps with mailingAddress step
+    const mockStepsWithMailingAddress = {
+      'attendance': {
+        id: 0,
+        completed: true,
+        label: 'Attendance',
+        description: '',
+        component: null,
+        display: true,
+      },
+      'foodPreferences': {
+        id: 1,
+        completed: false,
+        label: 'Food Preferences',
+        description: '',
+        component: null,
+        display: false, // Not shown for declined users
+      },
+      'mailingAddress': {
+        id: 2,
+        completed: false,
+        label: 'Mailing Address',
+        description: '',
+        component: null,
+        display: true, // Should always be true
+      },
+      'comments': {
+        id: 3,
+        completed: false,
+        label: 'Comments',
+        description: '',
+        component: null,
+        display: true,
+      },
+    };
+    
+    const allDeclinedFamily = {
+      ...mockFamily,
+      guests: [
+        {
+          guestId: '1',
+          firstName: 'John',
+          lastName: 'Doe',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined,
+          },
+        },
+        {
+          guestId: '2',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined,
+          },
+        },
+      ],
+    };
+    
+    renderWithProviders(<SaveTheDatePage />, {
+      initialFamilyState: allDeclinedFamily,
+      initialStepsState: mockStepsWithMailingAddress,
+      initialTabIndex: 0, // Start at attendance
+    });
+
+    // Find the Next button and click it
+    const nextButton = screen.getByText('Next');
+    fireEvent.click(nextButton);
+
+    // Should go to mailingAddress step (skipping foodPreferences)
+    // Since we can't check tabIndex directly, we check the Next/Finish button
+    // text which changes on the last step
+    expect(screen.getByText('Next')).toBeInTheDocument(); // Should be on mailingAddress which isn't the last step
+    
+    // Click Next again
+    fireEvent.click(screen.getByText('Next'));
+    
+    // Should now be on comments (last step)
     expect(screen.getByText('Finish')).toBeInTheDocument();
   });
 });

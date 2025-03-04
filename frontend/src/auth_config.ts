@@ -31,5 +31,10 @@ type Config = {
     };
 
     export function getConfig() {
-      return configJson[import.meta.env.VITE_ENV || 'development'];
+      // For Vite/browser environment
+      const env = typeof import.meta !== 'undefined' ? 
+        import.meta.env.VITE_ENV || 'development' : 
+        'development';
+          
+      return configJson[env];
     }
