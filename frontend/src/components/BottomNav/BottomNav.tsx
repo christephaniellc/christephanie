@@ -14,6 +14,7 @@ import Paper from '@mui/material/Paper';
 import { useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { stdStepperState } from '@/store/steppers/steppers';
+import { QuestionMark } from '@mui/icons-material';
 
 export const BottomNav = () => {
   const [navValue, setNavValue] = useState();
@@ -78,6 +79,14 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<GavelIcon color={activeLegalButtons} />}
           onClick={() => handleNavigation(routes[Pages.TermsOfService].path!)}
+        />
+        <BottomNavigationAction
+          color={activeLegalButtons}
+          sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
+          label="About Us"
+          showLabel={true}
+          icon={<QuestionMark color={activeLegalButtons} />}
+          onClick={() => handleNavigation(routes[Pages.AboutUs].path!)}
         />
         <BottomNavigationAction
           label={auth0User ? 'Logout' : 'Login'}
