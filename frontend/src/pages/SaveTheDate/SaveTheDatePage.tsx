@@ -134,7 +134,20 @@ function SaveTheDatePage() {
                 }}
                 onClick={() => {
                   familyActions.getFamily();
-                  handleNavigateToStep(Object.keys(saveTheDateSteps)[tabIndex - 1]);
+                  
+                  // Find previous visible step
+                  const stepsArray = Object.entries(saveTheDateSteps);
+                  let prevIndex = tabIndex - 1;
+                  
+                  // Find the previous visible step
+                  while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
+                    prevIndex--;
+                  }
+
+                  // If we found a previous visible step, navigate to it
+                  if (prevIndex >= 0) {
+                    handleNavigateToStep(stepsArray[prevIndex][0]);
+                  }
                 }}
               >
                 Wait, go back
@@ -161,24 +174,9 @@ function SaveTheDatePage() {
                   return;
                 }
                 
-                // Check if all users are declined or pending
-                const allDeclinedOrPending = family?.guests?.every(
-                  guest => guest.rsvp.invitationResponse === InvitationResponseEnum.Declined || 
-                         guest.rsvp.invitationResponse === InvitationResponseEnum.Pending
-                );
-
-                // If all declined/pending, go to last visible step
-                if (allDeclinedOrPending) {
-                  const visibleSteps = Object.entries(saveTheDateSteps)
-                    .filter(([_, step]) => step.display);
-                  if (visibleSteps.length > 0) {
-                    // Navigate to the last visible step
-                    handleNavigateToStep(visibleSteps[visibleSteps.length - 1][0]);
-                  } else {
-                    navigate('/');
-                  }
-                  return;
-                }
+                // We don't want to use the all declined/pending logic to skip directly to the end
+                // The user should go through each step in order
+                // This allows them to see the mailing address step even if declined/pending
 
                 // Otherwise find next visible step
                 const stepsArray = Object.entries(saveTheDateSteps);

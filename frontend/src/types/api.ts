@@ -155,6 +155,11 @@ export interface LastUpdateAuditDto {
   username: string | null;
 }
 
+export interface MaskedVerifiedModel {
+  maskedValue?: string | null;
+  verified?: boolean;
+}
+
 export enum NotificationPreferenceEnum {
   Email = 'Email',
   Text = 'Text',
@@ -227,6 +232,7 @@ export enum RsvpEnum {
 
 export enum SleepPreferenceEnum {
   Unknown = 'Unknown',
+  Manor = 'Manor',
   Camping = 'Camping',
   Hotel = 'Hotel',
   Other = 'Other',
@@ -238,11 +244,6 @@ export interface VerifiedDto {
   verificationCode?: string | null;
   /** @format date-time */
   verificationCodeExpiration?: string | null;
-}
-
-export interface MaskedVerifiedModel {
-  maskedValue?: string | null;
-  verified?: boolean;
 }
 
 export type QueryParamsType = Record<string | number, any>;

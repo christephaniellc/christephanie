@@ -2,10 +2,10 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { GuestViewModel, SleepPreferenceEnum } from '@/types/api';
+import { GuestViewModel, RoleEnum, SleepPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, Chip, useTheme } from '@mui/material';
-import { Apartment, DirectionsBus, Festival, HotelOutlined, NoTransfer } from '@mui/icons-material';
+import { Apartment, DirectionsBus, Festival, HotelOutlined, NoTransfer, Home } from '@mui/icons-material';
 import React, { useEffect } from 'react';
 import { Stack } from '@mui/system';
 import Paper from '@mui/material/Paper';
@@ -26,6 +26,11 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
     SleepPreferenceEnum.Unknown,
   );
   const [takingShuttle, setTakingShuttle] = React.useState(true);
+  
+  // Check if the guest has the Manor role
+  const hasManorRole = React.useMemo(() => {
+    return guest?.roles?.includes(RoleEnum.Manor) || false;
+  }, [guest?.roles]);
 
   const handleChangeSleepPreference = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -110,50 +115,60 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
           }}
           aria-describedby={id}
         >
-          {campingPreferences.slice(1).map((value) => (
-            <Button
-              id={value}
-              size="large"
-              disabled={
-                familyActions.patchFamilyMutation.isPending ||
-                familyActions.getFamilyUnitQuery.isFetching
-              }
-              color="secondary"
-              sx={{ px: value === 'Unknown' ? 0 : 3 }}
-              onClick={(e) => {
-                handleChangeSleepPreference(e, SleepPreferenceEnum[value]);
-              }}
-              variant={
-                (campingValue.includes(SleepPreferenceEnum[value]) ? 'contained' : 'outlined') as
-                  | 'contained'
-                  | 'outlined'
-              }
-              key={value}
-              startIcon={
-                value === 'Camping' ? (
-                  <Festival />
-                ) : value === 'Hotel' ? (
-                  <Apartment />
-                ) : value === 'Unknown' ? (
-                  ''
-                ) : (
-                  <HotelOutlined />
-                )
-              }
-            >
-              <Box>
-                <Box display={'flex'} alignItems={'center'} flexWrap="wrap" position="relative">
-                  <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
-                    {value === 'Unknown' ? '' : value}
-                  </Typography>
+          {/* Filter out Manor if user doesn't have Manor role */}
+          {campingPreferences.slice(1)
+            .filter(value => value !== 'Manor' || hasManorRole)
+            .map((value) => (
+              <Button
+                id={value}
+                size="large"
+                disabled={
+                  familyActions.patchFamilyMutation.isPending ||
+                  familyActions.getFamilyUnitQuery.isFetching
+                }
+                color="secondary"
+                sx={{ px: value === 'Unknown' ? 0 : 3 }}
+                onClick={(e) => {
+                  handleChangeSleepPreference(e, SleepPreferenceEnum[value]);
+                }}
+                variant={
+                  (campingValue.includes(SleepPreferenceEnum[value]) ? 'contained' : 'outlined') as
+                    | 'contained'
+                    | 'outlined'
+                }
+                key={value}
+                startIcon={
+                  value === 'Camping' ? (
+                    <Festival />
+                  ) : value === 'Hotel' ? (
+                    <Apartment />
+                  ) : value === 'Manor' ? (
+                    <Home />
+                  ) : value === 'Unknown' ? (
+                    ''
+                  ) : (
+                    <HotelOutlined />
+                  )
+                }
+              >
+                <Box>
+                  <Box display={'flex'} alignItems={'center'} flexWrap="wrap" position="relative">
+                    <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
+                      {value === 'Unknown' ? '' : value}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            </Button>
-          ))}
+              </Button>
+            ))}
         </ButtonGroup>
         {campingValue === SleepPreferenceEnum.Camping && (
           <Typography variant="h6" color="secondary" my="auto" width="80%" mx="auto">
             Camp with us at the venue! We have a block of campsites reserved for you and your gear.
+          </Typography>
+        )}
+        {campingValue === SleepPreferenceEnum.Manor && (
+          <Typography variant="h6" color="primary" my="auto" width="80%" mx="auto">
+            Stay in our Manor House! As a Manor guest, you'll have access to a private room in the historic house.
           </Typography>
         )}
         {campingValue === SleepPreferenceEnum.Hotel && (

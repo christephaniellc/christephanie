@@ -298,7 +298,7 @@ export const useFamily = () => {
       },
       mailingAddress: {
         ...prev.mailingAddress,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        display: true, // Always show mailing address step
         completed: !!family.mailingAddress,
       },
       comments: {
