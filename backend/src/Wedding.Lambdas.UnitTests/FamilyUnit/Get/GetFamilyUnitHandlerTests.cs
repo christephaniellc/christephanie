@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Enums;
-using Wedding.Abstractions.ViewModels;
+using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.FamilyUnit.Get.Commands;
@@ -20,7 +20,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
     public class GetFamilyUnitHandlerTests
     {
         private Mock<IDynamoDBProvider> _dynamoDbProviderMock;
-        private Mock<IMapper> _mapperMock;
+        private IMapper _mapper;
         private Mock<ILogger<GetFamilyUnitHandler>> _loggerMock;
         private GetFamilyUnitHandler _handler;
         private GetFamilyUnitQuery _query;
@@ -32,13 +32,16 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
         public void Setup()
         {
             _dynamoDbProviderMock = new Mock<IDynamoDBProvider>();
-            _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILogger<GetFamilyUnitHandler>>();
-            _handler = new GetFamilyUnitHandler(_loggerMock.Object, _dynamoDbProviderMock.Object, _mapperMock.Object);
+            _handler = new GetFamilyUnitHandler(_loggerMock.Object, _dynamoDbProviderMock.Object, _mapper);
 
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
                 .Build();
+
+            var config = new MapperConfiguration(
+                cfg => cfg.AddProfiles(ViewModelToDtoMapping.Profiles()));
+            _mapper = config.CreateMapper();
 
             _testTokenHelper = new TestTokenHelper(configuration);
 
@@ -102,10 +105,6 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
                 x.GetFamilyUnitAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(familyUnit);
 
-            // For testing purposes, let the mapper simply pass through the guests order.
-            _mapperMock.Setup(x => x.Map<FamilyUnitViewModel>(It.IsAny<FamilyUnitDto>()))
-                .Returns((FamilyUnitDto f) => new FamilyUnitViewModel { Guests = f.Guests });
-
             // Act
             var result = await _handler.GetAsync(_query);
 
@@ -158,9 +157,6 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Get
             _dynamoDbProviderMock.Setup(x =>
                 x.GetFamilyUnitAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(familyUnit);
-
-            _mapperMock.Setup(x => x.Map<FamilyUnitViewModel>(It.IsAny<FamilyUnitDto>()))
-                .Returns((FamilyUnitDto f) => new FamilyUnitViewModel { Guests = f.Guests });
 
             // Act
             var result = await _handler.GetAsync(_query);
