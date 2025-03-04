@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, GuestViewModel, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -28,9 +28,13 @@ export default class Api {
   async getFamilyUnit(): Promise<FamilyUnitDto> {
     return this.get('/familyunit');
   }
+  
+  async getAllFamilies(): Promise<FamilyUnitViewModel[]> {
+    return this.get('/familyunit/all');
+  }
 
   async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
-    return this.patch(`/familyunit`, familyUnit);
+    return this.patch(`/admin/familyunit/all`, familyUnit);
   }
 
   getGuestDto(id: number): Promise<GuestDto> {

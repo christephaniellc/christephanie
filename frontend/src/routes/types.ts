@@ -11,6 +11,7 @@ enum Pages {
   PrivacyPolicy,
   TermsOfService,
   AboutUs,
+  Admin,
   NotFound
 }
 

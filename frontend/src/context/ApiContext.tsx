@@ -35,6 +35,8 @@ interface ApiContextProps {
     unknown
   >;
   validateAddressMutation: UseMutationResult<AddressDto, ApiError, AddressDto, unknown>;
+  
+  getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
 }
 
 export const ApiContext = React.createContext({} as ApiContextProps);
@@ -159,6 +161,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     onError: (error) => console.error('Failed to validate address', error),
   });
 
+  // Get all families (admin function)
+  const getAllFamilies = async (): Promise<FamilyUnitViewModel[]> => {
+    try {
+      return await apiRef.current.getAllFamilies();
+    } catch (error) {
+      console.error('Failed to get all families:', error);
+      throw error;
+    }
+  };
+
   return (
     <ApiContext.Provider
       value={{
@@ -168,6 +180,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         getFamilyUnitQuery,
         patchFamilyMutation,
         patchFamilyGuestMutation,
+        getAllFamilies,
       }}
     >
       {props.children}

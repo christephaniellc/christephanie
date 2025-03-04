@@ -1,6 +1,7 @@
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HomeIcon from '@mui/icons-material/Home';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -48,6 +49,12 @@ const routes: Routes = {
     path: '/about-us',
     title: 'AboutUs',
     icon: AddTaskIcon,
+  },
+  [Pages.Admin]: {
+    component: asyncComponentLoader(() => import('@/pages/Admin')),
+    path: '/admin',
+    title: 'Admin',
+    icon: AdminPanelSettingsIcon,
   },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
