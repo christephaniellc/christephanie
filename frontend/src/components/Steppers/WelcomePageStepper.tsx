@@ -134,31 +134,81 @@ export default function WelcomePageStepper() {
   }, []);
 
   return (
-    <Box width="100%" minWidth={330}>
+    <Box 
+      width="100%" 
+      minWidth={280} 
+      sx={{ 
+        px: {xs: 1, sm: 2},
+        maxHeight: {xs: 'calc(100vh - 280px)', sm: 'auto'},
+        overflow: {xs: 'auto', sm: 'visible'}
+      }}
+    >
       <Stepper 
         activeStep={activeStep} 
         orientation="vertical" 
-        sx={{ pl: 2 }}
+        sx={{ 
+          pl: {xs: 0, sm: 2},
+          '& .MuiStepConnector-line': {
+            minHeight: {xs: 24, sm: 40}
+          }
+        }}
         data-testid="vertical-stepper"
       >
         {Object.entries(rsvpSteps).map(([key, step]) => (<Step key={key}>
             <StepLabel
               icon={<StickFigureIcon rotation={0} fontSize={'large'} ageGroup={user.ageGroup} />}
               optional={
-                <Typography variant="caption">
+                <Typography 
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    fontSize: {xs: '0.65rem', sm: '0.75rem'},
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: {xs: 'normal', sm: 'nowrap'},
+                    maxWidth: {xs: '180px', sm: '280px', md: '100%'}
+                  }}
+                >
                   {step.id === 0 && step.stepCompleted ? 'Thanks for responding!' : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
                 </Typography>
               }
+              sx={{
+                flexDirection: {xs: 'column', sm: 'row'},
+                alignItems: {xs: 'flex-start', sm: 'center'}
+              }}
             >
-              {step.label}
+              <Typography sx={{ fontSize: {xs: '0.9rem', sm: '1rem'} }}>
+                {step.label}
+              </Typography>
             </StepLabel>
-            <StepContent>
+            <StepContent
+              sx={{
+                paddingLeft: {xs: 16, sm: 20},
+                marginLeft: {xs: 0, sm: 2},
+                paddingRight: {xs: 1, sm: 2},
+                borderLeft: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
               <Tooltip sx={{ textAlign: 'start' }} content={step.description} title={''}>
-                <Box sx={{ mb: 2 }}>
+                <Box 
+                  sx={{ 
+                    mb: 2,
+                    display: 'flex', 
+                    flexDirection: {xs: 'column', sm: 'row'}, 
+                    width: '100%' 
+                  }}
+                >
                   <Button
                     variant="contained"
                     onClick={handleActionButtonClick}
-                    sx={{ mt: 1, mr: 1 }}
+                    sx={{ 
+                      mt: 1, 
+                      mr: {xs: 0, sm: 1}, 
+                      mb: {xs: 1, sm: 0},
+                      width: {xs: '100%', sm: 'auto'}
+                    }}
+                    fullWidth={true}
+                    size="large"
                   >
                     {actionButtonText}
                   </Button>
@@ -167,7 +217,12 @@ export default function WelcomePageStepper() {
                     onClick={() => {
                       step.id === 0 && step.stepCompleted ? navigate('/save-the-date') : step.id < Object.values(rsvpSteps).length ? handleBack() : handleReset();
                     }}
-                    sx={{ mt: 1, mr: 1 }}
+                    sx={{ 
+                      mt: 1, 
+                      width: {xs: '100%', sm: 'auto'}
+                    }}
+                    fullWidth={true}
+                    size="large"
                   >
                     {step.id === 0 && step.stepCompleted ? 'Update Your Response' : 'Back'}
                   </Button>
@@ -180,16 +235,40 @@ export default function WelcomePageStepper() {
       {activeStep === Object.values(rsvpSteps).length && (
         <Paper square elevation={0} sx={{ p: 3 }}>
           <Typography>All steps completed - you&apos;re finished</Typography>
-          <Button 
-            variant="contained" 
-            onClick={handleActionButtonClick} 
-            sx={{ mt: 1, mr: 1 }}
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: {xs: 'column', sm: 'row'}, 
+              width: '100%',
+              mt: 2
+            }}
           >
-            {actionButtonText}
-          </Button>
-          <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-            Reset
-          </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleActionButtonClick} 
+              sx={{ 
+                mt: 1, 
+                mr: {xs: 0, sm: 1}, 
+                mb: {xs: 1, sm: 0},
+                width: {xs: '100%', sm: 'auto'}
+              }}
+              fullWidth={true}
+              size="large"
+            >
+              {actionButtonText}
+            </Button>
+            <Button 
+              onClick={handleReset} 
+              sx={{ 
+                mt: 1, 
+                width: {xs: '100%', sm: 'auto'}
+              }}
+              fullWidth={true}
+              size="large"
+            >
+              Reset
+            </Button>
+          </Box>
         </Paper>
       )}
     </Box>
