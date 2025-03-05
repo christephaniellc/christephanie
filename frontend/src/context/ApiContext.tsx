@@ -35,6 +35,14 @@ interface ApiContextProps {
     unknown
   >;
   validateAddressMutation: UseMutationResult<AddressDto, ApiError, AddressDto, unknown>;
+  validatePhoneMutation: UseMutationResult<
+    { success: boolean },
+    ApiError,
+    { phoneNumber: string, code?: string, action?: string },
+    unknown
+  >;
+  
+  getMaskedValueQuery: (guestId: string, type: 'email' | 'phone') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
 }
@@ -160,6 +168,31 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     },
     onError: (error) => console.error('Failed to validate address', error),
   });
+  
+  const validatePhoneMutation = useMutation<
+    { success: boolean }, 
+    ApiError, 
+    { phoneNumber: string, code?: string, action?: string },
+    unknown
+  >({
+    mutationKey: ['validatePhone'],
+    mutationFn: ({ phoneNumber, code, action }) => apiRef.current.validatePhone(phoneNumber, code, action),
+    onSuccess: (data) => {
+      console.log('Phone validation successful', data);
+      // Refresh the family data to show updated verification status
+      getFamilyUnitQuery.refetch();
+    },
+    onError: (error) => console.error('Failed to validate phone', error),
+  });
+  
+  // Function to get unmasked email or phone
+  const getMaskedValueQuery = (guestId: string, type: 'email' | 'phone') => {
+    return useQuery<{ value: string, verified: boolean }, ApiError>({
+      queryKey: ['getMaskedValue', guestId, type],
+      queryFn: () => apiRef.current.getMaskedValue(guestId, type),
+      enabled: !!guestId && !!type,
+    });
+  };
 
   // Get all families (admin function)
   const getAllFamilies = async (): Promise<FamilyUnitViewModel[]> => {
@@ -177,9 +210,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         findUserIdQuery,
         getMeQuery,
         validateAddressMutation,
+        validatePhoneMutation,
         getFamilyUnitQuery,
         patchFamilyMutation,
         patchFamilyGuestMutation,
+        getMaskedValueQuery,
         getAllFamilies,
       }}
     >

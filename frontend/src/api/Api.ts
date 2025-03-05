@@ -49,12 +49,20 @@ export default class Api {
     return this.patch(`/guest`, PatchGuestRequest);
   }
 
+  getMaskedValue(guestId: string, type: 'email' | 'phone'): Promise<{ value: string, verified: boolean }> {
+    return this.get(`/guest/masked-values/${guestId}/${type}`);
+  }
+
   deleteGuestDto(id: number): Promise<GuestDto> {
     return this.delete(`/guest/${id}/change-password`);
   }
 
   validateAddress(address: AddressDto): Promise<AddressDto> {
     return this.post(`/validate/address`, address);
+  }
+  
+  validatePhone(phoneNumber: string, code?: string, action?: string): Promise<{ success: boolean }> {
+    return this.post(`/validate/phone`, { phoneNumber, code, action });
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
