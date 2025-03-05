@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -7,11 +8,8 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Serialization;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Commands;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Handlers;
-using Wedding.Lambdas.Guest.MaskedValues.Get.Requests;
-using Wedding.Lambdas.Guest.MaskedValues.Get.Validation;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Lambdas.Guest.MaskedValues.Get;
@@ -49,27 +47,35 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
-            var getRequest = JsonSerializationHelper.DeserializeFromFrontend<GetGuestMaskedValuesRequest>(request.Body);
+            context.Logger.LogInformation($"Raw Query Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
+
+            var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
+            var maskedValueTypeString = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "maskedValueType")?.ToLower();
+            
+            if (string.IsNullOrEmpty(guestId))
+            {
+                context.Logger.LogError("GuestId is null.");
+                throw new ValidationException("Invalid GuestId in request.");
+            }
+            if (string.IsNullOrEmpty(maskedValueTypeString))
+            {
+                context.Logger.LogError("MaskedValueType is null.");
+                throw new ValidationException("Invalid MaskedValueType in request.");
+            }
+
+            var maskedValueType = maskedValueTypeString == "email" 
+                ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
             
             var authContext = request.GetAuthContext();
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
-            
-            getRequest!.Validate(nameof(getRequest));
 
             var command = new GetMaskedValueCommand(
                 authContext, 
-                getRequest.GuestId,
-                getRequest.MaskedValueType
+                guestId,
+                maskedValueType
                 );
-
-            if (string.IsNullOrEmpty(command.GuestId))
-            {
-                context.Logger.LogError("GuestId is null.");
-                throw new Exception("Invalid GuestId in request.");
-            }
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetGuestMaskedValueHandler>();

@@ -596,25 +596,22 @@
         "tags": [
           "Guest"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetGuestMaskedValuesRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetGuestMaskedValuesRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetGuestMaskedValuesRequest"
-              }
+        "parameters": [
+          {
+            "name": "guestId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maskedValueType",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1211,23 +1208,6 @@
           "BYOB"
         ],
         "type": "string"
-      },
-      "GetGuestMaskedValuesRequest": {
-        "required": [
-          "guestId",
-          "maskedValueType"
-        ],
-        "type": "object",
-        "properties": {
-          "guestId": {
-            "type": "string",
-            "nullable": true
-          },
-          "maskedValueType": {
-            "$ref": "#/components/schemas/NotificationPreferenceEnum"
-          }
-        },
-        "additionalProperties": false
       },
       "GuestDto": {
         "required": [
