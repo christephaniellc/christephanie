@@ -33,8 +33,8 @@ export default class Api {
     return this.get('/admin/familyunit/all');
   }
 
-  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
-    return this.patch(`/admin`, familyUnit);
+  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitViewModel> {
+    return this.patch(`/familyunit`, familyUnit);
   }
 
   getGuestDto(id: number): Promise<GuestDto> {

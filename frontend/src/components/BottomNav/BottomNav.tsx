@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useContext } from 'react';
 import { BottomNavigation, BottomNavigationAction, Box, useTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import ShieldIcon from '@mui/icons-material/Security';
 import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -15,6 +16,9 @@ import { useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { stdStepperState } from '@/store/steppers/steppers';
 import { QuestionMark } from '@mui/icons-material';
+import { userState } from '@/store/user';
+import { isAdmin } from '@/utils/roles';
+import { ApiContext } from '@/context/ApiContext';
 
 export const BottomNav = () => {
   const [navValue, setNavValue] = useState();
@@ -23,6 +27,8 @@ export const BottomNav = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const stdStepper = useRecoilValue(stdStepperState);
+  const currentUser = useRecoilValue(userState);
+  const userIsAdmin = isAdmin(currentUser);
 
   const handleNavigation = (path: string) => {
     if (isNavigating) return; // Prevent rapid clicks
@@ -88,6 +94,15 @@ export const BottomNav = () => {
           icon={<QuestionMark color={activeLegalButtons} />}
           onClick={() => handleNavigation(routes[Pages.AboutUs].path!)}
         />
+        {userIsAdmin && (
+          <BottomNavigationAction
+            label="Admin"
+            component={Link}
+            showLabel={true}
+            to={routes[Pages.Admin].path!}
+            icon={<AdminPanelSettingsIcon />}
+          />
+        )}
         <BottomNavigationAction
           label={auth0User ? 'Logout' : 'Login'}
           showLabel={true}
