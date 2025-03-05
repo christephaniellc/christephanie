@@ -41,6 +41,8 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
             return 'A mostly-plant-eating ';
           case 'Omnivore':
             return 'An equal-opportunity-eating ';
+          case 'BYOB':
+            return 'A tiny ';
           default:
             return guest.preferences.foodPreference === 'Vegan';
         }
