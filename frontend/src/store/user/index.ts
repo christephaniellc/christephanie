@@ -85,14 +85,14 @@ export const useUser = () => {
   // Additional effect specifically for getMeQuery data changes
   useEffect(() => {
     if (getMeQuery.data) {
-      console.log('getMeQuery data updated automatically:', getMeQuery.data);
+      //console.log('getMeQuery data updated automatically:', getMeQuery.data);
       
       // Ensure roles are properly saved
       const updatedUser = {
         ...getMeQuery.data,
         roles: getMeQuery.data.roles || []
       };
-      console.log('Setting updated user with roles:', updatedUser);
+      //console.log('Setting updated user with roles:', updatedUser);
       
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -111,7 +111,7 @@ export const useUser = () => {
       try {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser && parsedUser.guestId) {
-          console.log('Loading user from localStorage:', parsedUser);
+          //console.log('Loading user from localStorage:', parsedUser);
           setUser(parsedUser);
         }
       } catch (e) {

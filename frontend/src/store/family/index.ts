@@ -194,6 +194,20 @@ export const useFamily = () => {
     },
     [],
   );
+  
+  const updateFamilyGuestEmail = useCallback(
+    (guestId: string, email: string) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, email } });
+    },
+    [],
+  );
+  
+  const updateFamilyGuestPhone = useCallback(
+    (guestId: string, phone: string) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, phone } });
+    },
+    [],
+  );
 
   const updateFamilyGuestInterest = useCallback(
     (guestId: string, interested: InvitationResponseEnum) => {
@@ -318,6 +332,8 @@ export const useFamily = () => {
       updateFamilyComment,
       updateFamilyGuestAgeGroup,
       updateFamilyGuestCommunicationPreference,
+      updateFamilyGuestEmail,
+      updateFamilyGuestPhone,
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestInterest,
       updateFamilyGuestFoodPreferences,
@@ -331,6 +347,8 @@ export const useFamily = () => {
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestSleepingPreference,
       updateFamilyGuestCommunicationPreference,
+      updateFamilyGuestEmail,
+      updateFamilyGuestPhone,
       getFamilyUnitQuery,
       getFamily,
       updateFamilyGuestInterest,
