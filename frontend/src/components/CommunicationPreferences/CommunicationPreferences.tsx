@@ -53,7 +53,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   
   // Fetch unmasked email and phone when dialogs open
   const emailQuery = getMaskedValueQuery(guestId, 'email');
-  const phoneQuery = getMaskedValueQuery(guestId, 'phone');
+  const phoneQuery = getMaskedValueQuery(guestId, 'text');
   
   // When email dialog opens, fetch the unmasked email
   useEffect(() => {
@@ -168,8 +168,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
   };
   
-  const handleVerifyContact = (type: 'email' | 'phone') => {
-    if (type === 'phone') {
+  const handleVerifyContact = (type: 'email' | 'text') => {
+    if (type === 'text') {
       startPhoneVerification();
     } else {
       // Email verification is typically handled through server-sent email
@@ -215,7 +215,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                     color="warning"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleVerifyContact(value === 'Email' ? 'email' : 'phone');
+                      handleVerifyContact(value === 'Email' ? 'email' : 'text');
                     }}
                   >
                     Verify
