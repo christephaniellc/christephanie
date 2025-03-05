@@ -33,8 +33,11 @@ function Admin() {
       try {
         setLoading(true);
         
-        // Always refetch to ensure consistent behavior
-        const response = await getAllFamiliesQuery.refetch();
+        // Store the refetch function to a local variable to avoid dependency issues
+        const refetch = getAllFamiliesQuery.refetch;
+        
+        // Fetch data only once when the component mounts
+        const response = await refetch();
         if (response.data) {
           setFamilies(response.data);
         } else if (response.error) {
@@ -49,7 +52,10 @@ function Admin() {
     };
 
     fetchFamilies();
-  }, [getAllFamiliesQuery]);
+    // We're intentionally not including getAllFamiliesQuery in the dependency array
+    // to prevent infinite refreshes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Find a guest by ID across all families
   const findGuestById = (guestId: string | null) => {

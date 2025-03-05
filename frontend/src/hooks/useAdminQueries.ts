@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/Api';
 import { FamilyUnitViewModel, RoleEnum, InvitationResponseEnum, SleepPreferenceEnum, FoodPreferenceEnum, RsvpEnum, AgeGroupEnum } from '@/types/api';
@@ -121,11 +121,18 @@ const MOCK_FAMILIES: FamilyUnitViewModel[] = [
 export const useAdminQueries = () => {
   const apiContext = useContext(ApiContext);
   
+  // We need to stabilize the getAllFamilies reference to prevent re-renders
+  const getAllFamiliesRef = useRef(apiContext.getAllFamilies);
+  
   // Query to get all families with mock data until API endpoint is ready
   const getAllFamiliesQuery = useQuery<FamilyUnitViewModel[], ApiError>({
     queryKey: ['getAllFamilies'],
-    queryFn: () => apiContext.getAllFamilies(),
+    queryFn: () => getAllFamiliesRef.current(),
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity, // Prevent automatic refetching
+    gcTime: Infinity, // Keep the data cached indefinitely 
     enabled: false, // Don't fetch on component mount, we'll do it manually
   }) as UseQueryResult<FamilyUnitViewModel[], ApiError>;
 
