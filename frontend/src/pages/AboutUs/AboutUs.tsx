@@ -18,14 +18,14 @@ function AboutUs() {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    console.log('AboutUs mounted.');
+    //console.log('AboutUs mounted.');
 
     // Example of an async operation that respects the AbortController
     const fetchData = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
         if (!signal.aborted) {
-          console.log('Data fetched successfully.');
+          //console.log('Data fetched successfully.');
         }
       } catch (error) {
         if (signal.aborted) {
@@ -37,7 +37,7 @@ function AboutUs() {
     fetchData();
 
     return () => {
-      console.log('AboutUs unmounted. Aborting any pending tasks.');
+      //console.log('AboutUs unmounted. Aborting any pending tasks.');
       controller.abort();
     };
   }, []);
@@ -213,7 +213,9 @@ function AboutUs() {
       <Box my={2} sx={{ 
         backdropFilter: 'blur(16px)',
         width: '100%',
-        padding: 2,
+        px: 2,
+        mt: 2,
+        pb: 2,
         zIndex: 5, // Lower z-index than headers
       }}>
         <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
@@ -221,8 +223,39 @@ function AboutUs() {
             fontSize: '2rem'}}>
           {aboutUsItems.titleAboutUs.subheader}
         </StephsActualFavoriteTypography>
-        <Box sx={{ display: 'flex', justifyContent: 'left', width: '100%' }}>
-          <img src="/favicon_big_art_transparent.png" 
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'left', 
+          width: '100%', 
+          overflow: 'hidden',
+          position: 'relative',
+          '& img': {
+            animation: 'rollLogoAnimation 10s infinite',
+            transformOrigin: 'center',
+          },
+          '@keyframes rollLogoAnimation': {
+            '0%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '25%': {
+              transform: 'translateX(calc(100vw - 200px)) rotate(360deg)'
+            },
+            '37.5%': {
+              transform: 'translateX(calc((100vw - 200px)/2)) rotate(180deg)'
+            },
+            '50%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '83.33%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '100%': {
+              transform: 'translateX(0) rotate(0deg)'
+            }
+          }
+        }}>
+          <img 
+            src="/favicon_big_art_transparent.png" 
             alt="Logo" 
             height="120px"
             width="120px"
@@ -232,12 +265,13 @@ function AboutUs() {
           Christephanie LLC
         </StephsActualFavoriteTypography>
         <Typography variant="body1" 
-          sx={{ mt: 2 }}>
+          sx={{ mt: 2, fontSize: '0.9rem' }}>
           {aboutUsItems.titleAboutUs.content[0].subheader}
         </Typography>
       </Box>
       <List sx={{ 
         overflow: 'auto', 
+        pt: 0,
         my: 2, 
         height: 'calc(100% - 300px)', 
         backgroundColor: 'rgba(0,0,0,.1)', 
@@ -249,7 +283,7 @@ function AboutUs() {
         {Object.entries(aboutUsItems)
           .slice(1)
           .map(([key, value]) => (
-            <ListItem
+            <Box
               data-testid={`list-item-${key}`}
               key={key}
               sx={{ flexWrap: 'wrap', width: '100%',
@@ -263,7 +297,7 @@ function AboutUs() {
               </ListSubheader>
               <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                 {value.content.map((content, index) => (
-                  <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
+                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
                     {(content.content && (
                       <>
                         {content.subheader && (
@@ -273,7 +307,7 @@ function AboutUs() {
                         )}
                         <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                           {content.content.map((subContent, index) => (
-                            <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
+                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
                               {subContent.subheader && (
                                 <ListSubheader sx={subSubHeaderStyle}>
                                   {subContent.subheader}
@@ -284,7 +318,7 @@ function AboutUs() {
                                   <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
                                 ))}
                               </List>
-                            </ListItem>
+                            </Box>
                           ))}
                         </List>
                       </>
@@ -293,10 +327,10 @@ function AboutUs() {
                         {content.subheader}
                       </Typography>
                     )}
-                  </ListItem>
+                  </Box>
                 ))}
               </List>
-            </ListItem>
+            </Box>
           ))}
       </List>
     </Container>

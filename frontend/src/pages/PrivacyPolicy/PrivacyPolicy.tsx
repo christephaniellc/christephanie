@@ -1,5 +1,4 @@
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useEffect } from 'react';
@@ -7,22 +6,25 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
+import { useTheme } from '@mui/material/styles';
 
 function PrivacyPolicy() {
   const { contentHeight } = useAppLayout();
+  const theme = useTheme();
+  
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    console.log('PrivacyPolicy mounted.');
+    //console.log('PrivacyPolicy mounted.');
 
     // Example of an async operation that respects the AbortController
     const fetchData = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
         if (!signal.aborted) {
-          console.log('Data fetched successfully.');
+          //console.log('Data fetched successfully.');
         }
       } catch (error) {
         if (signal.aborted) {
@@ -34,7 +36,7 @@ function PrivacyPolicy() {
     fetchData();
 
     return () => {
-      console.log('PrivacyPolicy unmounted. Aborting any pending tasks.');
+      //console.log('PrivacyPolicy unmounted. Aborting any pending tasks.');
       controller.abort();
     };
   }, []);
@@ -50,7 +52,7 @@ function PrivacyPolicy() {
       content: [
         {
           subheader:
-            'We’re delighted to welcome you to our wedding website. Your privacy is very important to us, and we’ve created this policy to explain how we collect, use, and protect your personal information as you interact with our site. This document covers all three phases of our website—from the initial “Save the Date” page through to the guestbook and photo upload feature available by our wedding day.',
+            'We are delighted to welcome you to our wedding website. Your privacy is very important to us, and we have created this policy to explain how we collect, use, and protect your personal information as you interact with our site. This document covers all three phases of our website - from the initial "Save the Date" page through to the guestbook and photo upload feature available by our wedding day.',
         },
       ],
     },
@@ -100,7 +102,6 @@ function PrivacyPolicy() {
                 'Twilio: Delivers SMS messages.',
                 'AWS: Provides hosting, infrastructure, and email notifications.',
                 'USPS API: Verifies mailing addresses.',
-
                 'Others: GitHub (private repository for our code), Jira (project management), and registry/payment providers such as Zola or Square.',
               ],
             },
@@ -145,31 +146,86 @@ function PrivacyPolicy() {
       ],
     },
   };
+  
+  // Get the semi-transparent background color like in AttendanceButton
+  const semiTransparentBackgroundColor = themePaletteToRgba(theme.palette.primary.main, 0.1);
+  
+  // Common styles for all headers to mimic the "Interested" box styling
+  const commonHeaderStyle = {
+    width: '100vw',  // Make it wider than the container to ensure full coverage
+    maxWidth: '100vw',
+    position: 'sticky' as const,
+    marginLeft: 'calc(50% - 50vw)', // Center the header
+    paddingLeft: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
+    paddingRight: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
+    backdropFilter: 'blur(16px)',
+    border: `2px solid ${semiTransparentBackgroundColor}`,
+    backgroundColor: semiTransparentBackgroundColor,
+    color: theme.palette.primary.contrastText,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+    left: 0,
+    right: 0,
+    top: 0, // Ensure headers stick to top
+  };
+  
+  // Styles for subheaders with different z-index values - lower level headers have higher z-index
+  const mainHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 10,
+  };
+  
+  const subHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 11,
+  };
+  
+  const subSubHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 12,
+  };
+  
   return (
     <Container
       sx={{
         width: '100%',
-        maxHeight: contentHeight,
+        height: contentHeight,
         overflow: 'hidden',
         borderRadius: 'sm',
         display: 'flex',
         flexWrap: 'wrap',
         position: 'relative',
+        paddingBottom: '80px', // Added padding to ensure content doesn't get hidden behind BottomNav
       }}
     >
-      <Box my={2} sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.1)' }}>
-        <StephsActualFavoriteTypography 
-          sx={{ 
-          mt: 2, 
-          fontSize: '2rem',
-          textAlign: 'center' }}>
+      <Box my={2} sx={{ 
+        backdropFilter: 'blur(16px)',
+        width: '100%',
+        px: 2,
+        mt: 2,
+        pb: 2,
+        zIndex: 5, // Lower z-index than headers
+      }}>
+        <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
+            mt: 2,
+            fontSize: '2rem'}}>
           {privacyPolicyItems.privacyPolicy.subheader}
         </StephsActualFavoriteTypography>
-        <Typography variant="body1" sx={{ mt: 2 }}>
+        <Typography variant="body1" 
+          sx={{ mt: 2, fontSize: '0.9rem' }}>
           {privacyPolicyItems.privacyPolicy.content[0].subheader}
         </Typography>
       </Box>
-      <List sx={{ overflow: 'auto', py: 0, my: 2, height: contentHeight - 250 , backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <List sx={{ 
+        overflow: 'auto', 
+        pt: 0,
+        my: 2, 
+        height: 'calc(100% - 300px)', 
+        backgroundColor: 'rgba(0,0,0,.1)', 
+        width: '100%',
+        pb: 16, // Increased padding at bottom to avoid content being cut off behind BottomNav
+        position: 'relative',
+        zIndex: 1, // Lower z-index than headers
+      }}>
         {Object.entries(privacyPolicyItems)
           .slice(1)
           .map(([key, value]) => (
@@ -178,36 +234,46 @@ function PrivacyPolicy() {
               key={key}
               sx={{ flexWrap: 'wrap', width: '100%',
                 backgroundColor: 'rgba(0,0,0,.1)',
+                padding: 0,
+                mb: 2, // Add margin between sections
             }}
             >
-              <ListSubheader sx={{ width: '100%' }}>
+              <ListSubheader sx={mainHeaderStyle}>
                 {value.subheader}
               </ListSubheader>
-              <List sx={{ position: 'relative', width: '100%' }}>
+              <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                 {value.content.map((content, index) => (
-                  <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%' }}>
+                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
                     {(content.content && (
                       <>
-                        <ListSubheader disableSticky={false} key={index} sx={{ width: '100%' }}>
-                          {content.subheader}
-                        </ListSubheader>
-                        <List sx={{ position: 'relative', width: '100%' }}>
+                        {content.subheader && (
+                          <ListSubheader disableSticky={false} key={index} sx={subHeaderStyle}>
+                            {content.subheader}
+                          </ListSubheader>
+                        )}
+                        <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                           {content.content.map((subContent, index) => (
-                            <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%' }}>
-                              <ListSubheader sx={{ width: '100%' }}>
-                                {subContent.subheader}
-                              </ListSubheader>
-                              <List>
+                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
+                              {subContent.subheader && (
+                                <ListSubheader sx={subSubHeaderStyle}>
+                                  {subContent.subheader}
+                                </ListSubheader>
+                              )}
+                              <List sx={{ width: '100%', padding: '8px 16px' }}>
                                 {subContent.content?.map((paragraph, pIndex) => (
-                                  <ListItem>{paragraph}</ListItem>
+                                  <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
                                 ))}
                               </List>
-                            </ListItem>
+                            </Box>
                           ))}
                         </List>
                       </>
-                    )) || <>{content.subheader}</>}
-                  </ListItem>
+                    )) || (
+                      <Typography sx={{ padding: '8px 16px' }}>
+                        {content.subheader}
+                      </Typography>
+                    )}
+                  </Box>
                 ))}
               </List>
             </ListItem>
