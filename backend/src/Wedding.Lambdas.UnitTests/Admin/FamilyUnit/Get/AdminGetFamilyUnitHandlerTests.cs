@@ -67,7 +67,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
                     { 
                         GuestId = Guid.NewGuid().ToString(),
                         FirstName = "Test",
-                        LastName = "User"
+                        LastName = "User",
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
@@ -112,7 +113,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
                         {
                             GuestId = Guid.NewGuid().ToString(),
                             FirstName = "Guest",
-                            LastName = "One"
+                            LastName = "One",
+                            Roles = new List<RoleEnum> { RoleEnum.Guest }
                         }
                     }
                 },
@@ -126,7 +128,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
                         {
                             GuestId = Guid.NewGuid().ToString(),
                             FirstName = "Guest",
-                            LastName = "Two"
+                            LastName = "Two",
+                            Roles = new List<RoleEnum> { RoleEnum.Guest }
                         }
                     }
                 }

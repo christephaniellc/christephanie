@@ -29,7 +29,7 @@ export const useAppLayout = () => {
       }
       setScreenWidth(window.innerWidth);
       setContentHeight(newHeightBasedOnZoom - bottomNavHeight);
-      console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
+      //console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
     };
     handleResize();
 
