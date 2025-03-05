@@ -149,7 +149,6 @@ export function reorderArrayByKey(array, key, matchValue) {
     const [matchingElement] = array.splice(index, 1);
     array.unshift(matchingElement);
   }
-  console.log('sorted array', array);
 
   return array;
 }

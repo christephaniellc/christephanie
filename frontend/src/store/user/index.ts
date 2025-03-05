@@ -1,5 +1,5 @@
 import { atom, useRecoilState } from 'recoil';
-import { FindUserResponse, GuestDto } from '@/types/api';
+import { FindUserResponse, GuestDto, RoleEnum } from '@/types/api';
 import { UseMutationResult, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useMemo } from 'react';
@@ -18,6 +18,7 @@ export const userState = atom<Partial<GuestDto>>({
     guestId: '',
     firstName: '',
     invitationCode: '',
+    roles: [],
   } as GuestDto,
 });
 
@@ -67,7 +68,7 @@ export const useUser = () => {
 
   useEffect(() => {
     if (auth0User && !getMeQuery.data && !getMeQuery.isLoading) {
-      console.log('refetching me')
+      console.log('refetching me due to auth0User change')
       getMeQuery.refetch()
         .then((res) => {
           if (res.data) {
@@ -80,12 +81,44 @@ export const useUser = () => {
         })
     }
   }, [auth0User]);
+  
+  // Additional effect specifically for getMeQuery data changes
+  useEffect(() => {
+    if (getMeQuery.data) {
+      console.log('getMeQuery data updated automatically:', getMeQuery.data);
+      
+      // Ensure roles are properly saved
+      const updatedUser = {
+        ...getMeQuery.data,
+        roles: getMeQuery.data.roles || []
+      };
+      console.log('Setting updated user with roles:', updatedUser);
+      
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  }, [getMeQuery.data, setUser]);
 
   useEffect(() => {
     setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<FindUserResponse | undefined, ApiError>);
     queryClient.resetQueries({ queryKey: [`findUserIdQuery`] });
   }, [user.firstName, user.invitationCode]);
 
+  // Try to load user from localStorage on init
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser && parsedUser.guestId) {
+          console.log('Loading user from localStorage:', parsedUser);
+          setUser(parsedUser);
+        }
+      } catch (e) {
+        console.error('Failed to parse user from localStorage:', e);
+      }
+    }
+  }, []);
 
   const userActions = useMemo(() => ({ findUserIdQuery, setUser }), [findUserIdQuery, setUser]);
 
