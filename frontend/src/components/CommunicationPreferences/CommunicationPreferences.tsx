@@ -58,6 +58,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // When email dialog opens, fetch the unmasked email
   useEffect(() => {
     if (isEmailDialogOpen && !emailQuery.isFetching && emailQuery.data) {
+      console.log('Email data received:', emailQuery.data);
       setEmailValue(emailQuery.data.value);
     }
   }, [isEmailDialogOpen, emailQuery.data, emailQuery.isFetching]);
@@ -65,23 +66,42 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // When phone dialog opens, fetch the unmasked phone
   useEffect(() => {
     if (isPhoneDialogOpen && !phoneQuery.isFetching && phoneQuery.data) {
+      console.log('Phone data received:', phoneQuery.data);
       setPhoneValue(phoneQuery.data.value);
     }
   }, [isPhoneDialogOpen, phoneQuery.data, phoneQuery.isFetching]);
 
   // Handle dialog open/close
-  const handleOpenEmailDialog = () => {
-    emailQuery.refetch();
-    setIsEmailDialogOpen(true);
+  const handleOpenEmailDialog = async () => {
+    try {
+      // Refetch and wait for the data to be available
+      const result = await emailQuery.refetch();
+      if (result.data?.value) {
+        setEmailValue(result.data.value);
+      }
+      setIsEmailDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching email:', error);
+      setIsEmailDialogOpen(true);
+    }
   };
 
   const handleCloseEmailDialog = () => {
     setIsEmailDialogOpen(false);
   };
 
-  const handleOpenPhoneDialog = () => {
-    phoneQuery.refetch();
-    setIsPhoneDialogOpen(true);
+  const handleOpenPhoneDialog = async () => {
+    try {
+      // Refetch and wait for the data to be available
+      const result = await phoneQuery.refetch();
+      if (result.data?.value) {
+        setPhoneValue(result.data.value);
+      }
+      setIsPhoneDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching phone:', error);
+      setIsPhoneDialogOpen(true);
+    }
   };
 
   const handleClosePhoneDialog = () => {
