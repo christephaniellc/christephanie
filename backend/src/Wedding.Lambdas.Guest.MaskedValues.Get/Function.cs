@@ -47,7 +47,14 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Query Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
+
+            var authContext = request.GetAuthContext();
+            context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
+            context.Logger.LogInformation($"guestId: {authContext.GuestId}");
+            context.Logger.LogInformation($"roles: {authContext.Roles}");
+
+            context.Logger.LogInformation($"Raw Query Input: {JsonSerializer.Serialize(request)}");
+            context.Logger.LogInformation($"Raw Query String Params: {JsonSerializer.Serialize(request.QueryStringParameters)}");
 
             var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
             var maskedValueTypeString = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "maskedValueType")?.ToLower();
@@ -65,11 +72,6 @@ public class Function
 
             var maskedValueType = maskedValueTypeString == "email" 
                 ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
-            
-            var authContext = request.GetAuthContext();
-            context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
-            context.Logger.LogInformation($"guestId: {authContext.GuestId}");
-            context.Logger.LogInformation($"roles: {authContext.Roles}");
 
             var command = new GetMaskedValueCommand(
                 authContext, 
