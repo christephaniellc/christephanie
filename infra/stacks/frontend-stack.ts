@@ -84,6 +84,7 @@ export class FrontendStack extends cdk.Stack {
         },
         defaultRootObject: 'index.html',
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100,  // Use cheapest edge locations
+        // Add both www and non-www versions of the domain
         domainNames: [`${fullDomainName}`, `www.${fullDomainName}`],
         certificate: props.certificate,
         // This is the most important part for SPA routing - handle 403/404 errors by returning the index.html file
