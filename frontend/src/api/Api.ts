@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GetGuestMaskedValuesRequest, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
