@@ -221,35 +221,32 @@ function AboutUs() {
           {aboutUsItems.titleAboutUs.subheader}
         </StephsActualFavoriteTypography>
         
-        <div
-          style={{
+        <Box
+          sx={{
             width: '100%',
             height: '120px',
             overflow: 'hidden',
-            position: 'relative'
+            position: 'relative',
+            '@keyframes rollLogo': {
+              '0%, 10%': { left: 0, transform: 'rotate(0deg)' },
+              '30%': { left: 'calc(100% - 120px)', transform: 'rotate(360deg)' },
+              '50%, 60%': { left: 0, transform: 'rotate(0deg)' },
+              '80%': { left: 'calc(100% - 120px)', transform: 'rotate(-360deg)' },
+              '100%': { left: 0, transform: 'rotate(0deg)' }
+            },
+            '& img': {
+              position: 'absolute',
+              height: '120px',
+              width: '120px',
+              animation: 'rollLogo 8s infinite',
+            }
           }}
         >
           <img 
             src="/favicon_big_art_transparent.png" 
             alt="Logo" 
-            style={{
-              position: 'absolute',
-              height: '120px',
-              width: '120px',
-              animation: 'rollLogo 8s infinite',
-            }}
           />
-        </div>
-
-        <style jsx global>{`
-          @keyframes rollLogo {
-            0%, 10% { left: 0; transform: rotate(0deg); }
-            30% { left: calc(100% - 120px); transform: rotate(360deg); }
-            50%, 60% { left: 0; transform: rotate(0deg); }
-            80% { left: calc(100% - 120px); transform: rotate(-360deg); }
-            100% { left: 0; transform: rotate(0deg); }
-          }
-        `}</style>
+        </Box>
 
         <StephsActualFavoriteTypography sx={{ mt: 2, textAlign: 'left' }}>
           Christephanie LLC
