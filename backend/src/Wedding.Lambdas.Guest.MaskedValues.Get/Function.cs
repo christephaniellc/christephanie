@@ -12,6 +12,7 @@ using Wedding.Lambdas.Guest.MaskedValues.Get.Commands;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Handlers;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Requests;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Validation;
+using Wedding.Abstractions.Enums;
 
 namespace Wedding.Lambdas.Guest.MaskedValues.Get;
 
@@ -50,7 +51,7 @@ public class Function
         {
             context.Logger.LogInformation($"Raw Input: {request.Body}");
             var getRequest = JsonSerializationHelper.DeserializeFromFrontend<GetGuestMaskedValuesRequest>(request.Body);
-
+            
             var authContext = request.GetAuthContext();
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
@@ -62,7 +63,7 @@ public class Function
                 authContext, 
                 getRequest.GuestId,
                 getRequest.MaskedValueType
-                );;
+                );
 
             if (string.IsNullOrEmpty(command.GuestId))
             {
