@@ -32,7 +32,7 @@ jest.mock('react', () => {
 import { ApiContext, ApiContextProvider, useApiContext } from '@/context/ApiContext';
 import { RecoilRoot } from 'recoil';
 import { Auth0ContextInterface, Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import React from 'react';
+import { useState, useContext, useEffect } from 'react';
 
 // Mock Auth0
 jest.mock('@auth0/auth0-react', () => ({
@@ -92,12 +92,12 @@ describe('ApiContext', () => {
   it('should provide getAllFamilies method.wip', async () => {
     // Create a test component that uses the ApiContext
     const TestComponent = () => {
-      const { getAllFamilies } = React.useContext(ApiContext);
-      const [families, setFamilies] = React.useState<FamilyUnitViewModel[]>([]);
-      const [error, setError] = React.useState<Error | null>(null);
-      const [called, setCalled] = React.useState(false);
+      const { getAllFamilies } = useContext(ApiContext);
+      const [families, setFamilies] = useState<FamilyUnitViewModel[]>([]);
+      const [error, setError] = useState<Error | null>(null);
+      const [called, setCalled] = useState(false);
 
-      React.useEffect(() => {
+      useEffect(() => {
         const fetchData = async () => {
           try {
             const result = await getAllFamilies();

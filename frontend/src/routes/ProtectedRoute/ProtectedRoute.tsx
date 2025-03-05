@@ -23,16 +23,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   const { isAuthenticated, isLoading } = useAuth0();
   const userHasAdmin = isAdmin(user);
   
-  // If Auth0 is still loading or we're still loading user data, show a loading spinner
-  if (isLoading || (!user?.guestId && isAuthenticated)) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading user data...</Typography>
-      </Box>
-    );
-  }
-  
   // Try to ensure we have the latest user data with roles
   useEffect(() => {
     if (isAuthenticated && !userHasAdmin && requireAdmin) {
@@ -45,7 +35,17 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
           console.error('ProtectedRoute: Failed to refresh user data:', err);
         });
     }
-  }, [isAuthenticated, requireAdmin, userHasAdmin]);
+  }, [isAuthenticated, requireAdmin, userHasAdmin, apiContext.getMeQuery]);
+
+  // If Auth0 is still loading or we're still loading user data, show a loading spinner
+  if (isLoading || (!user?.guestId && isAuthenticated)) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading user data...</Typography>
+      </Box>
+    );
+  }
   
   // If admin role is required but user is not admin, redirect to home
   if (requireAdmin && !userHasAdmin) {

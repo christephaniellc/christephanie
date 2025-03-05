@@ -173,6 +173,25 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
 
   // Calculate all the metrics we need from the families data
   const metrics = useMemo(() => {
+    // Guard against empty or undefined families
+    if (!families || families.length === 0) {
+      return {
+        totalGuests: 0,
+        attendingGuests: 0,
+        declinedGuests: 0,
+        pendingGuests: 0,
+        rsvpData: [],
+        ageData: [],
+        foodData: [],
+        accommodationData: [],
+        allergiesData: [],
+        familyStatusData: [],
+        attendingFamilies: 0,
+        declinedFamilies: 0,
+        pendingFamilies: 0,
+        totalFamilies: 0
+      };
+    }
     // Count all guests
     let totalGuests = 0;
     let attendingGuests = 0;
