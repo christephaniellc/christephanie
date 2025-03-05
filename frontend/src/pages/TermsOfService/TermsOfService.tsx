@@ -17,14 +17,12 @@ function TermsOfService() {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    console.log('TermsOfService mounted.');
-
     // Example of an async operation that respects the AbortController
     const fetchData = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
         if (!signal.aborted) {
-          console.log('Data fetched successfully.');
+          // Data fetched successfully
         }
       } catch (error) {
         if (signal.aborted) {
@@ -36,7 +34,6 @@ function TermsOfService() {
     fetchData();
 
     return () => {
-      console.log('TermsOfService unmounted. Aborting any pending tasks.');
       controller.abort();
     };
   }, []);
@@ -126,12 +123,9 @@ function TermsOfService() {
   
   // Common styles for all headers to mimic the "Interested" box styling
   const commonHeaderStyle = {
-    width: '100vw',  // Make it wider than the container to ensure full coverage
-    maxWidth: '100vw',
+    width: '100%',  // Use 100% instead of 100vw to prevent horizontal scrollbar
+    maxWidth: '100%',
     position: 'sticky' as const,
-    marginLeft: 'calc(50% - 50vw)', // Center the header
-    paddingLeft: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
-    paddingRight: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
     backdropFilter: 'blur(16px)',
     border: `2px solid ${semiTransparentBackgroundColor}`,
     backgroundColor: semiTransparentBackgroundColor,
@@ -190,7 +184,7 @@ function TermsOfService() {
         </Typography>
       </Box>
       <List sx={{ 
-        overflow: 'auto', 
+        overflow: 'auto', // Changed from 'scroll' to 'auto' to only show scrollbars when needed
         pt: 0,
         my: 2, 
         height: 'calc(100% - 300px)', 
