@@ -96,6 +96,11 @@ export enum FoodPreferenceEnum {
   BYOB = 'BYOB',
 }
 
+export interface GetGuestMaskedValuesRequest {
+  guestId: string | null;
+  maskedValueType: NotificationPreferenceEnum;
+}
+
 export interface GuestDto {
   invitationCode?: string | null;
   guestId?: string | null;
@@ -578,6 +583,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags AdminFamilyUnit
+     * @name AdminFamilyunitAllList
+     * @request GET:/api/admin/familyunit/all
+     * @secure
+     */
+    adminFamilyunitAllList: (params: RequestParams = {}) =>
+      this.request<FamilyUnitDto[], ProblemDetails | void>({
+        path: `/api/admin/familyunit/all`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Auth
      * @name AuthorizeList
      * @request GET:/api/authorize
@@ -648,6 +670,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<FamilyUnitViewModel, ProblemDetails | void>({
         path: `/api/familyunit`,
         method: 'PATCH',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guest
+     * @name GuestList
+     * @request GET:/api/guest
+     * @secure
+     */
+    guestList: (data: GetGuestMaskedValuesRequest, params: RequestParams = {}) =>
+      this.request<string, ProblemDetails | void>({
+        path: `/api/guest`,
+        method: 'GET',
         body: data,
         secure: true,
         type: ContentType.Json,
