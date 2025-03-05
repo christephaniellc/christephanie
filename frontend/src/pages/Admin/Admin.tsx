@@ -32,18 +32,13 @@ function Admin() {
     const fetchFamilies = async () => {
       try {
         setLoading(true);
-        // Check if we already have data from initialData
-        if (getAllFamiliesQuery.data) {
-          setFamilies(getAllFamiliesQuery.data);
-        } else {
-          // Only refetch if we don't have data
-          const response = await getAllFamiliesQuery.refetch();
-          if (response.data) {
-            setFamilies(response.data);
-          }
-          if (response.error) {
-            setError('Failed to fetch families');
-          }
+        
+        // Always refetch to ensure consistent behavior
+        const response = await getAllFamiliesQuery.refetch();
+        if (response.data) {
+          setFamilies(response.data);
+        } else if (response.error) {
+          setError('Failed to fetch families');
         }
       } catch (err) {
         setError('An error occurred while fetching families');

@@ -125,6 +125,7 @@ export const useAdminQueries = () => {
   const getAllFamiliesQuery = useQuery<FamilyUnitViewModel[], ApiError>({
     queryKey: ['getAllFamilies'],
     queryFn: () => apiContext.getAllFamilies(),
+    refetchOnMount: false,
     enabled: false, // Don't fetch on component mount, we'll do it manually
   }) as UseQueryResult<FamilyUnitViewModel[], ApiError>;
 
