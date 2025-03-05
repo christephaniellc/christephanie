@@ -56,9 +56,18 @@ export class DnsStack extends cdk.Stack {
 
     // Add DNS record for CloudFront (Frontend)
     const frontendTarget = route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(props.cloudFrontDistribution));
+    
+    // Create A record for www subdomain
     const frontendARecord = new route53.ARecord(this, `${applicationName}-dns-frontend-record`, {
         zone: props.hostedZone,
         recordName: `www.${props.fullDomainName}`, // E.g., www.example.com
+        target: frontendTarget,
+      });
+      
+    // Create A record for non-www subdomain (apex domain)
+    const frontendApexARecord = new route53.ARecord(this, `${applicationName}-dns-frontend-apex-record`, {
+        zone: props.hostedZone,
+        recordName: props.fullDomainName, // E.g., example.com without www
         target: frontendTarget,
       });
   
@@ -99,8 +108,11 @@ export class DnsStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ApiGatewayARecordDomainName', {
       value: `https://${apiGatewayARecord.domainName}`
     });
-    new cdk.CfnOutput(this, 'FrontendARecordDomainName', {
+    new cdk.CfnOutput(this, 'FrontendWwwDomainName', {
       value: `https://${frontendARecord.domainName}`
+    });
+    new cdk.CfnOutput(this, 'FrontendApexDomainName', {
+      value: `https://${frontendApexARecord.domainName}`
     });
   }
 }

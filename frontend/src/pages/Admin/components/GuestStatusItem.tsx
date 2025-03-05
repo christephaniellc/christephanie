@@ -1,16 +1,45 @@
 import { Box, Avatar, Typography, Chip, useTheme } from '@mui/material';
-import { RsvpEnum } from '@/types/api';
-import { getRsvpStatusColor, getRsvpStatusIcon } from './AdminHelpers';
+import { InvitationResponseEnum } from '@/types/api';
+import { getInvitationStatusColor, getInvitationStatusIcon } from './AdminHelpers';
 import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 
 interface GuestStatusItemProps {
   guest: any;
   onClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
+  compact?: boolean; // Added for the compact avatar-only view
 }
 
-const GuestStatusItem = ({ guest, onClick }: GuestStatusItemProps) => {
+const GuestStatusItem = ({ guest, onClick, compact = false }: GuestStatusItemProps) => {
   const theme = useTheme();
+  const responseStatus = guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
 
+  // If compact mode, just return the avatar
+  if (compact) {
+    return (
+      <Avatar 
+        sx={{ 
+          width: 32, 
+          height: 32, 
+          bgcolor: getInvitationStatusColor(responseStatus),
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          border: '2px solid',
+          borderColor: 'background.paper',
+          boxShadow: 2,
+          transition: 'transform 0.2s',
+          '&:hover': {
+            transform: 'scale(1.1)',
+          },
+        }}
+        onClick={(e) => onClick(e, guest.guestId as string)}
+        title={`${guest.firstName} ${guest.lastName}`}
+      >
+        {guest.firstName?.[0]}{guest.lastName?.[0]}
+      </Avatar>
+    );
+  }
+
+  // Full detailed view
   return (
     <Box 
       sx={{ 
@@ -19,9 +48,9 @@ const GuestStatusItem = ({ guest, onClick }: GuestStatusItemProps) => {
         alignItems: 'center',
         p: 1,
         borderRadius: 1,
-        backgroundColor: guest.rsvp?.wedding === RsvpEnum.Attending 
+        backgroundColor: responseStatus === InvitationResponseEnum.Interested 
           ? themePaletteToRgba(theme.palette.success.main, 0.3)
-          : guest.rsvp?.wedding === RsvpEnum.Declined
+          : responseStatus === InvitationResponseEnum.Declined
             ? themePaletteToRgba(theme.palette.error.main, 0.3)
             : themePaletteToRgba(theme.palette.warning.main, 0.2),
         cursor: 'pointer',
@@ -31,21 +60,22 @@ const GuestStatusItem = ({ guest, onClick }: GuestStatusItemProps) => {
           transform: 'scale(1.02)',
         },
         border: '1px solid',
-        borderColor: guest.rsvp?.wedding === RsvpEnum.Attending 
+        borderColor: responseStatus === InvitationResponseEnum.Interested 
           ? 'success.main' 
-          : guest.rsvp?.wedding === RsvpEnum.Declined
+          : responseStatus === InvitationResponseEnum.Declined
             ? 'error.main'
             : 'warning.main',
         backdropFilter: 'blur(8px)'
       }}
       onClick={(e) => onClick(e, guest.guestId as string)}
+      data-testid="guest-status-item"
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Avatar 
           sx={{ 
             width: 28, 
             height: 28, 
-            bgcolor: getRsvpStatusColor(guest.rsvp?.wedding),
+            bgcolor: getInvitationStatusColor(responseStatus),
             fontSize: '0.875rem'
           }}
         >
@@ -58,13 +88,13 @@ const GuestStatusItem = ({ guest, onClick }: GuestStatusItemProps) => {
       <Box sx={{ display: 'flex', gap: 0.5 }}>
         <Chip 
           size="small"
-          label="Wedding"
-          icon={getRsvpStatusIcon(guest.rsvp?.wedding)}
+          label="Status"
+          icon={getInvitationStatusIcon(responseStatus)}
           sx={{ 
             backgroundColor: theme.palette.mode === 'dark' 
-              ? `${getRsvpStatusColor(guest.rsvp?.wedding)}70` 
-              : `${getRsvpStatusColor(guest.rsvp?.wedding)}40`,
-            color: getRsvpStatusColor(guest.rsvp?.wedding)
+              ? `${getInvitationStatusColor(responseStatus)}70` 
+              : `${getInvitationStatusColor(responseStatus)}40`,
+            color: getInvitationStatusColor(responseStatus)
           }}
         />
       </Box>

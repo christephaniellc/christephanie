@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useEffect } from 'react';
+import React, { ReactNode, useContext, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { CircularProgress, Box, Typography } from '@mui/material';
 import { useRecoilValue } from 'recoil';
@@ -23,6 +23,34 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   const { isAuthenticated, isLoading } = useAuth0();
   const userHasAdmin = isAdmin(user);
   
+  // Try to ensure we have the latest user data with roles - using a ref to ensure it only runs once
+  const hasCheckedAdminRef = React.useRef(false);
+  
+  useEffect(() => {
+    // Only check for admin role once and only if necessary
+    const shouldRefetch = isAuthenticated && !userHasAdmin && requireAdmin && !hasCheckedAdminRef.current;
+    
+    if (shouldRefetch) {
+      console.log('Protected route: Refreshing user data to check for admin role...');
+      // Mark that we've performed the check
+      hasCheckedAdminRef.current = true;
+      
+      // Get a local reference to the refetch function to avoid dependency issues
+      const refetchFunc = apiContext.getMeQuery.refetch;
+      
+      refetchFunc()
+        .then(response => {
+          console.log('ProtectedRoute: User refresh response:', response.data);
+        })
+        .catch(err => {
+          console.error('ProtectedRoute: Failed to refresh user data:', err);
+        });
+    }
+    
+    // We're intentionally not including apiContext in dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, requireAdmin, userHasAdmin]);
+
   // If Auth0 is still loading or we're still loading user data, show a loading spinner
   if (isLoading || (!user?.guestId && isAuthenticated)) {
     return (
@@ -32,20 +60,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
       </Box>
     );
   }
-  
-  // Try to ensure we have the latest user data with roles
-  useEffect(() => {
-    if (isAuthenticated && !userHasAdmin && requireAdmin) {
-      console.log('Protected route: Refreshing user data to check for admin role...');
-      apiContext.getMeQuery.refetch()
-        .then(response => {
-          console.log('ProtectedRoute: User refresh response:', response.data);
-        })
-        .catch(err => {
-          console.error('ProtectedRoute: Failed to refresh user data:', err);
-        });
-    }
-  }, [isAuthenticated, requireAdmin, userHasAdmin]);
   
   // If admin role is required but user is not admin, redirect to home
   if (requireAdmin && !userHasAdmin) {

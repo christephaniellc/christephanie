@@ -56,16 +56,15 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
 
+  // Function to get access token - keeping it simple and letting Auth0 handle token management
   const getTokenFunc = React.useCallback(async () => {
     try {
-      console.log('getting token');
       return await getAccessTokenSilently();
     } catch (err) {
       console.error('Failed to get token:', err);
-      console.info('Attempting to login with Auth0');
       return null;
     }
-  }, [getAccessTokenSilently, user]);
+  }, [getAccessTokenSilently]);
 
   const apiRef = React.useRef(new Api(getTokenFunc));
 

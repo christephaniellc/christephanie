@@ -11,6 +11,7 @@ import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/At
 import { GuestPopperState, getRandomAxis } from './components/AdminHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
 import FamilyCard from './components/FamilyCard';
+import AdminDashboardCharts from '@/components/AdminDashboardCharts';
 
 function Admin() {
   const [families, setFamilies] = useState<FamilyUnitViewModel[]>([]);
@@ -31,18 +32,16 @@ function Admin() {
     const fetchFamilies = async () => {
       try {
         setLoading(true);
-        // Check if we already have data from initialData
-        if (getAllFamiliesQuery.data) {
-          setFamilies(getAllFamiliesQuery.data);
-        } else {
-          // Only refetch if we don't have data
-          const response = await getAllFamiliesQuery.refetch();
-          if (response.data) {
-            setFamilies(response.data);
-          }
-          if (response.error) {
-            setError('Failed to fetch families');
-          }
+        
+        // Store the refetch function to a local variable to avoid dependency issues
+        const refetch = getAllFamiliesQuery.refetch;
+        
+        // Fetch data only once when the component mounts
+        const response = await refetch();
+        if (response.data) {
+          setFamilies(response.data);
+        } else if (response.error) {
+          setError('Failed to fetch families');
         }
       } catch (err) {
         setError('An error occurred while fetching families');
@@ -53,7 +52,10 @@ function Admin() {
     };
 
     fetchFamilies();
-  }, [getAllFamiliesQuery]);
+    // We're intentionally not including getAllFamiliesQuery in the dependency array
+    // to prevent infinite refreshes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Find a guest by ID across all families
   const findGuestById = (guestId: string | null) => {
@@ -114,6 +116,14 @@ function Admin() {
     }}>
       <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ mb: 4 }}>
         Admin Dashboard
+      </StephsActualFavoriteTypography>
+
+      {/* Dashboard Charts */}
+      <AdminDashboardCharts families={families} loading={loading} />
+      
+      {/* Family Cards */}
+      <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ mb: 4 }}>
+        All Families
       </StephsActualFavoriteTypography>
       
       {loading ? (

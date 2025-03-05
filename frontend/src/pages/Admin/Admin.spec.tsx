@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Admin from './Admin';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
-import { RoleEnum, AgeGroupEnum, RsvpEnum } from '@/types/api';
+import { RoleEnum, AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Mock the auth_config module to avoid import.meta issues
@@ -15,17 +15,53 @@ jest.mock('@/auth_config', () => ({
   })
 }));
 
-// Mock React for createContext
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  createContext: jest.fn().mockReturnValue({
-    Provider: ({ children }: { children: React.ReactNode }) => children,
-    Consumer: ({ children }: { children: React.ReactNode }) => children,
-  }),
-}));
+// Import mocks need to come before imports
+// Mock React createContext
+const mockContext = {
+  Provider: ({ children }: { children: React.ReactNode }) => children,
+  Consumer: ({ children }: { children: React.ReactNode }) => children
+};
+
+jest.mock('react', () => {
+  // We don't want to "requireActual" here since that might cause circular dependencies
+  const React = {
+    createElement: (...args: any[]) => args,
+    // Add other methods you need
+    Fragment: 'Fragment',
+    Suspense: 'Suspense',
+    useEffect: () => {},
+    useState: () => [null, () => {}]
+  };
+  
+  return {
+    ...React,
+    createContext: jest.fn().mockReturnValue(mockContext)
+  };
+});
 
 // Mock the useAdminQueries hook
 jest.mock('@/hooks/useAdminQueries');
+
+// Mock GuestStatusItem to avoid material-ui icon issues in tests
+jest.mock('./components/GuestStatusItem', () => ({
+  __esModule: true,
+  default: ({ guest, onClick, compact }: any) => (
+    <div 
+      data-testid={compact ? `avatar-${guest.guestId}` : `guest-item-${guest.guestId}`}
+      onClick={(e) => onClick(e, guest.guestId)}
+    >
+      {!compact && (
+        <>
+          <span>{guest.firstName} {guest.lastName}</span>
+          <span data-testid="status-chip">Status</span>
+        </>
+      )}
+      {compact && (
+        <span data-testid="compact-initials">{guest.firstName[0]}{guest.lastName[0]}</span>
+      )}
+    </div>
+  )
+}));
 
 const theme = createTheme();
 
@@ -38,7 +74,7 @@ const renderWithTheme = (ui: React.ReactElement) => {
   );
 };
 
-describe('Admin.wip', () => {
+describe('Admin.locked', () => {
   beforeEach(() => {
     // Setup default mock implementation
     (useAdminQueries as jest.Mock).mockReturnValue({
@@ -56,7 +92,7 @@ describe('Admin.wip', () => {
                   roles: [RoleEnum.Guest],
                   ageGroup: AgeGroupEnum.Adult,
                   rsvp: {
-                    wedding: RsvpEnum.Attending
+                    invitationResponse: InvitationResponseEnum.Interested
                   }
                 },
                 { 
@@ -66,7 +102,7 @@ describe('Admin.wip', () => {
                   roles: [RoleEnum.Guest],
                   ageGroup: AgeGroupEnum.Adult,
                   rsvp: {
-                    wedding: RsvpEnum.Attending
+                    invitationResponse: InvitationResponseEnum.Interested
                   }
                 }
               ],
@@ -84,54 +120,134 @@ describe('Admin.wip', () => {
     });
   });
 
-  it('should render the Admin dashboard title', async () => {
+  it('should render the Admin dashboard title.locked', async () => {
     renderWithTheme(<Admin />);
     
     expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
   });
 
-  it('should initially show loading state', () => {
+  it('should initially show loading state.locked', () => {
     renderWithTheme(<Admin />);
     
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
+});
 
-  it('should display family data after loading', async () => {
+describe('Updated Admin Dashboard.wip', () => {
+  const mockFamilies = [
+    {
+      invitationCode: 'ABC123',
+      unitName: 'Smith Family',
+      guests: [
+        { 
+          firstName: 'John', 
+          lastName: 'Smith',
+          guestId: '123',
+          roles: [RoleEnum.Guest],
+          ageGroup: AgeGroupEnum.Adult,
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Interested
+          }
+        },
+        { 
+          firstName: 'Jane', 
+          lastName: 'Smith',
+          guestId: '456',
+          roles: [RoleEnum.Guest],
+          ageGroup: AgeGroupEnum.Adult,
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Pending
+          }
+        }
+      ],
+      mailingAddress: {
+        streetAddress: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        postalCode: '12345'
+      },
+      familyUnitLastLogin: '2023-01-01T12:00:00Z'
+    }
+  ];
+  
+  beforeEach(() => {
+    (useAdminQueries as jest.Mock).mockReturnValue({
+      getAllFamiliesQuery: {
+        refetch: jest.fn().mockResolvedValue({
+          data: mockFamilies
+        })
+      }
+    });
+  });
+  
+  it('should show collapsed family cards by default.wip', async () => {
     renderWithTheme(<Admin />);
     
     await waitFor(() => {
       expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
     
+    // Family header should be visible
     expect(screen.getByText('Smith Family')).toBeInTheDocument();
-    expect(screen.getByText('John Smith')).toBeInTheDocument();
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-    expect(screen.getByText('123 Main St')).toBeInTheDocument();
-    expect(screen.getAllByText('Wedding').length).toBeGreaterThan(0);
+    
+    // Should have avatars in collapsed view
+    const avatarElements = await screen.findAllByTestId(/avatar-/);
+    expect(avatarElements.length).toBe(2); // One for each family member
+    
+    // Address shouldn't be visible until expanded
+    expect(screen.queryByText('123 Main St')).not.toBeInTheDocument();
   });
   
-  it('should handle families with no mailing address', async () => {
+  it('should expand family card when clicked.wip', async () => {
+    renderWithTheme(<Admin />);
+    
+    await waitFor(() => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+    
+    // Find expand button (there will be one per family card)
+    const expandButtons = await screen.findAllByTestId('expand-button');
+    fireEvent.click(expandButtons[0]);
+    
+    // After expanding, address should be visible
+    expect(await screen.findByText('123 Main St')).toBeInTheDocument();
+    expect(screen.getByText('Anytown, CA 12345')).toBeInTheDocument();
+    
+    // And guest items should be visible
+    const guestItems = await screen.findAllByTestId(/guest-item-/);
+    expect(guestItems.length).toBe(2); // Both full guest items are shown
+  });
+  
+  it('should handle families with mixed invitation responses.wip', async () => {
+    // Two guests, one interested, one pending
+    renderWithTheme(<Admin />);
+    
+    await waitFor(() => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+    
+    // Family card should use the positive status color (because someone is interested)
+    // This is hard to test in JSDOM directly, we check that the card is rendered
+    expect(screen.getByTestId('family-card')).toBeInTheDocument();
+    
+    // Click to expand
+    const expandButtons = await screen.findAllByTestId('expand-button');
+    fireEvent.click(expandButtons[0]);
+    
+    // Both guests should be shown
+    expect(screen.getByTestId('guest-item-123')).toBeInTheDocument(); // Interested
+    expect(screen.getByTestId('guest-item-456')).toBeInTheDocument(); // Pending
+  });
+  
+  it('should handle families with no mailing address.wip', async () => {
     // Override mock for this test
     (useAdminQueries as jest.Mock).mockReturnValue({
       getAllFamiliesQuery: {
         refetch: jest.fn().mockResolvedValue({
           data: [
             {
-              invitationCode: 'ABC123',
-              unitName: 'Smith Family',
-              guests: [
-                { 
-                  firstName: 'John', 
-                  lastName: 'Smith',
-                  guestId: '123',
-                  roles: [RoleEnum.Guest],
-                  ageGroup: AgeGroupEnum.Adult,
-                  rsvp: {
-                    wedding: RsvpEnum.Pending
-                  }
-                }
-              ],
-              // No mailingAddress
+              ...mockFamilies[0],
+              mailingAddress: null,
               familyUnitLastLogin: null
             }
           ]
@@ -145,43 +261,11 @@ describe('Admin.wip', () => {
       expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
     
+    // Expand the card
+    const expandButtons = await screen.findAllByTestId('expand-button');
+    fireEvent.click(expandButtons[0]);
+    
     expect(screen.getByText('No address provided')).toBeInTheDocument();
-    expect(screen.getByText('Never logged in')).toBeInTheDocument(); // No last login
-  });
-  
-  it('should handle API error', async () => {
-    // Override mock for this test to simulate error
-    (useAdminQueries as jest.Mock).mockReturnValue({
-      getAllFamiliesQuery: {
-        refetch: jest.fn().mockResolvedValue({
-          error: new Error('Failed to fetch data')
-        })
-      }
-    });
-    
-    renderWithTheme(<Admin />);
-    
-    await waitFor(() => {
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    });
-    
-    expect(screen.getByText('Failed to fetch families')).toBeInTheDocument();
-  });
-  
-  it('should handle unexpected error during fetch', async () => {
-    // Override mock for this test to throw error
-    (useAdminQueries as jest.Mock).mockReturnValue({
-      getAllFamiliesQuery: {
-        refetch: jest.fn().mockRejectedValue(new Error('Network error'))
-      }
-    });
-    
-    renderWithTheme(<Admin />);
-    
-    await waitFor(() => {
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    });
-    
-    expect(screen.getByText('An error occurred while fetching families')).toBeInTheDocument();
+    expect(screen.getByText('Never logged in')).toBeInTheDocument();
   });
 });

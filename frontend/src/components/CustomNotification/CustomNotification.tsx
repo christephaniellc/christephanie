@@ -12,12 +12,11 @@ interface CustomNotificationProps {
   id?: string | number;
   style?: React.CSSProperties;
   className?: string;
-  onClick?: () => void;
   [key: string]: any; // Allow other props from notistack
 }
 
 const CustomNotification = forwardRef(function CustomNotification(
-  { message, variant = 'info', title, onClick }: CustomNotificationProps,
+  { message, variant = 'info', title, action = <></> }: CustomNotificationProps,
   ref: Ref<HTMLDivElement>,
 ) {
   const theme = useTheme();
@@ -55,47 +54,26 @@ const CustomNotification = forwardRef(function CustomNotification(
     return variant as 'info' | 'success' | 'warning' | 'error';
   };
   
-  // Apply special styling for SW update notifications
-  const isUpdateNotification = message && typeof message === 'string' && 
-    message.includes('New content is available');
-  
   return (
     <Alert 
       ref={ref} 
       severity={getSeverity()}
-      onClick={onClick}
       sx={{
         ...getStylesForVariant(),
-        // Apply special styling for update notifications
-        ...(isUpdateNotification ? {
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(10px)',
-          color: theme.palette.common.white,
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 0 15px rgba(0,0,0,0.5)',
-          marginBottom: '15px',
-          '& .MuiAlert-icon': {
-            color: theme.palette.common.white,
-          },
-          '& .MuiAlert-message': {
-            color: theme.palette.common.white,
-          },
-          '& .MuiButton-root': {
-            color: theme.palette.primary.light,
-            borderColor: theme.palette.primary.light,
-          }
-        } : {}),
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
         '& .MuiAlert-icon': {
-          // Ensure icon has good contrast with custom colors (for non-update notifications)
-          color: !isUpdateNotification && ['primary', 'secondary', 'error'].includes(variant) 
+          // Ensure icon has good contrast with custom colors
+          color: ['primary', 'secondary', 'error'].includes(variant) 
             ? theme.palette.common.white 
             : undefined,
-        },
-        cursor: onClick ? 'pointer' : 'default',
+        }
       }}
     >
       {title && <AlertTitle>{title}</AlertTitle>}
       {message}
+      {action}
     </Alert>
   );
 });

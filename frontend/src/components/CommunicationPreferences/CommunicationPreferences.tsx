@@ -4,17 +4,23 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
-import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
+import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper } from '@mui/material';
 import { EmailOutlined, PhoneAndroid, Edit, Check } from '@mui/icons-material';
-import { useMemo, useState, useEffect } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
+import { Stack } from '@mui/system';
 import { useApiContext } from '@/context/ApiContext';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
+  const { screenWidth } = useAppLayout();
   const guest: GuestViewModel | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
   const { getMaskedValueQuery, validatePhoneMutation } = useApiContext();
   
   const contactPreferences = Object.keys(NotificationPreferenceEnum);
+  const mousePosition = useRef({ x: 0, y: 0 });
+  const theme = useTheme();
+  
   const guestCommunicationPreferences = useMemo(() => {
     return guest?.preferences?.notificationPreference || [];
   }, [guest]);
@@ -149,7 +155,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       const updatedPreferencesArray = [...existingPreferencesArray, notificationPreference];
       return familyActions.updateFamilyGuestCommunicationPreference(guestId, updatedPreferencesArray);
     }
-  }
+  };
+  
+  const handleMouseMove = (event: React.MouseEvent) => {
+    mousePosition.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const calculateShadow = () => {
+    const { x, y } = mousePosition.current;
+    const shadowX = (x / window.innerWidth) * 15 + 5;
+    const shadowY = (y / window.innerHeight) * 15 + 5;
+    return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
+  };
   
   const handleVerifyContact = (type: 'email' | 'phone') => {
     if (type === 'phone') {
