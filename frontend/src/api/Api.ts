@@ -49,7 +49,7 @@ export default class Api {
     return this.patch(`/guest`, PatchGuestRequest);
   }
 
-  getMaskedValue(guestId: string, type: 'email' | 'phone'): Promise<{ value: string, verified: boolean }> {
+  getMaskedValue(guestId: string, type: 'email' | 'text'): Promise<{ value: string, verified: boolean }> {
     return this.get(`/guest/masked-values/${guestId}/${type}`);
   }
 

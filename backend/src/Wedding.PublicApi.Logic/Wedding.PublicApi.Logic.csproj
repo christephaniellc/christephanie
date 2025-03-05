@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Get\Wedding.Lambdas.FamilyUnit.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Patch\Wedding.Lambdas.FamilyUnit.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Guest.MaskedValues.Get\Wedding.Lambdas.Guest.MaskedValues.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
