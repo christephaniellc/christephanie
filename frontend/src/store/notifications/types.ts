@@ -7,6 +7,7 @@ export type CustomVariant = 'primary' | 'secondary' | 'error' | 'info' | 'succes
 interface CustomOptionsObject extends Omit<OptionsObject, 'variant'> {
   variant?: CustomVariant;
   key?: SnackbarKey;
+  onClick?: () => void; // Custom property for handling notification clicks
 }
 
 interface Notification {
