@@ -72,6 +72,8 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Patch', method: apigateway.HttpMethod.PATCH, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.Guest.Patch', method: apigateway.HttpMethod.PATCH, path: `/guest`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Guest.Email.Get', method: apigateway.HttpMethod.GET, path: `/guest/email/{guestId}`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Guest.Phone.Get', method: apigateway.HttpMethod.GET, path: `/guest/phone/{guestId}`, keepWarm: true },
         { name: 'Wedding.Lambdas.Validate.Address', method: apigateway.HttpMethod.POST, path: `/validate/address`, keepWarm: true },
         { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone`, keepWarm: true },
         { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true, keepWarm: true },
