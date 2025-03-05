@@ -110,6 +110,7 @@ cdk destroy AuthStack-dev --context env=dev --profile dev
 
 (Recreate API gateway and lambdas)
 cdk destroy ApiStack-dev --context env=dev --profile dev
+cdk deploy ApiStack-dev --context env=dev --profile dev
 cdk deploy DnsStack-dev --context env=dev --profile dev
 
 cdk deploy ParamsStack-dev --context env=dev --profile dev

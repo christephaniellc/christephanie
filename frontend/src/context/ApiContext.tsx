@@ -185,7 +185,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   });
   
   // Function to get unmasked email or phone
-  const getMaskedValueQuery = (guestId: string, type: 'email' | 'phone') => {
+  const getMaskedValueQuery = (guestId: string, type: 'email' | 'text') => {
     return useQuery<{ value: string, verified: boolean }, ApiError>({
       queryKey: ['getMaskedValue', guestId, type],
       queryFn: () => apiRef.current.getMaskedValue(guestId, type),
