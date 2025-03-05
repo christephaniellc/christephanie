@@ -45,23 +45,6 @@ function Notifier() {
             removeDisplayed(key);
           },
         };
-
-        // For custom onClick handler, we'll use custom content option
-        if (options.onClick) {
-          safeOptions.content = (key, message) => {
-            const MyComponent = typeof options.content === 'function' 
-              ? options.content(key, message)
-              : <div>{message}</div>;
-            
-            // Add onClick handler to existing content
-            return (
-              <div onClick={options.onClick}>
-                {MyComponent}
-              </div>
-            );
-          };
-        }
-        
         enqueueSnackbar(message, safeOptions);
       }
 
