@@ -60,7 +60,7 @@ function PrivacyPolicy() {
       subheader: 'What Information We Collect',
       content: [
         {
-          subheader: 'Our website is designed in three phases:',
+          subheader: '',
           content: [
             {
               subheader: 'Save the Date Phase:',
@@ -152,12 +152,9 @@ function PrivacyPolicy() {
   
   // Common styles for all headers to mimic the "Interested" box styling
   const commonHeaderStyle = {
-    width: '100vw',  // Make it wider than the container to ensure full coverage
-    maxWidth: '100vw',
+    width: '100%',  // Use 100% instead of 100vw to prevent horizontal scrollbar
+    maxWidth: '100%',
     position: 'sticky' as const,
-    marginLeft: 'calc(50% - 50vw)', // Center the header
-    paddingLeft: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
-    paddingRight: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
     backdropFilter: 'blur(16px)',
     border: `2px solid ${semiTransparentBackgroundColor}`,
     backgroundColor: semiTransparentBackgroundColor,
@@ -216,7 +213,7 @@ function PrivacyPolicy() {
         </Typography>
       </Box>
       <List sx={{ 
-        overflow: 'auto', 
+        overflow: 'auto', // Changed from 'scroll' to 'auto' to only show scrollbars when needed
         pt: 0,
         my: 2, 
         height: 'calc(100% - 300px)', 
@@ -229,7 +226,7 @@ function PrivacyPolicy() {
         {Object.entries(privacyPolicyItems)
           .slice(1)
           .map(([key, value]) => (
-            <ListItem
+            <Box
               data-testid={`list-item-${key}`}
               key={key}
               sx={{ flexWrap: 'wrap', width: '100%',
@@ -276,7 +273,7 @@ function PrivacyPolicy() {
                   </Box>
                 ))}
               </List>
-            </ListItem>
+            </Box>
           ))}
       </List>
     </Container>
