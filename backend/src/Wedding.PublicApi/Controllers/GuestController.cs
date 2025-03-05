@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Auth.Commands;
 using Wedding.Common.Configuration.Identity;
@@ -42,7 +43,7 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<string>> GetGuestMaskedValues([FromBody] GetGuestMaskedValuesRequest getRequest, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<string>> GetGuestMaskedValues(string guestId, string maskedValueType, CancellationToken cancellationToken = default)
         {
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
             var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
@@ -52,8 +53,8 @@ namespace Wedding.PublicApi.Controllers
 
             var command = new GetMaskedValueCommand(
                 authContext,
-                getRequest.GuestId,
-                getRequest.MaskedValueType
+                guestId,
+                maskedValueType.ToLower() == "email" ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text
             );
             command.Validate();
             var result = await _dispatcher.ExecuteAsync<GetMaskedValueCommand, string>(command, cancellationToken);
