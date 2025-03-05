@@ -6,8 +6,7 @@ import { RecoilRoot } from 'recoil';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { familyState } from '@/store/family';
 import { InvitationResponseEnum } from '@/types/api';
-import { ThemeProvider, createTheme } from '@mui/material';
-
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 jest.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     isAuthenticated: true,

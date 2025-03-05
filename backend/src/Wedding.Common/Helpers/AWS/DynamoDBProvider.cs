@@ -236,21 +236,30 @@ namespace Wedding.Common.Helpers.AWS
 
             var results = await _repository.FromScanAsync<WeddingEntity>(scanConfig, GetTableConfig(audience)).GetRemainingAsync();
 
-            //var numFamilies = results.Where(f => f.SortKey == DynamoKeys.FamilyInfo).ToList();
+            // Group by InvitationCode
+            var groupedResults = results
+                .Where(x => x.SortKey == DynamoKeys.FamilyInfo)
+                .GroupBy(x => x.InvitationCode);
 
-            var familyUnitEntities = _mapper.Map<List<FamilyUnitDto>>(results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
-
-            foreach (var familyUnit in familyUnitEntities)
+            foreach (var group in groupedResults)
             {
-                var guests = results.Where(x =>
-                        x.SortKey.StartsWith(DynamoKeys.Guest) && x.InvitationCode.Equals(familyUnit.InvitationCode))
+                var invitationCode = group.Key;
+                var familyInfoEntity = group.FirstOrDefault();
+                
+                if (familyInfoEntity == null) continue;
+
+                var familyUnit = _mapper.Map<FamilyUnitDto>(familyInfoEntity);
+                
+                // Find all guests for this family unit
+                var guests = results
+                    .Where(x => x.SortKey.StartsWith(DynamoKeys.Guest) && x.InvitationCode.Equals(invitationCode))
                     .Select(x => _mapper.Map<GuestDto>(x))
                     .ToList();
 
                 if (guests.Count == 0)
                 {
-                    _logger.LogError($"No guests with invitation code '{familyUnit.InvitationCode}' found.");
-                    //throw new ApplicationException($"Invalid invitation code '{familyUnit.InvitationCode}', no guests found.");
+                    _logger.LogError($"No guests with invitation code '{invitationCode}' found.");
+                    // Not throwing exception, just logging the error
                 }
 
                 familyUnit.Guests = guests;

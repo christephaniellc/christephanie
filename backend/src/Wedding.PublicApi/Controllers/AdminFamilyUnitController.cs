@@ -169,6 +169,27 @@ namespace Wedding.PublicApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<FamilyUnitDto>>> GetAllFamilyUnits(CancellationToken cancellationToken = default)
+        {
+#if !DEBUG_ANONYMOUS
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+#endif
+            var query = new AdminGetFamilyUnitsQuery(authContext);
+            query.Validate();
+            var result = await _dispatcher.GetAsync<AdminGetFamilyUnitsQuery, List<FamilyUnitDto>>(query, cancellationToken);
+
+            return Ok(result);
+        }
+
 #if DEBUG_ANONYMOUS
         [AllowAnonymous]
 #else
