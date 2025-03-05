@@ -8,7 +8,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
 {
     public static class TestRequestHelper
     {
-        public static APIGatewayProxyRequest RequestAsJohn<T>(T request)
+        public static AuthContext GetAuthContext()
         {
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
@@ -16,7 +16,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
 
             var testTokenHelper = new TestTokenHelper(configuration);
 
-            var fakeAuthContext = new AuthContext
+            return new AuthContext
             {
                 Audience = testTokenHelper!.JwtAudience,
                 GuestId = TestDataHelper.GUEST_JOHN.GuestId,
@@ -24,14 +24,32 @@ namespace Wedding.Lambdas.UnitTests.TestData
                 Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
                 IpAddress = "127.0.0.1"
             };
+        }
 
+        public static APIGatewayProxyRequest RequestAsJohn(Dictionary<string, string> queryStringParams)
+        {
             return new APIGatewayProxyRequest
             {
                 RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
                 {
                     Authorizer = new APIGatewayCustomAuthorizerContext
                     {
-                        ["lambda"] = JsonSerializer.Serialize(fakeAuthContext)
+                        ["lambda"] = JsonSerializer.Serialize(GetAuthContext())
+                    }
+                },
+                QueryStringParameters = queryStringParams
+            };
+        }
+
+        public static APIGatewayProxyRequest RequestAsJohn<T>(T request)
+        {
+            return new APIGatewayProxyRequest
+            {
+                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+                {
+                    Authorizer = new APIGatewayCustomAuthorizerContext
+                    {
+                        ["lambda"] = JsonSerializer.Serialize(GetAuthContext())
                     }
                 },
                 Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)

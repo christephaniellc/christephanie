@@ -146,6 +146,10 @@ Update NPM packages:
 - VSCode > frontend/src > 
 	yarn install
 	yarn run dev	
+	
+Update API calls from swagger:
+- Run swagger update (backend)
+- npm run generate:types
 -----------------------
 # Backend
 
