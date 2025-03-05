@@ -7,6 +7,7 @@ import type { SnackbarKey } from 'notistack';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import useNotifications from '@/store/notifications';
+import { Box } from '@mui/material';
 
 function SW() {
   const [, notificationsActions] = useNotifications();
@@ -26,6 +27,7 @@ function SW() {
     }
   }, [setOfflineReady, setNeedRefresh, notificationsActions]);
 
+
   useEffect(() => {
     if (offlineReady) {
       notificationsActions.push({
@@ -40,7 +42,6 @@ function SW() {
         options: {
           variant: 'warning',
           persist: true,
-          onClick: () => updateServiceWorker(true),
           action: (
             <>
               <Button onClick={() => updateServiceWorker(true)}>Reload</Button>

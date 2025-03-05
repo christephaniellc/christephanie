@@ -60,6 +60,9 @@ const CustomNotification = forwardRef(function CustomNotification(
       severity={getSeverity()}
       sx={{
         ...getStylesForVariant(),
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
         '& .MuiAlert-icon': {
           // Ensure icon has good contrast with custom colors
           color: ['primary', 'secondary', 'error'].includes(variant) 
