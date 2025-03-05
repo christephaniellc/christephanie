@@ -12,11 +12,12 @@ interface CustomNotificationProps {
   id?: string | number;
   style?: React.CSSProperties;
   className?: string;
+  onClick?: () => void;
   [key: string]: any; // Allow other props from notistack
 }
 
 const CustomNotification = forwardRef(function CustomNotification(
-  { message, variant = 'info', title }: CustomNotificationProps,
+  { message, variant = 'info', title, onClick }: CustomNotificationProps,
   ref: Ref<HTMLDivElement>,
 ) {
   const theme = useTheme();
@@ -58,6 +59,7 @@ const CustomNotification = forwardRef(function CustomNotification(
     <Alert 
       ref={ref} 
       severity={getSeverity()}
+      onClick={onClick}
       sx={{
         ...getStylesForVariant(),
         '& .MuiAlert-icon': {
@@ -65,7 +67,8 @@ const CustomNotification = forwardRef(function CustomNotification(
           color: ['primary', 'secondary', 'error'].includes(variant) 
             ? theme.palette.common.white 
             : undefined,
-        }
+        },
+        cursor: onClick ? 'pointer' : 'default',
       }}
     >
       {title && <AlertTitle>{title}</AlertTitle>}
