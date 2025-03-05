@@ -1,9 +1,38 @@
 import { render, act, waitFor } from '@testing-library/react';
+import { FamilyUnitViewModel } from '@/types/api';
+
+// Mock auth_config to avoid import.meta issues
+jest.mock('@/auth_config', () => ({
+  getConfig: jest.fn().mockReturnValue({
+    domain: "test-domain.example.com",
+    clientId: "test-client-id",
+    audience: "https://test-api.example.com",
+    webserviceUrl: "https://test-api.example.com",
+    returnTo: "https://test-return.example.com"
+  })
+}));
+
+// Mock React createContext
+const mockContext = {
+  Provider: ({ children }: { children: React.ReactNode }) => children,
+  Consumer: ({ children }: { children: React.ReactNode }) => children
+};
+
+const mockCreateContext = jest.fn().mockReturnValue(mockContext);
+
+jest.mock('react', () => {
+  const originalReact = jest.requireActual('react');
+  return {
+    ...originalReact,
+    createContext: mockCreateContext
+  };
+});
+
+// Import after React mock is set up
 import { ApiContext, ApiContextProvider, useApiContext } from '@/context/ApiContext';
 import { RecoilRoot } from 'recoil';
 import { Auth0ContextInterface, Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { FamilyUnitViewModel } from '@/types/api';
-import React from 'react';
+import { useState, useContext, useEffect } from 'react';
 
 // Mock Auth0
 jest.mock('@auth0/auth0-react', () => ({
@@ -63,12 +92,12 @@ describe('ApiContext', () => {
   it('should provide getAllFamilies method.wip', async () => {
     // Create a test component that uses the ApiContext
     const TestComponent = () => {
-      const { getAllFamilies } = React.useContext(ApiContext);
-      const [families, setFamilies] = React.useState<FamilyUnitViewModel[]>([]);
-      const [error, setError] = React.useState<Error | null>(null);
-      const [called, setCalled] = React.useState(false);
+      const { getAllFamilies } = useContext(ApiContext);
+      const [families, setFamilies] = useState<FamilyUnitViewModel[]>([]);
+      const [error, setError] = useState<Error | null>(null);
+      const [called, setCalled] = useState(false);
 
-      React.useEffect(() => {
+      useEffect(() => {
         const fetchData = async () => {
           try {
             const result = await getAllFamilies();

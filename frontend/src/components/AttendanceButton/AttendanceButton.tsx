@@ -1,18 +1,19 @@
-import { Box, ButtonProps, darken, Typography, useTheme } from '@mui/material';
+import { Box, ButtonProps, darken, Typography, useTheme, Paper } from '@mui/material';
 import React, { useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import { InvitationResponseEnum } from '@/types/api';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import Button from '@mui/material/Button';
-import { stdStepperState } from '@/store/steppers/steppers';
+import { stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';
 import CommunicationPreferences from '@/components/CommunicationPreferences';
 import CampingPreferences from '@/components/CampingPreferences';
 import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
 import { rgba } from 'polished';
+import { ArrowBack, ArrowForward, EditOutlined, LoopOutlined } from '@mui/icons-material';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -66,6 +67,29 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
           ? theme.palette.secondary.dark
           : theme.palette.error.dark
     }`;
+  };
+
+  // Calculate days until deadline (April 15th, 2025)
+  const getDaysUntilDeadline = () => {
+    const today = new Date();
+    const deadline = new Date('2025-04-15');
+    const diffTime = deadline.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const daysUntilDeadline = getDaysUntilDeadline();
+
+  // For non-attendance steps, we need to navigate back to the attendance step
+  const setTabIndex = useSetRecoilState(stdTabIndex);
+
+  /**
+   * Handles navigating back to the attendance step for buttons on other pages
+   */
+  const handleGoToAttendanceStep = () => {
+    console.log('Navigating to attendance step');
+    // Set tab index to 0 to navigate to the attendance step
+    setTabIndex(0);
   };
 
   return (
@@ -132,10 +156,114 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
           )}
         </Box>
       </Button>
+
+      {/* Response status messages - shown to the right of the attendance button */}
+      {/* For Pending status - on attendance step */}
+      {[InvitationResponseEnum.Pending, InvitationResponseEnum.Declined].includes(
+        guest.rsvp.invitationResponse,
+      ) &&
+        stdStepper.tabIndex === 0 && (
+          <Button
+            onClick={() => handleClick(guest?.rsvp.invitationResponse)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              ml: 3,
+              p: 2,
+              borderRadius: 1,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              textTransform: 'none',
+              boxShadow: calculateShadow(),
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+              },
+            }}
+          >
+            <ArrowBack
+              sx={{
+                mr: 2,
+                fontSize: '1.5rem',
+                animation: 'pulse 1.5s infinite ease-in-out',
+                '@keyframes pulse': {
+                  '0%': { opacity: 0.5, transform: 'translateX(0)' },
+                  '50%': { opacity: 1, transform: 'translateX(-5px)' },
+                  '100%': { opacity: 0.5, transform: 'translateX(0)' },
+                },
+              }}
+            />
+            <Typography
+              variant="body2"
+              color="secondary.light"
+              sx={{
+                fontWeight: 'medium',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              Click to update your response. You have {daysUntilDeadline} days left to respond.
+            </Typography>
+          </Button>
+        )}
+
+      {/* For Pending status - on other steps */}
+      {guest.rsvp.invitationResponse === InvitationResponseEnum.Pending &&
+        stdStepper.tabIndex > 0 && (
+          <Button
+            onClick={handleGoToAttendanceStep}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              ml: 3,
+              p: 2,
+              borderRadius: 1,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              textTransform: 'none',
+              boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.secondary.dark, 0.5)}`,
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+              },
+            }}
+          >
+            <EditOutlined sx={{ mr: 2 }} />
+            <Typography variant="body2" color="secondary.light" sx={{ fontWeight: 'medium' }}>
+              Click to change your response. {daysUntilDeadline} days remaining.
+            </Typography>
+          </Button>
+        )}
+
+      {/* For Declined status on other steps */}
+      {guest.rsvp.invitationResponse === InvitationResponseEnum.Declined &&
+        stdStepper.tabIndex > 0 && (
+          <Button
+            onClick={handleGoToAttendanceStep}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              ml: 3,
+              p: 2,
+              borderRadius: 1,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              textTransform: 'none',
+              boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.error.dark, 0.5)}`,
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+              },
+            }}
+          >
+            <EditOutlined sx={{ mr: 2 }} />
+            <Typography variant="body2" color="error.light" sx={{ fontWeight: 'medium' }}>
+              Click to change your response. {daysUntilDeadline} days remaining.
+            </Typography>
+          </Button>
+        )}
+
       <Box sx={{ overflowY: 'auto', ml: '2vw' }}>
-        {((guest.rsvp.invitationResponse === InvitationResponseEnum.Interested || 
+        {(guest.rsvp.invitationResponse === InvitationResponseEnum.Interested ||
           stdStepper.currentStep[0] === 'mailingAddress') &&
-          stdStepper.tabIndex < stdStepper.totalTabs) &&
+          stdStepper.tabIndex < stdStepper.totalTabs &&
           CurrentComponent}
       </Box>
     </Box>
@@ -238,18 +366,9 @@ export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
       fontSize: buttonProps.fontSize,
       border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
-      width:
-        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
-          ? '200px !important'
-          : '100%',
-      minWidth:
-        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
-          ? '200px !important'
-          : '100%',
-      maxWidth:
-        guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested
-          ? '200px !important'
-          : '100%',
+      width: '200px !important',
+      minWidth: '200px !important',
+      maxWidth: '200px !important',
     };
   }, [buttonProps, darkenCoefficent]);
 

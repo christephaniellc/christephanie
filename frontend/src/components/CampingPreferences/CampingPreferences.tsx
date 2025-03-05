@@ -4,8 +4,18 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, RoleEnum, SleepPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
-import { ButtonGroup, Chip, useTheme } from '@mui/material';
-import { Apartment, DirectionsBus, Festival, HotelOutlined, NoTransfer, Home } from '@mui/icons-material';
+import { ButtonGroup, Chip, Collapse, useTheme } from '@mui/material';
+import { 
+  Apartment, 
+  DirectionsBus, 
+  Festival, 
+  HotelOutlined, 
+  NoTransfer, 
+  Home, 
+  ExpandMore, 
+  ExpandLess,
+  Info
+} from '@mui/icons-material';
 import React, { useEffect } from 'react';
 import { Stack } from '@mui/system';
 import Paper from '@mui/material/Paper';
@@ -13,6 +23,16 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import RatingComponent from '@/components/RatingComponent/RatingComponent';
 import Tooltip from '@mui/material/Tooltip';
+
+interface HotelOption {
+  name: string;
+  googleRating: number;
+  numberOfRatings: number;
+  hotelQuality: number;
+  onShuttleRoute: boolean;
+  driveMinsFromWedding: number;
+  hotelBlock: boolean;
+}
 
 const CampingPreferences = ({ guestId }: { guestId: string }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -26,6 +46,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
     SleepPreferenceEnum.Unknown,
   );
   const [takingShuttle, setTakingShuttle] = React.useState(true);
+  const [expandedHotel, setExpandedHotel] = React.useState<number | null>(null);
   
   // Check if the guest has the Manor role
   const hasManorRole = React.useMemo(() => {
@@ -47,7 +68,11 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
     }
   };
 
-  const hotelOptions = [
+  const handleToggleHotelDetails = (index: number) => {
+    setExpandedHotel(expandedHotel === index ? null : index);
+  };
+
+  const hotelOptions: HotelOption[] = [
     {
       name: 'Holiday Inn Express Suites - Brunswick, MD',
       googleRating: 4.6,
@@ -83,6 +108,67 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
 
   const open = Boolean(anchorEl);
   const id = open ? anchorEl?.id : undefined;
+  
+  const renderHotelDetails = (hotel: HotelOption) => {
+    return (
+      <Box sx={{ p: 1 }}>
+        {hotel.googleRating > 0 && (
+          <RatingComponent
+            score={hotel.googleRating}
+            numberOfRatings={hotel.numberOfRatings}
+          />
+        )}
+        {hotel.onShuttleRoute && (
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            (Call & ask for {hotel.hotelBlock ? 'Stubler' : ''} wedding rate)
+          </Typography>
+        )}
+        <Tooltip title={'Take our complimentary shuttle'}>
+          <Chip
+            id={`shuttle ${takingShuttle}`}
+            sx={{
+              width: '100%',
+              mb: 1,
+            }}
+            onClick={() => setTakingShuttle(!takingShuttle)}
+            icon={
+              hotel.onShuttleRoute ? (
+                takingShuttle ? <DirectionsBus /> : <NoTransfer />
+              ) : (
+                <NoTransfer />
+              )
+            }
+            variant={takingShuttle ? 'filled' : ('outlined' as 'filled' | 'outlined')}
+            color={
+              hotel.onShuttleRoute
+                ? takingShuttle
+                  ? 'primary'
+                  : 'secondary'
+                : ('error' as 'primary' | 'secondary' | 'error')
+            }
+            size="small"
+            label={hotel.onShuttleRoute ? 'Shuttle Available' : 'No Shuttle'}
+          />
+        </Tooltip>
+        {hotel.driveMinsFromWedding > 0 && (
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Drive Time: {hotel.driveMinsFromWedding} mins
+          </Typography>
+        )}
+        <Button 
+          variant="outlined"
+          color="primary"
+          size="small"
+          fullWidth
+          onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
+          sx={{ mt: 1 }}
+        >
+          Search on Google
+        </Button>
+      </Box>
+    );
+  };
+
   return (
     <Stack
       display="flex"
@@ -93,6 +179,7 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
       alignItems="center"
       px={2}
       onMouseMove={handleMouseMove}
+      data-testid="camping-preferences-container"
     >
       <Paper
         elevation={5}
@@ -101,10 +188,10 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
           backgroundColor: 'rgba(0,0,0,.1)',
           filter: `drop-shadow(${boxShadow})`,
           display: 'flex',
-          // mobile
           flexDirection: 'column',
           height: '100%',
           gap: 4,
+          width: '100%',
         }}
       >
         <ButtonGroup
@@ -172,93 +259,57 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
           </Typography>
         )}
         {campingValue === SleepPreferenceEnum.Hotel && (
-          <ButtonGroup
-            orientation={screenWidth > 600 ? 'horizontal' : 'vertical'}
+          <Stack
+            spacing={2}
             sx={{
               p: 2,
-              alignSelf: 'center',
+              width: '100%',
             }}
+            data-testid="hotel-options-container"
           >
             {hotelOptions.map((hotel, index) => (
-              <Button
-                variant="outlined"
-                color="secondary"
+              <Paper
                 key={index}
-                component={Box}
-                display="flex"
-                flexDirection="column"
-                gap={0}
-                fullWidth
+                elevation={2}
                 sx={{
-                  pointerEvents: 'none',
+                  overflow: 'hidden',
+                  backgroundColor: 'rgba(0,0,0,.4)',
                   width: '100%',
                 }}
-                // send user to hotel google search
               >
-                <Box>
-                  <Typography
-                    sx={{
-                      pb: 0,
-                      mb: 0,
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
-                      pointerEvents: 'auto',
+                <Button
+                  fullWidth
+                  variant="text"
+                  color="secondary"
+                  onClick={() => handleToggleHotelDetails(index)}
+                  sx={{
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    p: 2,
+                    borderRadius: 0,
+                  }}
+                  endIcon={expandedHotel === index ? <ExpandLess /> : <ExpandMore />}
+                  startIcon={<Info />}
+                  data-testid={`hotel-button-${index}`}
+                >
+                  <Typography 
+                    component="span" 
+                    variant="subtitle1" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      textAlign: 'left',
+                      width: '100%'
                     }}
-                    onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
                   >
                     {hotel.name}
                   </Typography>
-                  {hotel.googleRating > 0 && (
-                    <RatingComponent
-                      score={hotel.googleRating}
-                      numberOfRatings={hotel.numberOfRatings}
-                    />
-                  )}
-                  {hotel.onShuttleRoute && (
-                    <Typography variant="caption" sx={{ pb: 0, mb: 0 }}>
-                      (Call & ask for {hotel.hotelBlock ? 'Stubler' : ''} wedding rate)
-                    </Typography>
-                  )}
-                  <Tooltip title={'Take our complimentary shuttle'}>
-                    <Chip
-                      id={`shuttle ${takingShuttle}`}
-                      sx={{
-                        width: '100%',
-                        my: 1,
-                      }}
-                      onClick={() => setTakingShuttle(!takingShuttle)}
-                      icon={
-                        hotel.onShuttleRoute ? (
-                          takingShuttle ? (
-                            <DirectionsBus />
-                          ) : (
-                            <NoTransfer />
-                          )
-                        ) : (
-                          <NoTransfer />
-                        )
-                      }
-                      variant={takingShuttle ? 'filled' : ('outlined' as 'filled' | 'outlined')}
-                      color={
-                        hotel.onShuttleRoute
-                          ? takingShuttle
-                            ? 'primary'
-                            : 'secondary'
-                          : ('error' as 'primary' | 'secondary' | 'error')
-                      }
-                      size="small"
-                      label={hotel.onShuttleRoute ? 'Shuttle Available' : 'No Shuttle'}
-                    />
-                  </Tooltip>
-                  {hotel.driveMinsFromWedding > 0 && (
-                    <Typography sx={{ pb: 0, mb: 0 }}>
-                      Drive Time: {hotel.driveMinsFromWedding} mins
-                    </Typography>
-                  )}
-                </Box>
-              </Button>
+                </Button>
+                <Collapse in={expandedHotel === index} timeout="auto" unmountOnExit>
+                  {renderHotelDetails(hotel)}
+                </Collapse>
+              </Paper>
             ))}
-          </ButtonGroup>
+          </Stack>
         )}
       </Paper>
     </Stack>

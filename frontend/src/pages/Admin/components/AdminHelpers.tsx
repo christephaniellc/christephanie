@@ -1,10 +1,13 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HelpIcon from '@mui/icons-material/Help';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 import { FamilyUnitViewModel, InvitationResponseEnum, RsvpEnum, FoodPreferenceEnum, SleepPreferenceEnum } from '@/types/api';
 
-// Helper function to get RSVP status color
+// Helper function to get RSVP status color (legacy)
 export const getRsvpStatusColor = (status?: RsvpEnum) => {
   switch(status) {
     case RsvpEnum.Attending:
@@ -17,7 +20,7 @@ export const getRsvpStatusColor = (status?: RsvpEnum) => {
   }
 };
 
-// Helper function to get RSVP status icon
+// Helper function to get RSVP status icon (legacy)
 export const getRsvpStatusIcon = (status?: RsvpEnum) => {
   switch(status) {
     case RsvpEnum.Attending:
@@ -27,6 +30,32 @@ export const getRsvpStatusIcon = (status?: RsvpEnum) => {
     case RsvpEnum.Pending:
     default:
       return <HelpIcon fontSize="small" />;
+  }
+};
+
+// Helper function to get Invitation status color
+export const getInvitationStatusColor = (status?: InvitationResponseEnum) => {
+  switch(status) {
+    case InvitationResponseEnum.Interested:
+      return 'success.main';
+    case InvitationResponseEnum.Declined:
+      return 'error.main';
+    case InvitationResponseEnum.Pending:
+    default:
+      return 'warning.main';
+  }
+};
+
+// Helper function to get Invitation status icon
+export const getInvitationStatusIcon = (status?: InvitationResponseEnum) => {
+  switch(status) {
+    case InvitationResponseEnum.Interested:
+      return <ThumbUpIcon fontSize="small" />;
+    case InvitationResponseEnum.Declined:
+      return <ThumbDownIcon fontSize="small" />;
+    case InvitationResponseEnum.Pending:
+    default:
+      return <QuestionMarkIcon fontSize="small" />;
   }
 };
 
@@ -101,26 +130,24 @@ export const getSleepPreferenceDetails = (preference?: SleepPreferenceEnum) => {
   }
 };
 
-// Helper function to get overall family status color
+// Helper function to get overall family status color - updated to use InvitationResponseEnum
 export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
   const hasDeclined = family.guests?.some(
-    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
-              guest.rsvp?.wedding === RsvpEnum.Declined
+    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
   );
   
   const allPending = family.guests?.every(
-    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending ||
-              !guest.rsvp?.wedding ||
-              guest.rsvp?.wedding === RsvpEnum.Pending
+    guest => !guest.rsvp?.invitationResponse || 
+             guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending
   );
   
-  const someAttending = family.guests?.some(
-    guest => guest.rsvp?.wedding === RsvpEnum.Attending
+  const someInterested = family.guests?.some(
+    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
   );
   
-  if (hasDeclined && !someAttending) return 'error.light';
+  if (hasDeclined && !someInterested) return 'error.light';
   if (allPending) return 'warning.light';
-  if (someAttending) return 'success.light';
+  if (someInterested) return 'success.light';
   return 'grey.200';
 };
 
