@@ -96,11 +96,6 @@ export enum FoodPreferenceEnum {
   BYOB = 'BYOB',
 }
 
-export interface GetGuestMaskedValuesRequest {
-  guestId: string | null;
-  maskedValueType: NotificationPreferenceEnum;
-}
-
 export interface GuestDto {
   invitationCode?: string | null;
   guestId?: string | null;
@@ -685,13 +680,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/api/guest
      * @secure
      */
-    guestList: (data: GetGuestMaskedValuesRequest, params: RequestParams = {}) =>
+    guestList: (
+      query?: {
+        guestId?: string;
+        maskedValueType?: string;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<string, ProblemDetails | void>({
         path: `/api/guest`,
         method: 'GET',
-        body: data,
+        query: query,
         secure: true,
-        type: ContentType.Json,
         format: 'json',
         ...params,
       }),

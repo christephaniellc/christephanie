@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GetGuestMaskedValuesRequest, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -45,13 +45,13 @@ export default class Api {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestViewModel> {
-    return this.patch(`/guest`, PatchGuestRequest);
+  patchGuestDto(patchGuestRequest: PatchGuestRequest): Promise<GuestViewModel> {
+    return this.patch(`/guest`, patchGuestRequest);
   }
 
-  getMaskedValue(guestId: string, type: 'email' | 'text'): Promise<{ value: string, verified: boolean }> {
-    return this.get(`/guest/masked-values/${guestId}/${type}`);
-  }
+  getMaskedValue(guestId: string, maskedValueType: NotificationPreferenceEnum): Promise<{ value: string, verified: boolean }> {
+    return this.get(`/guest/maskedvalues?guestId=${encodeURIComponent(guestId)}&maskedValueType=${encodeURIComponent(maskedValueType)}`);
+}
 
   deleteGuestDto(id: number): Promise<GuestDto> {
     return this.delete(`/guest/${id}/change-password`);

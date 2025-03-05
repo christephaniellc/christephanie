@@ -1,8 +1,4 @@
-using System;
 using System.Net;
-using System.Threading.Tasks;
-using System.Threading;
-using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using AutoMapper;
 using FluentAssertions;
@@ -17,10 +13,8 @@ using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Utility.Testing;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Guest.MaskedValues.Get.Handlers;
-using Wedding.Lambdas.Guest.MaskedValues.Get.Requests;
 using Wedding.Lambdas.UnitTests.TestData;
 using Newtonsoft.Json;
 
@@ -118,13 +112,11 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                         guestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper!.Map<WeddingEntity>(guestWithValue));
 
-            var request = new GetGuestMaskedValuesRequest
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
             {
-                GuestId = guestId,
-                MaskedValueType = preferenceType
-            };
-
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(request);
+                {"guestId", guestId},
+                {"maskedValueType", preferenceType.ToString()}
+            });
 
             var context = new TestLambdaContext();
 
@@ -143,13 +135,11 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
         public async Task FunctionHandler_Should_Return_BadRequest_When_RequestIsInvalid_wip()
         {
             // Arrange
-            var request = new GetGuestMaskedValuesRequest
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
             {
-                GuestId = null!, // Invalid GuestId
-                MaskedValueType = NotificationPreferenceEnum.Email
-            };
-
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(request);
+                {"guestId", null!},
+                {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}
+            });
 
             var context = new TestLambdaContext();
 
@@ -171,13 +161,11 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                         nonExistentGuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
-            var request = new GetGuestMaskedValuesRequest
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
             {
-                GuestId = nonExistentGuestId,
-                MaskedValueType = NotificationPreferenceEnum.Email
-            };
-
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(request);
+                {"guestId", nonExistentGuestId},
+                {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}
+            });
 
             var context = new TestLambdaContext();
 
@@ -199,14 +187,12 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                     x.LoadGuestByGuestIdAsync(_fakeAuthContext!.Audience, _fakeAuthContext.InvitationCode,
                         guestId, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
-
-            var request = new GetGuestMaskedValuesRequest
+            
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
             {
-                GuestId = guestId,
-                MaskedValueType = NotificationPreferenceEnum.Email
-            };
-
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(request);
+                {"guestId", guestId},
+                {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}
+            });
 
             var context = new TestLambdaContext();
 
