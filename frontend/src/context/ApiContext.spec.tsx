@@ -32,6 +32,7 @@ jest.mock('react', () => {
 import { ApiContext, ApiContextProvider, useApiContext } from '@/context/ApiContext';
 import { RecoilRoot } from 'recoil';
 import { Auth0ContextInterface, Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import React from 'react';
 
 // Mock Auth0
 jest.mock('@auth0/auth0-react', () => ({
