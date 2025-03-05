@@ -28,8 +28,8 @@ const Welcome = () => {
 
   useLayoutEffect(() => {
     if (!welcomeBannerRef.current) return;
-    console.log('contentHeight', contentHeight);
-    console.log('welcomeBannerRef', welcomeBannerRef.current!.clientHeight);
+    //console.log('contentHeight', contentHeight);
+    //console.log('welcomeBannerRef', welcomeBannerRef.current!.clientHeight);
     const welcomeBannerHeight = welcomeBannerRef.current!.clientHeight;
     setStepperHeight(contentHeight - welcomeBannerHeight);
   }, [welcomeBannerRef, contentHeight]);

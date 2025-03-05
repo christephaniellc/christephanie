@@ -6,24 +6,26 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { rem } from 'polished';
-
+import { useTheme } from '@mui/material/styles';
 
 function AboutUs() {
   const { contentHeight } = useAppLayout();
+  const theme = useTheme();
+  
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    console.log('AboutUs mounted.');
+    //console.log('AboutUs mounted.');
 
     // Example of an async operation that respects the AbortController
     const fetchData = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
         if (!signal.aborted) {
-          console.log('Data fetched successfully.');
+          //console.log('Data fetched successfully.');
         }
       } catch (error) {
         if (signal.aborted) {
@@ -35,7 +37,7 @@ function AboutUs() {
     fetchData();
 
     return () => {
-      console.log('AboutUs unmounted. Aborting any pending tasks.');
+      //console.log('AboutUs unmounted. Aborting any pending tasks.');
       controller.abort();
     };
   }, []);
@@ -157,79 +159,178 @@ function AboutUs() {
       ],
     }
   };
+  
+  // Get the semi-transparent background color like in AttendanceButton
+  const semiTransparentBackgroundColor = themePaletteToRgba(theme.palette.primary.main, 0.1);
+  
+  // Common styles for all headers to mimic the "Interested" box styling
+  const commonHeaderStyle = {
+    width: '100vw',  // Make it wider than the container to ensure full coverage
+    maxWidth: '100vw',
+    position: 'sticky' as const,
+    marginLeft: 'calc(50% - 50vw)', // Center the header
+    paddingLeft: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
+    paddingRight: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
+    backdropFilter: 'blur(16px)',
+    border: `2px solid ${semiTransparentBackgroundColor}`,
+    backgroundColor: semiTransparentBackgroundColor,
+    color: theme.palette.primary.contrastText,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+    left: 0,
+    right: 0,
+    top: 0, // Ensure headers stick to top
+  };
+  
+  // Styles for subheaders with different z-index values - lower level headers have higher z-index
+  const mainHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 10,
+  };
+  
+  const subHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 11,
+  };
+  
+  const subSubHeaderStyle = {
+    ...commonHeaderStyle,
+    zIndex: 12,
+  };
+  
   return (
     <Container
       sx={{
         width: '100%',
-        maxHeight: contentHeight,
+        height: contentHeight,
         overflow: 'hidden',
         borderRadius: 'sm',
         display: 'flex',
         flexWrap: 'wrap',
         position: 'relative',
+        paddingBottom: '80px', // Added padding to ensure content doesn't get hidden behind BottomNav
       }}
     >
-      <Box my={2} sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <Box my={2} sx={{ 
+        backdropFilter: 'blur(16px)',
+        width: '100%',
+        px: 2,
+        mt: 2,
+        pb: 2,
+        zIndex: 5, // Lower z-index than headers
+      }}>
         <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
             mt: 2,
             fontSize: '2rem'}}>
           {aboutUsItems.titleAboutUs.subheader}
         </StephsActualFavoriteTypography>
-        <img src="/favicon_big_art_transparent.png" 
-          alt="Logo" 
-          height="120px"
-          width="120px"
-        />
-        <StephsActualFavoriteTypography sx={{ mt: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'left', 
+          width: '100%', 
+          overflow: 'hidden',
+          position: 'relative',
+          '& img': {
+            animation: 'rollLogoAnimation 10s infinite',
+            transformOrigin: 'center',
+          },
+          '@keyframes rollLogoAnimation': {
+            '0%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '25%': {
+              transform: 'translateX(calc(100vw - 200px)) rotate(360deg)'
+            },
+            '37.5%': {
+              transform: 'translateX(calc((100vw - 200px)/2)) rotate(180deg)'
+            },
+            '50%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '83.33%': {
+              transform: 'translateX(0) rotate(0deg)'
+            },
+            '100%': {
+              transform: 'translateX(0) rotate(0deg)'
+            }
+          }
+        }}>
+          <img 
+            src="/favicon_big_art_transparent.png" 
+            alt="Logo" 
+            height="120px"
+            width="120px"
+          />
+        </Box>
+        <StephsActualFavoriteTypography sx={{ mt: 2, textAlign: 'left' }}>
           Christephanie LLC
         </StephsActualFavoriteTypography>
         <Typography variant="body1" 
-          sx={{ mt: 2 }}>
+          sx={{ mt: 2, fontSize: '0.9rem' }}>
           {aboutUsItems.titleAboutUs.content[0].subheader}
         </Typography>
       </Box>
-      <List sx={{ overflow: 'auto', py: 0, my: 2, pb: 40, height: contentHeight/150, border: '1px dotted yellow', backgroundColor: 'rgba(0,0,0,.1)' }}>
+      <List sx={{ 
+        overflow: 'auto', 
+        pt: 0,
+        my: 2, 
+        height: 'calc(100% - 300px)', 
+        backgroundColor: 'rgba(0,0,0,.1)', 
+        width: '100%',
+        pb: 16, // Increased padding at bottom to avoid content being cut off behind BottomNav
+        position: 'relative',
+        zIndex: 1, // Lower z-index than headers
+      }}>
         {Object.entries(aboutUsItems)
           .slice(1)
           .map(([key, value]) => (
-            <ListItem
+            <Box
               data-testid={`list-item-${key}`}
               key={key}
               sx={{ flexWrap: 'wrap', width: '100%',
                 backgroundColor: 'rgba(0,0,0,.1)',
+                padding: 0,
+                mb: 2, // Add margin between sections
             }}
             >
-              <ListSubheader sx={{ width: '100%' }}>
+              <ListSubheader sx={mainHeaderStyle}>
                 {value.subheader}
               </ListSubheader>
-              <List sx={{ position: 'relative', width: '100%' }}>
+              <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                 {value.content.map((content, index) => (
-                  <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%' }}>
+                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
                     {(content.content && (
                       <>
-                        <ListSubheader disableSticky={false} key={index} sx={{ width: '100%' }}>
-                          {content.subheader}
-                        </ListSubheader>
-                        <List sx={{ position: 'relative', width: '100%' }}>
+                        {content.subheader && (
+                          <ListSubheader disableSticky={false} key={index} sx={subHeaderStyle}>
+                            {content.subheader}
+                          </ListSubheader>
+                        )}
+                        <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
                           {content.content.map((subContent, index) => (
-                            <ListItem key={index} sx={{ flexWrap: 'wrap', width: '100%' }}>
-                              <ListSubheader sx={{ width: '100%' }}>
-                                {subContent.subheader}
-                              </ListSubheader>
-                              <List>
+                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
+                              {subContent.subheader && (
+                                <ListSubheader sx={subSubHeaderStyle}>
+                                  {subContent.subheader}
+                                </ListSubheader>
+                              )}
+                              <List sx={{ width: '100%', padding: '8px 16px' }}>
                                 {subContent.content?.map((paragraph, pIndex) => (
-                                  <ListItem>{paragraph}</ListItem>
+                                  <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
                                 ))}
                               </List>
-                            </ListItem>
+                            </Box>
                           ))}
                         </List>
                       </>
-                    )) || <>{content.subheader}</>}
-                  </ListItem>
+                    )) || (
+                      <Typography sx={{ padding: '8px 16px' }}>
+                        {content.subheader}
+                      </Typography>
+                    )}
+                  </Box>
                 ))}
               </List>
-            </ListItem>
+            </Box>
           ))}
       </List>
     </Container>
