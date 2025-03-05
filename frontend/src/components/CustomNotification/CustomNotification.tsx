@@ -16,7 +16,7 @@ interface CustomNotificationProps {
 }
 
 const CustomNotification = forwardRef(function CustomNotification(
-  { message, variant = 'info', title }: CustomNotificationProps,
+  { message, variant = 'info', title, action = <></> }: CustomNotificationProps,
   ref: Ref<HTMLDivElement>,
 ) {
   const theme = useTheme();
@@ -70,6 +70,7 @@ const CustomNotification = forwardRef(function CustomNotification(
     >
       {title && <AlertTitle>{title}</AlertTitle>}
       {message}
+      {action}
     </Alert>
   );
 });
