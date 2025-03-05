@@ -11,6 +11,7 @@ import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/At
 import { GuestPopperState, getRandomAxis } from './components/AdminHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
 import FamilyCard from './components/FamilyCard';
+import AdminDashboardCharts from '@/components/AdminDashboardCharts';
 
 function Admin() {
   const [families, setFamilies] = useState<FamilyUnitViewModel[]>([]);
@@ -114,6 +115,14 @@ function Admin() {
     }}>
       <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ mb: 4 }}>
         Admin Dashboard
+      </StephsActualFavoriteTypography>
+
+      {/* Dashboard Charts */}
+      <AdminDashboardCharts families={families} loading={loading} />
+      
+      {/* Family Cards */}
+      <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ mb: 4 }}>
+        All Families
       </StephsActualFavoriteTypography>
       
       {loading ? (

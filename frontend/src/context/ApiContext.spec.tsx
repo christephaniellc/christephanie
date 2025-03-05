@@ -1,9 +1,37 @@
 import { render, act, waitFor } from '@testing-library/react';
+import { FamilyUnitViewModel } from '@/types/api';
+
+// Mock auth_config to avoid import.meta issues
+jest.mock('@/auth_config', () => ({
+  getConfig: jest.fn().mockReturnValue({
+    domain: "test-domain.example.com",
+    clientId: "test-client-id",
+    audience: "https://test-api.example.com",
+    webserviceUrl: "https://test-api.example.com",
+    returnTo: "https://test-return.example.com"
+  })
+}));
+
+// Mock React createContext
+const mockContext = {
+  Provider: ({ children }: { children: React.ReactNode }) => children,
+  Consumer: ({ children }: { children: React.ReactNode }) => children
+};
+
+const mockCreateContext = jest.fn().mockReturnValue(mockContext);
+
+jest.mock('react', () => {
+  const originalReact = jest.requireActual('react');
+  return {
+    ...originalReact,
+    createContext: mockCreateContext
+  };
+});
+
+// Import after React mock is set up
 import { ApiContext, ApiContextProvider, useApiContext } from '@/context/ApiContext';
 import { RecoilRoot } from 'recoil';
 import { Auth0ContextInterface, Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { FamilyUnitViewModel } from '@/types/api';
-import React from 'react';
 
 // Mock Auth0
 jest.mock('@auth0/auth0-react', () => ({
