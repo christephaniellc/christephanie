@@ -18,14 +18,7 @@ export const useQueryProvider = () => {
         staleTime: 1000 * 60 * 60 * 24,
       },
       mutations: {
-        onSettled: () => {
-          notificationsActions.push({
-            message: 'Success!',
-            options: {
-              variant: 'success',
-            },
-          });
-        },
+        // Success messages removed as requested
       },
     },
   });

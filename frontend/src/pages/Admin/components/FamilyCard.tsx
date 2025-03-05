@@ -1,10 +1,15 @@
 import { 
   Card, CardHeader, CardContent, Divider, 
-  Box, Typography, Chip, Paper, Stack, Grid, useTheme 
+  Box, Typography, Chip, Paper, Stack, Grid, useTheme,
+  IconButton, Collapse, AvatarGroup, Tooltip
 } from '@mui/material';
+import { useState } from 'react';
 import { rgba } from 'polished';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import PeopleIcon from '@mui/icons-material/People';
 
 import { FamilyUnitViewModel } from '@/types/api';
 import { getFamilyStatusColor } from './AdminHelpers';
@@ -18,6 +23,15 @@ interface FamilyCardProps {
 const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
   const theme = useTheme();
   const statusColor = getFamilyStatusColor(family);
+  const [expanded, setExpanded] = useState(false);
+  
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
+  // Maximum number of avatars to show in the header
+  const MAX_AVATARS = 4;
+  const hasMoreGuests = family.guests && family.guests.length > MAX_AVATARS;
 
   return (
     <Card 
@@ -45,8 +59,9 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
         },
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '550px', // Set a max height
+        maxHeight: expanded ? '550px' : '180px', // Adjust height based on expanded state
       }}
+      data-testid="family-card"
     >
       <CardHeader
         title={
@@ -66,104 +81,156 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
             />
           </Box>
         }
+        action={
+          <IconButton
+            onClick={handleExpandClick}
+            aria-expanded={expanded}
+            aria-label="show more"
+            data-testid="expand-button"
+          >
+            {expanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        }
         sx={{ pb: 1 }}
       />
       
       <Divider />
       
-      <CardContent sx={{ overflowY: 'auto', flexGrow: 1 }}>
-        <Stack spacing={2}>
-          {/* Family members with RSVP status */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 2, 
-              backgroundColor: rgba(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(20px)',
-              borderRadius: 1,
-              maxHeight: '300px',
-              overflow: 'auto'
-            }}
-          >
-            <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+      {/* Show avatars in collapsed state */}
+      {!expanded && family.guests && family.guests.length > 0 && (
+        <Box 
+          sx={{ 
+            p: 2, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            flexGrow: 1
+          }}
+          data-testid="family-card-avatars"
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PeopleIcon color="action" />
+            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
               Family Members
             </Typography>
-            <Grid container spacing={1}>
-              {family.guests?.map(guest => (
-                <Grid item xs={12} key={guest.guestId}>
+          </Box>
+          <AvatarGroup max={MAX_AVATARS} sx={{ ml: 2 }}>
+            {family.guests.map(guest => (
+              <Tooltip 
+                title={`${guest.firstName} ${guest.lastName}`} 
+                key={guest.guestId}
+                data-testid={`guest-avatar-${guest.guestId}`}
+              >
+                <span> {/* Wrapper needed for Tooltip + disabled elements */}
                   <GuestStatusItem 
                     guest={guest} 
                     onClick={onGuestClick} 
+                    compact={true} 
                   />
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
-          
-          {/* Address */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 2, 
-              backgroundColor: rgba(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(20px)',
-              borderRadius: 1,
-              display: 'flex',
-              gap: 1
-            }}
-          >
-            <HomeIcon color="action" sx={{ mt: 0.5 }} />
-            <Box>
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                Mailing Address
+                </span>
+              </Tooltip>
+            ))}
+          </AvatarGroup>
+        </Box>
+      )}
+      
+      {/* Expanded content */}
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent sx={{ overflowY: 'auto', flexGrow: 1 }}>
+          <Stack spacing={2}>
+            {/* Family members with RSVP status */}
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2, 
+                backgroundColor: rgba(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(20px)',
+                borderRadius: 1,
+                maxHeight: '300px',
+                overflow: 'auto'
+              }}
+              data-testid="family-members-section"
+            >
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                Family Members
               </Typography>
-              <Typography variant="body2">
-                {family.mailingAddress ? (
-                  <>
-                    {family.mailingAddress.streetAddress}<br />
-                    {family.mailingAddress.city}, {family.mailingAddress.state} {family.mailingAddress.postalCode}
-                  </>
-                ) : (
-                  <Typography variant="body2" color="error">
-                    No address provided
-                  </Typography>
-                )}
-              </Typography>
-            </Box>
-          </Paper>
-          
-          {/* Last login */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 2, 
-              backgroundColor: rgba(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(20px)',
-              borderRadius: 1,
-              display: 'flex',
-              gap: 1
-            }}
-          >
-            <CalendarMonthIcon color="action" sx={{ mt: 0.5 }} />
-            <Box>
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                Last Activity
-              </Typography>
-              <Typography variant="body2">
-                {family.familyUnitLastLogin 
-                  ? new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })
-                  : 'Never logged in'}
-              </Typography>
-            </Box>
-          </Paper>
-        </Stack>
-      </CardContent>
+              <Grid container spacing={1}>
+                {family.guests?.map(guest => (
+                  <Grid item xs={12} key={guest.guestId}>
+                    <GuestStatusItem 
+                      guest={guest} 
+                      onClick={onGuestClick} 
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+            
+            {/* Address */}
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2, 
+                backgroundColor: rgba(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(20px)',
+                borderRadius: 1,
+                display: 'flex',
+                gap: 1
+              }}
+            >
+              <HomeIcon color="action" sx={{ mt: 0.5 }} />
+              <Box>
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                  Mailing Address
+                </Typography>
+                <Typography variant="body2">
+                  {family.mailingAddress ? (
+                    <>
+                      {family.mailingAddress.streetAddress}<br />
+                      {family.mailingAddress.city}, {family.mailingAddress.state} {family.mailingAddress.postalCode}
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="error">
+                      No address provided
+                    </Typography>
+                  )}
+                </Typography>
+              </Box>
+            </Paper>
+            
+            {/* Last login */}
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2, 
+                backgroundColor: rgba(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(20px)',
+                borderRadius: 1,
+                display: 'flex',
+                gap: 1
+              }}
+            >
+              <CalendarMonthIcon color="action" sx={{ mt: 0.5 }} />
+              <Box>
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                  Last Activity
+                </Typography>
+                <Typography variant="body2">
+                  {family.familyUnitLastLogin 
+                    ? new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Never logged in'}
+                </Typography>
+              </Box>
+            </Paper>
+          </Stack>
+        </CardContent>
+      </Collapse>
     </Card>
   );
 };
