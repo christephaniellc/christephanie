@@ -120,7 +120,7 @@ function AboutUs() {
             {
               subheader: '',
               content: [
-                'hosts@dev.wedding.christephanie.com',
+                'hosts@wedding.christephanie.com',
               ],
             },
           ],
