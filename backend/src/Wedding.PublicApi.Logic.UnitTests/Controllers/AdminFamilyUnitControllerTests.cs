@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Dispatchers;
@@ -95,7 +96,8 @@ namespace Wedding.PublicApi.Logic.UnitTests.Controllers
                     new GuestDto
                     {
                         FirstName = "Test",
-                        LastName = "Guest"
+                        LastName = "Guest",
+                        Roles = new List<RoleEnum> { RoleEnum.Guest }
                     }
                 }
             };
