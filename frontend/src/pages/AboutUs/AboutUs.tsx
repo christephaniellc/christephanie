@@ -165,12 +165,9 @@ function AboutUs() {
   
   // Common styles for all headers to mimic the "Interested" box styling
   const commonHeaderStyle = {
-    width: '100vw',  // Make it wider than the container to ensure full coverage
-    maxWidth: '100vw',
+    width: '100%',  // Use 100% instead of 100vw to prevent horizontal scrollbar
+    maxWidth: '100%',
     position: 'sticky' as const,
-    marginLeft: 'calc(50% - 50vw)', // Center the header
-    paddingLeft: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
-    paddingRight: 'calc(50vw - 50% + 16px)', // Adjust padding to align content
     backdropFilter: 'blur(16px)',
     border: `2px solid ${semiTransparentBackgroundColor}`,
     backgroundColor: semiTransparentBackgroundColor,
@@ -223,44 +220,37 @@ function AboutUs() {
             fontSize: '2rem'}}>
           {aboutUsItems.titleAboutUs.subheader}
         </StephsActualFavoriteTypography>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'left', 
-          width: '100%', 
-          overflow: 'hidden',
-          position: 'relative',
-          '& img': {
-            animation: 'rollLogoAnimation 10s infinite',
-            transformOrigin: 'center',
-          },
-          '@keyframes rollLogoAnimation': {
-            '0%': {
-              transform: 'translateX(0) rotate(0deg)'
-            },
-            '25%': {
-              transform: 'translateX(calc(100vw - 200px)) rotate(360deg)'
-            },
-            '37.5%': {
-              transform: 'translateX(calc((100vw - 200px)/2)) rotate(180deg)'
-            },
-            '50%': {
-              transform: 'translateX(0) rotate(0deg)'
-            },
-            '83.33%': {
-              transform: 'translateX(0) rotate(0deg)'
-            },
-            '100%': {
-              transform: 'translateX(0) rotate(0deg)'
-            }
-          }
-        }}>
+        
+        <div
+          style={{
+            width: '100%',
+            height: '120px',
+            overflow: 'hidden',
+            position: 'relative'
+          }}
+        >
           <img 
             src="/favicon_big_art_transparent.png" 
             alt="Logo" 
-            height="120px"
-            width="120px"
+            style={{
+              position: 'absolute',
+              height: '120px',
+              width: '120px',
+              animation: 'rollLogo 8s infinite',
+            }}
           />
-        </Box>
+        </div>
+
+        <style jsx global>{`
+          @keyframes rollLogo {
+            0%, 10% { left: 0; transform: rotate(0deg); }
+            30% { left: calc(100% - 120px); transform: rotate(360deg); }
+            50%, 60% { left: 0; transform: rotate(0deg); }
+            80% { left: calc(100% - 120px); transform: rotate(-360deg); }
+            100% { left: 0; transform: rotate(0deg); }
+          }
+        `}</style>
+
         <StephsActualFavoriteTypography sx={{ mt: 2, textAlign: 'left' }}>
           Christephanie LLC
         </StephsActualFavoriteTypography>
