@@ -25,18 +25,16 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
         private readonly ILogger<EmailValidationHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
-        //private readonly IAwsSmsHelper _awsSmsHelper;
-        private readonly ITwilioSmsProvider _twilioSmsProvider;
+        private readonly IAwsSesHelper _awsSesHelper;
 
         public EmailValidationHandler(ILogger<EmailValidationHandler> logger,
             IDynamoDBProvider dynamoDbProvider,
-            IMapper mapper, 
-            ITwilioSmsProvider twilioSmsProvider)
+            IMapper mapper, IAwsSesHelper awsSesHelper)
         {
             _logger = logger;
             _dynamoDbProvider = dynamoDbProvider;
             _mapper = mapper;
-            _twilioSmsProvider = twilioSmsProvider;
+            _awsSesHelper = awsSesHelper;
         }
 
         public async Task<ValidateEmailResponse> ExecuteAsync(RegisterEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
@@ -112,14 +110,11 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
-            // TODO SKS: use Amazon SMS
-            //var message = $"Your Christephanie wedding phone verification code is: {verifyPhone.VerificationCode}";
-            //var sendOtpResponse = await _twilioSmsProvider.SendOTPCode(verifyEmail!.Value);
-            //var awsResponse = await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
+            var result = await _awsSesHelper.SendVerificationCode(verifyEmail, cancellationToken);
 
             return new ValidateEmailResponse
             {
-                VerifiedStatus = null,
+                NotificationServiceStatusCode = result.HttpStatusCode,
                 EmailVerifyState = verifyEmail
             };
         }
@@ -180,7 +175,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             }
 
             var validated = expectedValidation?.Verified ?? false;
-            var phone = expectedValidation!.Value ?? string.Empty;
+            var email = expectedValidation!.Value ?? string.Empty;
             if (validated)
             {
                 return new ValidateEmailResponse
@@ -189,59 +184,37 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
                 };
             }
 
-            _logger.LogInformation("Phone not yet verified. Checking Twilio for verification...");
-            var twilioVerified = await _twilioSmsProvider.CheckVerification(phone, command.Code);
-            _logger.LogInformation($"Phone: {phone}. Code: {command.Code}. Verified? {twilioVerified}");
+            var expectedCode = expectedValidation?.VerificationCode?.ToString() ?? null;
+            var expiry = expectedValidation?.VerificationCodeExpiration ?? null;
+            
+            if (expectedValidation == null
+                || string.IsNullOrEmpty(email)
+                || expectedCode == null 
+                || expiry == null
+                || expiry.Value < DateTime.UtcNow)
+            {
+                throw new ValidationException($"Bad validation state.");
+            }
 
-            // Only update if newly verified
-            if (twilioVerified)
+            if (command.Code.ToLower() == expectedCode.ToLower()
+                && expiry.Value > DateTime.UtcNow)
             {
                 var verified = new VerifiedDto
                 {
-                    Value = phone,
+                    Value = email,
                     Verified = true,
                     VerificationCode = null,
                     VerificationCodeExpiration = null
                 };
                 existingGuestEntity.Phone = verified.ToString();
-
+            
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
-
+            
                 return new ValidateEmailResponse
                 {
                     EmailVerifyState = verified
                 };
             }
-
-            // var expectedCode = expectedValidation?.VerificationCode?.ToString() ?? null;
-            // var expiry = expectedValidation?.VerificationCodeExpiration ?? null;
-            //
-            // if (expectedValidation == null
-            //     || expectedCode == null 
-            //     || expiry == null
-            //     || expiry.Value < DateTime.UtcNow)
-            // {
-            //     throw new ValidationException($"Bad validation state.");
-            // }
-
-            // if (command.Code.ToLower() == expectedCode.ToLower()
-            //     && expiry.Value > DateTime.UtcNow)
-            // {
-            //     var verified = new VerifiedDto
-            //     {
-            //         Verified = true,
-            //         VerificationCode = null,
-            //         VerificationCodeExpiration = null
-            //     };
-            //     existingGuestEntity.Phone = verified.ToString();
-            //
-            //     await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
-            //
-            //     return new ValidatePhoneResponse
-            //     {
-            //         PhoneVerifyState = verified
-            //     };
-            // }
 
             throw new ValidationException("Invalid verification code.");
         }

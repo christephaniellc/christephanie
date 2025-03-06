@@ -23,7 +23,7 @@ export class ApiStack extends cdk.Stack {
     super(scope, id, {...props, description: "Creates API Gateway (retained on destroy), and maps routes to new Lambda integrations"});
 
     const environment = this.node.tryGetContext('env') || 'dev'; 
-    const { applicationName, apiGatewayName, srcFolder, releaseFolder } = ApplicationProps;
+    const { applicationName, apiGatewayName } = ApplicationProps;
     console.log("------------------------");
     console.log("ApiStack");
     

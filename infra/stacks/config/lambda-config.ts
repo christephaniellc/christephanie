@@ -6,6 +6,7 @@ import * as path from 'path';
 
 // Create a dummy code asset that CDK can use as a placeholder
 // This allows CDK to deploy without requiring the actual Lambda code
+export const dummyAuthCode = Code.fromAsset(path.join(__dirname, '../dummy-auth-lambda'));
 export const dummyCode = Code.fromAsset(path.join(__dirname, '../dummy-lambda'));
 
 export const lambdaDefaults = {
@@ -21,7 +22,7 @@ export const lambdaAuthDefaults = {
     architecture: Architecture.X86_64,
     memorySize: 512,
     timeout: Duration.minutes(15),
-    code: dummyCode, // Add default dummy code
+    code: dummyAuthCode, // Add default dummy code
  };
 
  export interface LambdaConfig {
