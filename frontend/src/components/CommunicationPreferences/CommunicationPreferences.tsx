@@ -4,13 +4,14 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
-import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme } from '@mui/material';
-import { EmailOutlined, PhoneAndroid, Edit, Check } from '@mui/icons-material';
+import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip } from '@mui/material';
+import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff } from '@mui/icons-material';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { getConfig } from '@/auth_config';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 /**
  * Component for managing communication preferences
@@ -22,6 +23,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const apiContext = useApiContext();
   const { validatePhoneMutation } = apiContext;
   const { validateEmailMutation } = apiContext;
+  const { boxShadow, handleMouseMove } = useBoxShadow();
   
   // Get the Auth0 context for token
   const { getAccessTokenSilently } = useAuth0();
@@ -48,8 +50,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const [emailResponse, setEmailResponse] = useState<any>(null);
   
   // Alert state
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
   
   // Computed values from guest data
   const guestCommunicationPreferences = useMemo(() => 
@@ -71,6 +74,14 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const phoneVerified = useMemo(() => 
     guest?.phone?.verified || false
   , [guest]);
+
+  const isEmailOptedIn = useMemo(() => 
+    guestCommunicationPreferences.includes(NotificationPreferenceEnum.Email)
+  , [guestCommunicationPreferences]);
+
+  const isTextOptedIn = useMemo(() => 
+    guestCommunicationPreferences.includes(NotificationPreferenceEnum.Text)
+  , [guestCommunicationPreferences]);
 
   // Function to directly call the API for masked values
   const fetchMaskedValue = async (type: 'email' | 'text') => {
@@ -145,13 +156,12 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setPhoneValue('');
   };
   
-  
-
   const handleOpenEmailVerifyDialog = () => {    
     setEmailVerificationCode('');
     setIsEmailVerifyDialogOpen(true);
   };
-  const handleOpenPhoneVerifyDialog = () =>  {   
+  
+  const handleOpenPhoneVerifyDialog = () => {   
     setPhoneVerificationCode('');
     setIsPhoneVerifyDialogOpen(true);
   };
@@ -160,6 +170,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setIsEmailVerifyDialogOpen(false);
     setEmailVerificationCode('');
   };
+  
   const handleClosePhoneVerifyDialog = () => {
     setIsPhoneVerifyDialogOpen(false);
     setPhoneVerificationCode('');
@@ -169,9 +180,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const handleSubmitEmail = () => {
     if (emailValue) {
       familyActions.updateFamilyGuestEmail(guestId, emailValue);
-      registerEmailForVerification();
-      setAlertMessage('Email updated. Please check your email for verification code.');
-      setShowSuccessAlert(true);
+      setAlertMessage('Email updated successfully');
+      setAlertSeverity('success');
+      setShowAlert(true);
     }
     handleCloseEmailDialog();
   };
@@ -180,20 +191,47 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     console.log('Submitting phone value:', phoneValue);
     if (phoneValue) {
       familyActions.updateFamilyGuestPhone(guestId, phoneValue);
-      registerPhoneForVerification();
-      setAlertMessage('Phone updated. Verification code sent.');
-      setShowSuccessAlert(true);
+      setAlertMessage('Phone number updated successfully');
+      setAlertSeverity('success');
+      setShowAlert(true);
     }
     handleClosePhoneDialog();
   };
   
-  const registerPhoneForVerification = () => {
-    console.log("Registering phone for verification...");
+  const sendPhoneVerificationCode = () => {
+    console.log("Sending phone verification code...");
     validatePhoneMutation.mutate(
-      { phoneNumber: phoneValue, action: 'register' },
+      { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
       {
         onSuccess: () => {
+          setAlertMessage('Verification code sent to your phone');
+          setAlertSeverity('success');
+          setShowAlert(true);
           handleOpenPhoneVerifyDialog();
+        },
+        onError: (error) => {
+          setAlertMessage('Failed to send verification code. Please try again.');
+          setAlertSeverity('error');
+          setShowAlert(true);
+        }
+      }
+    );
+  };
+  
+  const resendPhoneVerificationCode = () => {
+    console.log("Resending phone verification code...");
+    validatePhoneMutation.mutate(
+      { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
+      {
+        onSuccess: () => {
+          setAlertMessage('New verification code sent to your phone');
+          setAlertSeverity('success');
+          setShowAlert(true);
+        },
+        onError: (error) => {
+          setAlertMessage('Failed to send verification code. Please try again.');
+          setAlertSeverity('error');
+          setShowAlert(true);
         }
       }
     );
@@ -202,29 +240,57 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const submitPhoneVerificationCode = () => {
     console.log("Submitted code for phone verification...");
     validatePhoneMutation.mutate(
-      { phoneNumber: phoneValue, code: phoneVerificationCode, action: 'validate' },
+      { phoneNumber: phoneValue || guest?.phone?.maskedValue, code: phoneVerificationCode, action: 'validate' },
       {
         onSuccess: () => {
           setAlertMessage('Phone number verified successfully!');
-          setShowSuccessAlert(true);
+          setAlertSeverity('success');
+          setShowAlert(true);
           handleClosePhoneVerifyDialog();
         },
         onError: (error) => {
           setAlertMessage('Verification failed. Please try again.');
-          setShowSuccessAlert(true);
+          setAlertSeverity('error');
+          setShowAlert(true);
         }
       }
     );
   };
 
-  
-  const registerEmailForVerification = () => {
-    console.log("Registering email for verification...");
-    validatePhoneMutation.mutate(
-      { phoneNumber: phoneValue, action: 'register' },
+  const sendEmailVerificationCode = () => {
+    console.log("Sending email verification code...");
+    validateEmailMutation.mutate(
+      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
       {
         onSuccess: () => {
+          setAlertMessage('Verification code sent to your email');
+          setAlertSeverity('success');
+          setShowAlert(true);
           handleOpenEmailVerifyDialog();
+        },
+        onError: (error) => {
+          setAlertMessage('Failed to send verification code. Please try again.');
+          setAlertSeverity('error');
+          setShowAlert(true);
+        }
+      }
+    );
+  };
+  
+  const resendEmailVerificationCode = () => {
+    console.log("Resending email verification code...");
+    validateEmailMutation.mutate(
+      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
+      {
+        onSuccess: () => {
+          setAlertMessage('New verification code sent to your email');
+          setAlertSeverity('success');
+          setShowAlert(true);
+        },
+        onError: (error) => {
+          setAlertMessage('Failed to send verification code. Please try again.');
+          setAlertSeverity('error');
+          setShowAlert(true);
         }
       }
     );
@@ -233,16 +299,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const submitEmailVerificationCode = () => {
     console.log("Submitted code for email verification...");
     validateEmailMutation.mutate(
-      { email: emailValue, code: emailVerificationCode, action: 'validate' },
+      { email: emailValue || guest?.email?.maskedValue, code: emailVerificationCode, action: 'validate' },
       {
         onSuccess: () => {
           setAlertMessage('Email verified successfully!');
-          setShowSuccessAlert(true);
+          setAlertSeverity('success');
+          setShowAlert(true);
           handleCloseEmailVerifyDialog();
         },
         onError: (error) => {
           setAlertMessage('Verification failed. Please try again.');
-          setShowSuccessAlert(true);
+          setAlertSeverity('error');
+          setShowAlert(true);
         }
       }
     );
@@ -259,77 +327,172 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     }
   };
   
-  const handleMouseMove = (event: React.MouseEvent) => {
-    mousePosition.current = { x: event.clientX, y: event.clientY };
-  };
-
-  const calculateShadow = () => {
-    const { x, y } = mousePosition.current;
-    const shadowX = (x / window.innerWidth) * 15 + 5;
-    const shadowY = (y / window.innerHeight) * 15 + 5;
-    return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
-  };
-  
-  // Debug logs
-  // useEffect(() => {
-  //   if (isPhoneDialogOpen) {
-  //     console.log('Phone dialog is open with value:', phoneValue);
-  //     console.log('Phone response from API:', phoneResponse);
-  //   }
-  //   if (isEmailDialogOpen) {
-  //     console.log('Email dialog is open with value:', emailValue);
-  //     console.log('Email response from API:', emailResponse);
-  //   }
-  // }, [isPhoneDialogOpen, phoneValue, phoneResponse, isEmailDialogOpen, emailValue, emailResponse]);
-  
   return (
-    <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap">
-      <ButtonGroup variant="outlined" size="small" color="secondary" orientation='vertical' sx={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,.6)', width: '100%' }}>
-        {contactPreferences.map((value) => (
-          <Button
-            disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
-            onClick={() => handleUpdateCommunicationPreference(NotificationPreferenceEnum[value])}
-            variant={(guest?.preferences?.notificationPreference?.includes(NotificationPreferenceEnum[value]) ? 'contained' : 'outlined') as 'contained' | 'outlined'}
-            key={value}
-          >
-            <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-              <Box display="flex" alignItems="center">
-                {value === 'Email' ? <EmailOutlined /> : <PhoneAndroid />}
-                <Typography ml={1}>{value}</Typography>
-              </Box>
-              <Box display="flex" alignItems="center">
-                <Typography variant="caption" sx={{ ml: 1 }}>
-                  {value === 'Email' ? guestEmailAddress || 'Not set' : guestPhoneNumber || 'Not set'}
-                  {value === 'Email' && emailVerified && <Check color="success" fontSize="small" />}
-                  {value === 'Text' && phoneVerified && <Check color="success" fontSize="small" />}
-                </Typography>
-                <IconButton 
-                  size="small" 
+    <Stack
+      display="flex"
+      width="100%"
+      height="auto"
+      my="auto"
+      justifyContent="center"
+      alignItems="center"
+      px={2}
+      onMouseMove={handleMouseMove}
+    >
+      <Paper
+        elevation={5}
+        sx={{
+          backdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(0,0,0,.1)',
+          filter: `drop-shadow(${boxShadow})`,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+        }}
+      >
+        <ButtonGroup
+          fullWidth
+          orientation="vertical"
+          sx={{
+            backgroundColor: 'rgba(0,0,0,.8)',
+          }}
+        >
+          {contactPreferences.map((value) => {
+            const isEnabled = guest?.preferences?.notificationPreference?.includes(NotificationPreferenceEnum[value]);
+            const isVerified = value === 'Email' ? emailVerified : (value === 'Text' ? phoneVerified : false);
+            
+            return (
+              <Button
+                key={value}
+                id={value}
+                disabled={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
+                onClick={() => handleUpdateCommunicationPreference(NotificationPreferenceEnum[value])}
+                variant={(isEnabled ? 'contained' : 'outlined') as 'contained' | 'outlined'}
+                size="large"
+                color="secondary"
+                sx={{ px: 3 }}
+                startIcon={value === 'Email' ? <EmailOutlined /> : <PhoneAndroid />}
+              >
+                <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                  <Box display="flex" alignItems="center">
+                    <Typography fontWeight={'bold'}>
+                      {value}
+                    </Typography>
+                    
+                    {/* Status indicators */}
+                    <Box ml={1} display="flex" alignItems="center">
+                      {isEnabled ? (
+                        <Chip 
+                          size="small" 
+                          label="Opted In" 
+                          color="success" 
+                          icon={<NotificationsActive fontSize="small" />} 
+                          sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      ) : (
+                        <Chip 
+                          size="small" 
+                          label="" 
+                          color="default" 
+                          icon={<NotificationsOff fontSize="small" />} 
+                          sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      )}
+                      
+                      {isVerified && (
+                        <Chip 
+                          size="small" 
+                          label="Verified" 
+                          color="info" 
+                          icon={<VerifiedUser fontSize="small" />} 
+                          sx={{ height: 20, ml: 0.5, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  
+                  <Box display="flex" alignItems="center">
+                    <Typography variant="caption" sx={{ ml: 1 }}>
+                      {value === 'Email' ? guestEmailAddress || 'Not set' : guestPhoneNumber || 'Not set'}
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        value === 'Email' ? handleOpenEmailDialog() : handleOpenPhoneDialog();
+                      }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Button>
+            );
+          })}
+        </ButtonGroup>
+        
+        {/* Verification buttons and disclaimers outside the communication preference buttons */}
+        <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
+          {contactPreferences.map((value) => (
+            ((value === 'Email' && !emailVerified && guestEmailAddress) || 
+            (value === 'Text' && !phoneVerified && guestPhoneNumber)) && (
+              <Box key={`verify-${value}`} sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mb: 1, width: 'fit-content', fontWeight: 'bold' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    value === 'Email' ? handleOpenEmailDialog() : handleOpenPhoneDialog();
+                    value === 'Email' ? sendEmailVerificationCode() : sendPhoneVerificationCode();
                   }}
                 >
-                  <Edit fontSize="small" />
-                </IconButton>
-                {((value === 'Email' && !emailVerified && guestEmailAddress) || 
-                  (value === 'Text' && !phoneVerified && guestPhoneNumber)) && (
-                  <Button
-                    size="small"
-                    color="warning"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      value === 'Email' ? handleOpenEmailVerifyDialog() : handleOpenPhoneVerifyDialog();
-                    }}
-                  >
-                    Verify
-                  </Button>
-                )}
+                  SEND VERIFY CODE TO {value === 'Email' ? "EMAIL" : "PHONE" } 
+                </Button>
+                
+                {/* Disclaimer text - explicitly remove all shadows and set a background to ensure no text shadow */}
+                <Box sx={{ 
+                  backgroundColor: 'rgba(0,0,0,0.2)', 
+                  borderRadius: 1, 
+                  p: 1, 
+                  mt: 1, 
+                  width: '100%', 
+                  boxShadow: 'none'
+                }}>
+                  {value === 'Text' && (
+                    <Typography variant="caption" sx={{ 
+                      fontSize: '0.7rem', 
+                      textAlign: 'center', 
+                      display: 'block',
+                      color: theme.palette.text.secondary,
+                      textShadow: 'none !important',
+                      boxShadow: 'none',
+                      filter: 'none'
+                    }}>
+                      By clicking SEND VERIFY CODE, I agree to receive status update messages at the phone number provided. 
+                      I understand I will receive no more than 10 messages a month, data rates may apply, reply STOP to opt out.
+                    </Typography>
+                  )}
+                  
+                  {value === 'Email' && (
+                    <Typography variant="caption" sx={{ 
+                      fontSize: '0.7rem', 
+                      textAlign: 'center', 
+                      display: 'block',
+                      color: theme.palette.text.secondary,
+                      textShadow: 'none !important',
+                      boxShadow: 'none',
+                      filter: 'none'
+                    }}>
+                      By clicking SEND VERIFY CODE, I agree to receive updates via email.
+                      You can opt out of these emails at any time.
+                    </Typography>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          </Button>
-        ))}
-      </ButtonGroup>
+            )
+          ))}
+        </Box>
+      </Paper>
 
       {/* Email Update Dialog */}
       <Dialog 
@@ -355,13 +518,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           <Button 
             onClick={handleSubmitEmail} 
             disabled={!emailValue}
+            color="secondary"
           >
             Update
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Verification Dialog */}
-      <Dialog open={isEmailVerifyDialogOpen} onClose={handleCloseEmailVerifyDialog}>
+      
+      {/* Email Verification Dialog */}
+      <Dialog 
+        open={isEmailVerifyDialogOpen} 
+        onClose={handleCloseEmailVerifyDialog}
+      >
         <DialogTitle>Verify Email</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
@@ -377,34 +545,29 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             value={emailVerificationCode}
             onChange={(e) => setEmailVerificationCode(e.target.value)}
           />
+          <Button 
+            onClick={resendEmailVerificationCode}
+            sx={{ 
+              mt: 1,
+              fontSize: '0.75rem'
+            }}
+            color="secondary"
+          >
+            Resend verification code
+          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEmailVerifyDialog}>Cancel</Button>
           <Button 
             onClick={submitEmailVerificationCode} 
             disabled={!emailVerificationCode || emailVerificationCode.length < 4}
+            color="secondary"
           >
             Verify
           </Button>
         </DialogActions>
       </Dialog>
       
-      {/* Success/Error Messages */}
-      <Snackbar
-        open={showSuccessAlert}
-        autoHideDuration={6000}
-        onClose={() => setShowSuccessAlert(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setShowSuccessAlert(false)} 
-          severity="success" 
-          sx={{ width: '100%' }}
-        >
-          {alertMessage}
-        </Alert>
-      </Snackbar>
-
       {/* Phone Update Dialog */}
       <Dialog 
         open={isPhoneDialogOpen} 
@@ -412,7 +575,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       >
         <DialogTitle>Update Phone Number</DialogTitle>
         <DialogContent>
-          {/* IMPORTANT: Using default value instead of controlled value */}
           <TextField
             autoFocus
             margin="dense"
@@ -420,7 +582,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             type="tel"
             fullWidth
             variant="outlined"
-            defaultValue={phoneResponse?.value || phoneResponse || '703-618-0297'} 
+            defaultValue={phoneResponse?.value || phoneResponse || ''} 
             onChange={(e) => setPhoneValue(e.target.value)}
             helperText="Your phone number will need to be verified after updating"
           />
@@ -430,14 +592,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           <Button 
             onClick={handleSubmitPhone} 
             disabled={!phoneValue}
+            color="secondary"
           >
             Update
           </Button>
         </DialogActions>
       </Dialog>
       
-      {/* Verification Dialog */}
-      <Dialog open={isPhoneVerifyDialogOpen} onClose={handleClosePhoneVerifyDialog}>
+      {/* Phone Verification Dialog */}
+      <Dialog 
+        open={isPhoneVerifyDialogOpen} 
+        onClose={handleClosePhoneVerifyDialog}
+      >
         <DialogTitle>Verify Phone Number</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
@@ -453,12 +619,23 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             value={phoneVerificationCode}
             onChange={(e) => setPhoneVerificationCode(e.target.value)}
           />
+          <Button 
+            onClick={resendPhoneVerificationCode}
+            sx={{ 
+              mt: 1,
+              fontSize: '0.75rem'
+            }}
+            color="secondary"
+          >
+            Resend verification code
+          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePhoneVerifyDialog}>Cancel</Button>
           <Button 
             onClick={submitPhoneVerificationCode} 
             disabled={!phoneVerificationCode || phoneVerificationCode.length < 4}
+            color="secondary"
           >
             Verify
           </Button>
@@ -467,20 +644,20 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       
       {/* Success/Error Messages */}
       <Snackbar
-        open={showSuccessAlert}
+        open={showAlert}
         autoHideDuration={6000}
-        onClose={() => setShowSuccessAlert(false)}
+        onClose={() => setShowAlert(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert 
-          onClose={() => setShowSuccessAlert(false)} 
-          severity="success" 
+          onClose={() => setShowAlert(false)} 
+          severity={alertSeverity}
           sx={{ width: '100%' }}
         >
           {alertMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </Stack>
   );
 };
 
