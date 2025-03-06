@@ -15,7 +15,7 @@ export class HostedZoneStack extends cdk.Stack {
         
         const environment = this.node.tryGetContext('env') || 'dev';
 
-        const { applicationName, domainName, apiRoute, srcFolder, releaseFolder } = ApplicationProps;
+        const { applicationName, domainName, apiRoute } = ApplicationProps;
         console.log("------------------------");
         console.log("HostedZoneStack");
         
