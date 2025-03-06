@@ -82,10 +82,10 @@ describe('useQueryParamInvitationCode', () => {
     expect(mockPushNotification).not.toHaveBeenCalled();
   });
   
-  it('should handle invitation_code parameter as well as query_key .locked', () => {
+  it('should handle code parameter as well as query_key .locked', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RecoilRoot>
-        <MemoryRouter initialEntries={['/?invitation_code=XYZ789']}>
+        <MemoryRouter initialEntries={['/?code=XYZ789']}>
           {children}
         </MemoryRouter>
       </RecoilRoot>

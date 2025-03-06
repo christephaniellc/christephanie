@@ -13,7 +13,7 @@ export class ParamsStack extends cdk.Stack {
         super(scope, id, {...props, description: "Creates SecureString Parameters in SSM"});
 
     const environment = this.node.tryGetContext('env') || 'dev'; 
-    const { applicationName } = ApplicationProps;
+    const { applicationName, mailFromAddress } = ApplicationProps;
     console.log("------------------------");
     console.log("ParamsStack");
 
@@ -33,19 +33,29 @@ export class ParamsStack extends cdk.Stack {
     }
     const secureParams = [
         { 
+            name: "/config/application/properties", 
+            value: JSON.stringify({
+                "ApplicationName": `${applicationName}`,
+                "MailFromAddress": `${mailFromAddress}`
+                }) 
+        },
+        { 
             name: "/config/usps/api-credentials", 
             value: JSON.stringify({        
                 "ApiUrl": "https://api.usps.com",
-                "ConsumerKey": "<todo>",
-                "ConsumerSecret": "<todo>"
+                "ConsumerKey": `${props.env.uspsConsumerKey}`,
+                "ConsumerSecret": `${props.env.uspsConsumerSecret}`
                 }) 
         },
         { 
             name: "/config/twilio/api-credentials", 
             value: JSON.stringify({        
                 "ApiUrl": "https://api.usps.com",
-                "SID": "<todo>",
-                "Secret": "<todo>"
+                "SID": `${props.env.twilioSid}`,
+                "Secret": `${props.env.twilioSecret}`,
+                "VerifyServiceSid": `${props.env.twilioVerifyServiceSid}`,
+                "MessagingServiceSid": `${props.env.twilioMessagingServiceSid}`,
+                "MessagingServicePhone": `${props.env.twilioMessagingServicePhone}`
                 }) 
         },
         { 

@@ -20,7 +20,7 @@ export class CertificateStack extends cdk.Stack {
 
     const environment = this.node.tryGetContext('env') || 'dev';
       
-    const { applicationName, domainName, srcFolder, releaseFolder } = ApplicationProps;
+    const { applicationName } = ApplicationProps;
     console.log("------------------------");
     console.log("CertificateStack");
     

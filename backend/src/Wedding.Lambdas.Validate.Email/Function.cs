@@ -8,11 +8,10 @@ using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
-using Wedding.Common.Configuration;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
-using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Handlers;
 using Wedding.Lambdas.Validate.Email.Requests;
@@ -40,30 +39,28 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<EmailValidationHandler>();
-
-        //serviceCollection.AddScoped<IAwsSmsHelper, AwsSmsHelper>();
-        //
-        // serviceCollection.AddSingleton<Lazy<Task<ITwilioSmsProvider>>>(sp =>
-        // {
-        //     return new Lazy<Task<ITwilioSmsProvider>>(async () =>
-        //     {
-        //         var logger = sp.GetRequiredService<ILogger<TwilioSmsProvider>>();
-        //         var config = await AwsParameterCache.GetConfigAsync<TwilioSmsConfiguration>();
-        //         return new TwilioSmsProvider(logger, config);
-        //     });
-        // });
-        //
-        // serviceCollection.AddScoped<ITwilioSmsProvider>(sp =>
-        // {
-        //     var lazyProvider = sp.GetRequiredService<Lazy<Task<ITwilioSmsProvider>>>();
-        //     return lazyProvider.Value.GetAwaiter().GetResult();
-        // });
+        
+        serviceCollection.AddSingleton<Lazy<Task<IAwsSesHelper>>>(sp =>
+        {
+            return new Lazy<Task<IAwsSesHelper>>(async () =>
+            {
+                 //var logger = sp.GetRequiredService<ILogger<IAwsSesHelper>>();
+                 var config = await AwsParameterCache.GetConfigAsync<ApplicationConfiguration>();
+                 return new AwsSesHelper(config);
+            });
+        });
+        
+         serviceCollection.AddScoped<IAwsSesHelper>(sp =>
+         {
+             var lazyProvider = sp.GetRequiredService<Lazy<Task<IAwsSesHelper>>>();
+             return lazyProvider.Value.GetAwaiter().GetResult();
+         });
 
         return serviceCollection.BuildServiceProvider();
     }
 
     /// <summary>
-    /// Registers or validates a phone number, or resends code
+    /// Registers or validates an email, or resends code
     /// </summary>
     /// <param name="request">The event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
