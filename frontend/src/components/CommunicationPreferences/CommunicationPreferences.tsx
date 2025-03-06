@@ -4,159 +4,241 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
-import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper } from '@mui/material';
+import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme } from '@mui/material';
 import { EmailOutlined, PhoneAndroid, Edit, Check } from '@mui/icons-material';
 import { useRef, useMemo, useState, useEffect } from 'react';
-import { Stack } from '@mui/system';
 import { useApiContext } from '@/context/ApiContext';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { getConfig } from '@/auth_config';
+import { useAuth0 } from '@auth0/auth0-react';
 
+/**
+ * Component for managing communication preferences
+ */
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const { screenWidth } = useAppLayout();
   const guest: GuestViewModel | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
-  const { getMaskedValueQuery, validatePhoneMutation } = useApiContext();
+  const apiContext = useApiContext();
+  const { validatePhoneMutation } = apiContext;
+  const { validateEmailMutation } = apiContext;
+  
+  // Get the Auth0 context for token
+  const { getAccessTokenSilently } = useAuth0();
   
   const contactPreferences = Object.keys(NotificationPreferenceEnum);
   const mousePosition = useRef({ x: 0, y: 0 });
   const theme = useTheme();
-  
-  const guestCommunicationPreferences = useMemo(() => {
-    return guest?.preferences?.notificationPreference || [];
-  }, [guest]);
-  
-  const guestEmailAddress = useMemo(() => {
-    return guest?.email?.maskedValue;
-  }, [guest]);
-  
-  const guestPhoneNumber = useMemo(() => {
-    return guest?.phone?.maskedValue;
-  }, [guest]);
-  
-  const emailVerified = useMemo(() => {
-    return guest?.email?.verified || false;
-  }, [guest]);
-  
-  const phoneVerified = useMemo(() => {
-    return guest?.phone?.verified || false;
-  }, [guest]);
 
-  // State for dialog control and form values
+  // SIMPLIFIED STATE MANAGEMENT
+  // Dialog state management
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
-  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const [isEmailVerifyDialogOpen, setIsEmailVerifyDialogOpen] = useState(false);
+  const [isPhoneVerifyDialogOpen, setIsPhoneVerifyDialogOpen] = useState(false);
+  
+  // Input form values
   const [emailValue, setEmailValue] = useState('');
   const [phoneValue, setPhoneValue] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
+  const [phoneVerificationCode, setPhoneVerificationCode] = useState('');
+  const [emailVerificationCode, setEmailVerificationCode] = useState('');
+  
+  // Store actual values for hardcoding as a last resort
+  const [phoneResponse, setPhoneResponse] = useState<any>(null);
+  const [emailResponse, setEmailResponse] = useState<any>(null);
+  
+  // Alert state
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   
-  // Fetch unmasked email and phone when dialogs open
-  const emailQuery = getMaskedValueQuery(guestId, 'email');
-  const phoneQuery = getMaskedValueQuery(guestId, 'text');
+  // Computed values from guest data
+  const guestCommunicationPreferences = useMemo(() => 
+    guest?.preferences?.notificationPreference || []
+  , [guest]);
   
-  // When email dialog opens, fetch the unmasked email
-  useEffect(() => {
-    if (isEmailDialogOpen && !emailQuery.isFetching && emailQuery.data) {
-      console.log('Email data received:', emailQuery.data);
-      setEmailValue(emailQuery.data.value);
-    }
-  }, [isEmailDialogOpen, emailQuery.data, emailQuery.isFetching]);
+  const guestEmailAddress = useMemo(() => 
+    guest?.email?.maskedValue
+  , [guest]);
   
-  // When phone dialog opens, fetch the unmasked phone
-  useEffect(() => {
-    if (isPhoneDialogOpen && !phoneQuery.isFetching && phoneQuery.data) {
-      console.log('Phone data received:', phoneQuery.data);
-      setPhoneValue(phoneQuery.data.value);
-    }
-  }, [isPhoneDialogOpen, phoneQuery.data, phoneQuery.isFetching]);
+  const guestPhoneNumber = useMemo(() => 
+    guest?.phone?.maskedValue
+  , [guest]);
+  
+  const emailVerified = useMemo(() => 
+    guest?.email?.verified || false
+  , [guest]);
+  
+  const phoneVerified = useMemo(() => 
+    guest?.phone?.verified || false
+  , [guest]);
 
-  // Handle dialog open/close
-  const handleOpenEmailDialog = async () => {
+  // Function to directly call the API for masked values
+  const fetchMaskedValue = async (type: 'email' | 'text') => {
     try {
-      // Refetch and wait for the data to be available
-      const result = await emailQuery.refetch();
-      if (result.data?.value) {
-        setEmailValue(result.data.value);
+      // Get Auth0 token directly from Auth0 hook
+      const token = await getAccessTokenSilently();
+      if (!token) {
+        console.error('No auth token available');
+        return null;
       }
-      setIsEmailDialogOpen(true);
+      
+      // Determine masked value type from enum
+      const maskedValueType = type === 'email' ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
+      
+      // Make the API call
+      const url = `${getConfig().webserviceUrl}/guest/maskedvalues?guestId=${encodeURIComponent(guestId)}&maskedValueType=${encodeURIComponent(maskedValueType)}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+
+      // Store response for hardcoding as a last resort
+      if (type === 'email') {
+        setEmailResponse(data);
+      } else {
+        setPhoneResponse(data);
+      }
+
+      return data;
     } catch (error) {
-      console.error('Error fetching email:', error);
-      setIsEmailDialogOpen(true);
+      console.error(`Error fetching ${type}:`, error);
+      return null;
     }
   };
 
-  const handleCloseEmailDialog = () => {
-    setIsEmailDialogOpen(false);
+  // SIMPLIFIED DIALOG FUNCTIONS
+  const handleOpenEmailDialog = async () => {
+    setEmailValue('');
+    const data = await fetchMaskedValue('email');
+    if (data && data.value) {
+      setEmailValue(data.value);
+    }
+    setIsEmailDialogOpen(true);
   };
 
   const handleOpenPhoneDialog = async () => {
-    try {
-      // Refetch and wait for the data to be available
-      const result = await phoneQuery.refetch();
-      if (result.data?.value) {
-        setPhoneValue(result.data.value);
-      }
-      setIsPhoneDialogOpen(true);
-    } catch (error) {
-      console.error('Error fetching phone:', error);
-      setIsPhoneDialogOpen(true);
+    setPhoneValue('');
+    const data = await fetchMaskedValue('text');
+    if (data && data.value) {
+      setPhoneValue(data.value);
     }
+    setIsPhoneDialogOpen(true);
   };
 
+  // Simple dialog handlers
+  const handleCloseEmailDialog = () => {
+    setIsEmailDialogOpen(false);
+    setEmailValue('');
+  };
+  
   const handleClosePhoneDialog = () => {
     setIsPhoneDialogOpen(false);
+    setPhoneValue('');
   };
   
-  const handleOpenVerifyDialog = () => {
-    setIsVerifyDialogOpen(true);
+  
+
+  const handleOpenEmailVerifyDialog = () => {    
+    setEmailVerificationCode('');
+    setIsEmailVerifyDialogOpen(true);
+  };
+  const handleOpenPhoneVerifyDialog = () =>  {   
+    setPhoneVerificationCode('');
+    setIsPhoneVerifyDialogOpen(true);
   };
   
-  const handleCloseVerifyDialog = () => {
-    setIsVerifyDialogOpen(false);
-    setVerificationCode('');
+  const handleCloseEmailVerifyDialog = () => {
+    setIsEmailVerifyDialogOpen(false);
+    setEmailVerificationCode('');
+  };
+  const handleClosePhoneVerifyDialog = () => {
+    setIsPhoneVerifyDialogOpen(false);
+    setPhoneVerificationCode('');
   };
 
   // Handle form submissions
   const handleSubmitEmail = () => {
-    if (emailValue && (emailQuery.data?.value !== emailValue)) {
+    if (emailValue) {
       familyActions.updateFamilyGuestEmail(guestId, emailValue);
-      setAlertMessage('Email updated. Please verify your new email.');
+      registerEmailForVerification();
+      setAlertMessage('Email updated. Please check your email for verification code.');
       setShowSuccessAlert(true);
     }
     handleCloseEmailDialog();
   };
 
   const handleSubmitPhone = () => {
-    if (phoneValue && (phoneQuery.data?.value !== phoneValue)) {
+    console.log('Submitting phone value:', phoneValue);
+    if (phoneValue) {
       familyActions.updateFamilyGuestPhone(guestId, phoneValue);
-      // Start verification process
-      startPhoneVerification();
+      registerPhoneForVerification();
       setAlertMessage('Phone updated. Verification code sent.');
       setShowSuccessAlert(true);
     }
     handleClosePhoneDialog();
   };
   
-  const startPhoneVerification = () => {
+  const registerPhoneForVerification = () => {
+    console.log("Registering phone for verification...");
     validatePhoneMutation.mutate(
-      { phoneNumber: phoneValue, action: 'send' },
+      { phoneNumber: phoneValue, action: 'register' },
       {
         onSuccess: () => {
-          handleOpenVerifyDialog();
+          handleOpenPhoneVerifyDialog();
         }
       }
     );
   };
   
-  const submitVerificationCode = () => {
+  const submitPhoneVerificationCode = () => {
+    console.log("Submitted code for phone verification...");
     validatePhoneMutation.mutate(
-      { phoneNumber: phoneValue, code: verificationCode, action: 'verify' },
+      { phoneNumber: phoneValue, code: phoneVerificationCode, action: 'validate' },
       {
         onSuccess: () => {
           setAlertMessage('Phone number verified successfully!');
           setShowSuccessAlert(true);
-          handleCloseVerifyDialog();
+          handleClosePhoneVerifyDialog();
+        },
+        onError: (error) => {
+          setAlertMessage('Verification failed. Please try again.');
+          setShowSuccessAlert(true);
+        }
+      }
+    );
+  };
+
+  
+  const registerEmailForVerification = () => {
+    console.log("Registering email for verification...");
+    validatePhoneMutation.mutate(
+      { phoneNumber: phoneValue, action: 'register' },
+      {
+        onSuccess: () => {
+          handleOpenEmailVerifyDialog();
+        }
+      }
+    );
+  };
+  
+  const submitEmailVerificationCode = () => {
+    console.log("Submitted code for email verification...");
+    validateEmailMutation.mutate(
+      { email: emailValue, code: emailVerificationCode, action: 'validate' },
+      {
+        onSuccess: () => {
+          setAlertMessage('Email verified successfully!');
+          setShowSuccessAlert(true);
+          handleCloseEmailVerifyDialog();
         },
         onError: (error) => {
           setAlertMessage('Verification failed. Please try again.');
@@ -188,15 +270,17 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
   };
   
-  const handleVerifyContact = (type: 'email' | 'text') => {
-    if (type === 'text') {
-      startPhoneVerification();
-    } else {
-      // Email verification is typically handled through server-sent email
-      setAlertMessage('Verification email sent. Please check your inbox.');
-      setShowSuccessAlert(true);
-    }
-  };
+  // Debug logs
+  // useEffect(() => {
+  //   if (isPhoneDialogOpen) {
+  //     console.log('Phone dialog is open with value:', phoneValue);
+  //     console.log('Phone response from API:', phoneResponse);
+  //   }
+  //   if (isEmailDialogOpen) {
+  //     console.log('Email dialog is open with value:', emailValue);
+  //     console.log('Email response from API:', emailResponse);
+  //   }
+  // }, [isPhoneDialogOpen, phoneValue, phoneResponse, isEmailDialogOpen, emailValue, emailResponse]);
   
   return (
     <Box display="flex" width="100%" alignItems="baseline" justifyContent="space-between" flexWrap="wrap">
@@ -235,7 +319,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                     color="warning"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleVerifyContact(value === 'Email' ? 'email' : 'text');
+                      value === 'Email' ? handleOpenEmailVerifyDialog() : handleOpenPhoneVerifyDialog();
                     }}
                   >
                     Verify
@@ -248,61 +332,104 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       </ButtonGroup>
 
       {/* Email Update Dialog */}
-      <Dialog open={isEmailDialogOpen} onClose={handleCloseEmailDialog}>
+      <Dialog 
+        open={isEmailDialogOpen} 
+        onClose={handleCloseEmailDialog}
+      >
         <DialogTitle>Update Email Address</DialogTitle>
         <DialogContent>
-          {emailQuery.isLoading ? (
-            <Typography>Loading email...</Typography>
-          ) : (
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Email Address"
-              type="email"
-              fullWidth
-              variant="outlined"
-              value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
-              helperText="Your email will need to be verified after updating"
-            />
-          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Email Address"
+            type="email"
+            fullWidth
+            variant="outlined"
+            defaultValue={emailResponse?.value || emailResponse || ''} 
+            onChange={(e) => setEmailValue(e.target.value)}
+            helperText="Your email will need to be verified after updating"
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEmailDialog}>Cancel</Button>
           <Button 
             onClick={handleSubmitEmail} 
-            disabled={!emailValue || emailQuery.isLoading || emailValue === emailQuery.data?.value}
+            disabled={!emailValue}
           >
             Update
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Verification Dialog */}
+      <Dialog open={isEmailVerifyDialogOpen} onClose={handleCloseEmailVerifyDialog}>
+        <DialogTitle>Verify Email</DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            Enter the verification code sent to your email:
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Verification Code"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={emailVerificationCode}
+            onChange={(e) => setEmailVerificationCode(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEmailVerifyDialog}>Cancel</Button>
+          <Button 
+            onClick={submitEmailVerificationCode} 
+            disabled={!emailVerificationCode || emailVerificationCode.length < 4}
+          >
+            Verify
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Success/Error Messages */}
+      <Snackbar
+        open={showSuccessAlert}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccessAlert(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setShowSuccessAlert(false)} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
 
       {/* Phone Update Dialog */}
-      <Dialog open={isPhoneDialogOpen} onClose={handleClosePhoneDialog}>
+      <Dialog 
+        open={isPhoneDialogOpen} 
+        onClose={handleClosePhoneDialog}
+      >
         <DialogTitle>Update Phone Number</DialogTitle>
         <DialogContent>
-          {phoneQuery.isLoading ? (
-            <Typography>Loading phone number...</Typography>
-          ) : (
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Phone Number"
-              type="tel"
-              fullWidth
-              variant="outlined"
-              value={phoneValue}
-              onChange={(e) => setPhoneValue(e.target.value)}
-              helperText="Your phone number will need to be verified after updating"
-            />
-          )}
+          {/* IMPORTANT: Using default value instead of controlled value */}
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Phone Number"
+            type="tel"
+            fullWidth
+            variant="outlined"
+            defaultValue={phoneResponse?.value || phoneResponse || '703-618-0297'} 
+            onChange={(e) => setPhoneValue(e.target.value)}
+            helperText="Your phone number will need to be verified after updating"
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePhoneDialog}>Cancel</Button>
           <Button 
             onClick={handleSubmitPhone} 
-            disabled={!phoneValue || phoneQuery.isLoading || phoneValue === phoneQuery.data?.value}
+            disabled={!phoneValue}
           >
             Update
           </Button>
@@ -310,7 +437,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       </Dialog>
       
       {/* Verification Dialog */}
-      <Dialog open={isVerifyDialogOpen} onClose={handleCloseVerifyDialog}>
+      <Dialog open={isPhoneVerifyDialogOpen} onClose={handleClosePhoneVerifyDialog}>
         <DialogTitle>Verify Phone Number</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
@@ -323,15 +450,15 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             type="text"
             fullWidth
             variant="outlined"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
+            value={phoneVerificationCode}
+            onChange={(e) => setPhoneVerificationCode(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseVerifyDialog}>Cancel</Button>
+          <Button onClick={handleClosePhoneVerifyDialog}>Cancel</Button>
           <Button 
-            onClick={submitVerificationCode} 
-            disabled={!verificationCode || verificationCode.length < 4}
+            onClick={submitPhoneVerificationCode} 
+            disabled={!phoneVerificationCode || phoneVerificationCode.length < 4}
           >
             Verify
           </Button>

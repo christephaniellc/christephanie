@@ -3,6 +3,6 @@ using Wedding.Common.Dispatchers;
 
 namespace Wedding.Lambdas.Validate.Phone.Commands
 {
-    public record ResendCodeCommand(
-        AuthContext AuthContext) : IWeddingQuery;
+    public record ResendPhoneCodeCommand(
+        AuthContext AuthContext) : IWeddingCommand;
 }
