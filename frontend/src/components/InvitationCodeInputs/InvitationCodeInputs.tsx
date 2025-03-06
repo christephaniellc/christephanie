@@ -15,6 +15,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 export const InvitationCodeInputs = () => {
   const api = useApiContext();
@@ -22,6 +23,7 @@ export const InvitationCodeInputs = () => {
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
   const { user: auth0User, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
+  const boxShadow = useBoxShadow();
 
   // Store the access token in state so we don't trigger errors during render.
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -59,8 +61,12 @@ export const InvitationCodeInputs = () => {
   if (!user) return null;
 
   return (
-    <Box display="flex" flexWrap="wrap">
-      <Card padding={3} width={'100%'} mb={2} component={Box}>
+    <Box display="flex" flexWrap="wrap" height={400} onMouseMove={boxShadow.handleMouseMove}>
+      <Card width={'100%'} mb={2} pb={2} component={Box} sx={{
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: boxShadow.boxShadow,
+      }}>
         <CardHeader
           title={
             !user?.guestId

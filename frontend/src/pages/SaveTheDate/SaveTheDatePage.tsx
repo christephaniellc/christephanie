@@ -13,7 +13,10 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
-import { StephsActualFavoriteTypography, StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import {
+  StephsActualFavoriteTypography,
+  StephsFavoriteTypography,
+} from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
@@ -134,11 +137,11 @@ function SaveTheDatePage() {
                 }}
                 onClick={() => {
                   familyActions.getFamily();
-                  
+
                   // Find previous visible step
                   const stepsArray = Object.entries(saveTheDateSteps);
                   let prevIndex = tabIndex - 1;
-                  
+
                   // Find the previous visible step
                   while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
                     prevIndex--;
@@ -167,13 +170,13 @@ function SaveTheDatePage() {
               }}
               onClick={() => {
                 familyActions.getFamily();
-                
+
                 // If we're at the last tab, navigate home
                 if (tabIndex >= stdStepper.totalTabs - 1) {
                   navigate('/');
                   return;
                 }
-                
+
                 // We don't want to use the all declined/pending logic to skip directly to the end
                 // The user should go through each step in order
                 // This allows them to see the mailing address step even if declined/pending
@@ -181,7 +184,7 @@ function SaveTheDatePage() {
                 // Otherwise find next visible step
                 const stepsArray = Object.entries(saveTheDateSteps);
                 let nextIndex = tabIndex + 1;
-                
+
                 // Find the next visible step
                 while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
                   nextIndex++;
@@ -198,7 +201,12 @@ function SaveTheDatePage() {
             >
               <StephsActualFavoriteTypography
                 sx={{
-                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
+                  textShadow: `3px 3px 0 ${darken(
+                    stdStepper.currentStep[1].completed
+                      ? theme.palette.success.dark
+                      : theme.palette.error.dark,
+                    0.5,
+                  )}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
