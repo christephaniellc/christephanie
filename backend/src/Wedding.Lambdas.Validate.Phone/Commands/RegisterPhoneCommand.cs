@@ -4,5 +4,5 @@ using Wedding.Common.Dispatchers;
 namespace Wedding.Lambdas.Validate.Phone.Commands
 {
     public record RegisterPhoneCommand(
-        AuthContext AuthContext, string PhoneNumber) : IWeddingQuery;
+        AuthContext AuthContext, string PhoneNumber) : IWeddingCommand;
 }

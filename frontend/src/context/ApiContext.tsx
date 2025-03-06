@@ -43,6 +43,12 @@ interface ApiContextProps {
     { phoneNumber: string, code?: string, action?: string },
     unknown
   >;
+  validateEmailMutation: UseMutationResult<
+    { success: boolean },
+    ApiError,
+    { email: string, code?: string, action?: string },
+    unknown
+  >;
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;

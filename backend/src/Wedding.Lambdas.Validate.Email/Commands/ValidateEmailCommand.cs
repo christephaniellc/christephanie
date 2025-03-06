@@ -1,8 +1,8 @@
 ﻿using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Dispatchers;
 
-namespace Wedding.Lambdas.Validate.Phone.Commands
+namespace Wedding.Lambdas.Validate.Email.Commands
 {
-    public record ValidatePhoneCommand(
+    public record ValidateEmailCommand(
         AuthContext AuthContext, string Code) : IWeddingCommand;
 }
