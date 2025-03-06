@@ -60,14 +60,6 @@ export const Countdowns = ({ event = 'Wedding', interested, guestId }: {
       {event === 'Invitation' && <Typography>{daysUntilMessage}</Typography> || (
         <>
           <Box maxWidth={800} mx="auto" display="flex" width="100%" alignItems="center" justifyContent='center' flexWrap='wrap'>
-            <Typography mx="auto" variant="h3" fontSize={rem(18)} textAlign="center" width='100%'>
-              July 5, 2025
-            </Typography>
-
-            {user.auth0Id && user.guestId && <Typography variant="h3" fontSize={rem(18)} mx="auto" textAlign="start" width={'38%'}>
-              'Lovettsville, VA'
-            </Typography>}
-
             in {daysUntil} days
           </Box>
         </>
