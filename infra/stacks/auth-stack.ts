@@ -17,8 +17,7 @@ export class AuthStack extends cdk.Stack {
     super(scope, id, {...props, description: "Creates Lambda authorizer integration for API Gateway"});
 
     const environment = this.node.tryGetContext('env') || 'dev';
-    const { applicationName, srcFolder, releaseFolder } = ApplicationProps;
-    const { apiGatewayName } = ApplicationProps;
+    const { applicationName, apiGatewayName } = ApplicationProps;
     console.log("------------------------");
     console.log("AuthStack");
 
@@ -33,7 +32,6 @@ export class AuthStack extends cdk.Stack {
       ...lambdaAuthDefaults,
       handler: `${lambdaConfig.name}::${lambdaConfig.name}.Function::FunctionHandler`,
       functionName: `${functionName}`,
-      code: lambda.Code.fromAsset(`${srcFolder}/${lambdaConfig.name}/${releaseFolder}/${lambdaConfig.name}.zip`),
       role: lambdaRole
     });
 

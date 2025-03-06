@@ -15,5 +15,12 @@ import * as cdk from 'aws-cdk-lib';
         existingCertificateArn: string | undefined;
         existingDomainNameAliasApi: string | undefined;
         existingDomainNameZoneId: string | undefined;
+        uspsConsumerKey: string | undefined;
+        uspsConsumerSecret: string | undefined;
+        twilioSid: string | undefined;
+        twilioSecret: string | undefined;
+        twilioVerifyServiceSid: string | undefined;
+        twilioMessagingServiceSid: string | undefined;
+        twilioMessagingServicePhone: string | undefined;
     };
  }
