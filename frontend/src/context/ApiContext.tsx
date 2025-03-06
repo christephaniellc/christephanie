@@ -43,6 +43,12 @@ interface ApiContextProps {
     { phoneNumber: string, code?: string, action?: string },
     unknown
   >;
+  validateEmailMutation: UseMutationResult<
+    { success: boolean },
+    ApiError,
+    { email: string, code?: string, action?: string },
+    unknown
+  >;
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
@@ -187,6 +193,22 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     onError: (error) => console.error('Failed to validate phone', error),
   });
 
+  const validateEmailMutation = useMutation<
+    { success: boolean },
+    ApiError,
+    { email: string, code?: string, action?: string },
+    unknown
+  >({
+    mutationKey: ['validateEmail'],
+    mutationFn: ({ email, code, action }) => apiRef.current.validateEmail(email, code, action),
+    onSuccess: (data) => {
+      console.log('Email validation successful', data);
+      // Refresh the family data to show updated verification status
+      getFamilyUnitQuery.refetch();
+    },
+    onError: (error) => console.error('Failed to validate email', error),
+  });
+
   // Function to get unmasked email or phone
   const getMaskedValueQuery = (guestId: string, type: 'email' | 'text') => {
     const maskedValueType = type === 'email' ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
@@ -215,6 +237,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         getMeQuery,
         validateAddressMutation,
         validatePhoneMutation,
+        validateEmailMutation,
         getFamilyUnitQuery,
         patchFamilyMutation,
         patchFamilyGuestMutation,

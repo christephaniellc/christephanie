@@ -157,6 +157,9 @@ Deploy single Lambda:
 Visual Studio > Open file for Wedding.Lambdas.[project name] > Deploy Lambda button
 	Update "dev" param
 -----------------------
+# Claude
+export PATH=$PATH:/home/stepy/.npm-global/bin
+----------
 	./infra/scripts/deploy.sh dev	# Initial infra deploy
 REPEATING DEPLOY (publish lambdas and frontend)
 	./infra/scripts/build.sh dev	# Deploy all lambdas 

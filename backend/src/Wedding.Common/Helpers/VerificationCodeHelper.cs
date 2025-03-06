@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Wedding.Lambdas.Validate.Phone.Providers
+namespace Wedding.Common.Helpers
 {
-    public static class VerificationCodeProvider
+    public static class VerificationCodeHelper
     {
         /// <summary>
         /// Generates a six-digit code for verification
