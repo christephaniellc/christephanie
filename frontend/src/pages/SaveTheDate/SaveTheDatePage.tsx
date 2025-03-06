@@ -61,6 +61,10 @@ function SaveTheDatePage() {
     navigate(`/save-the-date?step=${step}`);
   };
 
+  const contentHeightWithStepper = useMemo(() => {
+    return genericQuestions ? '100%' : `${contentHeight - 155}px`
+  }, [contentHeight, genericQuestions]);
+
   return (
     <Box>
       <SaveTheDateStepper />
@@ -75,7 +79,7 @@ function SaveTheDatePage() {
           flexWrap: 'wrap',
           backdropFilter: 'blur(20px)',
           position: 'relative',
-          height: rem(`${contentHeight - 155}px`),
+          height: contentHeightWithStepper,
           overflow: 'hidden',
         }}
       >
@@ -231,6 +235,7 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   mx: 'auto',
   maxHeight: '100%',
+  height: '100%',
   paddingBottom: rem('40px'),
   position: 'relative',
   overflow: 'auto',
