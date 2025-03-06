@@ -95,7 +95,7 @@ namespace Wedding.PublicApi.Controllers
                 patchRequest.FoodAllergies
             );
             command.Validate();
-            var result = await _dispatcher.ExecuteAsync<PatchGuestCommand, GuestDto>(command, cancellationToken);
+            var result = await _dispatcher.ExecuteAsync<PatchGuestCommand, GuestViewModel>(command, cancellationToken);
 
             return Ok(result);
         }
