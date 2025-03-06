@@ -12,7 +12,10 @@
     "prettier:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint:check": "eslint --max-warnings=0 \"src/**/*.{js,jsx,ts,tsx,json}\"",
     "ts:check": "tsc --noEmit",
-    "test:unit": "jest --config jest.config.js",
+    "test:unit": "jest --config jest.config.js --coverage",
+    "test:unit:no-coverage": "jest --config jest.config.js",
+    "test:coverage": "jest --config jest.config.js --coverage --coverageReporters=text-summary,html",
+    "test:coverage:detailed": "jest --config jest.config.js --coverage --coverageReporters=text,html,lcov",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "generate:types": "swagger-typescript-api -p ../backend/src/swagger.json -o ./src/types -n api.ts"
