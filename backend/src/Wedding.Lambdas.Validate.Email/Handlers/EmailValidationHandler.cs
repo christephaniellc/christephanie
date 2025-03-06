@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using System;
+﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleSystemsManagement.Model;
@@ -7,28 +7,28 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Abstractions;
-using Wedding.Lambdas.Validate.Phone.Commands;
-using Wedding.Lambdas.Validate.Phone.Validation;
+using Wedding.Common.Helpers;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
-using Wedding.Lambdas.Validate.Phone.Requests;
+using Wedding.Lambdas.Validate.Email.Commands;
+using Wedding.Lambdas.Validate.Email.Requests;
+using Wedding.Lambdas.Validate.Email.Validation;
 using ValidationException = FluentValidation.ValidationException;
-using Wedding.Common.Helpers;
 
-namespace Wedding.Lambdas.Validate.Phone.Handlers
+namespace Wedding.Lambdas.Validate.Email.Handlers
 {
-    public class PhoneValidationHandler : 
-        IAsyncCommandHandler<RegisterPhoneCommand, ValidatePhoneResponse>,
-        IAsyncCommandHandler<ResendPhoneCodeCommand, ValidatePhoneResponse>,
-        IAsyncCommandHandler<ValidatePhoneCommand, ValidatePhoneResponse>
+    public class EmailValidationHandler : 
+        IAsyncCommandHandler<RegisterEmailCommand, ValidateEmailResponse>,
+        IAsyncCommandHandler<ResendEmailCodeCommand, ValidateEmailResponse>,
+        IAsyncCommandHandler<ValidateEmailCommand, ValidateEmailResponse>
     {
-        private readonly ILogger<PhoneValidationHandler> _logger;
+        private readonly ILogger<EmailValidationHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
         //private readonly IAwsSmsHelper _awsSmsHelper;
         private readonly ITwilioSmsProvider _twilioSmsProvider;
 
-        public PhoneValidationHandler(ILogger<PhoneValidationHandler> logger,
+        public EmailValidationHandler(ILogger<EmailValidationHandler> logger,
             IDynamoDBProvider dynamoDbProvider,
             IMapper mapper, 
             ITwilioSmsProvider twilioSmsProvider)
@@ -39,7 +39,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _twilioSmsProvider = twilioSmsProvider;
         }
 
-        public async Task<ValidatePhoneResponse> ExecuteAsync(RegisterPhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidateEmailResponse> ExecuteAsync(RegisterEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
 
@@ -62,24 +62,24 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             catch (ValidationException ex)
             {
                 // If phone number is coming in masked, may fail validation step. Load existing phone number if masked
-                if (ex.Message.Contains("Invalid phone number") && command.PhoneNumber.ToLower().Contains("xxx"))
+                if (ex.Message.Contains("Invalid email") && command.Email.ToLower().Contains("***"))
                 {
                     var existingGuest = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
                         command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
-                    if (existingGuest == null || existingGuest.Phone == null)
+                    if (existingGuest == null || existingGuest.Email == null)
                     {
-                        _logger.LogWarning("Invalid phone number, and saved guest phone information not found.");
+                        _logger.LogWarning("Invalid email, and saved guest phone information not found.");
                         throw;
                     }
 
-                    var savedPhoneNumber = _mapper.Map<VerifiedDto>(existingGuest.Phone).Value;
-                    if (string.IsNullOrEmpty(savedPhoneNumber))
+                    var savedEmail = _mapper.Map<VerifiedDto>(existingGuest.Email).Value;
+                    if (string.IsNullOrEmpty(savedEmail))
                     {
-                        _logger.LogWarning("Invalid phone number, and saved guest phone number not found.");
+                        _logger.LogWarning("Invalid email, and saved guest phone number not found.");
                         throw;
                     }
 
-                    command = command with { PhoneNumber = savedPhoneNumber };
+                    command = command with { Email = savedEmail };
                 }
                 else
                 {
@@ -98,32 +98,33 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var verifyPhone = !string.IsNullOrEmpty(existingGuestEntity.Phone)
-                ? _mapper.Map<VerifiedDto>(existingGuestEntity.Phone)
+            var verifyEmail = !string.IsNullOrEmpty(existingGuestEntity.Email)
+                ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
                 : new VerifiedDto
                 {
-                    Value = command.PhoneNumber,
+                    Value = command.Email,
                     Verified = false,
                     VerificationCode = VerificationCodeHelper.GenerateCode(),
                     VerificationCodeExpiration = VerificationCodeHelper.GenerateExpiry()
                 };
 
-            existingGuestEntity.Phone = verifyPhone.ToString();
+            existingGuestEntity.Email = verifyEmail.ToString();
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
+            // TODO SKS: use Amazon SMS
             //var message = $"Your Christephanie wedding phone verification code is: {verifyPhone.VerificationCode}";
-            var sendOtpResponse = await _twilioSmsProvider.SendOTPCode(verifyPhone!.Value);
+            //var sendOtpResponse = await _twilioSmsProvider.SendOTPCode(verifyEmail!.Value);
             //var awsResponse = await _awsSmsHelper.SendVerificationCode(command.PhoneNumber, message);
 
-            return new ValidatePhoneResponse
+            return new ValidateEmailResponse
             {
-                VerifiedStatus = sendOtpResponse,
-                PhoneVerifyState = verifyPhone
+                VerifiedStatus = null,
+                EmailVerifyState = verifyEmail
             };
         }
 
-        public async Task<ValidatePhoneResponse> ExecuteAsync(ResendPhoneCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidateEmailResponse> ExecuteAsync(ResendEmailCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
@@ -145,11 +146,11 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
                 throw new ValidationException($"Phone is null or empty.");
             }
 
-            var register = new RegisterPhoneCommand(command.AuthContext, phoneNumber);
+            var register = new RegisterEmailCommand(command.AuthContext, phoneNumber);
             return await ExecuteAsync(register, cancellationToken);
         }
 
-        public async Task<ValidatePhoneResponse> ExecuteAsync(ValidatePhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidateEmailResponse> ExecuteAsync(ValidateEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
@@ -182,9 +183,9 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             var phone = expectedValidation!.Value ?? string.Empty;
             if (validated)
             {
-                return new ValidatePhoneResponse
+                return new ValidateEmailResponse
                 {
-                    PhoneVerifyState = expectedValidation!
+                    EmailVerifyState = expectedValidation!
                 };
             }
 
@@ -206,9 +207,9 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
 
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
-                return new ValidatePhoneResponse
+                return new ValidateEmailResponse
                 {
-                    PhoneVerifyState = verified
+                    EmailVerifyState = verified
                 };
             }
 

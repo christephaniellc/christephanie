@@ -1,8 +1,8 @@
 ﻿using Wedding.Common.Helpers;
-using Wedding.Lambdas.Validate.Phone.Commands;
-using Wedding.Lambdas.Validate.Phone.Requests;
+using Wedding.Lambdas.Validate.Email.Commands;
+using Wedding.Lambdas.Validate.Email.Requests;
 
-namespace Wedding.Lambdas.Validate.Phone.Validation
+namespace Wedding.Lambdas.Validate.Email.Validation
 {
     public static class ValidateExtensions
     {
@@ -12,9 +12,9 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this ValidatePhoneRequest obj,
+            this ValidateEmailRequest obj,
             object? context = default)
-            => ValidateHelpers.Validate<ValidatePhoneRequest, ValidatePhoneRequestValidator>(obj, context);
+            => ValidateHelpers.Validate<ValidateEmailRequest, ValidateEmailRequestValidator>(obj, context);
 
         /// <summary>
         /// Validates the specified command.
@@ -22,9 +22,9 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this RegisterPhoneCommand obj,
+            this RegisterEmailCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<RegisterPhoneCommand, RegisterPhoneCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<RegisterEmailCommand, RegisterEmailCommandValidator>(obj, context);
 
         /// <summary>
         /// Validates the specified command.
@@ -32,9 +32,9 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this ResendPhoneCodeCommand obj,
+            this ResendEmailCodeCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<ResendPhoneCodeCommand, ResendPhoneCodeCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<ResendEmailCodeCommand, ResendEmailCodeCommandValidator>(obj, context);
 
         /// <summary>
         /// Validates the specified command.
@@ -42,8 +42,8 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this ValidatePhoneCommand obj,
+            this ValidateEmailCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<ValidatePhoneCommand, ValidatePhoneCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<ValidateEmailCommand, ValidateEmailCommandValidator>(obj, context);
     }
 }

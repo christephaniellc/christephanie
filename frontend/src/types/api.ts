@@ -134,6 +134,70 @@ export interface GuestViewModel {
   lastActivity?: string | null;
 }
 
+export enum HttpStatusCode {
+  Continue = 'Continue',
+  SwitchingProtocols = 'SwitchingProtocols',
+  Processing = 'Processing',
+  EarlyHints = 'EarlyHints',
+  OK = 'OK',
+  Created = 'Created',
+  Accepted = 'Accepted',
+  NonAuthoritativeInformation = 'NonAuthoritativeInformation',
+  NoContent = 'NoContent',
+  ResetContent = 'ResetContent',
+  PartialContent = 'PartialContent',
+  MultiStatus = 'MultiStatus',
+  AlreadyReported = 'AlreadyReported',
+  IMUsed = 'IMUsed',
+  MultipleChoices = 'MultipleChoices',
+  MovedPermanently = 'MovedPermanently',
+  Found = 'Found',
+  SeeOther = 'SeeOther',
+  NotModified = 'NotModified',
+  UseProxy = 'UseProxy',
+  Unused = 'Unused',
+  TemporaryRedirect = 'TemporaryRedirect',
+  PermanentRedirect = 'PermanentRedirect',
+  BadRequest = 'BadRequest',
+  Unauthorized = 'Unauthorized',
+  PaymentRequired = 'PaymentRequired',
+  Forbidden = 'Forbidden',
+  NotFound = 'NotFound',
+  MethodNotAllowed = 'MethodNotAllowed',
+  NotAcceptable = 'NotAcceptable',
+  ProxyAuthenticationRequired = 'ProxyAuthenticationRequired',
+  RequestTimeout = 'RequestTimeout',
+  Conflict = 'Conflict',
+  Gone = 'Gone',
+  LengthRequired = 'LengthRequired',
+  PreconditionFailed = 'PreconditionFailed',
+  RequestEntityTooLarge = 'RequestEntityTooLarge',
+  RequestUriTooLong = 'RequestUriTooLong',
+  UnsupportedMediaType = 'UnsupportedMediaType',
+  RequestedRangeNotSatisfiable = 'RequestedRangeNotSatisfiable',
+  ExpectationFailed = 'ExpectationFailed',
+  MisdirectedRequest = 'MisdirectedRequest',
+  UnprocessableEntity = 'UnprocessableEntity',
+  Locked = 'Locked',
+  FailedDependency = 'FailedDependency',
+  UpgradeRequired = 'UpgradeRequired',
+  PreconditionRequired = 'PreconditionRequired',
+  TooManyRequests = 'TooManyRequests',
+  RequestHeaderFieldsTooLarge = 'RequestHeaderFieldsTooLarge',
+  UnavailableForLegalReasons = 'UnavailableForLegalReasons',
+  InternalServerError = 'InternalServerError',
+  NotImplemented = 'NotImplemented',
+  BadGateway = 'BadGateway',
+  ServiceUnavailable = 'ServiceUnavailable',
+  GatewayTimeout = 'GatewayTimeout',
+  HttpVersionNotSupported = 'HttpVersionNotSupported',
+  VariantAlsoNegotiates = 'VariantAlsoNegotiates',
+  InsufficientStorage = 'InsufficientStorage',
+  LoopDetected = 'LoopDetected',
+  NotExtended = 'NotExtended',
+  NetworkAuthenticationRequired = 'NetworkAuthenticationRequired',
+}
+
 export interface IAMPolicyStatement {
   Effect?: string | null;
   /** @uniqueItems true */
@@ -236,6 +300,22 @@ export enum SleepPreferenceEnum {
   Camping = 'Camping',
   Hotel = 'Hotel',
   Other = 'Other',
+}
+
+export enum TwilioOtpStatusEnum {
+  Pending = 'Pending',
+  Approved = 'Approved',
+  Canceled = 'Canceled',
+  MaxAttemptsReached = 'Max_Attempts_Reached',
+  Deleted = 'Deleted',
+  Failed = 'Failed',
+  Expired = 'Expired',
+}
+
+export interface ValidatePhoneResponse {
+  verifiedStatus?: TwilioOtpStatusEnum;
+  notificationServiceStatusCode?: HttpStatusCode;
+  phoneVerifyState: VerifiedDto;
 }
 
 export interface VerifiedDto {
@@ -803,6 +883,88 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<GuestDto, ProblemDetails | void>({
         path: `/api/user/me`,
         method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidateAddressCreate
+     * @request POST:/api/validate/address
+     * @secure
+     */
+    validateAddressCreate: (data: AddressDto, params: RequestParams = {}) =>
+      this.request<AddressDto, ProblemDetails | void>({
+        path: `/api/validate/address`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneRegisterCreate
+     * @request POST:/api/validate/phone/register
+     * @secure
+     */
+    validatePhoneRegisterCreate: (
+      query?: {
+        phoneNumber?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/register`,
+        method: 'POST',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneValidatePartialUpdate
+     * @request PATCH:/api/validate/phone/validate
+     * @secure
+     */
+    validatePhoneValidatePartialUpdate: (
+      query?: {
+        code?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/validate`,
+        method: 'PATCH',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneResendCreate
+     * @request POST:/api/validate/phone/resend
+     * @secure
+     */
+    validatePhoneResendCreate: (params: RequestParams = {}) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/resend`,
+        method: 'POST',
         secure: true,
         format: 'json',
         ...params,
