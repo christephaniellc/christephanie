@@ -158,9 +158,9 @@ const MtvAnimatedTitle = () => {
           color: 'palette.secondary',
           // Combine rotateX and scaleX transforms
           transform: `rotateX(${rotationX}deg) scaleX(${scaleX})`,
-          [theme.breakpoints.up('md')]: {
-            pl: '200px',
-          },
+          // [theme.breakpoints.up('md')]: {
+          //   pl: '200px',
+          // },
           filter: `drop-shadow(${boxShadow})`,
         }}
       >

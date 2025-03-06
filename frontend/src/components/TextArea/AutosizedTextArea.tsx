@@ -74,7 +74,7 @@ export default function AutosizedTextArea() {
   }, [family, setComment]);
 
   return (
-    <FormControl sx={{ width: 350 }}>
+    <FormControl sx={{ width: 350, border: '1px solid #ccc', borderRadius: 1, p: 2 }}>
       <FormLabel sx={{ mb: 1 }}>Your comment</FormLabel>
       <Textarea
         aria-label="minimum height"
