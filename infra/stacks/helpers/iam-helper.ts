@@ -70,6 +70,14 @@ export function attachIamPoliciesToRole(stack: cdk.Stack, environment: string, l
                 ],
                 resources: ["*"]
             }),
+            // Attach Simple email messaging service permissions
+            new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: [
+                    "ses:SendEmail"
+                ],
+                resources: ["*"]
+            }),
         ]
     });
 
