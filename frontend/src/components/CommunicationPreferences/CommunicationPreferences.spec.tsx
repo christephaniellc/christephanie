@@ -19,6 +19,7 @@ jest.mock('@/auth_config', () => ({
 jest.mock('@/store/family', () => ({
   guestSelector: () => ({
     guestId: '123',
+    firstName: 'Test',
     preferences: {
       notificationPreference: [NotificationPreferenceEnum.Email],
     },
@@ -70,6 +71,13 @@ jest.mock('@/context/ApiContext', () => ({
         }
       }),
     },
+    validateEmailMutation: {
+      mutate: jest.fn((params, callbacks) => {
+        if (callbacks && callbacks.onSuccess) {
+          callbacks.onSuccess();
+        }
+      }),
+    },
   }),
 }));
 
@@ -77,6 +85,13 @@ jest.mock('@/context/ApiContext', () => ({
 jest.mock('@/context/Providers/AppState/useAppLayout', () => ({
   useAppLayout: () => ({
     screenWidth: 1024,
+  }),
+}));
+
+// Mocking useAuth0
+jest.mock('@auth0/auth0-react', () => ({
+  useAuth0: () => ({
+    getAccessTokenSilently: jest.fn().mockResolvedValue('mock-token'),
   }),
 }));
 
@@ -148,5 +163,195 @@ describe('CommunicationPreferences unmasked values.wip', () => {
       const phoneInput = screen.getByLabelText('Phone Number');
       expect(phoneInput).toHaveValue('555-123-7890');
     });
+  });
+});
+
+describe('Verification section display conditions.wip', () => {
+  // Create custom test mocks for different verification states
+  
+  it('should show verification section when email opted in but not verified.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: false,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Verify section should be shown for email
+    expect(screen.getByText(/SEND VERIFY CODE TO EMAIL/i)).toBeInTheDocument();
+  });
+
+  it('should show verification section when text opted in but not verified.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Text],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: false,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Verify section should be shown for phone
+    expect(screen.getByText(/SEND VERIFY CODE TO PHONE/i)).toBeInTheDocument();
+  });
+
+  it('should show verification section for both when both opted in and neither verified.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email, NotificationPreferenceEnum.Text],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: false,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Both verify buttons should be shown
+    expect(screen.getByText(/SEND VERIFY CODE TO EMAIL/i)).toBeInTheDocument();
+    expect(screen.getByText(/SEND VERIFY CODE TO PHONE/i)).toBeInTheDocument();
+  });
+
+  it('should not show verification section when both opted in but both verified.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email, NotificationPreferenceEnum.Text],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: true,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: true,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // No verify buttons should be shown
+    expect(screen.queryByText(/SEND VERIFY CODE/i)).not.toBeInTheDocument();
+  });
+
+  it('should not show verification section when neither opted in.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: false,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // No verify buttons should be shown
+    expect(screen.queryByText(/SEND VERIFY CODE/i)).not.toBeInTheDocument();
   });
 });
