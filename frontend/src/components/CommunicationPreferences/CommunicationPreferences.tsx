@@ -385,16 +385,47 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                 startIcon={value === 'Email' ? <EmailOutlined /> : <PhoneAndroid />}
               >
                 <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                  <Typography fontWeight={'bold'}>
-                    {value}
-                  </Typography>
-                    
                   <Box display="flex" alignItems="center">
-                    {/* Contact info and edit button */}
+                    <Typography fontWeight={'bold'}>
+                      {value}
+                    </Typography>
+                    
+                    {/* Status indicators */}
+                    <Box ml={1} display="flex" alignItems="center">
+                      {isEnabled ? (
+                        <Chip 
+                          size="small" 
+                          label="Opted In" 
+                          color="success" 
+                          icon={<NotificationsActive fontSize="small" />} 
+                          sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      ) : (
+                        <Chip 
+                          size="small" 
+                          label="" 
+                          color="default" 
+                          icon={<NotificationsOff fontSize="small" />} 
+                          sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      )}
+                      
+                      {isVerified && (
+                        <Chip 
+                          size="small" 
+                          label="Verified" 
+                          color="primary" 
+                          icon={<VerifiedUser fontSize="small" />} 
+                          sx={{ height: 20, ml: 0.5, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  
+                  <Box display="flex" alignItems="center">
                     <Typography variant="caption" sx={{ mr: 1 }}>
                       {value === 'Email' ? guestEmailAddress || 'Not set' : guestPhoneNumber || 'Not set'}
                     </Typography>
-                    
                     <IconButton 
                       size="small" 
                       onClick={(e) => {
@@ -404,26 +435,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
-                      
-                    {/* Status chip */}
-                    <Chip 
-                      size="small" 
-                      label={isVerified ? "Verified" : (isEnabled ? "Active" : "Inactive")}
-                      color={isVerified ? "primary" : (isEnabled ? "success" : "default")}
-                      icon={isVerified ? <VerifiedUser fontSize="small" /> : 
-                           (isEnabled ? <NotificationsActive fontSize="small" /> : <NotificationsOff fontSize="small" />)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!isVerified && isEnabled) {
-                          handleOpenStatusModal(value as 'Email' | 'Text');
-                        }
-                      }}
-                      sx={{ 
-                        height: 24, 
-                        cursor: (!isVerified && isEnabled) ? 'pointer' : 'default',
-                        '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' }
-                      }}
-                    />
                   </Box>
                 </Box>
               </Button>
@@ -431,79 +442,71 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           })}
         </ButtonGroup>
       
+        {/* Verification buttons and disclaimers outside the communication preference buttons */}
+        { ((isTextOptedIn && !phoneVerified) || (isEmailOptedIn && !emailVerified)) && (
+        <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
+          {contactPreferences.map((value) => (
+            ((value === 'Email' && isEmailOptedIn && !emailVerified && guestEmailAddress) || 
+            (value === 'Text' && isTextOptedIn && !phoneVerified && guestPhoneNumber)) && (
+              <Box key={`verify-${value}`} sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mb: 1, width: 'fit-content', fontWeight: 'bold' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    value === 'Email' ? sendEmailVerificationCode() : sendPhoneVerificationCode();
+                  }}
+                >
+                  SEND VERIFY CODE TO {value === 'Email' ? "EMAIL" : "PHONE" } 
+                </Button>
+                
+                {/* Disclaimer text - explicitly remove all shadows and set a background to ensure no text shadow */}
+                <Box sx={{ 
+                  backgroundColor: 'rgba(0,0,0,0.2)', 
+                  borderRadius: 1, 
+                  p: 1, 
+                  mt: 1, 
+                  width: '100%', 
+                  boxShadow: 'none'
+                }}>
+                  { isTextOptedIn && value === 'Text' && (
+                    <Typography variant="caption" sx={{ 
+                      fontSize: '0.7rem', 
+                      textAlign: 'center', 
+                      display: 'block',
+                      color: theme.palette.text.secondary,
+                      textShadow: 'none !important',
+                      boxShadow: 'none',
+                      filter: 'none'
+                    }}>
+                      By clicking SEND VERIFY CODE, I agree to receive status update messages at the phone number provided. 
+                      I understand I will receive no more than 10 messages a month, data rates may apply, reply STOP to opt out.
+                    </Typography>
+                  )}
+                  
+                  { isEmailOptedIn && value === 'Email' && (
+                    <Typography variant="caption" sx={{ 
+                      fontSize: '0.7rem', 
+                      textAlign: 'center', 
+                      display: 'block',
+                      color: theme.palette.text.secondary,
+                      textShadow: 'none !important',
+                      boxShadow: 'none',
+                      filter: 'none'
+                    }}>
+                      By clicking SEND VERIFY CODE, I agree to receive updates via email.
+                      You can opt out of these emails at any time.
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            )
+          ))}
+        </Box>
+        )}
       </Paper>
-      
-      {/* Status Modal For Verification */}
-      <Dialog
-        open={isStatusModalOpen}
-        onClose={handleCloseStatusModal}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {selectedContactType === 'Email' ? 'Email Status' : 'Text Message Status'}
-        </DialogTitle>
-        <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Typography variant="subtitle1" gutterBottom>
-              Your {selectedContactType?.toLowerCase()} is not verified yet. Verification will allow us to:
-            </Typography>
-            
-            <Box sx={{ pl: 2 }}>
-              <Typography variant="body2" gutterBottom>
-                • Send you important updates about the wedding
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                • Make sure you don't miss any critical information
-              </Typography>
-              {selectedContactType === 'Text' && (
-                <Typography variant="body2" gutterBottom>
-                  • Send quick reminders closer to the event
-                </Typography>
-              )}
-            </Box>
-            
-            <Box sx={{ 
-              backgroundColor: 'rgba(0,0,0,0.05)', 
-              borderRadius: 1, 
-              p: 1.5, 
-              mt: 1,
-              border: '1px solid rgba(0,0,0,0.1)'
-            }}>
-              {selectedContactType === 'Email' ? (
-                <Typography variant="caption" sx={{ fontSize: '0.8rem', display: 'block' }}>
-                  By clicking "Send Verification Code", you agree to receive updates via email.
-                  You can opt out of these emails at any time.
-                </Typography>
-              ) : (
-                <Typography variant="caption" sx={{ fontSize: '0.8rem', display: 'block' }}>
-                  By clicking "Send Verification Code", you agree to receive status update messages at the phone number provided. 
-                  You will receive no more than 10 messages a month, data rates may apply, reply STOP to opt out.
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseStatusModal}>
-            Cancel
-          </Button>
-          <Button 
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              if (selectedContactType === 'Email') {
-                sendEmailVerificationCode();
-              } else {
-                sendPhoneVerificationCode();
-              }
-              handleCloseStatusModal();
-            }}
-          >
-            Send Verification Code
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Email Update Dialog */}
       <Dialog 

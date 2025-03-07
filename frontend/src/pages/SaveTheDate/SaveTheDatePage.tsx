@@ -121,14 +121,7 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '85px',
-              // Ensure buttons are always visible on mobile
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 100,
-              px: 3
+              paddingBottom: '85px'
             }}
           >
             <Button
