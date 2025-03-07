@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Paper } from '@mui/material';
+import { Stack, Paper, Box, Typography } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { CampingPreferencesProps } from './types';
@@ -47,11 +47,18 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           filter: `drop-shadow(${boxShadow})`,
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
-          gap: 4,
           width: '100%',
+          overflow: 'hidden',
         }}
       >
+        {/* Title */}
+        <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.3)' }}>
+          <Typography variant="h6" color="text.primary" align="center">
+            Where do you plan to stay?
+          </Typography>
+        </Box>
+        
+        {/* Selection buttons */}
         <PreferenceButtonGroup
           campingPreferences={campingPreferences}
           campingValue={campingValue}
@@ -62,6 +69,7 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           isFetching={isFetching}
         />
         
+        {/* Description based on selection */}
         <PreferenceDescription
           campingValue={campingValue}
           hotelOptions={hotelOptions}
