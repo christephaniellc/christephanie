@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CommunicationPreferences from './CommunicationPreferences';
 import { RecoilRoot } from 'recoil';
 import { NotificationPreferenceEnum } from '@/types/api';
+import { ApiContext } from '@/context/ApiContext';
 
 // Mock auth_config to avoid import.meta issues
 jest.mock('@/auth_config', () => ({
@@ -166,11 +167,8 @@ describe('CommunicationPreferences unmasked values.wip', () => {
   });
 });
 
-describe('Verification section display conditions.wip', () => {
-  // Create custom test mocks for different verification states
-  
-  it('should show verification section when email opted in but not verified.wip', () => {
-    // Override the default mock for this specific test
+describe('Status indicator chips [ wip]', () => {
+  it('should show "Active" chip for communication that is opted in but not verified [ wip]', () => {
     jest.resetModules();
     jest.mock('@/store/family', () => ({
       guestSelector: () => ({
@@ -202,94 +200,20 @@ describe('Verification section display conditions.wip', () => {
     
     renderWithProviders(<CommunicationPreferences guestId="123" />);
     
-    // Verify section should be shown for email
-    expect(screen.getByText(/SEND VERIFY CODE TO EMAIL/i)).toBeInTheDocument();
+    // "Active" chip should be shown for email
+    expect(screen.getByText("Active")).toBeInTheDocument();
+    // Should not show "Verified" chip
+    expect(screen.queryByText("Verified")).not.toBeInTheDocument();
   });
 
-  it('should show verification section when text opted in but not verified.wip', () => {
-    // Override the default mock for this specific test
+  it('should show "Verified" chip for verified communication [ wip]', () => {
     jest.resetModules();
     jest.mock('@/store/family', () => ({
       guestSelector: () => ({
         guestId: '123',
         firstName: 'Test',
         preferences: {
-          notificationPreference: [NotificationPreferenceEnum.Text],
-        },
-        email: {
-          maskedValue: 't***@e******.com',
-          verified: false,
-        },
-        phone: {
-          maskedValue: '***-***-7890',
-          verified: false,
-        },
-      }),
-      useFamily: () => [
-        null,
-        {
-          updateFamilyGuestCommunicationPreference: jest.fn(),
-          updateFamilyGuestEmail: jest.fn(),
-          updateFamilyGuestPhone: jest.fn(),
-          patchFamilyMutation: { isPending: false },
-          getFamilyUnitQuery: { isFetching: false },
-        },
-      ],
-    }), { virtual: true });
-    
-    renderWithProviders(<CommunicationPreferences guestId="123" />);
-    
-    // Verify section should be shown for phone
-    expect(screen.getByText(/SEND VERIFY CODE TO PHONE/i)).toBeInTheDocument();
-  });
-
-  it('should show verification section for both when both opted in and neither verified.wip', () => {
-    // Override the default mock for this specific test
-    jest.resetModules();
-    jest.mock('@/store/family', () => ({
-      guestSelector: () => ({
-        guestId: '123',
-        firstName: 'Test',
-        preferences: {
-          notificationPreference: [NotificationPreferenceEnum.Email, NotificationPreferenceEnum.Text],
-        },
-        email: {
-          maskedValue: 't***@e******.com',
-          verified: false,
-        },
-        phone: {
-          maskedValue: '***-***-7890',
-          verified: false,
-        },
-      }),
-      useFamily: () => [
-        null,
-        {
-          updateFamilyGuestCommunicationPreference: jest.fn(),
-          updateFamilyGuestEmail: jest.fn(),
-          updateFamilyGuestPhone: jest.fn(),
-          patchFamilyMutation: { isPending: false },
-          getFamilyUnitQuery: { isFetching: false },
-        },
-      ],
-    }), { virtual: true });
-    
-    renderWithProviders(<CommunicationPreferences guestId="123" />);
-    
-    // Both verify buttons should be shown
-    expect(screen.getByText(/SEND VERIFY CODE TO EMAIL/i)).toBeInTheDocument();
-    expect(screen.getByText(/SEND VERIFY CODE TO PHONE/i)).toBeInTheDocument();
-  });
-
-  it('should not show verification section when both opted in but both verified.wip', () => {
-    // Override the default mock for this specific test
-    jest.resetModules();
-    jest.mock('@/store/family', () => ({
-      guestSelector: () => ({
-        guestId: '123',
-        firstName: 'Test',
-        preferences: {
-          notificationPreference: [NotificationPreferenceEnum.Email, NotificationPreferenceEnum.Text],
+          notificationPreference: [NotificationPreferenceEnum.Email],
         },
         email: {
           maskedValue: 't***@e******.com',
@@ -297,7 +221,7 @@ describe('Verification section display conditions.wip', () => {
         },
         phone: {
           maskedValue: '***-***-7890',
-          verified: true,
+          verified: false,
         },
       }),
       useFamily: () => [
@@ -314,12 +238,11 @@ describe('Verification section display conditions.wip', () => {
     
     renderWithProviders(<CommunicationPreferences guestId="123" />);
     
-    // No verify buttons should be shown
-    expect(screen.queryByText(/SEND VERIFY CODE/i)).not.toBeInTheDocument();
+    // "Verified" chip should be shown for email
+    expect(screen.getByText("Verified")).toBeInTheDocument();
   });
 
-  it('should not show verification section when neither opted in.wip', () => {
-    // Override the default mock for this specific test
+  it('should show "Inactive" chip for non-opted in communication [ wip]', () => {
     jest.resetModules();
     jest.mock('@/store/family', () => ({
       guestSelector: () => ({
@@ -351,7 +274,91 @@ describe('Verification section display conditions.wip', () => {
     
     renderWithProviders(<CommunicationPreferences guestId="123" />);
     
-    // No verify buttons should be shown
-    expect(screen.queryByText(/SEND VERIFY CODE/i)).not.toBeInTheDocument();
+    // "Inactive" chip should be shown
+    expect(screen.getAllByText("Inactive").length).toBeGreaterThan(0);
+  });
+});
+
+describe('Status modal [ wip]', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: false,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+  });
+
+  it('should open status modal when clicking on Active chip [ wip]', async () => {
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Find and click the Active chip
+    const activeChip = screen.getByText("Active");
+    fireEvent.click(activeChip);
+    
+    // Status modal should appear with email content
+    await waitFor(() => {
+      expect(screen.getByText("Email Status")).toBeInTheDocument();
+      expect(screen.getByText(/your email is not verified/i, { exact: false })).toBeInTheDocument();
+    });
+  });
+
+  it('should send verification code when clicking Send Verification Code in the modal [ wip]', async () => {
+    const apiContext = {
+      validateEmailMutation: {
+        mutate: jest.fn((params, callbacks) => {
+          if (callbacks && callbacks.onSuccess) {
+            callbacks.onSuccess();
+          }
+        }),
+      },
+      validatePhoneMutation: {
+        mutate: jest.fn(),
+      },
+      getMaskedValueQuery: () => mockEmailQuery,
+    };
+    
+    render(
+      <RecoilRoot>
+        <ApiContext.Provider value={apiContext as any}>
+          <CommunicationPreferences guestId="123" />
+        </ApiContext.Provider>
+      </RecoilRoot>
+    );
+    
+    // Find and click the Active chip
+    const activeChip = screen.getByText("Active");
+    fireEvent.click(activeChip);
+    
+    // Find and click the Send Verification Code button in the modal
+    await waitFor(() => {
+      const sendButton = screen.getByText("Send Verification Code");
+      fireEvent.click(sendButton);
+    });
+    
+    // Verify that the mutation was called
+    expect(apiContext.validateEmailMutation.mutate).toHaveBeenCalled();
   });
 });

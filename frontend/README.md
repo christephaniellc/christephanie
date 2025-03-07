@@ -230,10 +230,33 @@ Tests are a vital part of any project. Sometimes they are boring, sometimes they
 
 ##### Unit tests
 
-[Vitest](https://vitest.dev/) is used here for unit tests. Check [src/insertIf/insertIf.spec.ts](./src/insertIf/insertIf.spec.ts) for an example. You can run unit tests by running:
+Jest is used for unit tests. Check [src/insertIf/insertIf.spec.ts](./src/insertIf/insertIf.spec.ts) for an example. You can run unit tests by running:
 
 ```bash
 npm run test:unit # or yarn test:unit
+```
+
+###### Test Coverage
+
+By default, all unit tests generate a code coverage report. The coverage configuration is set in the `jest.config.js` file and includes:
+
+- Coverage thresholds (70% for branches, functions, lines, and statements)
+- Exclusion patterns for files that shouldn't be measured (like type definitions, entry points, etc.)
+- Coverage reports in multiple formats (text summary, HTML, and LCOV)
+
+You can view the coverage report in the terminal after running tests, or open the detailed HTML report from the `coverage/index.html` file in your browser.
+
+To run tests with different coverage reporting options:
+
+```bash
+# Summary coverage report
+npm run test:coverage
+
+# Detailed coverage report
+npm run test:coverage:detailed  
+
+# Without coverage
+npm run test:unit:no-coverage
 ```
 
 ##### E2E tests
@@ -349,7 +372,10 @@ There are other scripts as well:
 - `prettier:check` - check if all files are formatted according to the rules.
 - `lint:check` - check if all files are linted according to the rules.
 - `ts:check` - check if all files are typed according to the rules.
-- `test:unit` - run unit tests.
+- `test:unit` - run unit tests with coverage report.
+- `test:unit:no-coverage` - run unit tests without coverage report.
+- `test:coverage` - run tests with a summary coverage report.
+- `test:coverage:detailed` - run tests with a detailed coverage report.
 - `test:e2e` - run e2e tests.
 - `test:e2e:ui` - run e2e tests in UI mode.
 - `preview` - boot up local static web server that serves the files from `dist` folder. It's an easy way to check if the production build looks OK in your local environment.

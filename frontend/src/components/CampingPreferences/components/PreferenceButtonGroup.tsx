@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonGroup, Button, Box, Typography } from '@mui/material';
+import { ButtonGroup, Button, Box, Typography, useTheme } from '@mui/material';
 import { Festival, Apartment, Home, HotelOutlined } from '@mui/icons-material';
 import { SleepPreferenceEnum } from '@/types/api';
 import { PreferenceButtonGroupProps } from '../types';
@@ -13,6 +13,7 @@ const PreferenceButtonGroup: React.FC<PreferenceButtonGroupProps> = ({
   isPending,
   isFetching,
 }) => {
+  const theme = useTheme();
   const getIcon = (value: string) => {
     switch (value) {
       case 'Camping':
@@ -31,9 +32,16 @@ const PreferenceButtonGroup: React.FC<PreferenceButtonGroupProps> = ({
   return (
     <ButtonGroup
       fullWidth
-      orientation={screenWidth > 800 ? 'horizontal' : 'vertical'}
+      orientation="vertical"
       sx={{
         backgroundColor: 'rgba(0,0,0,.8)',
+        '& .MuiButtonGroup-grouped': {
+          borderRadius: 0
+        },
+        // Use mobile-first approach with theme.breakpoints.up
+        [`${theme.breakpoints.up('md')}`]: {
+          flexDirection: 'row'
+        }
       }}
     >
       {/* Filter out Manor if user doesn't have Manor role */}
