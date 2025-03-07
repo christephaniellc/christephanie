@@ -402,7 +402,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                         <Chip 
                           size="small" 
                           label="Verified" 
-                          color="info" 
+                          color="primary" 
                           icon={<VerifiedUser fontSize="small" />} 
                           sx={{ height: 20, ml: 0.5, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
                         />
@@ -429,12 +429,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             );
           })}
         </ButtonGroup>
-        
+      
         {/* Verification buttons and disclaimers outside the communication preference buttons */}
+        { ((isTextOptedIn && !phoneVerified) || (isEmailOptedIn && !emailVerified)) && (
         <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
           {contactPreferences.map((value) => (
-            ((value === 'Email' && !emailVerified && guestEmailAddress) || 
-            (value === 'Text' && !phoneVerified && guestPhoneNumber)) && (
+            ((value === 'Email' && isEmailOptedIn && !emailVerified && guestEmailAddress) || 
+            (value === 'Text' && isTextOptedIn && !phoneVerified && guestPhoneNumber)) && (
               <Box key={`verify-${value}`} sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Button
                   size="small"
@@ -458,7 +459,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                   width: '100%', 
                   boxShadow: 'none'
                 }}>
-                  {value === 'Text' && (
+                  { isTextOptedIn && value === 'Text' && (
                     <Typography variant="caption" sx={{ 
                       fontSize: '0.7rem', 
                       textAlign: 'center', 
@@ -473,7 +474,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                     </Typography>
                   )}
                   
-                  {value === 'Email' && (
+                  { isEmailOptedIn && value === 'Email' && (
                     <Typography variant="caption" sx={{ 
                       fontSize: '0.7rem', 
                       textAlign: 'center', 
@@ -492,6 +493,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             )
           ))}
         </Box>
+        )}
       </Paper>
 
       {/* Email Update Dialog */}
