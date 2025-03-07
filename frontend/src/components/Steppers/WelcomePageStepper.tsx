@@ -140,7 +140,9 @@ export default function WelcomePageStepper() {
       sx={{ 
         px: {xs: 1, sm: 2},
         maxHeight: {xs: 'calc(100vh - 280px)', sm: 'auto'},
-        overflow: {xs: 'auto', sm: 'visible'}
+        overflow: {xs: 'auto', sm: 'visible'},
+        // Ensure it doesn't go below viewport
+        paddingBottom: {xs: '60px', sm: 'initial'}
       }}
     >
       <Stepper 
@@ -195,7 +197,11 @@ export default function WelcomePageStepper() {
                     mb: 2,
                     display: 'flex', 
                     flexDirection: {xs: 'column', sm: 'row'}, 
-                    width: '100%' 
+                    width: '100%',
+                    // Ensure buttons are properly sized and visible on mobile
+                    gap: 1,
+                    position: 'relative',
+                    zIndex: 5
                   }}
                 >
                   <Button
