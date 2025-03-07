@@ -23,3 +23,27 @@
 ## Project Organization
 - **Frontend**: components/, pages/, sections/, context/, utils/, hooks/
 - **Backend**: Command/Query pattern, FluentValidation for validation, Autofac for DI
+
+## Style Guidelines
+- Use MUI components wherever applicable
+- Use styled components per MUI's recommendations for our version of MUI
+- Frontend code should be mobile-first - set base styles for mobile, then use only theme.breakpoints.up() to modify styles as screen sizes increase
+- Remember best coding practices: KISS, SOLID, DRY, YAGNI
+
+## Project Structure 
+- Focus on `/infra`, `/frontend`, and `/backend` for this project
+- Look at the root directory for git configuration changes
+- Ignore node_modules folders or any folders used by package managers unless debugging dependency errors
+
+## Working Together
+- Consider us pair programming buddies
+- Take things one step at a time, don't do more than asked
+- Share suggestions for approval or redirection
+- Don't start any projects - they're running on the user's side for validation
+
+## Testing Guidelines
+- Look for existing test files when updating code, create tests if none exist
+- Append `[ locked]` to test titles to designate tests that should not be changed except by the user
+- Add `[ locked]` to describe blocks if all subtests are locked
+- Append `[ wip]` to titles of new tests
+- Never update `[ locked]` tests to make code pass

@@ -3,7 +3,18 @@ import { useCampingPreferences } from '../hooks';
 import { guestSelector, useFamily } from '@/store/family';
 import { SleepPreferenceEnum, RoleEnum } from '@/types/api';
 import { RecoilRoot, useRecoilValue } from 'recoil';
-import React from 'react';
+import * as React from 'react';
+
+// Mock React's useState to fix the "Cannot read properties of undefined" error
+jest.mock('react', () => {
+  const originalReact = jest.requireActual('react');
+  return {
+    ...originalReact,
+    useState: jest.fn().mockImplementation(originalReact.useState),
+    useEffect: jest.fn().mockImplementation(originalReact.useEffect),
+    useMemo: jest.fn().mockImplementation(originalReact.useMemo),
+  };
+});
 
 // Mock dependencies
 jest.mock('@/store/family', () => ({
@@ -16,7 +27,7 @@ jest.mock('recoil', () => ({
   useRecoilValue: jest.fn(),
 }));
 
-describe('useCampingPreferences hook.wip', () => {
+describe('useCampingPreferences hook', () => {
   const mockUpdateFamilyGuestSleepingPreference = jest.fn();
   const mockFamilyActions = {
     updateFamilyGuestSleepingPreference: mockUpdateFamilyGuestSleepingPreference,
@@ -52,7 +63,7 @@ describe('useCampingPreferences hook.wip', () => {
     (guestSelector as jest.Mock).mockReturnValue(() => mockGuest);
   });
 
-  it('should initialize with correct default values.wip', () => {
+  it('should initialize with correct default values', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RecoilRoot>{children}</RecoilRoot>
     );
@@ -68,7 +79,7 @@ describe('useCampingPreferences hook.wip', () => {
     expect(result.current.hotelOptions.length).toBe(3);
   });
 
-  it('should detect Manor role correctly.wip', () => {
+  it('should detect Manor role correctly', () => {
     // Mock useRecoilValue to return a guest with Manor role
     (useRecoilValue as jest.Mock).mockReturnValue(mockManorGuest);
     
@@ -81,7 +92,7 @@ describe('useCampingPreferences hook.wip', () => {
     expect(result.current.hasManorRole).toBe(true);
   });
 
-  it('should update sleep preference when handleChangeSleepPreference is called.wip', () => {
+  it('should update sleep preference when handleChangeSleepPreference is called', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RecoilRoot>{children}</RecoilRoot>
     );
@@ -105,7 +116,7 @@ describe('useCampingPreferences hook.wip', () => {
     );
   });
 
-  it('should toggle hotel details correctly.wip', () => {
+  it('should toggle hotel details correctly', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RecoilRoot>{children}</RecoilRoot>
     );

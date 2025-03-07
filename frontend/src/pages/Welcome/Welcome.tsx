@@ -1,15 +1,13 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Divider, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { styled } from '@mui/material/styles';
 import InvitationCodeInputs from '@/components/InvitationCodeInputs';
-import EightBitWeddingLogo from '@/components/EightBitWeddingLogo';
 import { useUser } from '@/store/user';
 import { useAuth0 } from '@auth0/auth0-react';
 import Countdowns from '@/components/Countdowns';
 import { InvitationResponseEnum } from '@/types/api';
 import { useRecoilValue } from 'recoil';
 import { useFamily } from '@/store/family';
-import WelcomePageStepper from '@/components/Steppers/WelcomePageStepper';
+import WelcomeStepper from '@/components/WelcomeStepper';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useQueryParamInvitationCode } from '@/hooks/useQueryParamInvitationCode';
 import Container from '@mui/material/Container';
@@ -18,9 +16,21 @@ import WelcomeBg2 from '@/assets/WelcomeBg2.jpg';
 import WelcomeBg3 from '@/assets/WelcomeBg3.jpg';
 import WelcomeBg4 from '@/assets/WelcomeBg4.jpg';
 import WelcomeBg5 from '@/assets/WelcomeBg5.jpg';
+import NeonTitle from '@/components/NeonTitle';
+import { 
+  WelcomeContainer, 
+  BackgroundOverlay, 
+  ContentContainer, 
+  WeddingInfoContainer, 
+  LocationText,
+  StepperContainer 
+} from './styled';
+import { alpha } from '@mui/material/styles';
+import { CalendarMonth, LocationOn } from '@mui/icons-material';
 
 const Welcome = () => {
   const { contentHeight } = useAppLayout();
+  const theme = useTheme();
   const [user, _] = useUser();
   const [family, familyActions] = useFamily();
   const [stepperHeight, setStepperHeight] = React.useState(0);
@@ -33,8 +43,6 @@ const Welcome = () => {
 
   useLayoutEffect(() => {
     if (!welcomeBannerRef.current) return;
-    //console.log('contentHeight', contentHeight);
-    //console.log('welcomeBannerRef', welcomeBannerRef.current!.clientHeight);
     const welcomeBannerHeight = welcomeBannerRef.current!.clientHeight;
     setStepperHeight(contentHeight - welcomeBannerHeight);
   }, [welcomeBannerRef, contentHeight]);
@@ -60,10 +68,12 @@ const Welcome = () => {
     randomLoveyQuotesWithFunnyTwists[
       Math.floor(Math.random() * randomLoveyQuotesWithFunnyTwists.length)
     ];
+    
   const shortScreen = contentHeight < 800;
-
+  
   return (
-    <Box position="relative" height={contentHeight}>
+    <WelcomeContainer height={contentHeight}>
+      {/* Background Image */}
       <Box
         position="absolute"
         component={Container}
@@ -77,88 +87,130 @@ const Welcome = () => {
           backgroundPosition: 'center',
           height: '100%',
           width: '100%',
-          zIndex: -1,
+          zIndex: 0,
         }}
-      ></Box>
-      <Box
-        display="flex"
-        height="100%"
-        justifyContent="center"
-        alignContent="flex-start"
-        textAlign="center"
-        flexWrap="wrap"
-        id={'welcome-page'}
-        border={'1px solid green'}
-        position="relative"
-      >
-        <Box display="flex" flexDirection="column" width="100%" ref={welcomeBannerRef}>
-          <Typography
-            variant="h4"
-            color="text.primary"
-            gutterBottom
-            mt={shortScreen ? 2 : 4}
-            width="100%"
-            textAlign="center"
-          >
-            Steph & Topher
-          </Typography>
-          {/*<Box mx="auto">*/}
-          {/*  <EightBitWeddingLogo />*/}
-          {/*</Box>*/}
+      />
+      
+      {/* Dark overlay for better text readability */}
+      <BackgroundOverlay />
+      
+      {/* Main content container */}
+      <ContentContainer>
+        {/* Wedding info section */}
+        <Box 
+          display="flex" 
+          flexDirection="column" 
+          width="100%" 
+          ref={welcomeBannerRef}
+          sx={{ 
+            pt: shortScreen ? 2 : 4,
+            pb: 2
+          }}
+        >
+          {/* Neon title for the couple's names */}
+          <NeonTitle 
+            text="Steph & Topher" 
+            fontSize={shortScreen ? '2rem' : '2.8rem'}
+            pulsate={true}
+            flicker={false}
+          />
+          
+          {/* Fun quote below the title */}
           <Typography
             variant="caption"
-            color="text.secondary"
-            mb={shortScreen ? 1 : 4}
-            mt={shortScreen ? -4 : 0}
-            maxWidth={200}
-            mx="auto"
-            textAlign="justify"
-            height={40}
+            color="common.white"
+            sx={{
+              opacity: 0.9,
+              fontSize: '0.9rem',
+              fontStyle: 'italic',
+              mb: 2,
+              mt: -1,
+              display: 'block',
+              textAlign: 'center'
+            }}
           >
-            ({randomQuote()})
+            {randomQuote()}
           </Typography>
-          <Countdowns
-            event={'Wedding'}
-            interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-          />
+          
+          {/* Wedding info container with date and location */}
+          <WeddingInfoContainer>
+            {/* Date section */}
+            <Box 
+              display="flex" 
+              alignItems="center" 
+              sx={{ 
+                mb: 1,
+                px: 2,
+                py: 1,
+                // backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                borderRadius: theme.shape.borderRadius,
+                // backdropFilter: 'blur(8px)'
+              }}
+            >
+              <CalendarMonth 
+                sx={{ 
+                  mr: 1,
+                  color: theme.palette.secondary.main
+                }} 
+              />
+              <Typography
+                variant="h6"
+                color="common.white"
+                fontWeight="medium"
+                fontSize={shortScreen ? '1.2rem' : '1.5rem'}
+              >
+                July 5, 2025
+              </Typography>
+            </Box>
+            
+            {/* Location section */}
+            <Box 
+              display="flex" 
+              alignItems="center"
+              sx={{ 
+                px: 2,
+                py: 1,
+                backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                borderRadius: theme.shape.borderRadius,
+                backdropFilter: 'blur(8px)'  
+              }}
+            >
+              <LocationOn 
+                sx={{ 
+                  mr: 1,
+                  color: theme.palette.secondary.main
+                }} 
+              />
+              <LocationText>
+                Lovettsville, VA
+              </LocationText>
+            </Box>
+            
+            {/* Countdown component */}
+            <Box mt={2} width="100%">
+              <Countdowns
+                event={'Wedding'}
+                interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
+              />
+            </Box>
+          </WeddingInfoContainer>
         </Box>
 
+        {/* Stepper section (invitation code inputs or welcome page stepper) */}
         {stepperHeight === 0 ? (
-          'Loading'
-        ) : (
-          <Box
-            sx={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 20 }}
-            maxWidth={600}
-            mx="auto"
-            mb={2}
-            height="100%"
-            overflow="auto"
-          >
-            {(!auth0User && <InvitationCodeInputs />) || <WelcomePageStepper />}
+          <Box sx={{ textAlign: 'center', p: 2 }}>
+            <Typography color="common.white">Loading...</Typography>
           </Box>
+        ) : (
+          <StepperContainer
+            height={`calc(${stepperHeight}px - 32px)`}
+          >
+            {(!auth0User && <InvitationCodeInputs />) || <WelcomeStepper />}
+          </StepperContainer>
         )}
-      </Box>
-    </Box>
+      </ContentContainer>
+    </WelcomeContainer>
   );
 };
-
-styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  width: '100%',
-  mx: 'auto',
-  [theme.breakpoints.up('sm')]: {
-    mx: 'auto',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    alignSelf: 'center',
-    flexGrow: 1,
-    maxWidth: 800,
-    mb: 4,
-  },
-}));
 
 export default Welcome;

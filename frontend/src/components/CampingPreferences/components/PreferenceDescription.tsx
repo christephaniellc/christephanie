@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import { SleepPreferenceEnum } from '@/types/api';
 import { PreferenceDescriptionProps } from '../types';
 import HotelList from './HotelList';
@@ -14,18 +14,32 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
 }) => {
   if (campingValue === SleepPreferenceEnum.Camping) {
     return (
-      <Typography variant="h6" color="secondary" my="auto" width="80%" mx="auto" data-testid="camping-description">
-        Camp with us at the venue! We have a block of campsites reserved for you and your gear.
-      </Typography>
+      <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.2)' }}>
+        <Typography 
+          variant="body1" 
+          color="secondary" 
+          fontWeight="medium"
+          data-testid="camping-description"
+        >
+          Camp with us at the venue! We have a block of campsites reserved for you and your gear.
+        </Typography>
+      </Box>
     );
   }
 
   if (campingValue === SleepPreferenceEnum.Manor) {
     return (
-      <Typography variant="h6" color="primary" my="auto" width="80%" mx="auto" data-testid="manor-description">
-        Stay in our Manor House! As a Manor guest, you'll have access to a private room in the
-        historic house.
-      </Typography>
+      <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.2)' }}>
+        <Typography 
+          variant="body1" 
+          color="primary" 
+          fontWeight="medium"
+          data-testid="manor-description"
+        >
+          Stay in our Manor House! As a Manor guest, you'll have access to a private room in the
+          historic house.
+        </Typography>
+      </Box>
     );
   }
 
