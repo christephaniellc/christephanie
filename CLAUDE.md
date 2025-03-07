@@ -27,6 +27,7 @@
 ## Style Guidelines
 - Use MUI components wherever applicable
 - Use styled components per MUI's recommendations for our version of MUI
+- Frontend code should be mobile-first - set base styles for mobile, then use only theme.breakpoints.up() to modify styles as screen sizes increase
 - Remember best coding practices: KISS, SOLID, DRY, YAGNI
 
 ## Project Structure 
