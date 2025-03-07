@@ -261,7 +261,14 @@ const WelcomeStepper = () => {
           backgroundColor: alpha(theme.palette.background.paper, 0.15),
           backdropFilter: 'blur(10px)',
           borderTop: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          boxShadow: `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`
+          boxShadow: `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+          // Ensure buttons are always visible and properly positioned
+          position: 'sticky',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          width: '100%'
         }}
       >
         <Box 
@@ -269,7 +276,8 @@ const WelcomeStepper = () => {
             display: 'flex', 
             justifyContent: 'center',
             flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2
+            gap: 2,
+            width: '100%'
           }}
         >
           <Button
