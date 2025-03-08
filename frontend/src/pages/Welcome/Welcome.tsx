@@ -27,6 +27,7 @@ import {
 } from './styled';
 import { alpha } from '@mui/material/styles';
 import { CalendarMonth, LocationOn } from '@mui/icons-material';
+import WeddingRings from '@/assets/weddingrings3.svg';
 
 const Welcome = () => {
   const { contentHeight } = useAppLayout();
@@ -59,6 +60,24 @@ const Welcome = () => {
     'love each other like Kanye loves Kanye.',
   ];
 
+  const randomGettingMarriedEuphemisms = [
+    'getting married',
+    'gettin\' hitched',
+    'tying the knot',
+    'signing a legal document to proclaim togetherness',
+    'joining the matrimony circus',
+    'jumping on the marriage bus',
+    'merging our hearts, bodies, and crippling debts',
+    'jumping into the love lagoon',
+    'making it legal',
+    'teaming up for some marriage stuff',
+    'tossing our hat into the marriage ring',
+    'marrying and stuff',
+    'linking up legally',
+    'signing on for the whole matrimony thing',
+    'putting rings on it'
+  ];
+
   const randomBgImage = useMemo(() => {
     const bgImages = () => [WelcomeBg1, WelcomeBg2, WelcomeBg3, WelcomeBg4, WelcomeBg5];
     return bgImages()[Math.floor(Math.random() * bgImages().length)];
@@ -68,7 +87,12 @@ const Welcome = () => {
     randomLoveyQuotesWithFunnyTwists[
       Math.floor(Math.random() * randomLoveyQuotesWithFunnyTwists.length)
     ];
-    
+
+  const randomGettingMarriedQuotes = () =>
+    randomGettingMarriedEuphemisms[
+      Math.floor(Math.random() * randomGettingMarriedEuphemisms.length)
+    ];
+  
   const shortScreen = contentHeight < 800;
   
   return (
@@ -133,68 +157,126 @@ const Welcome = () => {
           </Typography>
           
           {/* Wedding info container with date and location */}
-          <WeddingInfoContainer>
-            {/* Date section */}
-            <Box 
-              display="flex" 
-              alignItems="center" 
-              sx={{ 
-                mb: 1,
+        <WeddingInfoContainer>
+          <Box display="flex">
+            {/* Left container that spans all boxes */}
+            <Box
+              sx={{
+                width: 200, // restricts the box to 200px
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start', // align content at the top of the box
+                alignItems: 'center', // center items horizontally
+                mr: 2,
                 px: 2,
                 py: 1,
-                // backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                backgroundColor: alpha(theme.palette.background.paper, 0.1),
                 borderRadius: theme.shape.borderRadius,
-                // backdropFilter: 'blur(8px)'
+                textAlign: 'center', // center the text within the box
+                whiteSpace: 'normal', // allows text to wrap onto multiple lines
+                wordWrap: 'break-word',
               }}
             >
-              <CalendarMonth 
-                sx={{ 
-                  mr: 1,
-                  color: theme.palette.secondary.main
-                }} 
-              />
-              <Typography
-                variant="h6"
-                color="common.white"
-                fontWeight="medium"
-                fontSize={shortScreen ? '1.2rem' : '1.5rem'}
-              >
-                July 5, 2025
+              <Typography variant="h6" color="common.white">
+              Are {randomGettingMarriedQuotes()}!
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  '@keyframes rollLogo': {
+                    '0%, 10%': { left: 0, transform: 'rotate(0deg)' },
+                    '30%': { left: 'calc(100% - 120px)', transform: 'rotate(360deg)' },
+                    '50%, 60%': { left: 0, transform: 'rotate(0deg)' },
+                    '80%': { left: 'calc(100% - 120px)', transform: 'rotate(-360deg)' },
+                    '100%': { left: 0, transform: 'rotate(0deg)' }
+                  },
+                  '& img': {
+                    position: 'absolute',
+                    height: '120px',
+                    width: '120px',
+                    animation: 'rollLogo 8s infinite',
+                  }
+                }}
+              >               
+                <Box
+                  component={'img'}
+                  src={`${WeddingRings}`}
+                  width={24}
+                  height={24}
+                  // sx={{
+                  //   filter: 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
+                  // }}
+                />
+              </Box>
               </Typography>
             </Box>
-            
-            {/* Location section */}
-            <Box 
-              display="flex" 
-              alignItems="center"
-              sx={{ 
-                px: 2,
-                py: 1,
-                backgroundColor: alpha(theme.palette.background.paper, 0.2),
-                borderRadius: theme.shape.borderRadius,
-                backdropFilter: 'blur(8px)'  
-              }}
-            >
-              <LocationOn 
+
+            {/* Right container with the three vertically stacked boxes */}
+            <Box>
+              {/* Date Section */}
+              <Box 
+                display="flex" 
+                alignItems="center" 
                 sx={{ 
-                  mr: 1,
-                  color: theme.palette.secondary.main
-                }} 
-              />
-              <LocationText>
-                Lovettsville, VA
-              </LocationText>
+                  mb: 1,
+                  px: 2,
+                  py: 1,
+                  // backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                  borderRadius: theme.shape.borderRadius,
+                  // backdropFilter: 'blur(8px)'
+                }}
+              >
+                <CalendarMonth 
+                  sx={{ 
+                    mr: 1,
+                    color: theme.palette.secondary.main
+                  }} 
+                />
+                <Typography
+                  variant="h6"
+                  color="common.white"
+                  fontWeight="medium"
+                  fontSize={shortScreen ? '1.2rem' : '1.5rem'}
+                >
+                  July 5, 2025
+                </Typography>
+              </Box>
+              
+              {/* Location Section */}
+              <Box 
+                display="flex" 
+                alignItems="center"
+                sx={{ 
+                  px: 2,
+                  py: 1,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                  borderRadius: theme.shape.borderRadius,
+                  backdropFilter: 'blur(8px)'  
+                }}
+              >
+                <LocationOn 
+                  sx={{ 
+                    mr: 1,
+                    color: theme.palette.secondary.main
+                  }} 
+                />
+                <LocationText>
+                  Lovettsville, VA
+                </LocationText>
+              </Box>
+              
+              {/* Countdown Section */}
+              <Box mt={2} width="100%">
+                <Countdowns
+                  event="Wedding"
+                  interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
+                />
+              </Box>
             </Box>
-            
-            {/* Countdown component */}
-            <Box mt={2} width="100%">
-              <Countdowns
-                event={'Wedding'}
-                interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-              />
-            </Box>
-          </WeddingInfoContainer>
-        </Box>
+          </Box>
+        </WeddingInfoContainer>
 
         {/* Stepper section (invitation code inputs or welcome page stepper) */}
         {stepperHeight === 0 ? (
@@ -208,6 +290,7 @@ const Welcome = () => {
             {(!auth0User && <InvitationCodeInputs />) || <WelcomeStepper />}
           </StepperContainer>
         )}
+        </Box>
       </ContentContainer>
     </WelcomeContainer>
   );
