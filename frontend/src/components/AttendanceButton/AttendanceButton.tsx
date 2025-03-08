@@ -317,6 +317,17 @@ export const StephsActualFavoriteTypography = styled(Typography)(({ theme }) => 
   lineHeight: '2.5rem',
 }));
 
+export const StephsActualFavoriteTypographyAppVersion = styled(Typography)(({ theme }) => ({
+  fontFamily: 'Snowstorm, sans-serif',
+  color: rgba(255, 255, 255, 0.98),
+  textShadow: '2px 2px 0 #E9950C',
+  fontWeight: 300,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  fontSize: '1.5rem',
+  lineHeight: '2.5rem',
+}));
+
 export const useAttendanceButton = ({ guestId }: { guestId: string }) => {
   const guest = useRecoilValue(guestSelector(guestId));
   const theme = useTheme();
