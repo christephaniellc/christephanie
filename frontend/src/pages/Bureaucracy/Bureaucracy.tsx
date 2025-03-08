@@ -49,12 +49,12 @@ function a11yProps(index: number) {
   };
 }
 
-function Beauracracy() {
+function Bureaucracy() {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
 
-  // Legal items array (Beauracracy only for now, more will be added manually)
+  // Legal items array (Bureaucracy only for now, more will be added manually)
   const legalItems: LegalItem[] = [
     {
       label: 'About Christephanie LLC',
@@ -87,7 +87,7 @@ function Beauracracy() {
         paddingBottom: '80px', // Padding to avoid content being hidden behind BottomNav
         padding: 0, // Remove default padding for the tabs to extend full width
       }}
-      data-testid="beauracracy-container"
+      data-testid="bureaucracy-container"
     >
       <Paper
         square
@@ -147,4 +147,4 @@ function Beauracracy() {
   );
 }
 
-export default Beauracracy;
+export default Bureaucracy;
