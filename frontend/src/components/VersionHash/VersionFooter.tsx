@@ -3,7 +3,7 @@ import { Stack, useTheme } from '@mui/system';
 import { StephsActualFavoriteTypographyAppVersion } from '../AttendanceButton/AttendanceButton';
 
 function AppVersionFooter() {
-  const applicationVersion = import.meta.env.REACT_APP_VERSION || 'development';
+  const applicationVersion = import.meta.env.VITE_APP_VERSION || 'development';
   const theme = useTheme();
   return (
     <Stack
@@ -23,7 +23,7 @@ function AppVersionFooter() {
         background: "transparent"
       }}
     >
-      Version: {applicationVersion}
+      Build: {applicationVersion}
       </Typography>
      </Stack>
   );
