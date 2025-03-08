@@ -27,7 +27,7 @@ const routes: Routes = {
     icon: AddTaskIcon,
   },
   [Pages.Bureaucracy]: {
-    component: asyncComponentLoader(() => import('@/pages/Beauracracy/Beauracracy')),
+    component: asyncComponentLoader(() => import('@/pages/Bureaucracy/Bureaucracy')),
     path: '/about-us',
     title: 'About Christephanie LLC',
     icon: AddTaskIcon,

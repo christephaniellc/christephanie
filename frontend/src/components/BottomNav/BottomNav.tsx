@@ -73,7 +73,7 @@ export const BottomNav = () => {
         <BottomNavigationAction
           color={activeLegalButtons}
           sx={{ height: '100%', marginLeft: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-          label="Beauracracy"
+          label="Bureaucracy"
           showLabel={true}
           icon={<GavelIcon color={activeLegalButtons} />}
           onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
@@ -84,7 +84,7 @@ export const BottomNav = () => {
         {/*  label="Privacy Policy"*/}
         {/*  showLabel={true}*/}
         {/*  icon={<ShieldIcon color={activeLegalButtons} />}*/}
-        {/*  onClick={() => handleNavigation(routes[Pages.Beauracracy].path!)}*/}
+        {/*  onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}*/}
         {/*/>*/}
         {/*<BottomNavigationAction*/}
         {/*  color={activeLegalButtons}*/}
