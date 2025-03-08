@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleEmail;
@@ -55,10 +56,13 @@ namespace Wedding.Common.Helpers.AWS
         {
             Console.WriteLine($"Sending verification email using Amazon SES. Email: {email.Value} Code: {email.VerificationCode}");
 
-            return await SendEmail(toAddresses: new List<string> { email.Value }, 
+            var result = await SendEmail(toAddresses: new List<string> { email.Value }, 
                subject: "Wedding Email Verification Code", 
                body: $"Your wedding email verification code is: {email.VerificationCode}", 
                cancellationToken);
+
+            Console.WriteLine($"Send email result: {result.HttpStatusCode} {JsonSerializer.Serialize(result.ResponseMetadata)}");
+            return result;
         }
     }
 }
