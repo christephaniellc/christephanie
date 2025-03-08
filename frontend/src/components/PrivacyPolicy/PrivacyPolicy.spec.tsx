@@ -44,7 +44,7 @@ const renderWithProviders = (component: React.ReactNode) => {
   );
 };
 
-describe('Beauracracy component [wip]', () => {
+describe('Bureaucracy component [wip]', () => {
   it('renders the privacy policy title [wip]', () => {
     renderWithProviders(<PrivacyPolicy />);
     

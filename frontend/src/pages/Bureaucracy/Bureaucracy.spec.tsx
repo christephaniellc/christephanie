@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import Beauracracy from './Beauracracy';
+import Bureaucracy from './Bureaucracy';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { RecoilRoot } from 'recoil';
@@ -44,16 +44,16 @@ const renderWithProviders = (component: React.ReactNode) => {
   );
 };
 
-describe('Beauracracy component [wip]', () => {
+describe('Bureaucracy component [wip]', () => {
   it('renders the tabs component [wip]', () => {
-    renderWithProviders(<Beauracracy />);
+    renderWithProviders(<Bureaucracy />);
     
     // Check that the tabs are rendered
     expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
   
   it('renders the Privacy Policy tab by default [wip]', () => {
-    renderWithProviders(<Beauracracy />);
+    renderWithProviders(<Bureaucracy />);
     
     // Check for the Privacy Policy tab
     const privacyPolicyTab = screen.getByText('Privacy Policy');
@@ -64,7 +64,7 @@ describe('Beauracracy component [wip]', () => {
   });
   
   it('renders the Privacy Policy component when tab is selected [wip]', () => {
-    renderWithProviders(<Beauracracy />);
+    renderWithProviders(<Bureaucracy />);
     
     // Check that the Privacy Policy component is rendered
     // We'll check for the container with the specific test ID
@@ -72,10 +72,10 @@ describe('Beauracracy component [wip]', () => {
   });
   
   it('has the correct container structure [wip]', () => {
-    renderWithProviders(<Beauracracy />);
+    renderWithProviders(<Bureaucracy />);
     
     // Check for the main container
-    const container = screen.getByTestId('beauracracy-container');
+    const container = screen.getByTestId('bureaucracy-container');
     expect(container).toBeInTheDocument();
     
     // Check for the tab panel
