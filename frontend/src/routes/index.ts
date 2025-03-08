@@ -26,28 +26,10 @@ const routes: Routes = {
     title: 'Profile',
     icon: AddTaskIcon,
   },
-  [Pages.FoodPreferences]: {
-    component: asyncComponentLoader(() => import('@/pages/Page4')),
-    path: '/food-preferences',
-    title: 'Food Preferences',
-    icon: AddTaskIcon,
-  },
-  [Pages.PrivacyPolicy]: {
-    component: asyncComponentLoader(() => import('@/pages/PrivacyPolicy')),
-    path: '/privacy-policy',
-    title: 'Privacy Policy',
-    icon: AddTaskIcon,
-  },
-  [Pages.TermsOfService]: {
-    component: asyncComponentLoader(() => import('@/pages/TermsOfService')),
-    path: '/terms-of-service',
-    title: 'TermsOfService',
-    icon: AddTaskIcon,
-  },
-  [Pages.AboutUs]: {
-    component: asyncComponentLoader(() => import('@/pages/AboutUs')),
+  [Pages.Bureaucracy]: {
+    component: asyncComponentLoader(() => import('@/pages/Beauracracy/Beauracracy')),
     path: '/about-us',
-    title: 'AboutUs',
+    title: 'About Christephanie LLC',
     icon: AddTaskIcon,
   },
   [Pages.Admin]: {
