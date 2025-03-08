@@ -18,12 +18,6 @@ export const useAppLayout = () => {
         newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         document.body.style.zoom = `${zoomLevel}`;
       }
-      if (screenWidth > maxWidth) {
-        const zoomLevel = screenWidth / maxWidth;
-        newHeightBasedOnZoom = window.innerHeight / zoomLevel;
-        console.log('setting new zoomLevel', zoomLevel);
-        document.body.style.zoom = `${zoomLevel}`;
-      }
       if (screenWidth >= minWidth && screenWidth <= maxWidth) {
         document.body.style.zoom = `1`;
       }
