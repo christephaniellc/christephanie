@@ -73,27 +73,35 @@ export const BottomNav = () => {
         <BottomNavigationAction
           color={activeLegalButtons}
           sx={{ height: '100%', marginLeft: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-          label="Privacy Policy"
-          showLabel={true}
-          icon={<ShieldIcon color={activeLegalButtons} />}
-          onClick={() => handleNavigation(routes[Pages.PrivacyPolicy].path!)}
-        />
-        <BottomNavigationAction
-          color={activeLegalButtons}
-          sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-          label="Terms of Service"
+          label="Beauracracy"
           showLabel={true}
           icon={<GavelIcon color={activeLegalButtons} />}
-          onClick={() => handleNavigation(routes[Pages.TermsOfService].path!)}
+          onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
         />
-        <BottomNavigationAction
-          color={activeLegalButtons}
-          sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-          label="About Us"
-          showLabel={true}
-          icon={<QuestionMark color={activeLegalButtons} />}
-          onClick={() => handleNavigation(routes[Pages.AboutUs].path!)}
-        />
+        {/*<BottomNavigationAction*/}
+        {/*  color={activeLegalButtons}*/}
+        {/*  sx={{ height: '100%', marginLeft: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
+        {/*  label="Privacy Policy"*/}
+        {/*  showLabel={true}*/}
+        {/*  icon={<ShieldIcon color={activeLegalButtons} />}*/}
+        {/*  onClick={() => handleNavigation(routes[Pages.Beauracracy].path!)}*/}
+        {/*/>*/}
+        {/*<BottomNavigationAction*/}
+        {/*  color={activeLegalButtons}*/}
+        {/*  sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
+        {/*  label="Terms of Service"*/}
+        {/*  showLabel={true}*/}
+        {/*  icon={<GavelIcon color={activeLegalButtons} />}*/}
+        {/*  onClick={() => handleNavigation(routes[Pages.TermsOfService].path!)}*/}
+        {/*/>*/}
+        {/*<BottomNavigationAction*/}
+        {/*  color={activeLegalButtons}*/}
+        {/*  sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
+        {/*  label="About Us"*/}
+        {/*  showLabel={true}*/}
+        {/*  icon={<QuestionMark color={activeLegalButtons} />}*/}
+        {/*  onClick={() => handleNavigation(routes[Pages.AboutUs].path!)}*/}
+        {/*/>*/}
         {userIsAdmin && (
           <BottomNavigationAction
             label="Admin"

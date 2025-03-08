@@ -64,16 +64,24 @@ export default function SaveTheDateStepper() {
 
   const guests = useMemo(() => family?.guests, [family]);
 
+  // Parse URL params on component mount and when location changes
   useEffect(() => {
-    if (urlParams) {
-      const step = urlParams.get('step');
-      if (step) {
-        const index = Object.keys(saveTheDateSteps).indexOf(step);
-        console.log('setting step index from urlParams', step, index);
+    const params = new URLSearchParams(location.search);
+    setUrlParams(params);
+    
+    const step = params.get('step');
+    if (step) {
+      const index = Object.keys(saveTheDateSteps).indexOf(step);
+      console.log('Setting step index from URL params:', step, index);
+      
+      // Only set the index if it's valid
+      if (index >= 0) {
         setTabIndex(index);
+      } else {
+        console.warn(`Invalid step parameter: ${step}`);
       }
     }
-  }, [saveTheDateSteps, urlParams]);
+  }, [location.search, saveTheDateSteps]);
 
   // useEffect(() => {
   //   console.log('tabIndex', tabIndex);
@@ -83,9 +91,27 @@ export default function SaveTheDateStepper() {
   //   setUrlParams(new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`));
   // }, [tabIndex]);
 
+  // Improved navigation function with logging and error handling
   const handleNavigateToStep = (step: string) => {
+    console.log('Navigating to step:', step);
+
+    // Check if the step exists in our steps object
+    if (!Object.keys(saveTheDateSteps).includes(step)) {
+      console.error(`Step "${step}" not found in saveTheDateSteps`);
+      return;
+    }
+
+    // Refresh family data before navigation
     familyActions.getFamily();
-    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
+
+    // Calculate step index
+    const stepIndex = Object.keys(saveTheDateSteps).indexOf(step);
+    console.log('Step index:', stepIndex);
+
+    // Update tab index in state
+    setTabIndex(stepIndex);
+
+    // Navigate to the URL with step parameter
     navigate(`/save-the-date?step=${step}`);
   };
 

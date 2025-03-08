@@ -55,7 +55,7 @@ const steps: { [step: string]: Step } = {
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
     lastDate: new Date('2025-05-20'),
     stepCompleted: true,
-    stepUrl: routes[Pages.FoodPreferences].path,
+    stepUrl: '/',
   },
   wedding: {
     id: 2,
@@ -221,6 +221,15 @@ const WelcomeStepper = () => {
             <Step key={key}>
               <StepLabel
                 icon={<StickFigureIcon rotation={0} fontSize="medium" ageGroup={user.ageGroup} />}
+                onClick={() => navigate(step.stepUrl || routes[Pages.SaveTheDate].path)}
+                sx={{ 
+                  cursor: 'pointer',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    backgroundColor: alpha(theme.palette.common.white, 0.1),
+                    borderRadius: 1,
+                  }
+                }}
               >
                 <Typography color="common.white" fontWeight={activeStep === step.id ? 'medium' : 'normal'}>
                   {step.label}
