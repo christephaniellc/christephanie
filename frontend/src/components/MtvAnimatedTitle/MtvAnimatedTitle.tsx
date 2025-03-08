@@ -145,8 +145,60 @@ const MtvAnimatedTitle = () => {
   // Compute the scaleX factor: a linear mapping from rotation 0-90 to scale 1-1.3.
   const scaleX = 1 + (rotationX / 90) * 0.3;
 
+  // Check if the current step is the "Interested" step
+  const isInterestedStep = Object.values(saveTheDateSteps)[tabIndex]?.label === "Interested";
+  
   return (
     <Box p={2} height={110} display="flex" alignItems="center" width={1} position="relative">
+      {/* Arrow pointing to typography for the "Interested" step */}
+      {isInterestedStep && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: 20,
+            transform: 'translateY(-50%)',
+            animation: 'bounce 1.5s infinite ease-in-out',
+            '@keyframes bounce': {
+              '0%, 100%': { transform: 'translateX(0) translateY(-50%)' },
+              '50%': { transform: 'translateX(10px) translateY(-50%)' },
+            },
+            color: theme.palette.secondary.main,
+            zIndex: 10,
+            display: { xs: 'none', md: 'block' } // Only show on medium screens and up
+          }}
+        >
+          <Box sx={{ position: 'relative', width: 60, height: 40 }}>
+            <Box 
+              component="div" 
+              sx={{ 
+                position: 'absolute',
+                width: 35,
+                height: 3,
+                backgroundColor: 'currentColor',
+                top: '50%',
+                left: 0,
+                transform: 'translateY(-50%)'
+              }}
+            />
+            <Box 
+              component="div"
+              sx={{
+                position: 'absolute',
+                width: 0,
+                height: 0,
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderLeft: `15px solid ${theme.palette.secondary.main}`,
+                top: '50%',
+                right: 10,
+                transform: 'translateY(-50%)'
+              }}
+            />
+          </Box>
+        </Box>
+      )}
+      
       <StephsActualFavoriteTypography
         variant="h6"
         sx={{
@@ -155,7 +207,7 @@ const MtvAnimatedTitle = () => {
           mb: 2,
           fontStretch: 'expanded',
           // width: ,
-          color: 'palette.secondary',
+          color: isInterestedStep ? theme.palette.secondary.main : 'palette.secondary',
           // Combine rotateX and scaleX transforms
           transform: `rotateX(${rotationX}deg) scaleX(${scaleX})`,
           // [theme.breakpoints.up('md')]: {
@@ -166,6 +218,56 @@ const MtvAnimatedTitle = () => {
       >
         {Object.values(saveTheDateSteps)[tabIndex]?.label}
       </StephsActualFavoriteTypography>
+      
+      {/* Arrow pointing from the right side on small screens */}
+      {isInterestedStep && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            right: 20,
+            transform: 'translateY(-50%) scaleX(-1)', // Flip arrow to point from right
+            animation: 'bounce 1.5s infinite ease-in-out',
+            '@keyframes bounce': {
+              '0%, 100%': { transform: 'translateX(0) translateY(-50%) scaleX(-1)' },
+              '50%': { transform: 'translateX(-10px) translateY(-50%) scaleX(-1)' },
+            },
+            color: theme.palette.secondary.main,
+            zIndex: 10,
+            display: { xs: 'block', md: 'none' } // Only show on small screens
+          }}
+        >
+          <Box sx={{ position: 'relative', width: 60, height: 40 }}>
+            <Box 
+              component="div" 
+              sx={{ 
+                position: 'absolute',
+                width: 35,
+                height: 3,
+                backgroundColor: 'currentColor',
+                top: '50%',
+                left: 0,
+                transform: 'translateY(-50%)'
+              }}
+            />
+            <Box 
+              component="div"
+              sx={{
+                position: 'absolute',
+                width: 0,
+                height: 0,
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderLeft: `15px solid ${theme.palette.secondary.main}`,
+                top: '50%',
+                right: 10,
+                transform: 'translateY(-50%)'
+              }}
+            />
+          </Box>
+        </Box>
+      )}
+      
       {showSnow && <TvSnow />}
     </Box>
   );

@@ -3,7 +3,15 @@ import Box from '@mui/material/Box';
 import { useRecoilValue } from 'recoil';
 import { FoodAllergyIconProps, seriousFoodAllergies } from '@/components/Allergies';
 import Button from '@mui/material/Button';
-import { ButtonGroup, Chip, darken, InputAdornment, TextField, useTheme } from '@mui/material';
+import { 
+  ButtonGroup, 
+  Chip, 
+  darken, 
+  Dialog,
+  InputAdornment, 
+  TextField, 
+  useTheme 
+} from '@mui/material';
 import { guestSelector, useFamily } from '@/store/family';
 import { userState } from '@/store/user';
 import Vegetarian from '@/assets/Vegetarian.png';
@@ -170,6 +178,39 @@ function FoodAllergies({ guestId }: { guestId: string }) {
     return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.main, 0.85)}`;
   };
 
+  // State for modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Function to handle search input changes
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+  
+  // Filter allergies based on search term
+  const filteredAllergies = useMemo(() => {
+    if (!searchTerm) return allergyIconProps;
+    
+    return allergyIconProps.filter(allergy => 
+      allergy.allergyName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allergyIconProps, searchTerm]);
+  
+  // Organize allergies - selected ones at the top
+  const organizedAllergies = useMemo(() => {
+    // First, split into selected and unselected
+    const selected = filteredAllergies.filter(allergy => 
+      guest.preferences.foodAllergies.includes(allergy.allergyName)
+    );
+    
+    const unselected = filteredAllergies.filter(allergy => 
+      !guest.preferences.foodAllergies.includes(allergy.allergyName)
+    );
+    
+    // Combine with selected ones first
+    return [...selected, ...unselected];
+  }, [filteredAllergies, guest.preferences.foodAllergies]);
+
   return (
     <Box
       onMouseMove={handleMouseMove}
@@ -189,89 +230,282 @@ function FoodAllergies({ guestId }: { guestId: string }) {
       }}
     >
       {guest.ageGroup === AgeGroupEnum.Baby && (
-        <Typography variant="h6" color="secondary" my="auto" width='80%' mx='auto'>
-          {guestName} is a baby. They are allergic to our nosy questions.
-        </Typography>
+        <Box sx={{ textAlign: 'center', width: '100%', p: 2 }}>
+          <BabyBottleIcon 
+            sx={{ 
+              fontSize: 60, 
+              mb: 2,
+              color: theme.palette.secondary.main 
+            }} 
+          />
+          <Typography variant="h6" color="secondary" gutterBottom>
+            {guestName} is a baby.
+          </Typography>
+          <Typography variant="body1" color="secondary.light">
+            They'll need their own special food. We'll have high chairs available, but please bring any specific baby food your little one prefers.
+          </Typography>
+        </Box>
       )}
       {guest.ageGroup !== AgeGroupEnum.Baby && (
         <>
-          <Chip
-            sx={{
-              backdropFilter: 'blur(20px)',
-              backgroundColor: 'rgba(0,0,0,.6)',
-              my: 1,
-              width: '100%',
-            }}
-            icon={<>{activeEatingIcon}</>}
-            label={`I can eat anything. Just watch me.`}
-            disabled={
-              familyActions.patchFamilyGuestMutation.status === 'pending' ||
-              familyActions.getFamilyUnitQuery.isFetching
-            }
-            color={
-              (chosenAllergies.join('') === 'none' ? 'secondary' : 'primary') as
-                | 'primary'
-                | 'secondary'
-            }
-            variant={
-              (chosenAllergies.join('') === 'none' ? 'outlined' : 'filled') as 'outlined' | 'filled'
-            }
-            onClick={() => resetAllergies()}
-          />
-          <Box
-            height={110}
-            mb={2}
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 1,
-              flexWrap: 'wrap',
-              overflow: 'auto',
-            }}
-          >
-            {allergyIconProps.map((allergy) => {
-              const matchingAllergy = allergyIconProps.find((a) => a === allergy);
-              if (!matchingAllergy) return;
-
-              const newAllergies = allergyIconProps.filter((a) => a !== allergy);
-              if (!newAllergies) return;
-
-              return (
-                <Chip
-                  sx={{
-                    backdropFilter: 'blur(20px)',
-                    backgroundColor: 'rgba(0,0,0,.6)',
-                    // my: 0.5,
-                    cursor: 'pointer',
-                    color: guest.preferences.foodAllergies.includes(allergy.allergyName)
-                      ? theme.palette.warning.main
-                      : theme.palette.success.light,
-                  }}
-                  variant={
-                    guest.preferences.foodAllergies.includes(allergy.allergyName)
-                      ? 'outlined'
-                      : ('filled' as 'outlined' | 'filled')
-                  }
-                  color={
-                    guest.preferences.foodAllergies.includes(allergy.allergyName)
-                      ? 'error'
-                      : ('success' as 'primary' | 'error' | 'success' | 'secondary')
-                  }
-                  icon={<allergy.icon />}
-                  disabled={
-                    familyActions.patchFamilyGuestMutation.status === 'pending' ||
-                    familyActions.getFamilyUnitQuery.isFetching
-                  }
-                  label={allergy.allergyName}
-                  onClick={() => handleGuestFoodAllergy(allergy.allergyName)}
-                />
-              );
-            })}
+          {/* Two big buttons side by side */}
+          <Box display="flex" width="100%" gap={2} mb={2}>
+            <Button
+              color="secondary"
+              variant={chosenAllergies.join('') === 'none' ? 'contained' : 'outlined'}
+              sx={{
+                flexGrow: 1,
+                height: 80,
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
+                paddingX: 2,
+                backdropFilter: 'blur(20px)',
+                backgroundColor: 'rgba(0,0,0,.6)',
+                border: (theme) => 
+                  chosenAllergies.join('') === 'none' 
+                    ? `1px solid ${theme.palette.secondary.main}` 
+                    : `1px solid ${darken(theme.palette.grey[500], 0.2)}`,
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,.7)',
+                  backdropFilter: 'blur(20px)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+              startIcon={activeEatingIcon}
+              onClick={() => resetAllergies()}
+              disabled={
+                familyActions.patchFamilyGuestMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+            >
+              I can eat anything
+            </Button>
+            
+            <Button
+              variant={chosenAllergies.join('') !== 'none' ? 'contained' : 'outlined'}
+              color="warning"
+              sx={{
+                flexGrow: 1,
+                height: 80,
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
+                paddingX: 2,
+                backdropFilter: 'blur(20px)',
+                backgroundColor: 'rgba(0,0,0,.6)',
+                border: (theme) => 
+                  chosenAllergies.join('') !== 'none' 
+                    ? `1px solid ${theme.palette.warning.main}` 
+                    : `1px solid ${darken(theme.palette.grey[500], 0.2)}`,
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,.7)',
+                  backdropFilter: 'blur(20px)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+              startIcon={<WarningAmber />}
+              onClick={() => setModalOpen(true)}
+              disabled={
+                familyActions.patchFamilyGuestMutation.status === 'pending' ||
+                familyActions.getFamilyUnitQuery.isFetching
+              }
+            >
+              {chosenAllergies.join('') === 'none' ? 'I\'m allergic to stuff' : (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'flex-start' }}>
+                  {chosenAllergies.map(allergy => {
+                    if (allergy === 'none') return null;
+                    const allergyData = allergyIconProps.find(a => a.allergyName === allergy);
+                    if (!allergyData) return null;
+                    return (
+                      <Chip 
+                        key={allergy}
+                        label={allergy}
+                        size="small"
+                        icon={allergyData ? <allergyData.icon fontSize="small" /> : undefined}
+                        sx={{ 
+                          m: 0.25,
+                          backgroundColor: 'rgba(0,0,0,0.4)',
+                          backdropFilter: 'blur(5px)',
+                          border: `1px solid ${theme.palette.warning.light}`,
+                          color: theme.palette.warning.light,
+                          transition: 'all 0.2s ease',
+                          '& .MuiChip-icon': {
+                            color: theme.palette.warning.light,
+                          }
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              )}
+            </Button>
           </Box>
           
-          {/* Add the AddAllergyButton component */}
-          <Box display="flex" justifyContent="center" width="100%" mt={2}>
-            <AddAllergyButton guestId={guestId} />
+          {/* Allergies selection modal */}
+          <Box component="div">
+            <Dialog
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              fullWidth
+              maxWidth="sm"
+              PaperProps={{
+                sx: {
+                  backdropFilter: 'blur(20px)',
+                  backgroundColor: 'rgba(0,0,0,.9)',
+                  border: `1px solid ${theme.palette.warning.main}`,
+                  borderRadius: 2,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.5)`,
+                  minHeight: '80vh',
+                  '& .MuiDialogTitle-root': {
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                  }
+                }
+              }}
+            >
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" color="warning.main">
+                  Select Allergies
+                </Typography>
+                <Button 
+                  onClick={() => setModalOpen(false)}
+                  variant="contained"
+                  color="warning"
+                  sx={{
+                    paddingX: 3,
+                    fontWeight: 'bold',
+                    border: `1px solid ${theme.palette.warning.main}`,
+                    '&:hover': {
+                      backgroundColor: darken(theme.palette.warning.main, 0.1),
+                    }
+                  }}
+                >
+                  Save Allergies
+                </Button>
+              </Box>
+              
+              {/* Search input */}
+              <Box sx={{ px: 2, pb: 2 }}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Search allergies..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 1.5,
+                      border: `1px solid ${darken(theme.palette.grey[700], 0.2)}`,
+                      '&.Mui-focused': {
+                        border: `1px solid ${theme.palette.warning.main}`,
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.warning.main,
+                        }
+                      },
+                      '&:hover': {
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'transparent',
+                      }
+                    },
+                    '& .MuiInputBase-input': {
+                      color: theme.palette.text.primary,
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <WarningAmber color="warning" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+              
+              {/* Allergies list - selected ones at the top */}
+              <Box
+                sx={{
+                  px: 2,
+                  pb: 2,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  maxHeight: '50vh',
+                  overflowY: 'auto',
+                }}
+              >
+                {searchTerm && !filteredAllergies.length ? (
+                  <Box width="100%" mt={2}>
+                    <Typography>No matches found. Add a custom allergy below.</Typography>
+                  </Box>
+                ) : (
+                  organizedAllergies.map((allergy) => (
+                    <Chip
+                      key={allergy.allergyName}
+                      sx={{
+                        backdropFilter: 'blur(20px)',
+                        backgroundColor: 'rgba(0,0,0,.6)',
+                        cursor: 'pointer',
+                        m: 0.5,
+                        transition: 'all 0.2s ease',
+                        border: guest.preferences.foodAllergies.includes(allergy.allergyName)
+                          ? `1px solid ${theme.palette.warning.main}`
+                          : `1px solid ${darken(theme.palette.grey[500], 0.2)}`,
+                        color: guest.preferences.foodAllergies.includes(allergy.allergyName)
+                          ? theme.palette.warning.main
+                          : theme.palette.text.primary,
+                        '&:hover': {
+                          backgroundColor: 'rgba(0,0,0,.7)',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        },
+                        '& .MuiChip-icon': {
+                          color: guest.preferences.foodAllergies.includes(allergy.allergyName)
+                            ? theme.palette.warning.main
+                            : theme.palette.text.secondary,
+                          transition: 'color 0.2s ease',
+                        },
+                      }}
+                      variant={
+                        guest.preferences.foodAllergies.includes(allergy.allergyName)
+                          ? 'outlined'
+                          : ('filled' as 'outlined' | 'filled')
+                      }
+                      color={
+                        guest.preferences.foodAllergies.includes(allergy.allergyName)
+                          ? 'warning'
+                          : ('default' as 'warning' | 'default')
+                      }
+                      icon={<allergy.icon />}
+                      disabled={
+                        familyActions.patchFamilyGuestMutation.status === 'pending' ||
+                        familyActions.getFamilyUnitQuery.isFetching
+                      }
+                      label={allergy.allergyName}
+                      onClick={() => handleGuestFoodAllergy(allergy.allergyName)}
+                    />
+                  ))
+                )}
+              </Box>
+              
+              {/* Add custom allergy section */}
+              <Box 
+                sx={{ 
+                  borderTop: `1px solid ${theme.palette.divider}`, 
+                  p: 2,
+                  mt: 'auto'
+                }}
+              >
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Don't see your allergy? Add a custom one:
+                </Typography>
+                <AddAllergyButton 
+                  guestId={guestId} 
+                />
+              </Box>
+            </Dialog>
           </Box>
         </>
       )}

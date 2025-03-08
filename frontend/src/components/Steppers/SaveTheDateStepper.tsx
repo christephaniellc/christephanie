@@ -18,7 +18,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useFamily } from '@/store/family';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
-import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
+import { ButtonsContainer } from './StyledComponents';
 import IconButton from '@mui/material/IconButton';
 import {
   Check, CheckCircleOutlineTwoTone,
@@ -89,6 +89,7 @@ export default function SaveTheDateStepper() {
       const currentUrlStep = params.get('step');
       
       if (currentStep && currentUrlStep !== currentStep) {
+        console.log('Updating URL to match current step:', currentStep);
         // Use history.replaceState to update URL without adding new history entry
         const newUrl = `/save-the-date?step=${currentStep}`;
         window.history.replaceState(null, '', newUrl);

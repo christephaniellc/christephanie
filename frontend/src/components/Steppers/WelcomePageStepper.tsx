@@ -47,7 +47,7 @@ const steps: { [step: string]: Step } = {
       'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
     lastDate: new Date('2025-05-20'),
     stepCompleted: true,
-    stepUrl: routes[Pages.FoodPreferences].path,
+    stepUrl: '/'
   },
   wedding: {
     id: 2,
@@ -108,8 +108,6 @@ export default function WelcomePageStepper() {
 
   const handleActionButtonClick = () => {
     if (isUserAttending && allStepsCompleted) {
-      // If user is attending and all steps are completed, go to RSVP
-      navigate(routes[Pages.FoodPreferences].path);
     } else if (firstIncompleteStep) {
       // If there are incomplete steps, navigate to the first incomplete step
       navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
