@@ -18,7 +18,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useFamily } from '@/store/family';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
-import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
+import { ButtonsContainer } from './StyledComponents';
 import IconButton from '@mui/material/IconButton';
 import {
   Check, CheckCircleOutlineTwoTone,
@@ -53,7 +53,6 @@ export default function SaveTheDateStepper() {
   const theme = useTheme();
 
   const [family, familyActions] = useFamily();
-  const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
@@ -61,57 +60,46 @@ export default function SaveTheDateStepper() {
   const [interestedStep, setInterestedStep] = useState<number>(1);
   const [pendingSteps, setPendingSteps] = useState<number>(1);
   const [declinedSteps, setDeclinedSteps] = useState<number>(1);
+  const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
 
   const guests = useMemo(() => family?.guests, [family]);
 
-  // Parse URL params on component mount and when location changes
+  // Effect that runs on initial load and when the location changes
+  // This will check for the step query parameter and set the active step
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    setUrlParams(params);
-    
     const step = params.get('step');
-    if (step) {
+    
+    if (step && Object.keys(saveTheDateSteps).includes(step)) {
       const index = Object.keys(saveTheDateSteps).indexOf(step);
       console.log('Setting step index from URL params:', step, index);
+      setTabIndex(index);
+      setInitialUrlProcessed(true);
+    } else if (!initialUrlProcessed) {
+      setInitialUrlProcessed(true);
+    }
+  }, [location.search, saveTheDateSteps, setTabIndex, initialUrlProcessed]);
+  
+  // Effect to update URL when tab changes - only after initial URL is processed
+  useEffect(() => {
+    // Only update URL after we've processed the initial URL parameter
+    if (initialUrlProcessed) {
+      const currentStep = Object.keys(saveTheDateSteps)[tabIndex];
+      const params = new URLSearchParams(location.search);
+      const currentUrlStep = params.get('step');
       
-      // Only set the index if it's valid
-      if (index >= 0) {
-        setTabIndex(index);
-      } else {
-        console.warn(`Invalid step parameter: ${step}`);
+      if (currentStep && currentUrlStep !== currentStep) {
+        console.log('Updating URL to match current step:', currentStep);
+        // Use history.replaceState to update URL without adding new history entry
+        const newUrl = `/save-the-date?step=${currentStep}`;
+        window.history.replaceState(null, '', newUrl);
       }
     }
-  }, [location.search, saveTheDateSteps]);
+  }, [tabIndex, saveTheDateSteps, location.search, initialUrlProcessed]);
 
-  // useEffect(() => {
-  //   console.log('tabIndex', tabIndex);
-  //   console.log('saveTheDateSteps', Object.keys(saveTheDateSteps)[tabIndex]);
-  //   console.log('location', location.search);
-  //   console.log('urlParams', new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`))
-  //   setUrlParams(new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`));
-  // }, [tabIndex]);
-
-  // Improved navigation function with logging and error handling
   const handleNavigateToStep = (step: string) => {
-    console.log('Navigating to step:', step);
-
-    // Check if the step exists in our steps object
-    if (!Object.keys(saveTheDateSteps).includes(step)) {
-      console.error(`Step "${step}" not found in saveTheDateSteps`);
-      return;
-    }
-
-    // Refresh family data before navigation
     familyActions.getFamily();
-
-    // Calculate step index
-    const stepIndex = Object.keys(saveTheDateSteps).indexOf(step);
-    console.log('Step index:', stepIndex);
-
-    // Update tab index in state
-    setTabIndex(stepIndex);
-
-    // Navigate to the URL with step parameter
+    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
     navigate(`/save-the-date?step=${step}`);
   };
 

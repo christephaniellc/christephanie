@@ -27,6 +27,7 @@ import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { useNavigate } from 'react-router-dom';
 import { dark } from '@mui/material/styles/createPalette';
 import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
+import { ButtonsContainer } from '@/components/Steppers/StyledComponents';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
@@ -225,18 +226,3 @@ function SaveTheDatePage() {
 }
 
 export default SaveTheDatePage;
-
-export const ButtonsContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'space-between',
-  gap: 16,
-  justifyContent: 'center',
-  width: '100%',
-  mx: 'auto',
-  maxHeight: '100%',
-  height: '100%',
-  paddingBottom: rem('40px'),
-  position: 'relative',
-  overflow: 'auto',
-}));
