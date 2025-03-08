@@ -19,6 +19,7 @@ import { QuestionMark } from '@mui/icons-material';
 import { userState } from '@/store/user';
 import { isAdmin } from '@/utils/roles';
 import { ApiContext } from '@/context/ApiContext';
+import AppVersionFooter from '../VersionHash';
 
 export const BottomNav = () => {
   const [navValue, setNavValue] = useState();
@@ -50,7 +51,16 @@ export const BottomNav = () => {
   return (
     <Box position="fixed" bottom={0} width="100%" sx={{ backgroundColor: 'transparent', zIndex: 100, height: 65}} component={Paper} elevation={5}>
       <BottomNavigation
-        sx={{ backgroundColor: 'rgba(0,0,0,.5)', backdropFilter: 'blur(20px)', borderTop: '4px solid rgba(255,255,255,.1)', height: 65 }}
+        sx={{ 
+          backgroundColor: 'rgba(0,0,0,.5)', 
+          backdropFilter: 'blur(20px)', 
+          borderTop: '4px solid rgba(255,255,255,.1)', 
+          height: 65,
+          "& .MuiBottomNavigationAction-root.Mui-selected": {
+            backgroundColor: "primary.main",
+            color: "common.white",
+          },
+        }}
         value={navValue}
         onChange={(event, newValue) => setNavValue(newValue)}
       >
@@ -65,6 +75,7 @@ export const BottomNav = () => {
         <BottomNavigationAction
           disabled={!auth0User}
           label="Save the Date"
+          align="center"
           component={Link}
           showLabel={true}
           to={routes[Pages.SaveTheDate].path!}
