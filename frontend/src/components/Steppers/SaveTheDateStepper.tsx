@@ -53,7 +53,6 @@ export default function SaveTheDateStepper() {
   const theme = useTheme();
 
   const [family, familyActions] = useFamily();
-  const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
@@ -61,27 +60,41 @@ export default function SaveTheDateStepper() {
   const [interestedStep, setInterestedStep] = useState<number>(1);
   const [pendingSteps, setPendingSteps] = useState<number>(1);
   const [declinedSteps, setDeclinedSteps] = useState<number>(1);
+  const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
 
   const guests = useMemo(() => family?.guests, [family]);
 
+  // Effect that runs on initial load and when the location changes
+  // This will check for the step query parameter and set the active step
   useEffect(() => {
-    if (urlParams) {
-      const step = urlParams.get('step');
-      if (step) {
-        const index = Object.keys(saveTheDateSteps).indexOf(step);
-        console.log('setting step index from urlParams', step, index);
-        setTabIndex(index);
+    const params = new URLSearchParams(location.search);
+    const step = params.get('step');
+    
+    if (step && Object.keys(saveTheDateSteps).includes(step)) {
+      const index = Object.keys(saveTheDateSteps).indexOf(step);
+      console.log('Setting step index from URL params:', step, index);
+      setTabIndex(index);
+      setInitialUrlProcessed(true);
+    } else if (!initialUrlProcessed) {
+      setInitialUrlProcessed(true);
+    }
+  }, [location.search, saveTheDateSteps, setTabIndex, initialUrlProcessed]);
+  
+  // Effect to update URL when tab changes - only after initial URL is processed
+  useEffect(() => {
+    // Only update URL after we've processed the initial URL parameter
+    if (initialUrlProcessed) {
+      const currentStep = Object.keys(saveTheDateSteps)[tabIndex];
+      const params = new URLSearchParams(location.search);
+      const currentUrlStep = params.get('step');
+      
+      if (currentStep && currentUrlStep !== currentStep) {
+        // Use history.replaceState to update URL without adding new history entry
+        const newUrl = `/save-the-date?step=${currentStep}`;
+        window.history.replaceState(null, '', newUrl);
       }
     }
-  }, [saveTheDateSteps, urlParams]);
-
-  // useEffect(() => {
-  //   console.log('tabIndex', tabIndex);
-  //   console.log('saveTheDateSteps', Object.keys(saveTheDateSteps)[tabIndex]);
-  //   console.log('location', location.search);
-  //   console.log('urlParams', new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`))
-  //   setUrlParams(new URLSearchParams(`?step=${Object.keys(saveTheDateSteps)[tabIndex]}`));
-  // }, [tabIndex]);
+  }, [tabIndex, saveTheDateSteps, location.search, initialUrlProcessed]);
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
