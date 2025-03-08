@@ -13,7 +13,7 @@ import CampingPreferences from '@/components/CampingPreferences';
 import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
 import { rgba } from 'polished';
-import { ArrowBack, ArrowForward, EditOutlined, LoopOutlined } from '@mui/icons-material';
+import { DoubleArrow, EditOutlined, ThumbUpAlt } from '@mui/icons-material';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -90,6 +90,17 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
     console.log('Navigating to attendance step');
     // Set tab index to 0 to navigate to the attendance step
     setTabIndex(0);
+  };
+
+  // Get the response color based on invitation status
+  const getResponseColor = () => {
+    if (guest.rsvp.invitationResponse === InvitationResponseEnum.Interested) {
+      return theme.palette.primary.main;
+    } else if (guest.rsvp.invitationResponse === InvitationResponseEnum.Declined) {
+      return theme.palette.error.main;
+    } else {
+      return theme.palette.secondary.main;
+    }
   };
 
   return (
@@ -180,18 +191,22 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
               },
             }}
           >
-            <ArrowBack
-              sx={{
-                mr: 2,
-                fontSize: '1.5rem',
-                animation: 'pulse 1.5s infinite ease-in-out',
-                '@keyframes pulse': {
-                  '0%': { opacity: 0.5, transform: 'translateX(0)' },
-                  '50%': { opacity: 1, transform: 'translateX(-5px)' },
-                  '100%': { opacity: 0.5, transform: 'translateX(0)' },
-                },
-              }}
-            />
+          <DoubleArrow
+            sx={{
+              mr: 2,
+              fontSize: '1.8rem',
+              color: getResponseColor(),
+              strokeWidth: 1.5,
+              textShadow: '3px 3px 0px rgba(0,0,0,0.7)',
+              filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
+              animation: 'pulse 1.5s infinite ease-in-out',
+              '@keyframes pulse': {
+                '0%': { opacity: 0.7, transform: 'translateX(0) rotate(210deg)' },
+                '50%': { opacity: 1, transform: 'translateX(-8px) rotate(135deg)' },
+                '100%': { opacity: 0.7, transform: 'translateX(0) rotate(210deg)' },
+              },
+            }}
+          />
             <Typography
               variant="body2"
               color="secondary.light"
@@ -226,7 +241,13 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
               },
             }}
           >
-            <EditOutlined sx={{ mr: 2 }} />
+            <EditOutlined 
+              sx={{ 
+                mr: 2,
+                color: theme.palette.secondary.main,
+                filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
+              }} 
+            />
             <Typography variant="body2" color="secondary.light" sx={{ fontWeight: 'medium' }}>
               Click to change your response. {daysUntilDeadline} days remaining.
             </Typography>
@@ -253,7 +274,13 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
               },
             }}
           >
-            <EditOutlined sx={{ mr: 2 }} />
+            <EditOutlined 
+              sx={{ 
+                mr: 2,
+                color: theme.palette.error.main,
+                filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))', 
+              }} 
+            />
             <Typography variant="body2" color="error.light" sx={{ fontWeight: 'medium' }}>
               Click to change your response. {daysUntilDeadline} days remaining.
             </Typography>
