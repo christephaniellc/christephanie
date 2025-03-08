@@ -11,7 +11,9 @@ namespace Wedding.Common.Helpers
         public static string GenerateCode()
         {
             var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            var code = random.Next(100000, 999999).ToString();
+            Console.WriteLine($"Generated code: {code}");
+            return code;
         }
 
         public static DateTime GenerateExpiry()

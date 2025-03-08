@@ -6,6 +6,7 @@ import * as apiGateway from 'aws-cdk-lib/aws-apigatewayv2';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
+import * as cr from 'aws-cdk-lib/custom-resources';
 
 export interface DnsStackProps extends EnvStackProps {
     hostedZone: route53.IHostedZone;
@@ -99,6 +100,33 @@ export class DnsStack extends cdk.Stack {
             }),
         })
       });
+
+    // Add TXT record for emailing
+    const domainIdentity = new cr.AwsCustomResource(this, 'DomainIdentity', {
+      onCreate: {
+        service: 'SES',
+        action: 'verifyDomainIdentity',
+        parameters: {
+          Domain: props.fullDomainName,
+        },
+        // Use a stable physical resource ID so that the custom resource doesn't get recreated unnecessarily.
+        physicalResourceId: cr.PhysicalResourceId.of(props.fullDomainName),
+      },
+      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
+        resources: cr.AwsCustomResourcePolicy.ANY_RESOURCE,
+      }),
+    });
+    
+    // The TXT record name required by SES for domain verification
+    const recordName = `_amazonses.${props.fullDomainName}`;
+
+    // Create a Route 53 TXT record using the verification token returned by the SES custom resource
+    new route53.TxtRecord(this, 'SesDomainVerificationRecord', {
+      zone: props.hostedZone,
+      recordName,
+      values: [domainIdentity.getResponseField('VerificationToken')],
+      ttl: cdk.Duration.minutes(5),
+    });
       
     // Print outputs
     new cdk.CfnOutput(this, 'ApiGatewayDomainUrl', {
@@ -113,6 +141,10 @@ export class DnsStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, 'FrontendApexDomainName', {
       value: `https://${frontendApexARecord.domainName}`
+    });
+    new cdk.CfnOutput(this, 'VerificationToken', {
+      value: domainIdentity.getResponseField('VerificationToken'),
+      description: 'DNS verification token to add as a TXT record for domain verification in SES.',
     });
   }
 }
