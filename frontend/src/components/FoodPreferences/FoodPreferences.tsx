@@ -72,6 +72,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             <Button
               sx={{
                 width: '100%',
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
               }}
               color="secondary"
               disabled={
@@ -104,7 +107,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             <Button
               sx={{
                 width: '100%',
-                lineHeight: 0.7,
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
               }}
               color="secondary"
               variant={
@@ -128,7 +133,6 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                     filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
                       ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
                       : '',
-                    lineHeight: 0.7,
                   }}
                 />
               }
@@ -138,6 +142,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             <Button
               sx={{
                 width: '100%',
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
               }}
               color="secondary"
               disabled={
@@ -171,6 +178,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             <Button
               sx={{
                 width: '100%',
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
               }}
               color="secondary"
               endIcon={
@@ -213,6 +223,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             <Button
               sx={{
                 width: '100%',
+                lineHeight: 1.2,
+                justifyContent: 'flex-start',
+                paddingY: 1.5,
               }}
               color="secondary"
               endIcon={
