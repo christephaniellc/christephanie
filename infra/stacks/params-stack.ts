@@ -13,7 +13,7 @@ export class ParamsStack extends cdk.Stack {
         super(scope, id, {...props, description: "Creates SecureString Parameters in SSM"});
 
     const environment = this.node.tryGetContext('env') || 'dev'; 
-    const { applicationName, mailFromAddress } = ApplicationProps;
+    const { applicationName } = ApplicationProps;
     console.log("------------------------");
     console.log("ParamsStack");
 
@@ -36,7 +36,7 @@ export class ParamsStack extends cdk.Stack {
             name: "/config/application/properties", 
             value: JSON.stringify({
                 "ApplicationName": `${applicationName}`,
-                "MailFromAddress": `${mailFromAddress}`
+                "MailFromAddress": `${props.env.mailFromAddress}`
                 }) 
         },
         { 

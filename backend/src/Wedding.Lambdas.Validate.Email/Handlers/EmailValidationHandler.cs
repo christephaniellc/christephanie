@@ -106,6 +106,8 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
                     VerificationCodeExpiration = VerificationCodeHelper.GenerateExpiry()
                 };
 
+            _logger.LogInformation($"EmailValidationHandler: Sending code '{verifyEmail.VerificationCode} to email: {verifyEmail.Value}");
+
             existingGuestEntity.Email = verifyEmail.ToString();
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
