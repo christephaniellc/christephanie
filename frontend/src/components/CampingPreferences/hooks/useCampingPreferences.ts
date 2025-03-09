@@ -42,7 +42,7 @@ export const useCampingPreferences = (guestId: string) => {
   const hotelOptions: HotelOption[] = [
     {
       name: 'Holiday Inn Express Suites - Brunswick, MD',
-      image: '/src/assets/holiday-inn-express-brunswick.jpg',
+      image: '.../assets/holiday-inn-express-brunswick.jpg',
       googleRating: 4.6,
       phoneNumber: "(301) 969-8020",
       numberOfRatings: 195,
@@ -54,7 +54,7 @@ export const useCampingPreferences = (guestId: string) => {
     },
     {
       name: 'Holiday Inn Express Charles Town, Ranson, WV',
-      image: '/src/assets/holiday-inn-express-charlestown.jpg',
+      image: '.../assets/holiday-inn-express-charlestown.jpg',
       googleRating: 4.5,
       phoneNumber: "(304) 725-1330",
       numberOfRatings: 755,
