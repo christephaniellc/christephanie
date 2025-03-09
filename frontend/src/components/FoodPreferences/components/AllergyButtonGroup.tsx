@@ -113,8 +113,10 @@ const AllergyButtonGroup: React.FC<AllergyButtonGroupProps> = ({
             <Box width="100%" display="flex" flexWrap="wrap" justifyContent="center" gap={0.5}>
               {chosenAllergies.map((allergy) => {
                 if (allergy === 'none') return null;
+                // Find the allergy data in our allergyIconProps list
                 const allergyData = allergyIconProps.find((a) => a.allergyName === allergy);
-                if (!allergyData) return null;
+                
+                // Render the allergy chip, even if we don't have predefined data for it
                 return (
                   <Chip
                     key={allergy}
