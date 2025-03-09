@@ -19,6 +19,14 @@ const DEV_CONFIG: Config = {
   returnTo: "https://www.dev.wedding.christephanie.com"
 };
 
+const PROD_CONFIG: Config = {
+  domain: "christephanie.us.auth0.com",
+  clientId: "wWcIuy2ILD0fvUucUzJlicIPUEHSa2f6",
+  audience: "https://fianceapi.wedding.christephanie.com",
+  webserviceUrl: "https://fianceapi.wedding.christephanie.com",
+  returnTo: "https://www.wedding.christephanie.com"
+};
+
 // Test config that is used in automated tests
 export const TEST_CONFIG: Config = {
   domain: "test-domain.example.com",
@@ -28,28 +36,52 @@ export const TEST_CONFIG: Config = {
   returnTo: "https://test-return.example.com"
 };
 
+// Environment-specific config using Vite environment variables from CI
+const ENV_CONFIG: Config | null = (() => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    // Check if we have direct config values from GitHub Actions
+    if (import.meta.env.DOMAIN && 
+        import.meta.env.CLIENT_ID && 
+        import.meta.env.AUDIENCE && 
+        import.meta.env.WEBSERVICE_URL && 
+        import.meta.env.RETURN_TO) {
+      return {
+        domain: import.meta.env.DOMAIN,
+        clientId: import.meta.env.CLIENT_ID,
+        audience: import.meta.env.AUDIENCE,
+        webserviceUrl: import.meta.env.WEBSERVICE_URL,
+        returnTo: import.meta.env.RETURN_TO
+      };
+    }
+  }
+  return null;
+})();
+
 /**
  * Get application configuration
  * Simple implementation that works in both browser and test environments
  */
 export function getConfig(): Config {
-  // Just return the dev config for tests and development
-  // This is mocked in tests to return TEST_CONFIG
-  return DEV_CONFIG;
-}
-
-// This is here for Vite environment but not used in Jest
-// The commented code is for typechecking only
-/*
-function getRealConfig() {
-  let env = 'development';
-  
-  // @ts-ignore - Vite-specific code
-  if (import.meta?.env?.VITE_ENV) {
-    // @ts-ignore - Vite-specific
-    env = import.meta.env.VITE_ENV;
+  // For test environments in Jest
+  if (typeof window !== 'undefined' && (window as any).__TEST__) {
+    return TEST_CONFIG;
   }
   
-  return env;
+  // If we have environment-specific config from GitHub Actions
+  if (ENV_CONFIG) {
+    return ENV_CONFIG;
+  }
+  
+  // For browser environments with Vite
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    const env = import.meta.env.VITE_ENV || 'development';
+    
+    // Use production config when env is set to 'production'
+    if (env === 'production') {
+      return PROD_CONFIG;
+    }
+  }
+  
+  // Default to DEV_CONFIG for development and fallback
+  return DEV_CONFIG;
 }
-*/

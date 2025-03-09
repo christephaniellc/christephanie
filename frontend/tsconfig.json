@@ -20,6 +20,7 @@
     "types": ["vite-plugin-pwa/client", "@types/jest", "@testing-library/jest-dom"],
     "useDefineForClassFields": true
   },
-  "include": ["src", "test-utils", "e2e", "**/*.spec.ts", "**/*.spec.tsx", "jest.setup.ts"],
+  "include": ["src", "test-utils", "e2e", "jest.setup.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

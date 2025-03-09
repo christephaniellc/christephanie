@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { WarningAmber } from '@mui/icons-material';
 import { FoodAllergyIconProps } from '@/components/Allergies';
-import AddAllergyButton from '@/components/AddAllergyButton/AddAllergyButton';
 import AllergyButton from './AllergyButton';
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
@@ -185,9 +184,26 @@ const AllergySelectionModal: React.FC<AllergySelectionModalProps> = ({
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
           Don't see your allergy? Add a custom one:
         </Typography>
-        <AddAllergyButton 
-          guestId={guestId} 
-        />
+        <Button 
+          onClick={() => {
+            if (searchTerm.trim()) {
+              handleGuestFoodAllergy(searchTerm.trim());
+              setSearchTerm('');
+            }
+          }}
+          variant="outlined" 
+          color="warning"
+          startIcon={<WarningAmber />}
+          size="small"
+          disabled={!searchTerm.trim()}
+          sx={{ 
+            mt: 1, 
+            backdropFilter: 'blur(20px)',
+            backgroundColor: 'rgba(0,0,0,.6)',
+          }}
+        >
+          {searchTerm.trim() ? `Add "${searchTerm.trim()}" Allergy` : 'Add Custom Allergy'}
+        </Button>
       </Box>
     </Dialog>
   );
