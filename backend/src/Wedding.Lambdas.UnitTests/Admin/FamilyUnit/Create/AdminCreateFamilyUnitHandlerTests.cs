@@ -53,7 +53,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         }
 
         [Test]
-        public Task ExecuteAsync_Should_Throw_Exception_When_FamilyUnit_Already_Exists()
+        public Task ExecuteAsync_Should_Not_Save_When_FamilyUnit_Already_Exists()
         {
             // Arrange
             var command = new AdminCreateFamilyUnitsCommand(
@@ -148,7 +148,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
                             Guests = new List<GuestDto>
                             {
                                 new GuestDto { FirstName = "John", LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest } },
-                                new GuestDto { FirstName = "Jane", LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest } }
+                                new GuestDto { FirstName = "Jane", LastName = "Doe", Roles = new List<RoleEnum> { RoleEnum.Guest, RoleEnum.Manor } }
                             }
                         }},
                         new AuthContext
@@ -173,6 +173,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
             Assert.AreEqual("ABCDE", result[0].InvitationCode);
             Assert.AreEqual("Doe_John Family", result[0].UnitName);
             Assert.AreEqual(2, result[0].Guests!.Count);
+            result[0].Guests[0].Preferences.SleepPreference.Should().BeNull();
+            result[0].Guests[1].Preferences.SleepPreference.Should().Be(SleepPreferenceEnum.Manor);
         }
 
         [Test]

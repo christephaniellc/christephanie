@@ -105,6 +105,12 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Create.Handlers
                                 AgeGroup = guest.AgeGroup,
                                 InvitationResponse = InvitationResponseEnum.Pending
                             };
+
+                            if (guest.Roles.Contains(RoleEnum.Manor))
+                            {
+                                guestEntity.PrefSleep = SleepPreferenceEnum.Manor;
+                            }
+
                             await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, guestEntity, cancellationToken);
                             addedGuests.Add(_mapper.Map<GuestDto>(guestEntity));
                         }
