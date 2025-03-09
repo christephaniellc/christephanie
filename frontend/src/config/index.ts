@@ -1,6 +1,7 @@
 import isMobile from '@/utils/is-mobile';
 
 import type { Notifications } from './types';
+import { FeatureFlags, isFeatureEnabled } from './feature-flags';
 
 const title = 'Christephanie Wedding';
 
@@ -64,4 +65,6 @@ export {
   title,
   defaultMetaTags,
   giphy404,
+  FeatureFlags,
+  isFeatureEnabled,
 };

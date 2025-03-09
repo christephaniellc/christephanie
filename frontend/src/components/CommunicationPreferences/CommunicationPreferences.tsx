@@ -5,13 +5,14 @@ import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip } from '@mui/material';
-import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff } from '@mui/icons-material';
+import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff, ConstructionOutlined } from '@mui/icons-material';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { getConfig } from '@/auth_config';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { isFeatureEnabled, FeatureFlags } from '@/config';
 
 /**
  * Component for managing communication preferences
@@ -84,6 +85,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const isTextOptedIn = useMemo(() => 
     guestCommunicationPreferences.includes(NotificationPreferenceEnum.Text)
   , [guestCommunicationPreferences]);
+
+  // Check if specific verification features are enabled
+  const isEmailVerificationEnabled = isFeatureEnabled('ENABLE_EMAIL_VERIFICATION');
+  const isSmsVerificationEnabled = isFeatureEnabled('ENABLE_SMS_VERIFICATION');
 
   // Function to directly call the API for masked values
   const fetchMaskedValue = async (type: 'email' | 'text') => {
@@ -211,6 +216,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
   
   const sendPhoneVerificationCode = () => {
+    if (!isSmsVerificationEnabled) {
+      setAlertMessage('SMS verification is not available at this time');
+      setAlertSeverity('info');
+      setShowAlert(true);
+      return;
+    }
+
     console.log("Sending phone verification code...");
     validatePhoneMutation.mutate(
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
@@ -231,6 +243,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
   
   const resendPhoneVerificationCode = () => {
+    if (!isSmsVerificationEnabled) return;
+
     console.log("Resending phone verification code...");
     validatePhoneMutation.mutate(
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
@@ -250,6 +264,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
   
   const submitPhoneVerificationCode = () => {
+    if (!isSmsVerificationEnabled) return;
+
     console.log("Submitted code for phone verification...");
     validatePhoneMutation.mutate(
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, code: phoneVerificationCode, action: 'validate' },
@@ -270,6 +286,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
 
   const sendEmailVerificationCode = () => {
+    if (!isEmailVerificationEnabled) {
+      setAlertMessage('Email verification is not available at this time');
+      setAlertSeverity('info');
+      setShowAlert(true);
+      return;
+    }
+
     console.log("Sending email verification code...");
     validateEmailMutation.mutate(
       { email: emailValue || guest?.email?.maskedValue, action: 'register' },
@@ -290,6 +313,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
   
   const resendEmailVerificationCode = () => {
+    if (!isEmailVerificationEnabled) return;
+
     console.log("Resending email verification code...");
     validateEmailMutation.mutate(
       { email: emailValue || guest?.email?.maskedValue, action: 'register' },
@@ -309,6 +334,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   };
   
   const submitEmailVerificationCode = () => {
+    if (!isEmailVerificationEnabled) return;
+
     console.log("Submitted code for email verification...");
     validateEmailMutation.mutate(
       { email: emailValue || guest?.email?.maskedValue, code: emailVerificationCode, action: 'validate' },
@@ -338,6 +365,38 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       return familyActions.updateFamilyGuestCommunicationPreference(guestId, updatedPreferencesArray);
     }
   };
+
+  // If the Communication Preferences feature is disabled, show a placeholder instead
+  if (!isFeatureEnabled('ENABLE_COMMUNICATION_PREFERENCES')) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        p={4}
+        textAlign="center"
+        sx={{
+          backgroundColor: 'rgba(0,0,0,0.3)',
+          borderRadius: 2,
+          border: '1px dashed rgba(255,255,255,0.2)',
+          width: '100%',
+          height: '100%'
+        }}
+      >
+        <ConstructionOutlined sx={{ fontSize: 60, color: 'warning.main', mb: 2 }} />
+        <Typography variant="h6" color="warning.main" gutterBottom>
+          Coming Soon
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Communication preferences will be available in the next release.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
+          We're working on connecting with our communication services to provide you with email and SMS updates.
+        </Typography>
+      </Box>
+    );
+  }
   
   return (
     <Stack
@@ -443,11 +502,12 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         </ButtonGroup>
       
         {/* Verification buttons and disclaimers outside the communication preference buttons */}
-        { ((isTextOptedIn && !phoneVerified) || (isEmailOptedIn && !emailVerified)) && (
+        { ((isTextOptedIn && !phoneVerified && isSmsVerificationEnabled) || 
+           (isEmailOptedIn && !emailVerified && isEmailVerificationEnabled)) && (
         <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
           {contactPreferences.map((value) => (
-            ((value === 'Email' && isEmailOptedIn && !emailVerified && guestEmailAddress) || 
-            (value === 'Text' && isTextOptedIn && !phoneVerified && guestPhoneNumber)) && (
+            ((value === 'Email' && isEmailOptedIn && !emailVerified && guestEmailAddress && isEmailVerificationEnabled) || 
+            (value === 'Text' && isTextOptedIn && !phoneVerified && guestPhoneNumber && isSmsVerificationEnabled)) && (
               <Box key={`verify-${value}`} sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Button
                   size="small"
