@@ -42,7 +42,7 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
   const handleAddAllergy = () => {
     if (allergyName.trim() === '') return;
     const uniqueAllergies = new Set([...guestAllergies, allergyName]);
-    familyActions.updateFamilyGuestFoodAllergies(guestId, uniqueAllergies);
+    familyActions.updateFamilyGuestFoodAllergies(guestId, Array.from(uniqueAllergies));
 
     handleClose();
   };
