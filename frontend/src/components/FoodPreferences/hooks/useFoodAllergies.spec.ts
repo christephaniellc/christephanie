@@ -48,7 +48,7 @@ describe('useFoodAllergies', () => {
     ]);
   });
   
-  it('should identify and handle custom allergies [ wip]', () => {
+  it('should identify and handle custom allergies [wip]', () => {
     const wrapper = ({ children }) => <RecoilRoot>{children}</RecoilRoot>;
     
     const { result } = renderHook(() => useFoodAllergies(mockGuestId), { wrapper });
@@ -58,7 +58,7 @@ describe('useFoodAllergies', () => {
     expect(result.current.customAllergies).not.toContain('Peanut');
   });
   
-  it('should add a new custom allergy to the list [ wip]', () => {
+  it('should add a new custom allergy to the list [wip]', () => {
     const wrapper = ({ children }) => <RecoilRoot>{children}</RecoilRoot>;
     
     const { result } = renderHook(() => useFoodAllergies(mockGuestId), { wrapper });
@@ -74,7 +74,7 @@ describe('useFoodAllergies', () => {
     );
   });
   
-  it('should generate an icon for custom allergies [ wip]', () => {
+  it('should generate an icon for custom allergies [wip]', () => {
     // Mock the guest to have a custom allergy
     (guestSelector as jest.Mock).mockReturnValue(() => ({
       guestId: mockGuestId,
@@ -90,7 +90,7 @@ describe('useFoodAllergies', () => {
     expect(getIconForCustomAllergy).toHaveBeenCalledWith('CustomAllergy1');
   });
   
-  it('should reset all allergies correctly [ wip]', () => {
+  it('should reset all allergies correctly [wip]', () => {
     const wrapper = ({ children }) => <RecoilRoot>{children}</RecoilRoot>;
     
     const { result } = renderHook(() => useFoodAllergies(mockGuestId), { wrapper });
