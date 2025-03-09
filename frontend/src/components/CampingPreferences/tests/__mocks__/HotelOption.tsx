@@ -4,8 +4,6 @@ import { HotelOptionProps } from '../../types';
 import HotelDetail from '../../components/HotelDetail';
 
 const HotelOption: React.FC<HotelOptionProps> = ({ hotel, index, isExpanded, onToggle }) => {
-  const [takingShuttle, setTakingShuttle] = React.useState(true);
-
   return (
     <>
       <Button
@@ -28,9 +26,7 @@ const HotelOption: React.FC<HotelOptionProps> = ({ hotel, index, isExpanded, onT
       
       {isExpanded && (
         <HotelDetail 
-          hotel={hotel} 
-          takingShuttle={takingShuttle} 
-          onToggleShuttle={() => setTakingShuttle(!takingShuttle)} 
+          hotel={hotel}
         />
       )}
     </>

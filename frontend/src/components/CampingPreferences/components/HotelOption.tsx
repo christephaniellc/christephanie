@@ -83,17 +83,11 @@ const HotelOption: React.FC<HotelOptionProps> = ({ hotel, index, isExpanded, onT
         </DialogTitle>
         <DialogContent dividers>
           <HotelDetail 
-            hotel={hotel} 
-            takingShuttle={true} 
-            onToggleShuttle={() => {}} 
+            hotel={hotel}
           />
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={handleCloseDetailsModal}
-            sx={{
-            }}
-          >
+          <Button onClick={handleCloseDetailsModal}>
             Close
           </Button>
         </DialogActions>

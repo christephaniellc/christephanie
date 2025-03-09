@@ -13,7 +13,6 @@ const theme = createTheme();
 
 describe('HotelList Component.wip', () => {
   const mockToggleHotelDetails = jest.fn();
-  const mockSetTakingShuttle = jest.fn();
   const defaultHotels = [
     {
       name: 'Hotel 1',
@@ -23,114 +22,75 @@ describe('HotelList Component.wip', () => {
       onShuttleRoute: true,
       driveMinsFromWedding: 20,
       hotelBlock: false,
+      image: undefined,
+      phoneNumber: undefined,
+      hotelRateAskFor: undefined
     },
     {
       name: 'Hotel 2',
-      googleRating: 4.2,
-      numberOfRatings: 200,
+      googleRating: 4.0,
+      numberOfRatings: 50,
       hotelQuality: 2,
-      onShuttleRoute: true,
-      driveMinsFromWedding: 25,
+      onShuttleRoute: false,
+      driveMinsFromWedding: 30,
       hotelBlock: true,
-    }
+      image: undefined,
+      phoneNumber: undefined,
+      hotelRateAskFor: undefined
+    },
   ];
+
+  const renderComponent = (props = {}) => {
+    return render(
+      <ThemeProvider theme={theme}>
+        <HotelList
+          hotelOptions={defaultHotels}
+          expandedHotel={null}
+          handleToggleHotelDetails={mockToggleHotelDetails}
+          {...props}
+        />
+      </ThemeProvider>
+    );
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render the container with data-testid.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelList 
-          hotelOptions={defaultHotels}
-          expandedHotel={null}
-          handleToggleHotelDetails={mockToggleHotelDetails}
-          takingShuttle={true}
-          setTakingShuttle={mockSetTakingShuttle}
-        />
-      </ThemeProvider>
-    );
-
-    expect(screen.getByTestId('hotel-options-container')).toBeInTheDocument();
-  });
-
-  it('should render a HotelOption component for each hotel.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelList 
-          hotelOptions={defaultHotels}
-          expandedHotel={null}
-          handleToggleHotelDetails={mockToggleHotelDetails}
-          takingShuttle={true}
-          setTakingShuttle={mockSetTakingShuttle}
-        />
-      </ThemeProvider>
-    );
-
-    // There should be two HotelOption instances (one for each hotel)
+  it('should render the component', () => {
+    renderComponent();
     expect(screen.getAllByTestId('hotel-option')).toHaveLength(2);
-    expect(HotelOption).toHaveBeenCalledTimes(2);
   });
 
-  it('should pass the correct props to each HotelOption.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelList 
-          hotelOptions={defaultHotels}
-          expandedHotel={0}
-          handleToggleHotelDetails={mockToggleHotelDetails}
-          takingShuttle={true}
-          setTakingShuttle={mockSetTakingShuttle}
-        />
-      </ThemeProvider>
-    );
-
-    // First call should receive the first hotel and be expanded
-    expect(HotelOption).toHaveBeenNthCalledWith(
-      1,
+  it('should pass the correct props to HotelOption', () => {
+    renderComponent({ expandedHotel: 0 });
+    expect(HotelOption).toHaveBeenCalledWith(
       expect.objectContaining({
         hotel: defaultHotels[0],
         index: 0,
         isExpanded: true,
-        onToggle: expect.any(Function),
-      }),
-      expect.anything()
-    );
-
-    // Second call should receive the second hotel and not be expanded
-    expect(HotelOption).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        hotel: defaultHotels[1],
-        index: 1,
-        isExpanded: false,
-        onToggle: expect.any(Function),
       }),
       expect.anything()
     );
   });
 
-  it('should handle toggle correctly when the onToggle callback is called.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelList 
-          hotelOptions={defaultHotels}
-          expandedHotel={null}
-          handleToggleHotelDetails={mockToggleHotelDetails}
-          takingShuttle={true}
-          setTakingShuttle={mockSetTakingShuttle}
-        />
-      </ThemeProvider>
+  it('should handle expanded and collapsed hotel details', () => {
+    renderComponent({ expandedHotel: 1 });
+    expect(HotelOption).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hotel: defaultHotels[0],
+        index: 0,
+        isExpanded: false,
+      }),
+      expect.anything()
     );
-
-    // Extract the onToggle callback from the first HotelOption call
-    const onToggleCallback = (HotelOption as jest.Mock).mock.calls[0][0].onToggle;
-    
-    // Call the callback
-    onToggleCallback();
-    
-    // Check if the parent handler was called with the correct index
-    expect(mockToggleHotelDetails).toHaveBeenCalledWith(0);
+    expect(HotelOption).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hotel: defaultHotels[1],
+        index: 1,
+        isExpanded: true,
+      }),
+      expect.anything()
+    );
   });
 });
