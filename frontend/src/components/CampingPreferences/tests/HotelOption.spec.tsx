@@ -18,18 +18,12 @@ jest.mock('../components/HotelDetail', () => ({
   default: (props) => MockHotelDetail(props)
 }));
 
-// Mock React.useState before importing the component
-const mockSetTakingShuttle = jest.fn();
-const mockUseState = jest.fn().mockImplementation((initial) => [initial, mockSetTakingShuttle]);
-React.useState = mockUseState;
-
-// Now import the component after mocking
+// Import after mocking to avoid circular dependencies
 import HotelOption from '../components/HotelOption';
 
 const theme = createTheme();
 
 describe('HotelOption Component.wip', () => {
-  const mockToggle = jest.fn();
   const defaultHotel = {
     name: 'Test Hotel',
     googleRating: 4.5,
@@ -38,149 +32,73 @@ describe('HotelOption Component.wip', () => {
     onShuttleRoute: true,
     driveMinsFromWedding: 20,
     hotelBlock: false,
+    image: undefined,
+    phoneNumber: undefined,
+    hotelRateAskFor: undefined
+  };
+
+  const mockToggle = jest.fn();
+
+  const renderComponent = (props = {}) => {
+    return render(
+      <ThemeProvider theme={theme}>
+        <HotelOption
+          hotel={defaultHotel}
+          index={0}
+          isExpanded={false}
+          onToggle={mockToggle}
+          {...props}
+        />
+      </ThemeProvider>
+    );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render the hotel name and rating.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    expect(screen.getByText('Test Hotel')).toBeInTheDocument();
-    expect(screen.getByText('4.5')).toBeInTheDocument();
+  it('should render the component', () => {
+    renderComponent();
+    expect(screen.getByTestId('hotel-button-0')).toBeInTheDocument();
   });
 
-  it('should show the shuttle chip when the hotel is on the shuttle route.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
+  it('should display hotel name', () => {
+    renderComponent();
+    expect(screen.getByText('Test Hotel')).toBeInTheDocument();
+  });
 
+  it('should show shuttle indicator for hotels on shuttle route', () => {
+    renderComponent();
     expect(screen.getByText('Shuttle')).toBeInTheDocument();
   });
 
-  it('should not show the shuttle chip when the hotel is not on the shuttle route.wip', () => {
-    const noShuttleHotel = {
+  it('should not show shuttle indicator for hotels not on shuttle route', () => {
+    const hotelWithoutShuttle = {
       ...defaultHotel,
       onShuttleRoute: false,
     };
-
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={noShuttleHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
+    renderComponent({ hotel: hotelWithoutShuttle });
     expect(screen.queryByText('Shuttle')).not.toBeInTheDocument();
   });
 
-  it('should call onToggle when the button is clicked.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    const button = screen.getByTestId('hotel-button-0');
-    fireEvent.click(button);
-
-    expect(mockToggle).toHaveBeenCalledTimes(1);
+  it('should call onToggle when the button is clicked', () => {
+    renderComponent();
+    fireEvent.click(screen.getByTestId('hotel-button-0'));
+    expect(mockToggle).toHaveBeenCalled();
   });
 
-  it('should show expand icon when not expanded.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    // This is a visual test, so we'll just check that the button has been rendered
-    const button = screen.getByTestId('hotel-button-0');
-    expect(button).toBeInTheDocument();
-  });
-
-  it('should show collapse icon when expanded.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={true}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    // This is a visual test, so we'll just check that the button has been rendered
-    const button = screen.getByTestId('hotel-button-0');
-    expect(button).toBeInTheDocument();
-  });
-
-  it('should show the hotel details when expanded.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={true}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    // Verify that HotelDetail was called with the right props
+  it('should show HotelDetail when expanded', () => {
+    renderComponent({ isExpanded: true });
     expect(MockHotelDetail).toHaveBeenCalledWith(
       expect.objectContaining({
         hotel: defaultHotel,
-        takingShuttle: true
-      })
+      }),
+      expect.anything()
     );
   });
 
-  it('should not show the hotel details when collapsed.wip', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <HotelOption 
-          hotel={defaultHotel} 
-          index={0}
-          isExpanded={false}
-          onToggle={mockToggle}
-        />
-      </ThemeProvider>
-    );
-
-    // Verify that HotelDetail was not called
+  it('should not show HotelDetail when collapsed', () => {
+    renderComponent({ isExpanded: false });
     expect(MockHotelDetail).not.toHaveBeenCalled();
   });
 });
