@@ -13,7 +13,7 @@ export const useAppLayout = () => {
       let screenWidth = window.innerWidth;
       let newHeightBasedOnZoom = window.innerHeight;
       if (screenWidth < theme.breakpoints.values.md) {
-        const zoomLevel = screenWidth / 700;
+        const zoomLevel = screenWidth / 500;
         console.log('setting new zoomLevel', zoomLevel);
         newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         document.body.style.zoom = `${zoomLevel}`;
