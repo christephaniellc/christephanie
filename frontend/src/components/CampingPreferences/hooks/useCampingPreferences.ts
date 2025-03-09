@@ -42,30 +42,39 @@ export const useCampingPreferences = (guestId: string) => {
   const hotelOptions: HotelOption[] = [
     {
       name: 'Holiday Inn Express Suites - Brunswick, MD',
+      image: '/src/assets/holiday-inn-express-brunswick.jpg',
       googleRating: 4.6,
+      phoneNumber: "(301) 969-8020",
       numberOfRatings: 195,
       hotelQuality: 3,
       onShuttleRoute: true,
       driveMinsFromWedding: 18,
       hotelBlock: false,
+      hotelRateAskFor: "wedding rate"
     },
     {
       name: 'Holiday Inn Express Charles Town, Ranson, WV',
+      image: '/src/assets/holiday-inn-express-charlestown.jpg',
       googleRating: 4.5,
+      phoneNumber: "(304) 725-1330",
       numberOfRatings: 755,
       hotelQuality: 2,
       onShuttleRoute: true,
       driveMinsFromWedding: 23,
       hotelBlock: true,
+      hotelRateAskFor: "Stubler Wedding block rate"
     },
     {
       name: 'Lovettsville Area Hotels',
+      image: undefined,
       googleRating: 0,
+      phoneNumber: undefined,
       numberOfRatings: 0,
       hotelQuality: 0,
       onShuttleRoute: false,
       driveMinsFromWedding: 0,
       hotelBlock: false,
+      hotelRateAskFor: undefined
     },
   ];
 

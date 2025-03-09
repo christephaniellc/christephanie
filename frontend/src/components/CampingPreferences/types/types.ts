@@ -2,12 +2,15 @@ import { GuestViewModel, SleepPreferenceEnum } from '@/types/api';
 
 export interface HotelOption {
   name: string;
+  image: string | undefined;
   googleRating: number;
+  phoneNumber: string | undefined;
   numberOfRatings: number;
   hotelQuality: number;
   onShuttleRoute: boolean;
   driveMinsFromWedding: number;
   hotelBlock: boolean;
+  hotelRateAskFor: string | undefined;
 }
 
 export interface PreferenceButtonProps {
@@ -20,8 +23,12 @@ export interface PreferenceButtonProps {
 
 export interface HotelDetailProps {
   hotel: HotelOption;
-  takingShuttle: boolean;
-  onToggleShuttle: () => void;
+}
+
+export interface HotelDialogProps {
+  open: boolean;
+  onClose: () => void;
+  hotelOptions: HotelOption[];
 }
 
 export interface HotelOptionProps {
@@ -35,8 +42,6 @@ export interface HotelListProps {
   hotelOptions: HotelOption[];
   expandedHotel: number | null;
   handleToggleHotelDetails: (index: number) => void;
-  takingShuttle: boolean;
-  setTakingShuttle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface PreferenceButtonGroupProps {
