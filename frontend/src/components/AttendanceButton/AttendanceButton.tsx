@@ -199,11 +199,11 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
               strokeWidth: 1.5,
               textShadow: '3px 3px 0px rgba(0,0,0,0.7)',
               filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
-              animation: 'pulse 1.5s infinite ease-in-out',
+              animation: 'pulse 1.2s infinite ease-in-out',
               '@keyframes pulse': {
-                '0%': { opacity: 0.7, transform: 'translateX(0) rotate(210deg)' },
-                '50%': { opacity: 1, transform: 'translateX(-8px) rotate(135deg)' },
-                '100%': { opacity: 0.7, transform: 'translateX(0) rotate(210deg)' },
+                '0%': { opacity: 1, transform: 'translateX(0px) rotate(180deg)' },
+                '50%': { opacity: 0.5, transform: 'translateX(13px) rotate(180deg)' },
+                '100%': { opacity: 1, transform: 'translateX(0px) rotate(180deg)' },
               },
             }}
           />
