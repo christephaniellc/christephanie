@@ -8,6 +8,9 @@ import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2';
 import * as auth from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigatewayintegration from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { Duration } from 'aws-cdk-lib';
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 
 export interface AllStackProps extends EnvStackProps {
     httpLambdaAuthorizer: auth.HttpLambdaAuthorizer;
@@ -20,7 +23,7 @@ export class ApiStack extends cdk.Stack {
     super(scope, id, {...props, description: "Creates API Gateway (retained on destroy), and maps routes to new Lambda integrations"});
 
     const environment = this.node.tryGetContext('env') || 'dev'; 
-    const { applicationName, apiGatewayName, srcFolder, releaseFolder } = ApplicationProps;
+    const { applicationName, apiGatewayName } = ApplicationProps;
     console.log("------------------------");
     console.log("ApiStack");
     
@@ -61,17 +64,19 @@ export class ApiStack extends cdk.Stack {
 
     const lambdaConfigs: LambdaConfig[] = [
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Create', method: apigateway.HttpMethod.PUT, path: `/admin/familyunit/create` },
-        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit/{interested}` },
+        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit/all` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/admin/familyunit` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Delete', method: apigateway.HttpMethod.DELETE, path: `/admin/familyunit/{invitationCode}` },
-        { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me` },
-        { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit` },
-        { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit` },
-        { name: 'Wedding.Lambdas.FamilyUnit.Patch', method: apigateway.HttpMethod.PATCH, path: `/familyunit` },
-        { name: 'Wedding.Lambdas.Guest.Patch', method: apigateway.HttpMethod.PATCH, path: `/guest` },
-        { name: 'Wedding.Lambdas.Validate.Address', method: apigateway.HttpMethod.POST, path: `/validate/address` },
-        { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone` },
-        { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true },
+        { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me`, keepWarm: true },
+        { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit`, keepWarm: true },
+        { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit`, keepWarm: true },
+        { name: 'Wedding.Lambdas.FamilyUnit.Patch', method: apigateway.HttpMethod.PATCH, path: `/familyunit`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Guest.Patch', method: apigateway.HttpMethod.PATCH, path: `/guest`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Guest.MaskedValues.Get', method: apigateway.HttpMethod.GET, path: `/guest/maskedvalues`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Validate.Address', method: apigateway.HttpMethod.POST, path: `/validate/address`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Validate.Email', method: apigateway.HttpMethod.POST, path: `/validate/email`, keepWarm: true },
+        { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true, keepWarm: true },
         { name: 'Wedding.Lambdas.Helloworld', method: apigateway.HttpMethod.GET, path: `/helloworld`, unauthorized: true },
         { name: 'Wedding.Lambdas.Admin.Setup', method: apigateway.HttpMethod.PUT, path: `/admin/setup`, unauthorized: true },
       ];
@@ -88,11 +93,24 @@ export class ApiStack extends cdk.Stack {
             ...lambdaDefaults,
             handler: `${lambdaConfig.name}::${lambdaConfig.name}.Function::FunctionHandler`,
             functionName: `${functionName}`,
-            code: lambda.Code.fromAsset(`${srcFolder}/${lambdaConfig.name}/${releaseFolder}/${lambdaConfig.name}.zip`),
             role: lambdaRole
         });            
         console.log(`Lambda function arn: ${lambdaFunction.functionArn}`);
 
+        if (lambdaConfig.keepWarm)
+        {
+            // Create an EventBridge rule to run every 5 minutes, to prevent lambda coldboots
+            const warmUpRule = new Rule(this, `WarmUpRule${functionLambdaName}`, {
+                schedule: Schedule.rate(Duration.minutes(5)), 
+                ruleName: `WarmUpRule${functionLambdaName}`
+            });
+    
+            // Set the Lambda as the target of that rule
+            warmUpRule.addTarget(new LambdaFunction(lambdaFunction));
+            console.log(`Warmup rule arn: ${warmUpRule.ruleArn}`);
+        }
+
+        // Set up API gateway route
         this.apiGateway.addRoutes({
             path: lambdaConfig.path!,
             methods: [lambdaConfig.method!],

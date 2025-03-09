@@ -1,17 +1,24 @@
-import type { OptionsObject, SnackbarKey, SnackbarMessage } from 'notistack';
+import type { OptionsObject, SnackbarKey, SnackbarMessage, VariantType } from 'notistack';
+
+// Define our custom variant types, including standard notistack variants
+export type CustomVariant = 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'default' | string;
+
+// Our options object with flexible variant type
+interface CustomOptionsObject extends Omit<OptionsObject, 'variant'> {
+  variant?: CustomVariant;
+  key?: SnackbarKey;
+}
 
 interface Notification {
   message: SnackbarMessage;
-  options: OptionsObject;
+  options: CustomOptionsObject;
   dismissed: boolean;
 }
 
 declare module 'notistack' {
   export interface VariantOverrides {
-    // define custom variants
-    customNotification: {
-      message?: string;
-    };
+    primary: {};
+    secondary: {};
   }
 }
 
@@ -21,4 +28,4 @@ type Actions = {
   remove: (key: SnackbarKey) => void;
 };
 
-export type { Notification, Actions };
+export type { Notification, Actions, CustomOptionsObject };

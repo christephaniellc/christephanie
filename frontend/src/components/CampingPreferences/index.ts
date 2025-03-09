@@ -1,3 +1,4 @@
-import CampingPreferences  from '@/components/CampingPreferences/CampingPreferences';
-
-export default CampingPreferences;
+export { default } from './CampingPreferences';
+export * from './types';
+export * from './hooks';
+export * from './components';

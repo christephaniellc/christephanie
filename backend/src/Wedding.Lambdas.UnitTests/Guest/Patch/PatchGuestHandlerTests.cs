@@ -9,6 +9,7 @@ using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.Guest.Patch.Commands;
@@ -106,7 +107,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Patch
             // Assert
             result.Should().NotBeNull();
             result.InvitationCode.Should().Be(invitationCode);
-            result.Email!.Value.Should().Be(newEmail);
+            result.Email!.MaskedValue.Should().Be(ObfuscationHelper.MaskEmail(newEmail));
             result.Email.Verified.Should().Be(false);
             result.Rsvp!.Wedding.Should().Be(RsvpEnum.Attending);
 

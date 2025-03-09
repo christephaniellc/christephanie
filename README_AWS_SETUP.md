@@ -110,6 +110,7 @@ cdk destroy AuthStack-dev --context env=dev --profile dev
 
 (Recreate API gateway and lambdas)
 cdk destroy ApiStack-dev --context env=dev --profile dev
+cdk deploy ApiStack-dev --context env=dev --profile dev
 cdk deploy DnsStack-dev --context env=dev --profile dev
 
 cdk deploy ParamsStack-dev --context env=dev --profile dev
@@ -121,6 +122,7 @@ SET UP BOOTSTRAP FOR EACH PROFILE:
 cdk bootstrap aws://<dev account id>/us-east-1 --profile dev
 
 cdk destroy ApiStack-prod --context env=prod --profile prod
+cdk deploy DnsStack-prod --context env=prod --profile prod
 cdk deploy ApiStack-prod --context env=prod --profile prod
 cdk deploy RoleStack-prod --context env=prod --profile prod
 cdk deploy FrontendStack-prod --context env=prod --profile prod
@@ -128,6 +130,12 @@ cdk deploy DatabaseStack-prod --context env=prod --profile prod
 cdk deploy ParamsStack-prod --context env=prod --profile prod
 cdk deploy ThrottleStack-prod --context env=prod --profile prod
 
+Redo frontend:
+cdk destroy FrontendStack-dev --context env=dev --profile dev
+cdk deploy DnsStack-dev --context env=dev --profile dev
+
+cdk destroy FrontendStack-prod --context env=prod --profile prod
+cdk deploy DnsStack-prod --context env=prod --profile prod
 ----------------------	
 # Frontend
 
@@ -138,6 +146,10 @@ Update NPM packages:
 - VSCode > frontend/src > 
 	yarn install
 	yarn run dev	
+	
+Update API calls from swagger:
+- Run swagger update (backend)
+- npm run generate:types
 -----------------------
 # Backend
 
@@ -145,6 +157,9 @@ Deploy single Lambda:
 Visual Studio > Open file for Wedding.Lambdas.[project name] > Deploy Lambda button
 	Update "dev" param
 -----------------------
+# Claude
+export PATH=$PATH:/home/stepy/.npm-global/bin
+----------
 	./infra/scripts/deploy.sh dev	# Initial infra deploy
 REPEATING DEPLOY (publish lambdas and frontend)
 	./infra/scripts/build.sh dev	# Deploy all lambdas 

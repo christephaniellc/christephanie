@@ -75,7 +75,7 @@ export interface FamilyUnitDto {
 export interface FamilyUnitViewModel {
   invitationCode?: string | null;
   unitName?: string | null;
-  guests?: GuestDto[] | null;
+  guests?: GuestViewModel[] | null;
   mailingAddress?: AddressDto;
   additionalAddresses?: AddressDto[] | null;
   invitationResponseNotes?: string | null;
@@ -93,6 +93,7 @@ export enum FoodPreferenceEnum {
   Omnivore = 'Omnivore',
   Vegetarian = 'Vegetarian',
   Vegan = 'Vegan',
+  BYOB = 'BYOB',
 }
 
 export interface GuestDto {
@@ -114,6 +115,89 @@ export interface GuestDto {
   lastActivity?: string | null;
 }
 
+export interface GuestViewModel {
+  invitationCode?: string | null;
+  guestId?: string | null;
+  /** @format int32 */
+  guestNumber?: number | null;
+  auth0Id?: string | null;
+  firstName?: string | null;
+  additionalFirstNames?: string[] | null;
+  lastName?: string | null;
+  roles: RoleEnum[] | null;
+  email?: MaskedVerifiedModel;
+  phone?: MaskedVerifiedModel;
+  rsvp?: RsvpDto;
+  preferences?: PreferencesDto;
+  ageGroup?: AgeGroupEnum;
+  /** @format date-time */
+  lastActivity?: string | null;
+}
+
+export enum HttpStatusCode {
+  Continue = 'Continue',
+  SwitchingProtocols = 'SwitchingProtocols',
+  Processing = 'Processing',
+  EarlyHints = 'EarlyHints',
+  OK = 'OK',
+  Created = 'Created',
+  Accepted = 'Accepted',
+  NonAuthoritativeInformation = 'NonAuthoritativeInformation',
+  NoContent = 'NoContent',
+  ResetContent = 'ResetContent',
+  PartialContent = 'PartialContent',
+  MultiStatus = 'MultiStatus',
+  AlreadyReported = 'AlreadyReported',
+  IMUsed = 'IMUsed',
+  MultipleChoices = 'MultipleChoices',
+  MovedPermanently = 'MovedPermanently',
+  Found = 'Found',
+  SeeOther = 'SeeOther',
+  NotModified = 'NotModified',
+  UseProxy = 'UseProxy',
+  Unused = 'Unused',
+  TemporaryRedirect = 'TemporaryRedirect',
+  PermanentRedirect = 'PermanentRedirect',
+  BadRequest = 'BadRequest',
+  Unauthorized = 'Unauthorized',
+  PaymentRequired = 'PaymentRequired',
+  Forbidden = 'Forbidden',
+  NotFound = 'NotFound',
+  MethodNotAllowed = 'MethodNotAllowed',
+  NotAcceptable = 'NotAcceptable',
+  ProxyAuthenticationRequired = 'ProxyAuthenticationRequired',
+  RequestTimeout = 'RequestTimeout',
+  Conflict = 'Conflict',
+  Gone = 'Gone',
+  LengthRequired = 'LengthRequired',
+  PreconditionFailed = 'PreconditionFailed',
+  RequestEntityTooLarge = 'RequestEntityTooLarge',
+  RequestUriTooLong = 'RequestUriTooLong',
+  UnsupportedMediaType = 'UnsupportedMediaType',
+  RequestedRangeNotSatisfiable = 'RequestedRangeNotSatisfiable',
+  ExpectationFailed = 'ExpectationFailed',
+  MisdirectedRequest = 'MisdirectedRequest',
+  UnprocessableEntity = 'UnprocessableEntity',
+  Locked = 'Locked',
+  FailedDependency = 'FailedDependency',
+  UpgradeRequired = 'UpgradeRequired',
+  PreconditionRequired = 'PreconditionRequired',
+  TooManyRequests = 'TooManyRequests',
+  RequestHeaderFieldsTooLarge = 'RequestHeaderFieldsTooLarge',
+  UnavailableForLegalReasons = 'UnavailableForLegalReasons',
+  InternalServerError = 'InternalServerError',
+  NotImplemented = 'NotImplemented',
+  BadGateway = 'BadGateway',
+  ServiceUnavailable = 'ServiceUnavailable',
+  GatewayTimeout = 'GatewayTimeout',
+  HttpVersionNotSupported = 'HttpVersionNotSupported',
+  VariantAlsoNegotiates = 'VariantAlsoNegotiates',
+  InsufficientStorage = 'InsufficientStorage',
+  LoopDetected = 'LoopDetected',
+  NotExtended = 'NotExtended',
+  NetworkAuthenticationRequired = 'NetworkAuthenticationRequired',
+}
+
 export interface IAMPolicyStatement {
   Effect?: string | null;
   /** @uniqueItems true */
@@ -133,6 +217,11 @@ export interface LastUpdateAuditDto {
   /** @format date-time */
   lastUpdate?: string;
   username: string | null;
+}
+
+export interface MaskedVerifiedModel {
+  maskedValue?: string | null;
+  verified?: boolean;
 }
 
 export enum NotificationPreferenceEnum {
@@ -207,9 +296,26 @@ export enum RsvpEnum {
 
 export enum SleepPreferenceEnum {
   Unknown = 'Unknown',
+  Manor = 'Manor',
   Camping = 'Camping',
   Hotel = 'Hotel',
   Other = 'Other',
+}
+
+export enum TwilioOtpStatusEnum {
+  Pending = 'Pending',
+  Approved = 'Approved',
+  Canceled = 'Canceled',
+  MaxAttemptsReached = 'Max_Attempts_Reached',
+  Deleted = 'Deleted',
+  Failed = 'Failed',
+  Expired = 'Expired',
+}
+
+export interface ValidatePhoneResponse {
+  verifiedStatus?: TwilioOtpStatusEnum;
+  notificationServiceStatusCode?: HttpStatusCode;
+  phoneVerifyState: VerifiedDto;
 }
 
 export interface VerifiedDto {
@@ -552,6 +658,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags AdminFamilyUnit
+     * @name AdminFamilyunitAllList
+     * @request GET:/api/admin/familyunit/all
+     * @secure
+     */
+    adminFamilyunitAllList: (params: RequestParams = {}) =>
+      this.request<FamilyUnitDto[], ProblemDetails | void>({
+        path: `/api/admin/familyunit/all`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Auth
      * @name AuthorizeList
      * @request GET:/api/authorize
@@ -633,12 +756,36 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Guest
+     * @name GuestList
+     * @request GET:/api/guest
+     * @secure
+     */
+    guestList: (
+      query?: {
+        guestId?: string;
+        maskedValueType?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails | void>({
+        path: `/api/guest`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guest
      * @name GuestPartialUpdate
      * @request PATCH:/api/guest
      * @secure
      */
     guestPartialUpdate: (data: PatchGuestRequest, params: RequestParams = {}) =>
-      this.request<GuestDto, ProblemDetails | void>({
+      this.request<GuestViewModel, ProblemDetails | void>({
         path: `/api/guest`,
         method: 'PATCH',
         body: data,
@@ -736,6 +883,88 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<GuestDto, ProblemDetails | void>({
         path: `/api/user/me`,
         method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidateAddressCreate
+     * @request POST:/api/validate/address
+     * @secure
+     */
+    validateAddressCreate: (data: AddressDto, params: RequestParams = {}) =>
+      this.request<AddressDto, ProblemDetails | void>({
+        path: `/api/validate/address`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneRegisterCreate
+     * @request POST:/api/validate/phone/register
+     * @secure
+     */
+    validatePhoneRegisterCreate: (
+      query?: {
+        phoneNumber?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/register`,
+        method: 'POST',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneValidatePartialUpdate
+     * @request PATCH:/api/validate/phone/validate
+     * @secure
+     */
+    validatePhoneValidatePartialUpdate: (
+      query?: {
+        code?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/validate`,
+        method: 'PATCH',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Validate
+     * @name ValidatePhoneResendCreate
+     * @request POST:/api/validate/phone/resend
+     * @secure
+     */
+    validatePhoneResendCreate: (params: RequestParams = {}) =>
+      this.request<ValidatePhoneResponse, ProblemDetails | void>({
+        path: `/api/validate/phone/resend`,
+        method: 'POST',
         secure: true,
         format: 'json',
         ...params,

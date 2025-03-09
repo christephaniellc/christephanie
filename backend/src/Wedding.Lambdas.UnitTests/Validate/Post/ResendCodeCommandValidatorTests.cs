@@ -5,7 +5,7 @@ using Wedding.Lambdas.Validate.Phone.Validation;
 namespace Wedding.Lambdas.UnitTests.Validate.Post
 {
     [TestFixture]
-    [UnitTestsFor(typeof(ResendCodeCommandValidator))]
+    [UnitTestsFor(typeof(ResendPhoneCodeCommandValidator))]
     public class ResendCodeCommandValidatorTests
     {
         [Test]

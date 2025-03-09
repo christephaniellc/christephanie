@@ -1,54 +1,43 @@
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { useRecoilValue } from 'recoil';
-import { guestSelector, useFamily } from '@/store/family';
-import { GuestDto, SleepPreferenceEnum } from '@/types/api';
-import Box from '@mui/material/Box';
-import { ButtonGroup, darken, useTheme } from '@mui/material';
-import { Apartment, Festival, HotelOutlined } from '@mui/icons-material';
-import React, { useEffect, useRef } from 'react';
-import { Stack } from '@mui/system';
-import Paper from '@mui/material/Paper';
+import React from 'react';
+import { Stack, Paper, Box, Typography } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { CampingPreferencesProps } from './types';
+import { useCampingPreferences } from './hooks';
+import { 
+  PreferenceButtonGroup, 
+  PreferenceDescription 
+} from './components';
 
-const CampingPreferences = ({ guestId }: { guestId: string }) => {
+const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
   const { screenWidth } = useAppLayout();
-  const guest: GuestDto | null = useRecoilValue(guestSelector(guestId));
-  const [_, familyActions] = useFamily();
-  const campingPreferences = Object.keys(SleepPreferenceEnum);
-  const mousePosition = useRef({ x: 0, y: 0 });
-  const theme = useTheme();
-  const [campingValue, setCampingValue] = React.useState<SleepPreferenceEnum>(
-    SleepPreferenceEnum.Unknown,
-  );
-  const handleChangeSleepPreference = (value: SleepPreferenceEnum) => {
-    if (guest?.preferences?.sleepPreference === value) {
-      setCampingValue(SleepPreferenceEnum.Unknown);
-      familyActions.updateFamilyGuestSleepingPreference(guestId, SleepPreferenceEnum.Unknown);
-    } else {
-      setCampingValue(value);
-      familyActions.updateFamilyGuestSleepingPreference(guestId, value);
-    }
-  };
-
-
-
-  useEffect(() => {
-    setCampingValue(guest?.preferences?.sleepPreference || SleepPreferenceEnum.Unknown);
-  }, [guest]);
+  const {
+    campingPreferences,
+    campingValue,
+    hasManorRole,
+    hotelOptions,
+    expandedHotel,
+    takingShuttle,
+    setTakingShuttle,
+    handleChangeSleepPreference,
+    handleToggleHotelDetails,
+    isPending,
+    isFetching,
+    popoverId,
+  } = useCampingPreferences(guestId);
 
   return (
     <Stack
       display="flex"
       width="100%"
-      height="100%"
+      height="auto"
       my="auto"
       justifyContent="center"
       alignItems="center"
       px={2}
       onMouseMove={handleMouseMove}
+      data-testid="camping-preferences-container"
     >
       <Paper
         elevation={5}
@@ -56,53 +45,39 @@ const CampingPreferences = ({ guestId }: { guestId: string }) => {
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(0,0,0,.1)',
           filter: `drop-shadow(${boxShadow})`,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          overflow: 'hidden',
         }}
       >
-        <ButtonGroup
-          fullWidth
-          orientation={screenWidth > 600 ? 'horizontal' : 'vertical'}
-          sx={{
-            backgroundColor: 'rgba(0,0,0,.8)',
-          }}
-        >
-          {campingPreferences.slice(1).map((value) => (
-            <Button
-              size="large"
-              disabled={
-                familyActions.patchFamilyMutation.isPending ||
-                familyActions.getFamilyUnitQuery.isFetching
-              }
-              color="secondary"
-              sx={{ px: value === 'Unknown' ? 0 : 3 }}
-              onClick={() => handleChangeSleepPreference(SleepPreferenceEnum[value])}
-              variant={
-                (campingValue.includes(SleepPreferenceEnum[value])
-                  ? 'contained'
-                  : 'outlined') as 'contained' | 'outlined'
-              }
-              key={value}
-              startIcon={
-                value === 'Camping' ? (
-                  <Festival />
-                ) : value === 'Hotel' ? (
-                  <Apartment />
-                ) : value === 'Unknown' ? (
-                  ''
-                ) : (
-                  <HotelOutlined />
-                )
-              }
-            >
-              <Box>
-                <Box display={'flex'} alignItems={'center'} flexWrap="wrap">
-                  <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
-                    {value === 'Unknown' ? '' : value}
-                  </Typography>
-                </Box>
-              </Box>
-            </Button>
-          ))}
-        </ButtonGroup>
+        {/* Title */}
+        <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.3)' }}>
+          <Typography variant="h6" color="text.primary" align="center">
+            Where do you plan to stay?
+          </Typography>
+        </Box>
+        
+        {/* Selection buttons */}
+        <PreferenceButtonGroup
+          campingPreferences={campingPreferences}
+          campingValue={campingValue}
+          hasManorRole={hasManorRole}
+          screenWidth={screenWidth}
+          handleChangeSleepPreference={handleChangeSleepPreference}
+          isPending={isPending}
+          isFetching={isFetching}
+        />
+        
+        {/* Description based on selection */}
+        <PreferenceDescription
+          campingValue={campingValue}
+          hotelOptions={hotelOptions}
+          expandedHotel={expandedHotel}
+          handleToggleHotelDetails={handleToggleHotelDetails}
+          takingShuttle={takingShuttle}
+          setTakingShuttle={setTakingShuttle}
+        />
       </Paper>
     </Stack>
   );

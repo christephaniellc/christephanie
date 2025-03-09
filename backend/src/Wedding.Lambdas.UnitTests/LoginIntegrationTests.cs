@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using System.Net;
+using System.Text.Json.Nodes;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Configuration;
 using Wedding.Common.Multitenancy;
 using Amazon.Runtime.Internal.Transform;
+using Wedding.Abstractions.ViewModels;
 
 namespace Wedding.Lambdas.UnitTests
 {
@@ -192,8 +194,10 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = response.GetResponseBodyData<string>();
-            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+
+            var actualResult = response.GetResponseBodyData<JsonObject>()[0];
+            actualResult.Should().NotBeNull();
+            actualResult!.GetValue<string>().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
 
             // Step 2. Authorize user by token and guest ID 
             var token = await _testTokenHelper.GenerateAuth0Token(tokenWithGuestId ? TestDataHelper.GUEST_JOHN.GuestId : null);
@@ -240,7 +244,7 @@ namespace Wedding.Lambdas.UnitTests
                 // Step 3. Get family unit DTO using auth context
                 var familyUnitRequest = new APIGatewayProxyRequest().AddAuthToRequest(authResponse);
                 var familyUnitGetResponse = await _familyUnitGetFunction!.FunctionHandler(familyUnitRequest, context);
-                var familyUnit = familyUnitGetResponse.GetResponseBodyData<FamilyUnitDto>();
+                var familyUnit = familyUnitGetResponse.GetResponseBodyData<FamilyUnitViewModel>();
                 
                 familyUnitGetResponse.Should().NotBeNull();
                 familyUnit.Guests!.Count.Should().Be(2);
@@ -273,8 +277,9 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = response.GetResponseBodyData<string>();
-            actualResult.Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
+            var actualResult = response.GetResponseBodyData<JsonObject>()[0];
+            actualResult.Should().NotBeNull();
+            actualResult!.GetValue<string>().Should().Be(TestDataHelper.GUEST_JOHN.GuestId);
         }
 
         [Test]
@@ -302,8 +307,9 @@ namespace Wedding.Lambdas.UnitTests
             response.StatusCode.Should().Be((int)HttpStatusCode.OK);
             response.Headers["Content-Type"].Should().Be("application/json");
 
-            var actualResult = response.GetResponseBodyData<string>();
-            actualResult.Should().Be(TestDataHelper.GUEST_JANE.GuestId);
+            var actualResult = response.GetResponseBodyData<JsonObject>()[0];
+            actualResult.Should().NotBeNull();
+            actualResult!.GetValue<string>().Should().Be(TestDataHelper.GUEST_JANE.GuestId);
         }
 
         // [Test]

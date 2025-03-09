@@ -11,15 +11,15 @@ using Wedding.Lambdas.Validate.Phone.Commands;
 using Wedding.Lambdas.Validate.Phone.Validation;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
-using Wedding.Lambdas.Validate.Phone.Providers;
 using Wedding.Lambdas.Validate.Phone.Requests;
 using ValidationException = FluentValidation.ValidationException;
+using Wedding.Common.Helpers;
 
 namespace Wedding.Lambdas.Validate.Phone.Handlers
 {
     public class PhoneValidationHandler : 
         IAsyncCommandHandler<RegisterPhoneCommand, ValidatePhoneResponse>,
-        IAsyncCommandHandler<ResendCodeCommand, ValidatePhoneResponse>,
+        IAsyncCommandHandler<ResendPhoneCodeCommand, ValidatePhoneResponse>,
         IAsyncCommandHandler<ValidatePhoneCommand, ValidatePhoneResponse>
     {
         private readonly ILogger<PhoneValidationHandler> _logger;
@@ -42,11 +42,10 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
         public async Task<ValidatePhoneResponse> ExecuteAsync(RegisterPhoneCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
-            command.Validate(nameof(command));
 
-            var isRateLimited = await _dynamoDbProvider.CheckRateLimitAsync(command.AuthContext.Audience, 
-                command.AuthContext.IpAddress, 
-                "/validate/phone", 
+            var isRateLimited = await _dynamoDbProvider.CheckRateLimitAsync(command.AuthContext.Audience,
+                command.AuthContext.IpAddress,
+                "/validate/phone",
                 cancellationToken: cancellationToken);
 
             if (isRateLimited)
@@ -55,6 +54,38 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
                 throw new TooManyUpdatesException($"Too many requests for IP '{command.AuthContext.IpAddress}'");
             }
             _logger.LogInformation($"IP {command.AuthContext.IpAddress} NOT rate limited.");
+
+            try
+            {
+                command.Validate(nameof(command));
+            }
+            catch (ValidationException ex)
+            {
+                // If phone number is coming in masked, may fail validation step. Load existing phone number if masked
+                if (ex.Message.Contains("Invalid phone number") && command.PhoneNumber.ToLower().Contains("xxx"))
+                {
+                    var existingGuest = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
+                        command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
+                    if (existingGuest == null || existingGuest.Phone == null)
+                    {
+                        _logger.LogWarning("Invalid phone number, and saved guest phone information not found.");
+                        throw;
+                    }
+
+                    var savedPhoneNumber = _mapper.Map<VerifiedDto>(existingGuest.Phone).Value;
+                    if (string.IsNullOrEmpty(savedPhoneNumber))
+                    {
+                        _logger.LogWarning("Invalid phone number, and saved guest phone number not found.");
+                        throw;
+                    }
+
+                    command = command with { PhoneNumber = savedPhoneNumber };
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
             if (existingGuestEntity == null)
@@ -73,8 +104,8 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
                 {
                     Value = command.PhoneNumber,
                     Verified = false,
-                    VerificationCode = VerificationCodeProvider.GenerateCode(),
-                    VerificationCodeExpiration = VerificationCodeProvider.GenerateExpiry()
+                    VerificationCode = VerificationCodeHelper.GenerateCode(),
+                    VerificationCodeExpiration = VerificationCodeHelper.GenerateExpiry()
                 };
 
             existingGuestEntity.Phone = verifyPhone.ToString();
@@ -92,7 +123,7 @@ namespace Wedding.Lambdas.Validate.Phone.Handlers
             };
         }
 
-        public async Task<ValidatePhoneResponse> ExecuteAsync(ResendCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ValidatePhoneResponse> ExecuteAsync(ResendPhoneCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));

@@ -8,6 +8,7 @@ export interface SaveTheDateStep {
   label: string;
   description: string;
   component: React.JSX.Element | null;
+  display: boolean;
 }
 
 export const stdTabIndex = atom<number>({
@@ -18,19 +19,21 @@ export const stdTabIndex = atom<number>({
 export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
   key: 'saveTheDateStepper',
   default: {
-    attendence: {
+    attendance: {
       id: 0,
       completed: false,
       label: 'Are you interested in attending the wedding?',
       description: '',
       component: null,
+      display: true,
     },
     ageGroup: {
       id: 1,
       completed: false,
-      label: 'What kind of person are we doling out food and drink to?',
+      label: 'What kind of person are we catering to?',
       description: '',
       component: null,
+      display: true,
     },
     foodPreferences: {
       id: 2,
@@ -38,6 +41,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       label: 'What kind of life is being sacrificed for your meal?',
       description: '',
       component: null,
+      display: true,
     },
     foodAllergies: {
       id: 3,
@@ -45,13 +49,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       label: 'Which of these things will kill you if you eat them?',
       description: '',
       component: null,
-    },
-    camping: {
-      id: 4,
-      completed: false,
-      label: 'Accomodations',
-      description: '(we have bathrooms!)',
-      component: null,
+      display: true,
     },
     communicationPreference: {
       id: 5,
@@ -59,13 +57,23 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       label: 'How should we contact you?',
       description: '',
       component: null,
+      display: true,
+    },
+    camping: {
+      id: 4,
+      completed: false,
+      label: 'Accommodations',
+      description: '(we have bathrooms!)',
+      component: null,
+      display: true,
     },
     mailingAddress: {
       id: 5,
       completed: false,
-      label: 'Where should we send your invitation?',
+      label: "What's your snail mail?",
       description: '',
       component: null,
+      display: true,
     },
     comments: {
       id: 6,
@@ -73,6 +81,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       label: 'Any comments?',
       description: '',
       component: null,
+      display: true,
     },
   },
 });
@@ -94,5 +103,4 @@ export const stdStepperState = selector<StdStepperProps>({
 
     return { steps, tabIndex, totalTabs, currentStep };
   },
-})
-
+});

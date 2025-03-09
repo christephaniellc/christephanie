@@ -96,6 +96,14 @@ jobs:
         with:
           node-version: 18
           cache: yarn
+          
+      - name: Generate application version hash
+        run: | 
+          GIT_HASH=$(git rev-parse --short HEAD)
+          DATETIME=$(date '+%y%m%d.%H%M')
+          VERSION="${DATETIME}.${GIT_HASH}"
+          echo "VITE_APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "App release version: $VERSION"
 
       - name: Install Dependencies
         run: yarn install
@@ -106,6 +114,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_ENV: "${{ env.VITE_ENV }}"
+          VITE_APP_VERSION: "${{ env.VITE_APP_VERSION }}"
           DOMAIN: "${{ env.AUTH0_DOMAIN }}"
           CLIENT_ID: "${{ env.AUTH0_CLIENT_ID }}"
           AUDIENCE: "${{ env.AUDIENCE }}"

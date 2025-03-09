@@ -37,7 +37,7 @@ export class FrontendStack extends cdk.Stack {
         ignorePublicAcls: true, 
         restrictPublicBuckets: true 
       }),
-      removalPolicy: environment === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false
      });
     console.log(`Setup bucket name: ${setupBucket.bucketName}`);
@@ -46,7 +46,7 @@ export class FrontendStack extends cdk.Stack {
         bucketName: `www.${props.frontendUrl}`,
         versioned: false,
         websiteIndexDocument: 'index.html',
-        websiteErrorDocument: 'error.html',
+        websiteErrorDocument: 'index.html', // Use index.html for both index and error document for SPA support
         publicReadAccess: true, // For static site hosting, otherwise consider CloudFront OAI
         blockPublicAccess: new s3.BlockPublicAccess({
           blockPublicAcls: false,   // Allows public ACLs
@@ -84,8 +84,24 @@ export class FrontendStack extends cdk.Stack {
         },
         defaultRootObject: 'index.html',
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100,  // Use cheapest edge locations
+        // Add both www and non-www versions of the domain
         domainNames: [`${fullDomainName}`, `www.${fullDomainName}`],
-        certificate: props.certificate
+        certificate: props.certificate,
+        // This is the most important part for SPA routing - handle 403/404 errors by returning the index.html file
+        errorResponses: [
+            {
+                httpStatus: 403,
+                responseHttpStatus: 200,
+                responsePagePath: '/index.html',
+                ttl: cdk.Duration.minutes(0)
+            },
+            {
+                httpStatus: 404,
+                responseHttpStatus: 200,
+                responsePagePath: '/index.html',
+                ttl: cdk.Duration.minutes(0)
+            }
+        ]
     });
     console.log(`CloudFrontDistribution domain name: ${this.cloudFrontDistribution.distributionDomainName}`); 
 

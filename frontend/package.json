@@ -12,7 +12,10 @@
     "prettier:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint:check": "eslint --max-warnings=0 \"src/**/*.{js,jsx,ts,tsx,json}\"",
     "ts:check": "tsc --noEmit",
-    "test:unit": "jest --config jest.config.js",
+    "test:unit": "jest --config jest.config.js --coverage",
+    "test:unit:no-coverage": "jest --config jest.config.js",
+    "test:coverage": "jest --config jest.config.js --coverage --coverageReporters=text-summary,html",
+    "test:coverage:detailed": "jest --config jest.config.js --coverage --coverageReporters=text,html,lcov",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "generate:types": "swagger-typescript-api -p ../backend/src/swagger.json -o ./src/types -n api.ts"
@@ -32,6 +35,7 @@
     "@tanstack/react-query": "^5.62.9",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "is-mobile": "^4.0.0",
@@ -44,6 +48,8 @@
     "react-hook-form": "^7.54.2",
     "react-hotkeys-hook": "^4.4.1",
     "react-router-dom": "^6.21.0",
+    "react-spring": "^9.7.5",
+    "recharts": "^2.15.1",
     "recoil": "^0.7.7"
   },
   "devDependencies": {

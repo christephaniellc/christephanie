@@ -1,32 +1,29 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useTheme } from '@mui/system';
 
 export const useAppLayout = () => {
+  const theme = useTheme();
   const [screenWidth, setScreenWidth] = useState(0)
-  const bottomNavHeight = 56;
+  const bottomNavHeight = 65;
+  const versionRowHeight = 18;
   const [contentHeight, setContentHeight] = React.useState(0);
-
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      const minWidth = 475;
-      const maxWidth = 1400;
       let screenWidth = window.innerWidth;
       let newHeightBasedOnZoom = window.innerHeight;
-      if (screenWidth < minWidth) {
-        const zoomLevel = screenWidth / minWidth;
+      if (screenWidth < theme.breakpoints.values.md) {
+        const zoomLevel = screenWidth / 500;
         console.log('setting new zoomLevel', zoomLevel);
         newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         document.body.style.zoom = `${zoomLevel}`;
       }
-      if (screenWidth > maxWidth) {
-        const zoomLevel = screenWidth / maxWidth;
-        newHeightBasedOnZoom = window.innerHeight / zoomLevel;
-        console.log('setting new zoomLevel', zoomLevel);
-        document.body.style.zoom = `${zoomLevel}`;
+      if (screenWidth >= theme.breakpoints.values.md && screenWidth <= theme.breakpoints.values.xl) {
+        document.body.style.zoom = `1`;
       }
       setScreenWidth(window.innerWidth);
-      setContentHeight(newHeightBasedOnZoom - bottomNavHeight);
-      console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
+      setContentHeight(newHeightBasedOnZoom - bottomNavHeight - versionRowHeight);
+      //console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
     };
     handleResize();
 

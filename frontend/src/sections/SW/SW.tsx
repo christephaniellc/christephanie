@@ -7,6 +7,7 @@ import type { SnackbarKey } from 'notistack';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import useNotifications from '@/store/notifications';
+import { Box } from '@mui/material';
 
 function SW() {
   const [, notificationsActions] = useNotifications();
@@ -26,6 +27,7 @@ function SW() {
     }
   }, [setOfflineReady, setNeedRefresh, notificationsActions]);
 
+
   useEffect(() => {
     if (offlineReady) {
       notificationsActions.push({
@@ -36,7 +38,7 @@ function SW() {
       });
     } else if (needRefresh) {
       notificationKey.current = notificationsActions.push({
-        message: 'New content is available, click on reload button to update.',
+        message: 'New content is available, click to reload.',
         options: {
           variant: 'warning',
           persist: true,

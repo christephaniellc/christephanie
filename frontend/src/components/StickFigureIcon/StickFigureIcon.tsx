@@ -80,11 +80,11 @@ const StickFigureIcon = ({
 
         timerRef.current = window.setTimeout(() => {
           // Update rotation on the exact second
-          setStickFigureRotation((prevRotation) => (prevRotation - 30) % 360);
+          setStickFigureRotation((prevRotation) => (prevRotation - Math.floor(Math.random() * 180)) % 360);
 
           // Schedule the next rotation update
           scheduleNextRotation();
-        }, 100);
+        }, 500);
       };
 
       scheduleNextRotation();
@@ -108,11 +108,14 @@ const StickFigureIcon = ({
       {ageGroup === AgeGroupEnum.Adult && (
         <Liquor sx={{ fontSize: 16, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }} />
       )}
-      {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure fontSize={fontSize}
+      {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure
+        elevation={10}
+        fontSize={fontSize}
                                                             sx={{
                                                               color: error ? 'error' : color,
                                                               // width: hidden ? 0 : 'auto',
-                                                              transform: `rotate(${stickFigureRotation}deg)`,
+                                                              transform: `rotateY(${stickFigureRotation}deg) rotateX(${stickFigureRotation}deg) rotateZ(${stickFigureRotation}deg)`,
+                                                              boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)',
                                                               transition: 'all 1s ease-in-out',
                                                               opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
                                                               // visibility: hidden ? 'hidden' : 'visible',

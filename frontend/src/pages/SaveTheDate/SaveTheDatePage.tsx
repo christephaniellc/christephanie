@@ -6,23 +6,32 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestDto, InvitationResponseEnum } from '@/types/api';
+import { GuestViewModel, InvitationResponseEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
-import { ButtonBase, Typography, useTheme } from '@mui/material';
+import { ButtonBase, darken, Typography, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
-import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import {
+  StephsActualFavoriteTypography,
+  StephsFavoriteTypography,
+} from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import LoadingBox from '@/components/LoadingBox';
 import { rem } from 'polished';
+import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { useNavigate } from 'react-router-dom';
+import { dark } from '@mui/material/styles/createPalette';
+import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
+import { ButtonsContainer } from '@/components/Steppers/StyledComponents';
 
 function SaveTheDatePage() {
   const [family, familyActions] = useFamily();
+  const { handleMouseMove, boxShadow } = useBoxShadow();
   const { contentHeight } = useAppLayout();
   const { user: auth0User } = useAuth0();
   const { getFamilyUnitQuery } = familyActions;
@@ -30,8 +39,8 @@ function SaveTheDatePage() {
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
   const { screenWidth } = useAppLayout();
-  const mousePosition = useRef({ x: 0, y: 0 });
   const theme = useTheme();
+  const navigate = useNavigate();
   const genericQuestions = useMemo(
     () => ['comments', 'mailingAddress'].includes(stdStepper.currentStep[0]),
     [stdStepper.currentStep],
@@ -47,27 +56,15 @@ function SaveTheDatePage() {
     }
   }, [stdStepper.currentStep]);
 
-  // useEffect(() => {
-  //   if (!getFamilyUnitQuery.isPending) {
-  //     familyActions.getFamily();
-  //     // return <FullSizeCenteredFlexBox>Loading...</FullSizeCenteredFlexBox>
-  //   }
-  //
-  //   // if (getFamilyUnitQuery.isError) {
-  //   //   return <FullSizeCenteredFlexBox>There was an error loading your family</FullSizeCenteredFlexBox>
-  //   // }
-  // }, []);
-  const handleMouseMove = (event: React.MouseEvent) => {
-    mousePosition.current = { x: event.clientX, y: event.clientY };
+  const handleNavigateToStep = (step: string) => {
+    familyActions.getFamily();
+    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
+    navigate(`/save-the-date?step=${step}`);
   };
 
-  const calculateShadow = () => {
-    console.log('mousePosition', mousePosition.current);
-    const { x, y } = mousePosition.current;
-    const shadowX = 2;
-    const shadowY = 2;
-    return `${shadowX}px ${shadowY}px 0px ${theme.palette.error.main}`;
-  };
+  const contentHeightWithStepper = useMemo(() => {
+    return genericQuestions ? '100%' : `${contentHeight - 155}px`
+  }, [contentHeight, genericQuestions]);
 
   return (
     <Box>
@@ -83,30 +80,11 @@ function SaveTheDatePage() {
           flexWrap: 'wrap',
           backdropFilter: 'blur(20px)',
           position: 'relative',
-          height: `${contentHeight - 200}px`,
+          height: contentHeightWithStepper,
           overflow: 'hidden',
-          paddingBottom: rem(30),
         }}
       >
-        <Box p={2} height={85}>
-          <StephsFavoriteTypography
-            variant="h4"
-            sx={{
-              ml: 'auto',
-              mr: 'auto',
-              mb: 2,
-              width: 'fit-content',
-              color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
-              fontSize: '1.5rem',
-              [theme.breakpoints.up('md')]: {
-                pl: '200px',
-              },
-              // filter: `drop-shadow(${calculateShadow()})`,
-            }}
-          >
-            {Object.values(saveTheDateSteps)[tabIndex]?.label}
-          </StephsFavoriteTypography>
-        </Box>
+        <MtvAnimatedTitle />
         <ButtonsContainer>
           {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
           {!genericQuestions && family && family.guests.length === 0 && (
@@ -116,7 +94,7 @@ function SaveTheDatePage() {
             family &&
             family.guests &&
             family.guests.length > 1 &&
-            family.guests.map((guest: GuestDto) => (
+            family.guests.map((guest: GuestViewModel) => (
               <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
             ))}
           {genericQuestions && <>{FamilyQueryQuestion}</>}
@@ -144,7 +122,7 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '75px',
+              paddingBottom: '85px'
             }}
           >
             <Button
@@ -152,22 +130,36 @@ function SaveTheDatePage() {
               color="error"
               sx={{
                 backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                // display: tabIndex > 0 ? 'inherit' : 'none',
+                backgroundColor: 'rgba(0,0,0,.8)',
+                display: tabIndex > 0 ? 'inherit' : 'none',
                 flexShrink: 0,
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
+                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
                 onClick={() => {
                   familyActions.getFamily();
-                  setTabIndex(tabIndex - 1);
+
+                  // Find previous visible step
+                  const stepsArray = Object.entries(saveTheDateSteps);
+                  let prevIndex = tabIndex - 1;
+
+                  // Find the previous visible step
+                  while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
+                    prevIndex--;
+                  }
+
+                  // If we found a previous visible step, navigate to it
+                  if (prevIndex >= 0) {
+                    handleNavigateToStep(stepsArray[prevIndex][0]);
+                  }
                 }}
               >
                 Wait, go back
-              </StephsFavoriteTypography>
+              </StephsActualFavoriteTypography>
             </Button>
             <Box id={'spacer'} display={'flex'} width={1}></Box>
             <Button
@@ -178,21 +170,53 @@ function SaveTheDatePage() {
               sx={{
                 flexShrink: 0,
                 backdropFilter: 'blur(20px)',
-                backgroundColor: 'rgba(0,0,0,.1)',
+                backgroundColor: 'rgba(0,0,0,.8)',
                 display: tabIndex < stdStepper.totalTabs ? 'inherit' : 'none',
               }}
               onClick={() => {
                 familyActions.getFamily();
-                setTabIndex(tabIndex + 1);
+
+                // If we're at the last tab, navigate home
+                if (tabIndex >= stdStepper.totalTabs - 1) {
+                  navigate('/');
+                  return;
+                }
+
+                // We don't want to use the all declined/pending logic to skip directly to the end
+                // The user should go through each step in order
+                // This allows them to see the mailing address step even if declined/pending
+
+                // Otherwise find next visible step
+                const stepsArray = Object.entries(saveTheDateSteps);
+                let nextIndex = tabIndex + 1;
+
+                // Find the next visible step
+                while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
+                  nextIndex++;
+                }
+
+                // If we found a next visible step, navigate to it
+                if (nextIndex < stepsArray.length) {
+                  handleNavigateToStep(stepsArray[nextIndex][0]);
+                } else {
+                  // If no more visible steps, navigate home
+                  navigate('/');
+                }
               }}
             >
-              <StephsFavoriteTypography
+              <StephsActualFavoriteTypography
                 sx={{
+                  textShadow: `3px 3px 0 ${darken(
+                    stdStepper.currentStep[1].completed
+                      ? theme.palette.success.dark
+                      : theme.palette.error.dark,
+                    0.5,
+                  )}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
-                Next
-              </StephsFavoriteTypography>
+                {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
+              </StephsActualFavoriteTypography>
             </Button>
           </Box>
         )}
@@ -202,17 +226,3 @@ function SaveTheDatePage() {
 }
 
 export default SaveTheDatePage;
-
-export const ButtonsContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'space-between',
-  gap: 16,
-  justifyContent: 'center',
-  width: '100%',
-  mx: 'auto',
-  maxHeight: '80vh',
-  paddingBottom: '200px',
-  position: 'relative',
-  overflow: 'auto',
-}));
