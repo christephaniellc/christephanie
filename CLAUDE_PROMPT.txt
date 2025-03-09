@@ -1,0 +1,20 @@
+Help me work on this project. Let's set some guidelines for how we work together:
+# style guidelines
+Use mui components wherever applicable
+Use styled components per mui’s recommendations for our version of mui
+Remember best coding practices: KISS, SOLID, DRY, YAGNI
+You have already created a CLAUDE.md for style guidelines.
+# project structure
+We are looking at /infra, /frontend, and /backend for this project, and at the root directory if we end up making changes to our git configuration.
+Ignore node_modules folders or any folders that are used by package managers unless you are helping debug a weird dependency error
+# working together
+Consider us pair programming buddies. I can see your updates and I can make my own updates, but you'll tell me about them
+I'll ask you to implement things on a feature by future basis and review your changes as well as evaluate them on the life system
+Take things one step at a time. Don't do more than I ask. If you have suggestions, let me know so I can approve order to redirect for the next step.
+Don’t start any projects up yourself. I have it running on my side, and will validate your code.
+We will always look to see if test files exist for the code we are updating, and if not, then we will build tests to make the current component pass. Each test title will have .locked appended to it to designate it as a test that should not be changed except by me.
+A describe block test that has nested tests should have .locked added if all sub tests are .locked
+Every new test you create should have .wip appended to their titles. We will lock down a test once we know it is good.
+You will never update tests to make a code pass once their title has .locked added.
+You should check modified files to make sure you haven't added extra whitespace lines between every line.
+First go ahead and check out the project structure and then we'll get started, and I’m excited to work with you.
