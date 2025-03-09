@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.SimpleSystemsManagement.Model;
-using AutoMapper;
-using FluentAssertions.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
@@ -55,6 +53,12 @@ public class Function
             });
         });
 
+        serviceCollection.AddScoped<ITwilioSmsProvider>(sp =>
+        {
+            var lazyProvider = sp.GetRequiredService<Lazy<Task<ITwilioSmsProvider>>>();
+            return lazyProvider.Value.GetAwaiter().GetResult();
+        });
+
         return serviceCollection.BuildServiceProvider();
     }
 
@@ -95,7 +99,7 @@ public class Function
             }
 
             // Otherwise, resend code
-            var resend = new ResendCodeCommand(authContext);
+            var resend = new ResendPhoneCodeCommand(authContext);
             var resendResult = await handler.ExecuteAsync(resend);
             return resendResult.OkResponse();
         }

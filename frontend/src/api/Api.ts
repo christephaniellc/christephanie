@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FindUserResponse, GuestDto, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -28,8 +28,12 @@ export default class Api {
   async getFamilyUnit(): Promise<FamilyUnitDto> {
     return this.get('/familyunit');
   }
+  
+  async getAllFamilies(): Promise<FamilyUnitViewModel[]> {
+    return this.get('/admin/familyunit/all');
+  }
 
-  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitDto> {
+  async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitViewModel> {
     return this.patch(`/familyunit`, familyUnit);
   }
 
@@ -41,9 +45,13 @@ export default class Api {
     return this.post(`/GuestDtos`, GuestDto);
   }
 
-  patchGuestDto(PatchGuestRequest: PatchGuestRequest): Promise<GuestDto> {
-    return this.patch(`/guest`, PatchGuestRequest);
+  patchGuestDto(patchGuestRequest: PatchGuestRequest): Promise<GuestViewModel> {
+    return this.patch(`/guest`, patchGuestRequest);
   }
+
+  getMaskedValue(guestId: string, maskedValueType: NotificationPreferenceEnum): Promise<{ value: string, verified: boolean }> {
+    return this.get(`/guest/maskedvalues?guestId=${encodeURIComponent(guestId)}&maskedValueType=${encodeURIComponent(maskedValueType)}`);
+}
 
   deleteGuestDto(id: number): Promise<GuestDto> {
     return this.delete(`/guest/${id}/change-password`);
@@ -51,6 +59,14 @@ export default class Api {
 
   validateAddress(address: AddressDto): Promise<AddressDto> {
     return this.post(`/validate/address`, address);
+  }
+  
+  validatePhone(phoneNumber: string, code?: string, action?: string): Promise<{ success: boolean }> {
+    return this.post(`/validate/phone`, { phoneNumber, code, action });
+  }
+
+  validateEmail(email: string, code?: string, action?: string): Promise<{ success: boolean }> {
+    return this.post(`/validate/email`, { email, code, action });
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {

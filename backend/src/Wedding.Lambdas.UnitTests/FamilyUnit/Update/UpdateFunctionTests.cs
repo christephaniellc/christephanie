@@ -10,6 +10,7 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.FamilyUnit.Update.Handlers;
@@ -99,7 +100,7 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
 
                 // ACT
                 var response = await Sut!.FunctionHandler(request, context);
-                var result = response.GetResponseBodyData<FamilyUnitDto>();
+                var result = response.GetResponseBodyData<FamilyUnitViewModel>();
 
                 // ASSERT
                 result.Should().NotBeNull();
@@ -107,11 +108,13 @@ namespace Wedding.Lambdas.UnitTests.FamilyUnit.Update
                 result.Guests!.Count.Should().BeGreaterThan(0);
                 result.Guests![0].FirstName.Should().Be("John");
                 result.Guests![0].AgeGroup.Should().Be(AgeGroupEnum.Under13);
-                result!.Guests![0]!.Phone!.Value.Should().Be(updatedPhone);
+                result!.Guests![0]!.Phone!.MaskedValue.Should().Be(ObfuscationHelper.MaskPhone(updatedPhone));
                 result!.Guests![0]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Interested);
                 result!.Guests![1]!.Rsvp!.InvitationResponse.Should().Be(InvitationResponseEnum.Declined);
                 result!.MailingAddress!.StreetAddress.Should().Be("123 Main St.");
-                result.CalculateHeadcount().Should().Be(1);
+
+                var updatedDto = _mapper.Map<FamilyUnitDto>(result);
+                updatedDto.CalculateHeadcount().Should().Be(1);
             }
             catch (Exception ex)
             {

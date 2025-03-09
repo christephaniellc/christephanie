@@ -7,9 +7,8 @@ enum Pages {
   Welcome,
   SaveTheDate,
   Profile,
-  FoodPreferences,
-  PrivacyPolicy,
-  TermsOfService,
+  Bureaucracy,
+  Admin,
   NotFound
 }
 

@@ -176,7 +176,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             dto.LastName.Should().Be(entity.LastName);
             dto.Roles.Should().BeEquivalentTo(entity.Roles);
             dto.Email!.Value.Should().Be("john.doe@gmail.com");
-            dto.Phone!.Value.Should().Be("555-555-5555");
+            dto.Phone!.Value.Should().Be("202-555-5555");
             dto.AgeGroup.Should().Be(entity.AgeGroup);
             dto.LastActivity.Should().Be(entity.LastActivity);
             dto.Rsvp.Should().NotBeNull();

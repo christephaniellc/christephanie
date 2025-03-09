@@ -32,9 +32,9 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
         /// <param name="obj">The command.</param>
         /// <param name="context">The context.</param>
         public static void Validate(
-            this ResendCodeCommand obj,
+            this ResendPhoneCodeCommand obj,
             object? context = default)
-            => ValidateHelpers.Validate<ResendCodeCommand, ResendCodeCommandValidator>(obj, context);
+            => ValidateHelpers.Validate<ResendPhoneCodeCommand, ResendPhoneCodeCommandValidator>(obj, context);
 
         /// <summary>
         /// Validates the specified command.

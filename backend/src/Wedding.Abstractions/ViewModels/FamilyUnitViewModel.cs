@@ -11,7 +11,7 @@ namespace Wedding.Abstractions.ViewModels
 
         public string UnitName { get; set; } = "";
 
-        public List<GuestDto>? Guests { get; set; }
+        public List<GuestViewModel>? Guests { get; set; }
 
         public AddressDto? MailingAddress { get; set; }
 

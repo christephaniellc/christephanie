@@ -2,8 +2,8 @@ import { render } from '@testing-library/react';
 import ForestBackground from '@/components/ForestBackground/ForestBackground';
 import { RecoilRoot } from 'recoil';
 
-describe('<ForestBackground />', () => {
-  it('should render without crashing', () => {
+describe('<ForestBackground />.locked', () => {
+  it('should render without crashing.locked', () => {
     render(
       <RecoilRoot>
         <ForestBackground />

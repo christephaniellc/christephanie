@@ -2,9 +2,9 @@ import { atom, selector, selectorFamily, useRecoilState } from 'recoil';
 import {
   AddressDto,
   AgeGroupEnum,
-  FamilyUnitDto,
+  FamilyUnitViewModel,
   FoodPreferenceEnum,
-  GuestDto,
+  GuestViewModel,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
   SleepPreferenceEnum,
@@ -17,12 +17,12 @@ import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
 import { saveTheDateStepsState } from '@/store/steppers/steppers';
 
-export const familyState = atom<FamilyUnitDto | null>({
+export const familyState = atom<FamilyUnitViewModel | null>({
   key: 'familyUnit',
   default: null,
 });
 
-export const familyQueryState = atom<UseQueryResult<FamilyUnitDto> | null>({
+export const familyQueryState = atom<UseQueryResult<FamilyUnitViewModel> | null>({
   key: 'familyQuery',
   default: null,
 });
@@ -68,7 +68,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
   },
 });
 
-export const guestSelector = selectorFamily<GuestDto | null, string>({
+export const guestSelector = selectorFamily<GuestViewModel | null, string>({
   key: 'guestSelector',
   get:
     (guestId) =>
@@ -109,7 +109,7 @@ export const guestSelector = selectorFamily<GuestDto | null, string>({
       set(familyState, {
         ...familyUnit,
         guests: updatedGuests,
-      } as FamilyUnitDto);
+      } as FamilyUnitViewModel);
     },
 });
 
@@ -117,15 +117,15 @@ const somethingFamilySelector = selector({
   key: 'somethingFamilySelector',
   get: ({ get }) => {
     const family = get(familyState);
-    const ageIsSelected = family?.guests?.every((guest: GuestDto) => guest.ageGroup !== undefined);
+    const ageIsSelected = family?.guests?.every((guest: GuestViewModel) => guest.ageGroup !== undefined);
     const foodPreferencesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => guest.preferences.foodPreference !== null,
+      (guest: GuestViewModel) => guest.preferences.foodPreference !== null,
     );
     const foodAllergiesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => !!guest.preferences.foodAllergies,
+      (guest: GuestViewModel) => !!guest.preferences.foodAllergies,
     );
     const campingPreferencesAreSelected = family?.guests?.every(
-      (guest: GuestDto) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
+      (guest: GuestViewModel) => guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
     );
     const addressIsSelected = family?.mailingAddress !== undefined;
     const commentsAreSelected = family?.invitationResponseNotes !== undefined;
@@ -137,50 +137,18 @@ const somethingFamilySelector = selector({
       addressIsSelected,
       commentsAreSelected,
     };
-    //   updateSteps((prev) => ({
-    //     ...prev,
-    //     ageGroup: {
-    //       ...prev.ageGroup,
-    //       completed: ageIsSelected,
-    //     },
-    //     foodPreferences: {
-    //       ...prev.foodPreferences,
-    //       completed: foodPreferencesAreSelected,
-    //     },
-    //     foodAllergies: {
-    //       ...prev.foodAllergies,
-    //       completed: foodAllergiesAreSelected,
-    //     },
-    //     communicationPreference: {
-    //       ...prev.communicationPreference,
-    //       completed: true,
-    //     },
-    //     camping: {
-    //       ...prev.camping,
-    //       completed: campingPreferencesAreSelected,
-    //     },
-    //     mailingAddress: {
-    //       ...prev.mailingAddress,
-    //       completed: addressIsSelected,
-    //     },
-    //     comments: {
-    //       ...prev.comments,
-    //       completed: commentsAreSelected,
-    //     },
-    //   }));
   },
 });
 
 export function reorderArrayByKey(array, key, matchValue) {
   // Find the index of the element where the property matches the provided value
-  const index = array.findIndex(item => item[key] === matchValue);
+  const index = array.findIndex((item) => item[key] === matchValue);
 
   // If a matching element is found, remove it and place it at the beginning of the array
   if (index !== -1) {
     const [matchingElement] = array.splice(index, 1);
     array.unshift(matchingElement);
   }
-  console.log('sorted array', array);
 
   return array;
 }
@@ -202,12 +170,12 @@ export const useFamily = () => {
       getFamilyUnitQuery.refetch().then((res) => {
         if (!res.data || !res.data.guests) return;
 
-        const matchingUser = res.data.guests.find((value: GuestDto) => {
+        const matchingUser = res.data.guests.find((value: GuestViewModel) => {
           return value.auth0Id === user.auth0Id;
         });
         if (matchingUser) {
           const sortedGuests = reorderArrayByKey(res.data.guests, 'guestId', auth0User.sub);
-          setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitDto);
+          setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitViewModel);
         }
       }),
     [],
@@ -223,6 +191,20 @@ export const useFamily = () => {
   const updateFamilyGuestCommunicationPreference = useCallback(
     (guestId: string, notificationPreference: NotificationPreferenceEnum[]) => {
       patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, notificationPreference } });
+    },
+    [],
+  );
+  
+  const updateFamilyGuestEmail = useCallback(
+    (guestId: string, email: string) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, email } });
+    },
+    [],
+  );
+  
+  const updateFamilyGuestPhone = useCallback(
+    (guestId: string, phone: string) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, phone } });
     },
     [],
   );
@@ -285,6 +267,61 @@ export const useFamily = () => {
     }
   }, [family, auth0User, getFamily]);
 
+  useEffect(() => {
+    if (!family || !family.guests || !saveTheDateSteps) return;
+    const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+    );
+    console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
+    setSaveTheDateSteps((prev) => ({
+      // attendance
+      attendance: {
+        ...prev.attendance,
+        display: true,
+        completed: !family.guests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending),
+      },
+      ageGroup: {
+        ...prev.ageGroup,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
+      },
+      foodPreferences: {
+        ...prev.foodPreferences,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        completed: attendingGuests.every(
+          (guest) => guest.preferences.foodPreference !== null,
+        ),
+      },
+      foodAllergies: {
+        ...prev.foodAllergies,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
+      },
+      communicationPreference: {
+        ...prev.communicationPreference,
+          display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+          completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
+      },
+      camping: {
+        ...prev.camping,
+        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        completed: attendingGuests.every(
+          (guest) => guest?.preferences?.sleepPreference ?? SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
+        ),
+      },
+      mailingAddress: {
+        ...prev.mailingAddress,
+        display: true, // Always show mailing address step
+        completed: !!family.mailingAddress,
+      },
+      comments: {
+        ...prev.comments,
+        display: true,
+        completed: !!family.invitationResponseNotes,
+      },
+    }));
+  }, [family]);
+
   const familyActions = useMemo(
     () => ({
       getFamily,
@@ -295,6 +332,8 @@ export const useFamily = () => {
       updateFamilyComment,
       updateFamilyGuestAgeGroup,
       updateFamilyGuestCommunicationPreference,
+      updateFamilyGuestEmail,
+      updateFamilyGuestPhone,
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestInterest,
       updateFamilyGuestFoodPreferences,
@@ -308,6 +347,8 @@ export const useFamily = () => {
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestSleepingPreference,
       updateFamilyGuestCommunicationPreference,
+      updateFamilyGuestEmail,
+      updateFamilyGuestPhone,
       getFamilyUnitQuery,
       getFamily,
       updateFamilyGuestInterest,

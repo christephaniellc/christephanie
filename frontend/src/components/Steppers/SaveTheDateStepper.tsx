@@ -16,12 +16,18 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useFamily } from '@/store/family';
-import { GuestDto, InvitationResponseEnum, SleepPreferenceEnum } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
-import { ButtonsContainer } from '@/pages/SaveTheDate/SaveTheDatePage';
+import { ButtonsContainer } from './StyledComponents';
 import IconButton from '@mui/material/IconButton';
-import { Check, Circle, CloseTwoTone } from '@mui/icons-material';
+import {
+  Check, CheckCircleOutlineTwoTone,
+  Circle,
+  CloseTwoTone, Publish,
+  PublishedWithChangesTwoTone, RadioButtonUnchecked, TaskAltTwoTone, TripOrigin,
+  Unpublished,
+  UnpublishedTwoTone,
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
@@ -47,7 +53,6 @@ export default function SaveTheDateStepper() {
   const theme = useTheme();
 
   const [family, familyActions] = useFamily();
-  const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
   const stdStepper = useRecoilValue(stdStepperState);
@@ -55,22 +60,42 @@ export default function SaveTheDateStepper() {
   const [interestedStep, setInterestedStep] = useState<number>(1);
   const [pendingSteps, setPendingSteps] = useState<number>(1);
   const [declinedSteps, setDeclinedSteps] = useState<number>(1);
+  const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
 
   const guests = useMemo(() => family?.guests, [family]);
 
+  // Effect that runs on initial load and when the location changes
+  // This will check for the step query parameter and set the active step
   useEffect(() => {
-    if (urlParams) {
-      const step = urlParams.get('step');
-      if (step) {
-        const index = Object.keys(saveTheDateSteps).indexOf(step);
-        setTabIndex(index);
+    const params = new URLSearchParams(location.search);
+    const step = params.get('step');
+    
+    if (step && Object.keys(saveTheDateSteps).includes(step)) {
+      const index = Object.keys(saveTheDateSteps).indexOf(step);
+      console.log('Setting step index from URL params:', step, index);
+      setTabIndex(index);
+      setInitialUrlProcessed(true);
+    } else if (!initialUrlProcessed) {
+      setInitialUrlProcessed(true);
+    }
+  }, [location.search, saveTheDateSteps, setTabIndex, initialUrlProcessed]);
+  
+  // Effect to update URL when tab changes - only after initial URL is processed
+  useEffect(() => {
+    // Only update URL after we've processed the initial URL parameter
+    if (initialUrlProcessed) {
+      const currentStep = Object.keys(saveTheDateSteps)[tabIndex];
+      const params = new URLSearchParams(location.search);
+      const currentUrlStep = params.get('step');
+      
+      if (currentStep && currentUrlStep !== currentStep) {
+        console.log('Updating URL to match current step:', currentStep);
+        // Use history.replaceState to update URL without adding new history entry
+        const newUrl = `/save-the-date?step=${currentStep}`;
+        window.history.replaceState(null, '', newUrl);
       }
     }
-  }, [saveTheDateSteps, urlParams]);
-
-  useEffect(() => {
-    setUrlParams(new URLSearchParams(location.search));
-  }, [location]);
+  }, [tabIndex, saveTheDateSteps, location.search, initialUrlProcessed]);
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
@@ -81,19 +106,23 @@ export default function SaveTheDateStepper() {
   return (
     <Box
       component={Container}
-      pt={4}
+      pt={2}
       display="flex"
       alignItems="center"
+      height={60}
       justifyContent="space-between"
     >
-      <Box flexGrow={1} display="flex" alignItems="center" width="100%">
+      <Box flexGrow={2} display="flex" alignItems="center" width="100%" >
         <Stepper
+          sx={{ width: '100%', height: 40 }}
           activeStep={tabIndex}
           nonLinear
           orientation="horizontal"
           connector={<StyledConnector />}
         >
-          {Object.entries(saveTheDateSteps).map(([key, step]) => (
+          {Object.entries(saveTheDateSteps)
+            .filter(([key, step]) => step.display)
+            .map(([key, step]) => (
             <Step completed={step.completed} key={key}>
               <CustomStepLabel
                 onClick={() => handleNavigateToStep(key)}
@@ -108,11 +137,10 @@ export default function SaveTheDateStepper() {
       </Box>
       <Box
         display={'flex'}
-        flexGrow={1}
+        flexGrow={0}
         minWidth={40}
         justifyContent="flex-end"
-        pr={2}
-        width="100%"
+        px={2}
       >
         <IconButton onClick={() => navigate('/')}>
           <CloseTwoTone />
@@ -171,7 +199,7 @@ function StepperIcon(props: StepIconProps) {
   const user = useRecoilValue(userState);
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
-      {completed ? <Check color="success" /> : <Circle color="secondary" />}
+      {completed ? <CheckCircleOutlineTwoTone fontWeight={800} color="success" /> : <TripOrigin color="secondary" />}
     </StepperIconRoot>
   );
 }
@@ -207,13 +235,16 @@ const StepperIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(({ t
 
 const CustomStepLabel = styled(StepLabel)<StepLabelProps>(({ theme }) => ({
   [`& .${stepLabelClasses.label}`]: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    fontSize: '0.8rem',
     ...theme.applyStyles('dark', {}),
   },
-
+  [`& .Mui-active`]: {
+    color: `${theme.palette.primary.main} !important`,
+    '& svg': {
+      fill: theme.palette.primary.main,
+      width: 30,
+      height: 30,
+    }
+  },
   [`& .${stepLabelClasses.completed}`]: {
     color: theme.palette.success.main,
   },

@@ -61,6 +61,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.FamilyUnit.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Guest.Patch", "Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj", "{5E250480-09AE-4D83-B597-14F2C9A405B0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Guest.MaskedValues.Get", "Wedding.Lambdas.Guest.MaskedValues.Get\Wedding.Lambdas.Guest.MaskedValues.Get.csproj", "{A8000375-CA8F-42E9-975A-76E79BD02B26}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Validate.Email", "Wedding.Lambdas.Validate.Email\Wedding.Lambdas.Validate.Email.csproj", "{67686AFE-FF50-40B0-A882-46D00A1DE1BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -277,6 +281,22 @@ Global
 		{5E250480-09AE-4D83-B597-14F2C9A405B0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E250480-09AE-4D83-B597-14F2C9A405B0}.Release|x64.ActiveCfg = Release|Any CPU
 		{5E250480-09AE-4D83-B597-14F2C9A405B0}.Release|x64.Build.0 = Release|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8000375-CA8F-42E9-975A-76E79BD02B26}.Release|x64.Build.0 = Release|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Debug|x64.Build.0 = Debug|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Release|x64.ActiveCfg = Release|Any CPU
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -304,6 +324,8 @@ Global
 		{BCBC73BA-E5C7-4CCC-983F-CD2F1ECE42B5} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{4074D969-F2A8-478C-9199-CA51A701B147} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{5E250480-09AE-4D83-B597-14F2C9A405B0} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{A8000375-CA8F-42E9-975A-76E79BD02B26} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{67686AFE-FF50-40B0-A882-46D00A1DE1BE} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE7DC1A-0F17-41CE-B205-8B3751B0072D}

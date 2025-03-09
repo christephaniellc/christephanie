@@ -33,19 +33,29 @@ export class ParamsStack extends cdk.Stack {
     }
     const secureParams = [
         { 
+            name: "/config/application/properties", 
+            value: JSON.stringify({
+                "ApplicationName": `${applicationName}`,
+                "MailFromAddress": `${props.env.mailFromAddress}`
+                }) 
+        },
+        { 
             name: "/config/usps/api-credentials", 
             value: JSON.stringify({        
                 "ApiUrl": "https://api.usps.com",
-                "ConsumerKey": "<todo>",
-                "ConsumerSecret": "<todo>"
+                "ConsumerKey": `${props.env.uspsConsumerKey}`,
+                "ConsumerSecret": `${props.env.uspsConsumerSecret}`
                 }) 
         },
         { 
             name: "/config/twilio/api-credentials", 
             value: JSON.stringify({        
                 "ApiUrl": "https://api.usps.com",
-                "SID": "<todo>",
-                "Secret": "<todo>"
+                "SID": `${props.env.twilioSid}`,
+                "Secret": `${props.env.twilioSecret}`,
+                "VerifyServiceSid": `${props.env.twilioVerifyServiceSid}`,
+                "MessagingServiceSid": `${props.env.twilioMessagingServiceSid}`,
+                "MessagingServicePhone": `${props.env.twilioMessagingServicePhone}`
                 }) 
         },
         { 
