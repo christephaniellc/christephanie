@@ -1,8 +1,9 @@
-import React from 'react';
-import { Typography, Box } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography, Box, Button } from '@mui/material';
 import { SleepPreferenceEnum } from '@/types/api';
 import { PreferenceDescriptionProps } from '../types';
-import HotelList from './HotelList';
+import HotelDialog from './HotelDialog';
+import { HotelOutlined } from '@mui/icons-material';
 
 const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
   campingValue,
@@ -12,12 +13,25 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
   takingShuttle,
   setTakingShuttle,
 }) => {
+  const [isHotelDialogOpen, setIsHotelDialogOpen] = useState(false);
+
+  const handleOpenHotelDialog = () => {
+    setIsHotelDialogOpen(true);
+  };
+
+  const handleCloseHotelDialog = () => {
+    setIsHotelDialogOpen(false);
+  };
+
   if (campingValue === SleepPreferenceEnum.Camping) {
     return (
-      <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.2)' }}>
+      <Box sx={{ 
+        p: 2, 
+        backgroundColor: 'rgba(0,0,0,.2)' 
+      }}>
         <Typography 
           variant="body1" 
-          color="secondary" 
+          color="white" 
           fontWeight="medium"
           data-testid="camping-description"
         >
@@ -31,13 +45,13 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
     return (
       <Box sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.2)' }}>
         <Typography 
-          variant="body1" 
-          color="primary" 
+          color="white" 
           fontWeight="medium"
+          fontSize="0.9rem"
           data-testid="manor-description"
         >
-          Stay in our Manor House! As a Manor guest, you'll have access to a private room in the
-          historic house.
+          * You have been chosen to stay in the Manor House!<br/><br/>As an honored Manor guest, you'll have access to a private room in the
+          historic house at our venue.<br/><br/>Breakfasts and good times are included.
         </Typography>
       </Box>
     );
@@ -45,13 +59,38 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
 
   if (campingValue === SleepPreferenceEnum.Hotel) {
     return (
-      <HotelList
-        hotelOptions={hotelOptions}
-        expandedHotel={expandedHotel}
-        handleToggleHotelDetails={handleToggleHotelDetails}
-        takingShuttle={takingShuttle}
-        setTakingShuttle={setTakingShuttle}
-      />
+      <Box sx={{ p: 3, backgroundColor: 'rgba(0,0,0,.2)', textAlign: 'center' }}>
+        <Typography 
+          variant="body1" 
+          color="white" 
+          fontWeight="medium"
+          gutterBottom
+          data-testid="hotel-description"
+        >
+          We've partnered with hotels in the area to provide you with convenient options.
+        </Typography>
+        
+        <Button 
+          variant="contained" 
+          color="secondary"
+          startIcon={<HotelOutlined />}
+          onClick={handleOpenHotelDialog}
+          sx={{ 
+            mt: 2,
+            fontWeight: 'bold',
+            borderRadius: 2,
+            boxShadow: 3
+          }}
+        >
+          View Hotel Options
+        </Button>
+        
+        <HotelDialog 
+          open={isHotelDialogOpen} 
+          onClose={handleCloseHotelDialog} 
+          hotelOptions={hotelOptions} 
+        />
+      </Box>
     );
   }
 

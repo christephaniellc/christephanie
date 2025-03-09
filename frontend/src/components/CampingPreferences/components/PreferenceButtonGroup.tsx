@@ -75,7 +75,7 @@ const PreferenceButtonGroup: React.FC<PreferenceButtonGroupProps> = ({
                 position="relative"
               >
                 <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
-                  {value === 'Unknown' ? '' : value}
+                  {value === 'Unknown' ? '' : `${value}${value === 'Manor'? '*' : ''}`}
                 </Typography>
               </Box>
             </Box>
