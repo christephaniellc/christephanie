@@ -27,6 +27,26 @@ export interface FoodAllergyIconProps {
   selected: boolean;
 }
 
+// Available icon types for custom allergies
+export const customAllergyIconOptions = [
+  WineBar, Spa, SetMeal, LocalFlorist, EmojiNature, Science, BakeryDining, 
+  LunchDining, Cookie, DinnerDining, KebabDining, BugReport, Egg, Icecream
+];
+
+/**
+ * Generate a deterministic icon for custom allergies based on the allergy name
+ * @param allergyName The custom allergy name
+ * @returns A React component icon from the available options
+ */
+export const getIconForCustomAllergy = (allergyName: string): React.ElementType => {
+  // Use the first character's code to create a deterministic but seemingly random selection
+  const firstChar = allergyName.charAt(0).toLowerCase();
+  const charCode = firstChar.charCodeAt(0);
+  const index = charCode % customAllergyIconOptions.length;
+  
+  return customAllergyIconOptions[index];
+};
+
 export const seriousFoodAllergies: FoodAllergyIconProps[] = [
   {
     "allergyName": "Alcohol",
