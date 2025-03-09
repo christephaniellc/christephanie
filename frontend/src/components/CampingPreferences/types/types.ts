@@ -23,6 +23,8 @@ export interface PreferenceButtonProps {
 
 export interface HotelDetailProps {
   hotel: HotelOption;
+  takingShuttle?: boolean;
+  onToggleShuttle?: () => void;
 }
 
 export interface HotelDialogProps {
