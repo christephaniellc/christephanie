@@ -124,9 +124,9 @@ const AddressEnvelope: React.FC = () => {
               color="secondary"
               sx={{ mb: 2, fontFamily: 'Snowstorm, sans-serif' }}
             >
-              Would you like to receive an announcement celebrating how great and perfect our lives
-              are in every way, with pictures of us laughing in different directions at real life
-              amazing stuff?
+              Would you like to receive a wedding announcement in the mail celebrating how great 
+              and perfect our lives are in every way, with pictures of us laughing in different 
+              directions at real life amazing stuff?
             </Typography>
 
             <ButtonGroup variant="contained" color="secondary" size="large" sx={{ mt: 2 }}>

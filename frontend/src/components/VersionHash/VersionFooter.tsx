@@ -10,7 +10,7 @@ function AppVersionFooter() {
           sx={{
             width: '100%',
             position: "relative",
-            zIndex: 1500,
+            zIndex: 130,
             pr: 0.5,
             background: "transparent"
           }}

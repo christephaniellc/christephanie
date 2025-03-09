@@ -9,6 +9,7 @@ import { userCommentState } from '@/store/userComment/userComment';
 import { useFamily } from '@/store/family';
 import { FamilyUnitDto } from '@/types/api';
 import { useEffect } from 'react';
+import { StephsActualFavoriteTypography } from '../AttendanceButton/AttendanceButton';
 
 // Mock "send" function that simulates an async request
 async function postComment(comment) {
@@ -117,6 +118,13 @@ export default function AutosizedTextArea() {
           Successfully sent! Response: {family?.invitationResponseNotes}
         </Box>
       )}
+      <Box sx={{ pt: '10px'}}>
+        <StephsActualFavoriteTypography sx={{fontSize: '1.5rem'}}>
+          Please note:
+          <br/><br/>
+          Formal RSVP stage to come, along with a mailed invitation, huzzah!
+        </StephsActualFavoriteTypography>
+      </Box>
     </FormControl>
   );
 }
