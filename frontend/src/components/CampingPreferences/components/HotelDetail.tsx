@@ -4,9 +4,21 @@ import { DirectionsBus, NoTransfer, OpenInNew } from '@mui/icons-material';
 import { HotelDetailProps } from '../types';
 import RatingComponent from '@/components/RatingComponent/RatingComponent';
 
+// Import images directly
+import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
+import charlestownHotel from '@/assets/holiday-inn-express-charlestown.jpg';
+
 const HotelDetail: React.FC<HotelDetailProps> = ({ hotel }) => {
   const getImageSrc = (imagePath: string | undefined) => {
     if (!imagePath) return '';
+    
+    // Use the imported images based on the path
+    if (imagePath.includes('brunswick')) {
+      return brunswickHotel;
+    } else if (imagePath.includes('charlestown')) {
+      return charlestownHotel;
+    }
+    
     return imagePath;
   };
 
