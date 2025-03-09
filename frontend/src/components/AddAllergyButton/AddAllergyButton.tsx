@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
+import {
+  Box,
+  Button,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   DialogActions,
   IconButton,
-  Typography
+  Typography,
 } from '@mui/material';
-import { 
-  WarningAmber, 
-  Close, 
-  ReportProblem 
-} from '@mui/icons-material';
-import { useFamily } from '@/store/family';
+import { WarningAmber, Close, ReportProblem } from '@mui/icons-material';
+import { guestSelector, useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 
@@ -27,8 +23,9 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
   const [open, setOpen] = useState(false);
   const [allergyName, setAllergyName] = useState('');
   const [_, familyActions] = useFamily();
-  const loggedInUser = useRecoilValue(userState);
-  
+  const guest = useRecoilValue(guestSelector(guestId));
+  const guestAllergies = guest.preferences.foodAllergies;
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -44,17 +41,9 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
 
   const handleAddAllergy = () => {
     if (allergyName.trim() === '') return;
-    
-    const targetGuestId = guestId || loggedInUser.guestId;
-    
-    if (targetGuestId) {
-      // Get current allergies for the guest and add the new one
-      familyActions.updateFamilyGuestFoodAllergies(
-        targetGuestId,
-        [allergyName]
-      );
-    }
-    
+    const uniqueAllergies = new Set([...guestAllergies, allergyName]);
+    familyActions.updateFamilyGuestFoodAllergies(guestId, uniqueAllergies);
+
     handleClose();
   };
 
@@ -66,23 +55,23 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
 
   return (
     <>
-      <Button 
-        onClick={handleOpen} 
-        variant="outlined" 
+      <Button
+        onClick={handleOpen}
+        variant="outlined"
         color="warning"
         startIcon={<ReportProblem />}
         size="small"
-        sx={{ 
-          mt: 1, 
+        sx={{
+          mt: 1,
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(0,0,0,.6)',
         }}
       >
         Add Custom Allergy
       </Button>
-      
-      <Dialog 
-        open={open} 
+
+      <Dialog
+        open={open}
         onClose={handleClose}
         maxWidth="sm"
         fullWidth
@@ -92,7 +81,7 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
             backgroundColor: 'rgba(0,0,0,.9)',
             border: '1px solid',
             borderColor: 'warning.main',
-          }
+          },
         }}
       >
         <DialogTitle sx={{ m: 0, p: 2 }}>
@@ -112,7 +101,7 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
             <Close />
           </IconButton>
         </DialogTitle>
-        
+
         <DialogContent dividers>
           <TextField
             autoFocus
@@ -131,15 +120,15 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
             color="warning"
           />
         </DialogContent>
-        
+
         <DialogActions>
           <Button onClick={handleClose} variant="text">
             Cancel
           </Button>
-          <Button 
-            onClick={handleAddAllergy} 
-            variant="contained" 
-            color="warning" 
+          <Button
+            onClick={handleAddAllergy}
+            variant="contained"
+            color="warning"
             disabled={allergyName.trim() === ''}
           >
             Add
@@ -149,5 +138,4 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
     </>
   );
 };
-
 export default AddAllergyButton;
