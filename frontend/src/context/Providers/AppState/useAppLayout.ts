@@ -1,6 +1,8 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useTheme } from '@mui/system';
 
 export const useAppLayout = () => {
+  const theme = useTheme();
   const [screenWidth, setScreenWidth] = useState(0)
   const bottomNavHeight = 65;
   const versionRowHeight = 18;
@@ -8,23 +10,15 @@ export const useAppLayout = () => {
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      const minWidth = 475;
-      const maxWidth = 1400;
       let screenWidth = window.innerWidth;
       let newHeightBasedOnZoom = window.innerHeight;
-      if (screenWidth < minWidth) {
-        const zoomLevel = screenWidth / minWidth;
+      if (screenWidth < theme.breakpoints.values.md) {
+        const zoomLevel = screenWidth / 700;
         console.log('setting new zoomLevel', zoomLevel);
         newHeightBasedOnZoom = window.innerHeight / zoomLevel;
         document.body.style.zoom = `${zoomLevel}`;
       }
-      if (screenWidth > maxWidth) {
-        const zoomLevel = screenWidth / maxWidth;
-        newHeightBasedOnZoom = window.innerHeight / zoomLevel;
-        console.log('setting new zoomLevel', zoomLevel);
-        document.body.style.zoom = `${zoomLevel}`;
-      }
-      if (screenWidth >= minWidth && screenWidth <= maxWidth) {
+      if (screenWidth >= theme.breakpoints.values.md && screenWidth <= theme.breakpoints.values.xl) {
         document.body.style.zoom = `1`;
       }
       setScreenWidth(window.innerWidth);

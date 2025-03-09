@@ -10,6 +10,15 @@ const sharedTheme = {
       paper: '#fff',
     },
   },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 375, // iPhone SE width
+      md: 800, // Slightly smaller than iPad Mini sideways
+      lg: 1366, // iPad Pro 12.9" sideways
+      xl: 1728, // MacBook Pro 16" effective width
+    },
+  },
   components: {
     MuiButtonBase: {
       defaultProps: {
