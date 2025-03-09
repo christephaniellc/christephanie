@@ -171,8 +171,8 @@ describe('Hotel Options Collapsible UI.wip', () => {
     expect(screen.getByText('Lovettsville Area Hotels')).toBeInTheDocument();
 
     // But details should be hidden initially
-    expect(screen.queryByText('Drive Time: 18 mins')).not.toBeInTheDocument();
-    expect(screen.queryByText('Drive Time: 23 mins')).not.toBeInTheDocument();
+    expect(screen.queryByText('Drive time to venue: 18 mins')).not.toBeInTheDocument();
+    expect(screen.queryByText('Drive time to venue: 23 mins')).not.toBeInTheDocument();
     expect(screen.queryByText('Search on Google')).not.toBeInTheDocument();
   });
 
@@ -191,7 +191,7 @@ describe('Hotel Options Collapsible UI.wip', () => {
 
     // First hotel details should be visible
     await waitFor(() => {
-      expect(screen.getByText('Drive Time: 18 mins')).toBeInTheDocument();
+      expect(screen.getByText('Drive time to venue: 18 mins')).toBeInTheDocument();
       expect(screen.getByText('Shuttle Available')).toBeInTheDocument();
       
       // Google search button should be visible
@@ -200,7 +200,7 @@ describe('Hotel Options Collapsible UI.wip', () => {
     });
 
     // Other hotel details should still be hidden
-    expect(screen.queryByText('Drive Time: 23 mins')).not.toBeInTheDocument();
+    expect(screen.queryByText('Drive time to venue: 23 mins')).not.toBeInTheDocument();
 
     // Click on the second hotel option
     const secondHotelButton = screen.getByTestId('hotel-button-1');
@@ -208,8 +208,8 @@ describe('Hotel Options Collapsible UI.wip', () => {
 
     // Second hotel details should be visible and first should be hidden
     await waitFor(() => {
-      expect(screen.queryByText('Drive Time: 18 mins')).not.toBeInTheDocument();
-      expect(screen.getByText('Drive Time: 23 mins')).toBeInTheDocument();
+      expect(screen.queryByText('Drive time to venue: 18 mins')).not.toBeInTheDocument();
+      expect(screen.getByText('Drive time to venue: 23 mins')).toBeInTheDocument();
     });
 
     // Click again on the second hotel to collapse it
@@ -217,8 +217,8 @@ describe('Hotel Options Collapsible UI.wip', () => {
 
     // All details should be hidden again
     await waitFor(() => {
-      expect(screen.queryByText('Drive Time: 23 mins')).not.toBeInTheDocument();
-      expect(screen.queryByText('Drive Time: 18 mins')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drive time to venue: 23 mins')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drive time to venue: 18 mins')).not.toBeInTheDocument();
     });
   });
 });

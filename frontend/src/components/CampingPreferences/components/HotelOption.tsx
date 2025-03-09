@@ -5,7 +5,7 @@ import { HotelOptionProps } from '../types';
 import HotelDetail from './HotelDetail';
 
 const HotelOption: React.FC<HotelOptionProps> = ({ hotel, index, isExpanded, onToggle }) => {
-  const [takingShuttle, setTakingShuttle] = React.useState(true);
+  // Shuttle availability is now just an indicator, not a toggle
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
 
   const handleOpenDetailsModal = (e: React.MouseEvent) => {
@@ -84,12 +84,16 @@ const HotelOption: React.FC<HotelOptionProps> = ({ hotel, index, isExpanded, onT
         <DialogContent dividers>
           <HotelDetail 
             hotel={hotel} 
-            takingShuttle={takingShuttle} 
-            onToggleShuttle={() => setTakingShuttle(!takingShuttle)} 
+            takingShuttle={true} 
+            onToggleShuttle={() => {}} 
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDetailsModal}>
+          <Button 
+            onClick={handleCloseDetailsModal}
+            sx={{
+            }}
+          >
             Close
           </Button>
         </DialogActions>

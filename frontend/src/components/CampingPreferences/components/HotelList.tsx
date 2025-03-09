@@ -7,8 +7,6 @@ const HotelList: React.FC<HotelListProps> = ({
   hotelOptions,
   expandedHotel,
   handleToggleHotelDetails,
-  takingShuttle,
-  setTakingShuttle,
 }) => {
   return (
     <Stack
