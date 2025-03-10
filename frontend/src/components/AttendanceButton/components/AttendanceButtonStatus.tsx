@@ -78,10 +78,29 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 textShadow: '3px 3px 0px rgba(0,0,0,0.7)',
                 filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
                 animation: 'pulse 1.2s infinite ease-in-out',
+                display: { xs: 'none', md: 'block' },
                 '@keyframes pulse': {
                   '0%': { opacity: 1, transform: 'translateX(0px) rotate(180deg)' },
                   '50%': { opacity: 0.5, transform: 'translateX(13px) rotate(180deg)' },
                   '100%': { opacity: 1, transform: 'translateX(0px) rotate(180deg)' },
+                },
+              }}
+            />
+            <DoubleArrow
+              sx={{
+                mr: 2,
+                fontSize: '1.8rem',
+                color: getResponseColor(),
+                strokeWidth: 1.5,
+                textShadow: '3px 3px 0px rgba(0,0,0,0.7)',
+                filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
+                animation: 'pulseUp 1.2s infinite ease-in-out',
+                display: { xs: 'block', md: 'none' },
+                transform: 'rotate(270deg)',
+                '@keyframes pulseUp': {
+                  '0%': { opacity: 1, transform: 'translateY(0px) rotate(270deg)' },
+                  '50%': { opacity: 0.5, transform: 'translateY(-13px) rotate(270deg)' },
+                  '100%': { opacity: 1, transform: 'translateY(0px) rotate(270deg)' },
                 },
               }}
             />

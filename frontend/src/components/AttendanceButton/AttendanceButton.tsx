@@ -1,4 +1,4 @@
-import { Box, useMediaQuery, useTheme } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { stdStepperState } from '@/store/steppers/steppers';
@@ -11,6 +11,7 @@ import { AttendanceButtonMain } from './components/AttendanceButtonMain';
 import { AttendanceButtonStatus } from './components/AttendanceButtonStatus';
 import { MobileAttendanceView } from './components/MobileAttendanceView';
 import { useAttendanceButtonContainer } from './hooks/useAttendanceButtonContainer';
+import { InvitationResponseEnum } from '@/types/api';
 
 // Re-export typography components to maintain backwards compatibility
 export * from './components/StyledComponents';
@@ -21,7 +22,7 @@ interface AttendanceButtonProps {
 }
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
-  const { semiTransparentBackgroundColor, theme } = useAttendanceButtonContainer({ guestId });
+  const { semiTransparentBackgroundColor, theme, guest } = useAttendanceButtonContainer({ guestId });
   const stdStepper = useRecoilValue(stdStepperState);
   const isNonAttendanceStep = stdStepper.tabIndex > 0;
   const isAttendanceStep = !isNonAttendanceStep;
@@ -32,7 +33,14 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   // If we're on a small screen and not on the attendance step, use the mobile view
   const shouldUseMobileView = isMobile && isNonAttendanceStep;
 
+  // Only show step-specific content if we're on the attendance step or the guest is attending
+  const isAttending = guest?.rsvp?.invitationResponse === InvitationResponseEnum.Interested;
+  const showStepContent = isAttendanceStep || isAttending;
+
   const CurrentComponent = useMemo(() => {
+    // Only show step components if we're on the attendance step or if the guest is attending
+    if (!showStepContent) return <></>;
+
     switch (stdStepper.currentStep[0]) {
       case 'ageGroup':
         return <AgeSelector guestId={guestId} />;
@@ -47,7 +55,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       default:
         return <></>;
     }
-  }, [guestId, stdStepper.currentStep]);
+  }, [guestId, stdStepper.currentStep, showStepContent]);
 
   // Use mobile view with sticky headers for small screens on non-attendance steps
   if (shouldUseMobileView) {
