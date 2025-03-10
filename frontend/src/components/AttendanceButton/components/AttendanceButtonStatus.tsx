@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button, Typography, Box, useMediaQuery } from '@mui/material';
 import { DoubleArrow, EditOutlined } from '@mui/icons-material';
 import React from 'react';
 import { useAttendanceButtonStatus } from '../hooks/useAttendanceButtonStatus';
@@ -21,31 +21,53 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
   } = useAttendanceButtonStatus({ guestId });
 
   const { handleClick, calculateShadow } = useAttendanceButtonMain({ guestId });
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isNonAttendanceStep = stdStepper.tabIndex > 0;
+  
+  // For mobile view layouts
+  const inMobileViewLayout = isMobile && isNonAttendanceStep;
+
+  // Common button styles
+  const getButtonStyles = () => {
+    const commonStyles = {
+      display: 'flex',
+      alignItems: 'center',
+      p: inMobileViewLayout ? 1 : 2, // Smaller padding on mobile
+      borderRadius: 1,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      backdropFilter: 'blur(8px)',
+      textTransform: 'none',
+      '&:hover': {
+        backgroundColor: 'rgba(0,0,0,0.8)',
+      },
+      // Different margin and width treatment based on context
+      width: inMobileViewLayout || isMobile ? '100%' : 'auto',
+      ml: inMobileViewLayout ? 0 : { xs: 0, md: 3 },
+      // More compact height for mobile
+      minHeight: inMobileViewLayout ? 'auto' : undefined,
+    };
+    
+    // Add specific shadows based on step and status
+    if (stdStepper.tabIndex === 0) {
+      return { ...commonStyles, boxShadow: calculateShadow() };
+    } else if (guest.rsvp.invitationResponse === InvitationResponseEnum.Pending) {
+      return { ...commonStyles, boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.secondary.dark, 0.5)}` };
+    } else {
+      return { ...commonStyles, boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.error.dark, 0.5)}` };
+    }
+  };
 
   return (
     <>
-      {/* Response status messages - shown to the right of the attendance button */}
-      {/* For Pending status - on attendance step */}
+      {/* Response status messages */}
+      {/* For Pending or Declined status - on attendance step */}
       {[InvitationResponseEnum.Pending, InvitationResponseEnum.Declined].includes(
         guest.rsvp.invitationResponse,
       ) &&
         stdStepper.tabIndex === 0 && (
           <Button
             onClick={() => handleClick(guest?.rsvp.invitationResponse)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              ml: 3,
-              p: 2,
-              borderRadius: 1,
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(8px)',
-              textTransform: 'none',
-              boxShadow: calculateShadow(),
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              },
-            }}
+            sx={getButtonStyles()}
           >
             <DoubleArrow
               sx={{
@@ -70,9 +92,11 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 fontWeight: 'medium',
                 display: 'flex',
                 alignItems: 'center',
+                fontSize: isMobile ? '0.85rem' : 'inherit',
+                lineHeight: isMobile ? 1.2 : 'inherit'
               }}
             >
-              Click to update your response. You have {daysUntilDeadline} days left to respond.
+              {isMobile ? `Update response (${daysUntilDeadline} days left)` : `Click to update your response. You have ${daysUntilDeadline} days left to respond.`}
             </Typography>
           </Button>
         )}
@@ -82,20 +106,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
         stdStepper.tabIndex > 0 && (
           <Button
             onClick={handleGoToAttendanceStep}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              ml: 3,
-              p: 2,
-              borderRadius: 1,
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(8px)',
-              textTransform: 'none',
-              boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.secondary.dark, 0.5)}`,
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              },
-            }}
+            sx={getButtonStyles()}
           >
             <EditOutlined 
               sx={{ 
@@ -104,8 +115,16 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
               }} 
             />
-            <Typography variant="body2" color="secondary.light" sx={{ fontWeight: 'medium' }}>
-              Click to change your response. {daysUntilDeadline} days remaining.
+            <Typography 
+              variant="body2" 
+              color="secondary.light" 
+              sx={{ 
+                fontWeight: 'medium',
+                fontSize: isMobile ? '0.85rem' : 'inherit',
+                lineHeight: inMobileViewLayout ? 1.2 : 'inherit'
+              }}
+            >
+              {inMobileViewLayout ? `Change response (${daysUntilDeadline} days left)` : `Click to change your response. ${daysUntilDeadline} days remaining.`}
             </Typography>
           </Button>
         )}
@@ -115,20 +134,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
         stdStepper.tabIndex > 0 && (
           <Button
             onClick={handleGoToAttendanceStep}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              ml: 3,
-              p: 2,
-              borderRadius: 1,
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(8px)',
-              textTransform: 'none',
-              boxShadow: (theme) => `5px 5px 10px ${darken(theme.palette.error.dark, 0.5)}`,
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              },
-            }}
+            sx={getButtonStyles()}
           >
             <EditOutlined 
               sx={{ 
@@ -137,8 +143,16 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))', 
               }} 
             />
-            <Typography variant="body2" color="error.light" sx={{ fontWeight: 'medium' }}>
-              Click to change your response. {daysUntilDeadline} days remaining.
+            <Typography 
+              variant="body2" 
+              color="error.light" 
+              sx={{ 
+                fontWeight: 'medium',
+                fontSize: isMobile ? '0.85rem' : 'inherit',
+                lineHeight: inMobileViewLayout ? 1.2 : 'inherit'
+              }}
+            >
+              {inMobileViewLayout ? `Change response (${daysUntilDeadline} days left)` : `Click to change your response. ${daysUntilDeadline} days remaining.`}
             </Typography>
           </Button>
         )}

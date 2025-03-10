@@ -27,18 +27,25 @@ const LargeAttendanceButton = ({
       display="flex"
       flexWrap="wrap"
       id={`large-attendance-button-${guest.firstName}`}
+      width="100%"
+      justifyContent="center"
     >
-      <Box display="flex" width="100%" flexWrap="wrap">
-        <Typography variant="h6" sx={{ mx: 'auto' }} width="100%">
+      <Box display="flex" width="100%" flexWrap="wrap" justifyContent="center">
+        <Typography variant="h6" sx={{ mx: 'auto', textAlign: 'center' }} width="100%">
           {guest?.auth0Id === user?.sub
             ? `You`
             : guest?.firstName}
         </Typography>
-        <Typography variant="caption" width="80%" textAlign="center">
+        <Typography variant="caption" width="100%" textAlign="center">
           {guest.rsvp.invitationResponse}
         </Typography>
         {/*<Box id="spacer" height={20} border={'1px dashed white'}/>*/}
-        <Box width="20%" mx={guest.rsvp.invitationResponse === 'Interested' ? 'auto' : 0}>
+        <Box 
+          width="100%" 
+          display="flex" 
+          justifyContent="center"
+          mt={1}
+        >
           <StickFigureIcon
             hidden={guest.rsvp.invitationResponse === 'Declined'}
             fontSize={(guest.rsvp.invitationResponse === 'Interested' && 'large') || 'medium'}
@@ -52,6 +59,7 @@ const LargeAttendanceButton = ({
         width="100%"
         id={`wedding-attendance-radios-${guestId}`}
         justifyContent="center"
+        mt={2}
       >
         <WeddingAttendanceRadios guestId={guestId} />
       </Box>

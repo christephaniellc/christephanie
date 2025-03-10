@@ -1,6 +1,6 @@
 import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
-import { useTheme } from '@mui/material';
+import { useTheme, useMediaQuery } from '@mui/material';
 import { InvitationResponseEnum } from '@/types/api';
 import { useMemo, useState } from 'react';
 import { stdStepperState } from '@/store/steppers/steppers';
@@ -61,16 +61,21 @@ export const useAttendanceButtonMain = ({ guestId }: { guestId: string }) => {
     }
   }, [guest, darkenCoefficent, theme]);
 
-  const imgButtonSxProps = useMemo(() => {
+  // Use MediaQuery hook for responsive detection
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isAttendanceStep = stdStepper.tabIndex === 0;
+  const shouldBeFullWidth = isMobile && isAttendanceStep;
+
+  const imgButtonSxProps = useMemo(() => {    
     return {
       fontSize: buttonProps.fontSize,
       border: buttonProps.border,
       color: darken(theme.palette.text.primary, darkenCoefficent),
-      width: '200px !important',
-      minWidth: '200px !important',
-      maxWidth: '200px !important',
+      width: shouldBeFullWidth ? '100% !important' : '200px !important',
+      minWidth: shouldBeFullWidth ? '100% !important' : '200px !important',
+      maxWidth: shouldBeFullWidth ? 'none !important' : '200px !important',
     };
-  }, [buttonProps, darkenCoefficent, theme]);
+  }, [buttonProps, darkenCoefficent, theme, shouldBeFullWidth]);
 
   const calculateShadow = () => {
     const shadowX = stdStepper.tabIndex > 0 ? 0 : 10;
