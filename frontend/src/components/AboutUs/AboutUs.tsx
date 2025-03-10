@@ -7,7 +7,6 @@ import ListItem from '@mui/material/ListItem';
 import { ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
-import { rem } from 'polished';
 import { useTheme } from '@mui/material/styles';
 
 function AboutUs() {
