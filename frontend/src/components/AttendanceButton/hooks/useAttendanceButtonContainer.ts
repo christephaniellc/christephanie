@@ -21,10 +21,22 @@ export const useAttendanceButtonContainer = ({ guestId }: { guestId: string }) =
         return themePaletteToRgba(theme.palette.info.main, 0.1);
     }
   }, [guest, theme]);
+  
+  // Get the response color based on invitation status
+  const getResponseColor = () => {
+    if (guest?.rsvp.invitationResponse === InvitationResponseEnum.Interested) {
+      return theme.palette.primary.main;
+    } else if (guest?.rsvp.invitationResponse === InvitationResponseEnum.Declined) {
+      return theme.palette.error.main;
+    } else {
+      return theme.palette.secondary.main;
+    }
+  };
 
   return {
     semiTransparentBackgroundColor,
     theme,
     guest,
+    getResponseColor,
   };
 };

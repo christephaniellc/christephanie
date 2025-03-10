@@ -1,4 +1,4 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import { useAttendanceButtonMain } from '../hooks/useAttendanceButtonMain';
@@ -16,7 +16,11 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
     calculateShadow,
     stdStepper,
   } = useAttendanceButtonMain({ guestId });
-
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isAttendanceStep = stdStepper.tabIndex === 0;
+  
   return (
     <Button
       disabled={
@@ -33,8 +37,6 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
         justifyContent: 'space-between',
         padding: 2,
         position: 'relative',
-        minWidth: 175,
-        maxWidth: 175,
         height: 'auto',
         ...imgButtonSxProps,
         color:
@@ -42,11 +44,10 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
             ? 'white !important'
             : 'inherit',
         background: 'rgba(0,0,0,1)',
-        width: '100%',
         filter: `drop-shadow(${calculateShadow()})`,
       }}
     >
-      <Box display="flex" alignItems="center">
+      <Box display="flex" alignItems="center" width="100%">
         {guest && (
           <LargeAttendanceButton
             guestId={guest.guestId}

@@ -1,31 +1,26 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
-import { styled } from '@mui/material/styles';
-import { familyState, useFamily } from '@/store/family';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useFamily } from '@/store/family';
+import React, { useMemo } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestViewModel, InvitationResponseEnum } from '@/types/api';
+import { GuestViewModel } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
-import { ButtonBase, darken, Typography, useTheme } from '@mui/material';
+import { darken, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import {
   StephsActualFavoriteTypography,
-  StephsFavoriteTypography,
+
 } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import LoadingBox from '@/components/LoadingBox';
-import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { useNavigate } from 'react-router-dom';
-import { dark } from '@mui/material/styles/createPalette';
 import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
 import { ButtonsContainer } from '@/components/Steppers/StyledComponents';
 
