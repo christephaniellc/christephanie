@@ -11,7 +11,7 @@ const isProduction = process.env.DEPLOY_ENV === 'production';
 export default defineConfig({
   mode: isProduction ? 'production' : env,
   optimizeDeps: {
-    exclude: ['chunk-UTMPNLEB'],
+    exclude: ['chunk-UTMPNLEB', 'chunk-7FFZVRZD'],
   },
   plugins: [
     react(),

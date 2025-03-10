@@ -8,6 +8,7 @@ import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { useRecoilValue } from 'recoil';
 import { useApiContext } from '@/context/ApiContext';
 import TvSnow from './TvSnow';
+import { rem } from 'polished';
 
 const digitalTitieRotations = [15, 33, 40, 22, 65, 13, 80, 88];
 
@@ -214,6 +215,7 @@ const MtvAnimatedTitle = () => {
           //   pl: '200px',
           // },
           filter: `drop-shadow(${boxShadow})`,
+          fontSize: { xs: rem(16), sm: rem(18), md: rem(20), lg: rem(22), xl: rem(24) },
         }}
       >
         {Object.values(saveTheDateSteps)[tabIndex]?.label}
