@@ -15,7 +15,7 @@ export const useQueryParamInvitationCode = () => {
     
     const queryParams = new URLSearchParams(location.search);
     // Handle both query_key and code parameters
-    const queryKey = queryParams.get('query_key') || queryParams.get('code');
+    const queryKey = queryParams.get('query_key') || queryParams.get('invitation_code') || queryParams.get('invitationCode') || queryParams.get('invitationcode');
     const firstName = queryParams.get('firstName') || queryParams.get('name');
     
     const updatedUser = { ...user };
