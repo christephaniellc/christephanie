@@ -96,14 +96,20 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
+            var code = VerificationCodeHelper.GenerateCode();
+            var expiry = VerificationCodeHelper.GenerateExpiry();
+
+            _logger.LogInformation($"Generated code: {code}");
+            _logger.LogInformation($"Generated expiry: {expiry}");
+
             var verifyEmail = !string.IsNullOrEmpty(existingGuestEntity.Email)
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
                 : new VerifiedDto
                 {
                     Value = command.Email,
                     Verified = false,
-                    VerificationCode = VerificationCodeHelper.GenerateCode(),
-                    VerificationCodeExpiration = VerificationCodeHelper.GenerateExpiry()
+                    VerificationCode = code,
+                    VerificationCodeExpiration = expiry
                 };
 
             _logger.LogInformation($"EmailValidationHandler: Sending code '{verifyEmail.VerificationCode} to email: {verifyEmail.Value}");
