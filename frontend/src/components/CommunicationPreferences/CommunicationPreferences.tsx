@@ -4,7 +4,7 @@ import { useRecoilValue } from 'recoil';
 import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
-import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip } from '@mui/material';
+import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip, CircularProgress } from '@mui/material';
 import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff, ConstructionOutlined, Warning } from '@mui/icons-material';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { useApiContext } from '@/context/ApiContext';
@@ -51,6 +51,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // Store actual values for hardcoding as a last resort
   const [phoneResponse, setPhoneResponse] = useState<any>(null);
   const [emailResponse, setEmailResponse] = useState<any>(null);
+
+  // Loading states
+  const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);
+  const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   
   // Alert state
   const [showAlert, setShowAlert] = useState(false);
@@ -223,6 +227,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       return;
     }
 
+    setIsSendingPhoneCode(true);
     console.log("Sending phone verification code...");
     validatePhoneMutation.mutate(
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
@@ -231,12 +236,14 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertMessage('Verification code sent to your phone');
           setAlertSeverity('success');
           setShowAlert(true);
+          setIsSendingPhoneCode(false);
           handleOpenPhoneVerifyDialog();
         },
         onError: (error) => {
           setAlertMessage('Failed to send verification code. Please try again.');
           setAlertSeverity('error');
           setShowAlert(true);
+          setIsSendingPhoneCode(false);
         }
       }
     );
@@ -245,6 +252,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const resendPhoneVerificationCode = () => {
     if (!isSmsVerificationEnabled) return;
 
+    setIsSendingPhoneCode(true);
     console.log("Resending phone verification code...");
     validatePhoneMutation.mutate(
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
@@ -253,11 +261,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertMessage('New verification code sent to your phone');
           setAlertSeverity('success');
           setShowAlert(true);
+          setIsSendingPhoneCode(false);
         },
         onError: (error) => {
           setAlertMessage('Failed to send verification code. Please try again.');
           setAlertSeverity('error');
           setShowAlert(true);
+          setIsSendingPhoneCode(false);
         }
       }
     );
@@ -293,6 +303,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       return;
     }
 
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
+    
     console.log("Sending email verification code...");
     validateEmailMutation.mutate(
       { email: emailValue || guest?.email?.maskedValue, action: 'register' },
@@ -301,12 +314,16 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertMessage('Verification code sent to your email');
           setAlertSeverity('success');
           setShowAlert(true);
+          // Set loading state to false after success
+          setIsSendingEmailCode(false);
           handleOpenEmailVerifyDialog();
         },
         onError: (error) => {
           setAlertMessage('Failed to send verification code. Please try again.');
           setAlertSeverity('error');
           setShowAlert(true);
+          // Set loading state to false after error
+          setIsSendingEmailCode(false);
         }
       }
     );
@@ -314,6 +331,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   
   const resendEmailVerificationCode = () => {
     if (!isEmailVerificationEnabled) return;
+
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
 
     console.log("Resending email verification code...");
     validateEmailMutation.mutate(
@@ -323,11 +343,15 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertMessage('New verification code sent to your email');
           setAlertSeverity('success');
           setShowAlert(true);
+          // Set loading state to false after success
+          setIsSendingEmailCode(false);
         },
         onError: (error) => {
           setAlertMessage('Failed to send verification code. Please try again.');
           setAlertSeverity('error');
           setShowAlert(true);
+          // Set loading state to false after error
+          setIsSendingEmailCode(false);
         }
       }
     );
@@ -551,13 +575,24 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                   size="small"
                   variant="contained"
                   color="secondary"
-                  sx={{ mb: 1, width: 'fit-content', fontWeight: 'bold' }}
+                  sx={{ mb: 1, width: 'fit-content', fontWeight: 'bold', minWidth: '230px' }}
                   onClick={(e) => {
                     e.stopPropagation();
                     value === 'Email' ? sendEmailVerificationCode() : sendPhoneVerificationCode();
                   }}
+                  disabled={(value === 'Email' && isSendingEmailCode) || (value === 'Text' && isSendingPhoneCode)}
+                  startIcon={
+                    (value === 'Email' && isSendingEmailCode) || (value === 'Text' && isSendingPhoneCode) 
+                      ? <CircularProgress size={16} color="inherit" /> 
+                      : null
+                  }
                 >
-                  SEND VERIFY CODE TO {value === 'Email' ? "EMAIL" : "PHONE" } 
+                  {(value === 'Email' && isSendingEmailCode) 
+                    ? "SENDING CODE..." 
+                    : (value === 'Text' && isSendingPhoneCode) 
+                      ? "SENDING CODE..." 
+                      : `SEND VERIFY CODE TO ${value === 'Email' ? "EMAIL" : "PHONE"}`
+                  }
                 </Button>
                 
                 {/* Disclaimer text - explicitly remove all shadows and set a background to ensure no text shadow */}
@@ -664,8 +699,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
               fontSize: '0.75rem'
             }}
             color="secondary"
+            disabled={isSendingEmailCode}
+            startIcon={isSendingEmailCode ? <CircularProgress size={14} color="inherit" /> : null}
           >
-            Resend verification code
+            {isSendingEmailCode ? "Sending..." : "Resend verification code"}
           </Button>
         </DialogContent>
         <DialogActions>
@@ -740,8 +777,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
               fontSize: '0.75rem'
             }}
             color="secondary"
+            disabled={isSendingPhoneCode}
+            startIcon={isSendingPhoneCode ? <CircularProgress size={14} color="inherit" /> : null}
           >
-            Resend verification code
+            {isSendingPhoneCode ? "Sending..." : "Resend verification code"}
           </Button>
         </DialogContent>
         <DialogActions>
