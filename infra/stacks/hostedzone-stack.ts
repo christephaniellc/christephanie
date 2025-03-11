@@ -25,6 +25,7 @@ export class HostedZoneStack extends cdk.Stack {
         this.fullDomainName = `${props.env.subDomainPrefix}.${domainName}`;
         this.frontendUrl = this.fullDomainName;             // E.g., dev.wedding.christephanie.com
         this.apiUrl = `${apiRoute}.${this.fullDomainName}`; // E.g., fianceapi.dev.wedding.christephanie.com
+        console.log(`Base domain name: ${domainName}`);
         console.log(`Full domain name: ${this.fullDomainName}`);
         console.log(`API url: ${this.apiUrl}`);
         console.log(`Predefined hosted zone ID: ${props.env.existingHostedZoneId}`);
@@ -35,13 +36,13 @@ export class HostedZoneStack extends cdk.Stack {
             console.log(`Hosted zone id found in environment props: ${props.env.existingHostedZoneId}`);
             this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, `${applicationName}-hosted-zone-${environment}`, {
                     hostedZoneId: `${props.env.existingHostedZoneId}`,
-                    zoneName: `${this.fullDomainName}`,
+                    zoneName: environment == 'prod' ? `${domainName}` : `${this.fullDomainName}`,
                 });
         }
         else {
             console.log(`INFO: No hosted zone id found. Creating new hosted zone...`);
             this.hostedZone = new route53.HostedZone(this, `${applicationName}-hosted-zone-${environment}`, {
-                zoneName: `${this.fullDomainName}`,
+                zoneName: environment == 'prod' ? `${domainName}` : `${this.fullDomainName}`,
             });
             (this.hostedZone as any).applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
             hostedZoneNameServers = cdk.Fn.join(',', this.hostedZone.hostedZoneNameServers!);
