@@ -73,9 +73,10 @@ cdk deploy HostedzoneStack-create-dev --context env=dev --profile dev
 		"delegateHostedNameServers": ["name1","name2"]
 cdk deploy CertificateStack-create-dev --context env=dev --profile dev
 	add "existingCertificateArn" to dev.json 
+	Wait 10-30 minutes for certificate to validate with AWS (adds DNS entries automatically)
 cdk deploy --all --context env=dev --profile dev
 
-# UPDATE parameter values manually in AWS > Systems Manager > Parameters > /config/usps/api-credentials
+# VALIDATE parameter values manually in AWS > Systems Manager > Parameters > /config/usps/api-credentials
 
 ## Test but do not deploy:
 	cdk synth --context env=dev
@@ -84,6 +85,7 @@ cdk deploy --all --context env=dev --profile dev
 	
 # ONCE CREATED DEV ENV, must update DNS entries in prod Route53:
 https://www.reddit.com/r/aws/comments/18lclmd/how_do_you_handle_domains_certificates_and_dns/
+Delegate dev subdomain
 Dev > Route 53 > Hosted Zones > dev.wedding.christephanie.com
 	Copy dev.wedding.christephanie.com NS records:
 		<record 1>.
@@ -95,6 +97,30 @@ Prod > Route 53 > Hosted Zones > christephanie.com > Create record
 	Record type: NS 
 	Value: (addresses above)
 	TTL: 300 (short for change quick updates)
+	----
+	After deploying frontend stack, create a redirect A record.
+	Record name: 
+	Record tpe: A (alias)
+	
+	
+# TWILIO DNS
+
+# AES DNS
+Set up Simple Email Domain validation 
+
+# ForwardEmail DNS 
+Add Prod > Route53 > Hosted Zones > christephanie.com > Create record 
+	Record name: wedding [.christephanie.com]
+	Record type: MX
+	Value: 10 mx1.forwardemail.net
+		10 mx2.forwardemail.net
+	TTL: 300 (short for change quick updates)
+	Verify: https://forwardemail.net/en/my-account/domains/wedding.christephanie.com
+	--------------
+	Record name: wedding [.christephanie.com]
+	Record type: TXT
+	Value: forward-email=steph.stubler@gmail.com
+	Verify by sending an email to hosts@wedding.christephanie.com and verifying it comes to steph.stubler@gmail.com
 	
 # Onetime setup Auth0:
 
@@ -134,6 +160,9 @@ Redo frontend:
 cdk destroy FrontendStack-dev --context env=dev --profile dev
 cdk deploy DnsStack-dev --context env=dev --profile dev
 
+Redo hosted zone:
+cdk destroy HostedZoneStack-prod --context env=prod --profile prod
+cdk deploy HostedZoneStack-create-prod --context env=prod --profile prod
 cdk destroy FrontendStack-prod --context env=prod --profile prod
 cdk deploy DnsStack-prod --context env=prod --profile prod
 ----------------------	

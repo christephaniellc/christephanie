@@ -104,17 +104,18 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
             var verifyEmail = !string.IsNullOrEmpty(existingGuestEntity.Email)
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
-                : new VerifiedDto
-                {
-                    Value = command.Email,
-                    Verified = false,
-                    VerificationCode = code,
-                    VerificationCodeExpiration = expiry
-                };
+                : new VerifiedDto();
+
+            var doesSavedEmailMatchCommandEmail = existingGuestEntity?.Email?.ToLower().Equals(command.Email.ToLower()) ?? false;
+
+            verifyEmail.Value = command.Email;
+            verifyEmail.Verified = doesSavedEmailMatchCommandEmail && verifyEmail.Verified;
+            verifyEmail.VerificationCode = code;
+            verifyEmail.VerificationCodeExpiration = expiry;
 
             _logger.LogInformation($"EmailValidationHandler: Sending code '{verifyEmail.VerificationCode} to email: {verifyEmail.Value}");
 
-            existingGuestEntity.Email = verifyEmail.ToString();
+            existingGuestEntity!.Email = verifyEmail.ToString();
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
