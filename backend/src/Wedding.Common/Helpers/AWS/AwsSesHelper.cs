@@ -58,7 +58,7 @@ namespace Wedding.Common.Helpers.AWS
             Console.WriteLine($"Sending verification email using Amazon SES. Email: {email.Value} Code: {email.VerificationCode}");
 
             var result = await SendEmail(toAddresses: new List<string> { email.Value }, 
-               subject: "Wedding Email Verification Code", 
+               subject: "Email Verification Code", 
                body: $"Your wedding email verification code is: {email.VerificationCode}", 
                cancellationToken);
 
