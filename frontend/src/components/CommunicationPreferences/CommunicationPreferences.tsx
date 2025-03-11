@@ -1,8 +1,8 @@
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useRecoilValue } from 'recoil';
-import { guestSelector, useFamily } from '@/store/family';
-import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
+import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
+import { familyState, guestSelector, useFamily } from '@/store/family';
+import { FamilyUnitViewModel, GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip, CircularProgress } from '@mui/material';
 import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff, ConstructionOutlined, Warning } from '@mui/icons-material';
@@ -19,6 +19,7 @@ import { isFeatureEnabled, FeatureFlags } from '@/config';
  */
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const { screenWidth } = useAppLayout();
+  const [family, setFamily] = useRecoilState(familyState);
   const guest: GuestViewModel | null = useRecoilValue(guestSelector(guestId));
   const [_, familyActions] = useFamily();
   const apiContext = useApiContext();
@@ -56,6 +57,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   
+  // Force component to update verification status
+  const [forceEmailVerified, setForceEmailVerified] = useState(false);
+  const [forcePhoneVerified, setForcePhoneVerified] = useState(false);
+  
   // Alert state
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -75,12 +80,12 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   , [guest]);
   
   const emailVerified = useMemo(() => 
-    guest?.email?.verified || false
-  , [guest]);
+    forceEmailVerified || (guest?.email?.verified ?? false)
+  , [guest, forceEmailVerified]);
   
   const phoneVerified = useMemo(() => 
-    guest?.phone?.verified || false
-  , [guest]);
+    forcePhoneVerified || (guest?.phone?.verified ?? false)
+  , [guest, forcePhoneVerified]);
 
   const isEmailOptedIn = useMemo(() => 
     guestCommunicationPreferences.includes(NotificationPreferenceEnum.Email)
@@ -93,6 +98,16 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // Check if specific verification features are enabled
   const isEmailVerificationEnabled = isFeatureEnabled('ENABLE_EMAIL_VERIFICATION');
   const isSmsVerificationEnabled = isFeatureEnabled('ENABLE_SMS_VERIFICATION');
+
+  // Reset forced verification status when guest changes
+  useEffect(() => {
+    if (guest?.email?.verified) {
+      setForceEmailVerified(true);
+    }
+    if (guest?.phone?.verified) {
+      setForcePhoneVerified(true);
+    }
+  }, [guest]);
 
   // Function to directly call the API for masked values
   const fetchMaskedValue = async (type: 'email' | 'text') => {
@@ -134,6 +149,38 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     } catch (error) {
       console.error(`Error fetching ${type}:`, error);
       return null;
+    }
+  };
+
+  // Function to forcefully update the verification status in the family data
+  const forceUpdateVerificationStatus = (type: 'email' | 'phone', verified: boolean) => {
+    if (!family || !family.guests || !guest) return;
+
+    // Create a deep copy of the family data
+    const updatedFamily = JSON.parse(JSON.stringify(family)) as FamilyUnitViewModel;
+    
+    // Update the verification status for the specific guest
+    const updatedGuests = updatedFamily.guests.map(g => {
+      if (g.guestId === guestId) {
+        if (type === 'email') {
+          if (!g.email) g.email = {};
+          g.email.verified = verified;
+        } else if (type === 'phone') {
+          if (!g.phone) g.phone = {};
+          g.phone.verified = verified;
+        }
+      }
+      return g;
+    });
+    
+    updatedFamily.guests = updatedGuests;
+    setFamily(updatedFamily);
+    
+    // Also update the force state for immediate UI update
+    if (type === 'email') {
+      setForceEmailVerified(verified);
+    } else {
+      setForcePhoneVerified(verified);
     }
   };
 
@@ -200,8 +247,21 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // Handle form submissions
   const handleSubmitEmail = () => {
     if (emailValue) {
+      // Check if email is different from current email
+      const currentEmail = emailResponse?.value || '';
+      const emailChanged = currentEmail !== emailValue;
+      
+      // Update the email
       familyActions.updateFamilyGuestEmail(guestId, emailValue);
-      setAlertMessage('Email updated successfully');
+      
+      // If email changed, force the verification status to false
+      if (emailChanged) {
+        forceUpdateVerificationStatus('email', false);
+        setAlertMessage('Email updated successfully - verification required');
+      } else {
+        setAlertMessage('Email updated successfully');
+      }
+      
       setAlertSeverity('success');
       setShowAlert(true);
     }
@@ -211,8 +271,21 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const handleSubmitPhone = () => {
     console.log('Submitting phone value:', phoneValue);
     if (phoneValue) {
+      // Check if phone is different from current phone
+      const currentPhone = phoneResponse?.value || '';
+      const phoneChanged = currentPhone !== phoneValue;
+      
+      // Update the phone
       familyActions.updateFamilyGuestPhone(guestId, phoneValue);
-      setAlertMessage('Phone number updated successfully');
+      
+      // If phone changed, force the verification status to false
+      if (phoneChanged) {
+        forceUpdateVerificationStatus('phone', false);
+        setAlertMessage('Phone number updated successfully - verification required');
+      } else {
+        setAlertMessage('Phone number updated successfully');
+      }
+      
       setAlertSeverity('success');
       setShowAlert(true);
     }
@@ -281,12 +354,16 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, code: phoneVerificationCode, action: 'validate' },
       {
         onSuccess: () => {
+          // Force update UI immediately to show verified status
+          forceUpdateVerificationStatus('phone', true);
+          
+          // Update UI with success message
           setAlertMessage('Phone number verified successfully!');
           setAlertSeverity('success');
           setShowAlert(true);
           handleClosePhoneVerifyDialog();
           
-          // Refresh family data to update verification status
+          // Also refetch data
           familyActions.getFamilyUnitQuery.refetch?.();
         },
         onError: (error) => {
@@ -368,12 +445,16 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       { email: emailValue || guest?.email?.maskedValue, code: emailVerificationCode, action: 'validate' },
       {
         onSuccess: () => {
+          // Force update UI immediately to show verified status
+          forceUpdateVerificationStatus('email', true);
+          
+          // Update UI with success message
           setAlertMessage('Email verified successfully!');
           setAlertSeverity('success');
           setShowAlert(true);
           handleCloseEmailVerifyDialog();
           
-          // Refresh family data to update verification status
+          // Also refetch data
           familyActions.getFamilyUnitQuery.refetch?.();
         },
         onError: (error) => {
