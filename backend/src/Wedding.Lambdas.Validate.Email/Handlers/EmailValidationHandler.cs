@@ -9,7 +9,6 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Requests;
 using Wedding.Lambdas.Validate.Email.Validation;
@@ -106,7 +105,6 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
                 : new VerifiedDto();
             
-            verifyEmail.Value = existingGuestEntity.Email;
             verifyEmail.Verified = false;
             verifyEmail.VerificationCode = code;
             verifyEmail.VerificationCodeExpiration = expiry;
