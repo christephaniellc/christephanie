@@ -105,11 +105,9 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             var verifyEmail = !string.IsNullOrEmpty(existingGuestEntity.Email)
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
                 : new VerifiedDto();
-
-            var doesSavedEmailMatchCommandEmail = existingGuestEntity?.Email?.ToLower().Equals(command.Email.ToLower()) ?? false;
-
-            verifyEmail.Value = command.Email;
-            verifyEmail.Verified = doesSavedEmailMatchCommandEmail && verifyEmail.Verified;
+            
+            verifyEmail.Value = existingGuestEntity.Email;
+            verifyEmail.Verified = false;
             verifyEmail.VerificationCode = code;
             verifyEmail.VerificationCodeExpiration = expiry;
 
