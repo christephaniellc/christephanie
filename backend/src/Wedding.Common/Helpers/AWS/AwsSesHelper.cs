@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
+using Twilio.Http;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration.Identity;
 
@@ -38,7 +39,7 @@ namespace Wedding.Common.Helpers.AWS
                     },
                     Message = new Message
                     {
-                        Subject = new Content(subject),
+                        Subject = new Content(_config.ApplicationName + " " + subject),
                         Body = new Body
                         {
                             Text = new Content(body)
@@ -46,6 +47,7 @@ namespace Wedding.Common.Helpers.AWS
                     }
                 };
                 var response = await sesClient.SendEmailAsync(sendRequest, cancellationToken);
+                Console.WriteLine($"SES response: {JsonSerializer.Serialize(response)}");
                 Console.WriteLine($"Email sent using Amazon SES. Message ID: {response.MessageId}");
 
                 return response;
@@ -61,6 +63,7 @@ namespace Wedding.Common.Helpers.AWS
                body: $"Your wedding email verification code is: {email.VerificationCode}", 
                cancellationToken);
 
+            Console.WriteLine($"SES response: {JsonSerializer.Serialize(result)}");
             Console.WriteLine($"Send email result: {result.HttpStatusCode} {JsonSerializer.Serialize(result.ResponseMetadata)}");
             return result;
         }
