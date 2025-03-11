@@ -5,7 +5,7 @@ import { guestSelector, useFamily } from '@/store/family';
 import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import Box from '@mui/material/Box';
 import { ButtonGroup, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, darken, useTheme, Paper, Stack, Chip } from '@mui/material';
-import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff, ConstructionOutlined } from '@mui/icons-material';
+import { EmailOutlined, PhoneAndroid, Edit, Check, VerifiedUser, NotificationsActive, NotificationsOff, ConstructionOutlined, Warning } from '@mui/icons-material';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
@@ -217,7 +217,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   
   const sendPhoneVerificationCode = () => {
     if (!isSmsVerificationEnabled) {
-      setAlertMessage('SMS verification is not available at this time');
+      setAlertMessage('SMS verification is coming soon! Check back later.');
       setAlertSeverity('info');
       setShowAlert(true);
       return;
@@ -445,9 +445,22 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
               >
                 <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
                   <Box display="flex" alignItems="center">
-                    <Typography fontWeight={'bold'}>
-                      {value}
-                    </Typography>
+                    <Box display="flex" alignItems="center">
+                      <Typography fontWeight={'bold'}>
+                        {value}
+                      </Typography>
+                      
+                      {/* Show "Coming Soon" for Text option when SMS verification is disabled */}
+                      {value === 'Text' && !isSmsVerificationEnabled && (
+                        <Chip 
+                          size="small"
+                          label="Coming Soon"
+                          color="info"
+                          icon={<ConstructionOutlined fontSize="small" />}
+                          sx={{ ml: 1, height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      )}
+                    </Box>
                     
                     {/* Status indicators */}
                     <Box ml={1} display="flex" alignItems="center">
@@ -469,12 +482,20 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                         />
                       )}
                       
-                      {isVerified && (
+                      {isVerified ? (
                         <Chip 
                           size="small" 
                           label="Verified" 
                           color="primary" 
                           icon={<VerifiedUser fontSize="small" />} 
+                          sx={{ height: 20, ml: 0.5, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
+                        />
+                      ) : isEnabled && (
+                        <Chip 
+                          size="small" 
+                          label="Unverified" 
+                          color="error" 
+                          icon={<Warning fontSize="small" />} 
                           sx={{ height: 20, ml: 0.5, '& .MuiChip-label': { px: 0.5, fontSize: '0.7rem' } }}
                         />
                       )}
@@ -501,8 +522,25 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           })}
         </ButtonGroup>
       
+        {/* SMS Verification Coming Soon Banner - shown when text opted in but SMS verification disabled */}
+        {isTextOptedIn && !phoneVerified && !isSmsVerificationEnabled && (
+          <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <ConstructionOutlined color="info" sx={{ mr: 1 }} />
+                <Typography variant="subtitle1" color="info.main" fontWeight="bold">
+                  SMS Verification Coming Soon!
+                </Typography>
+              </Box>
+              <Typography variant="body2" textAlign="center">
+                We're still working on our SMS verification system. You'll be able to verify your phone number in a future update.
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      
         {/* Verification buttons and disclaimers outside the communication preference buttons */}
-        { ((isTextOptedIn && !phoneVerified && isSmsVerificationEnabled) || 
+        {((isTextOptedIn && !phoneVerified && isSmsVerificationEnabled) || 
            (isEmailOptedIn && !emailVerified && isEmailVerificationEnabled)) && (
         <Box p={2} sx={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
           {contactPreferences.map((value) => (
@@ -531,7 +569,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                   width: '100%', 
                   boxShadow: 'none'
                 }}>
-                  { isTextOptedIn && value === 'Text' && (
+                  {isTextOptedIn && value === 'Text' && (
                     <Typography variant="caption" sx={{ 
                       fontSize: '0.7rem', 
                       textAlign: 'center', 
@@ -546,7 +584,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                     </Typography>
                   )}
                   
-                  { isEmailOptedIn && value === 'Email' && (
+                  {isEmailOptedIn && value === 'Email' && (
                     <Typography variant="caption" sx={{ 
                       fontSize: '0.7rem', 
                       textAlign: 'center', 
@@ -658,7 +696,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
             variant="outlined"
             defaultValue={phoneResponse?.value || phoneResponse || ''} 
             onChange={(e) => setPhoneValue(e.target.value)}
-            helperText="Your phone number will need to be verified after updating"
+            helperText={!isSmsVerificationEnabled ? 
+              "SMS verification coming soon! You'll be able to verify your phone in a future update." : 
+              "Your phone number will need to be verified after updating"}
           />
         </DialogContent>
         <DialogActions>
