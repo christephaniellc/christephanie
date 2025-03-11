@@ -167,12 +167,12 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Provided code: {command.Code}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            if (string.IsNullOrEmpty(existingGuestEntity.Phone))
+            if (string.IsNullOrEmpty(existingGuestEntity.Email))
             {
-                throw new ValidationException($"Phone is null or empty.");
+                throw new ValidationException($"Email is null or empty.");
             }
 
-            var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
+            var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Email);
 
             if (expectedValidation == null)
             {
