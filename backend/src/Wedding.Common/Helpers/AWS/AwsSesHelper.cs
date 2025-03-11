@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
-using Twilio.Http;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration.Identity;
 
