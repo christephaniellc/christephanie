@@ -20,7 +20,7 @@ export class CertificateStack extends cdk.Stack {
 
     const environment = this.node.tryGetContext('env') || 'dev';
       
-    const { applicationName } = ApplicationProps;
+    const { applicationName, domainName } = ApplicationProps;
     console.log("------------------------");
     console.log("CertificateStack");
     
@@ -42,11 +42,21 @@ export class CertificateStack extends cdk.Stack {
         // Create a new certificate with base domain name and full domain name
         console.log(`Creating new certificate...`);
         this.certificate = new certificatemanager.Certificate(this, `${applicationName}-certificate-${environment}`, {
-            domainName: `${props.fullDomainName}`,
-            subjectAlternativeNames: [            
-                `${props.apiUrl}`,
-                `*.${props.fullDomainName}`,
-                `*.${props.apiUrl}`
+            domainName: `${environment === 'prod' ? domainName : props.fullDomainName}`,
+            subjectAlternativeNames: environment === 'prod' 
+            ? [       
+                `${domainName}`,            // christephanie.com
+                `${props.fullDomainName}`,  // wedding.christephanie.com
+                `${props.apiUrl}`,          // financeapi.wedding.christephanie.com
+                `*.${domainName}`,          // *.christephanie.com
+                `*.${props.fullDomainName}`,// *.wedding.christephanie.com
+                `*.${props.apiUrl}`         // *.financeapi.wedding.christephanie.com
+            ]
+            : [
+                `${props.apiUrl}`,          // financeapi.dev.wedding.christephanie.com
+                `${props.fullDomainName}`,  // dev.wedding.christephanie.com
+                `*.${props.fullDomainName}`,// *.dev.wedding.christephanie.com
+                `*.${props.apiUrl}`         // *.financeapi.dev.wedding.christephanie.com
             ],
             validation: certificatemanager.CertificateValidation.fromDns(props.hostedZone),
         });
