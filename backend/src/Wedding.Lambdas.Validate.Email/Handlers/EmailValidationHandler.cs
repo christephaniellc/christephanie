@@ -38,7 +38,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
         public async Task<ValidateEmailResponse> ExecuteAsync(RegisterEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Register Email Raw Query: {JsonSerializer.Serialize(command)}");
 
             var isRateLimited = await _dynamoDbProvider.CheckRateLimitAsync(command.AuthContext.Audience,
                 command.AuthContext.IpAddress,
@@ -126,7 +126,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
         public async Task<ValidateEmailResponse> ExecuteAsync(ResendEmailCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Resend Email Code Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
@@ -152,7 +152,8 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
         public async Task<ValidateEmailResponse> ExecuteAsync(ValidateEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Validate Email Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Validate Email Code: {command.Code}");
             command.Validate(nameof(command));
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
@@ -164,7 +165,6 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Table audience: {command.AuthContext.Audience}");
             _logger.LogInformation($"Invitation code: {command.AuthContext.InvitationCode}");
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
-            _logger.LogInformation($"Provided code: {command.Code}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
             if (string.IsNullOrEmpty(existingGuestEntity.Email))
@@ -173,6 +173,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             }
 
             var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Email);
+            _logger.LogInformation($"Expected validation: {JsonSerializer.Serialize(expectedValidation)}");
 
             if (expectedValidation == null)
             {
