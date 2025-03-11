@@ -285,6 +285,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertSeverity('success');
           setShowAlert(true);
           handleClosePhoneVerifyDialog();
+          
+          // Refresh family data to update verification status
+          familyActions.getFamilyUnitQuery.refetch?.();
         },
         onError: (error) => {
           setAlertMessage('Verification failed. Please try again.');
@@ -369,6 +372,9 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           setAlertSeverity('success');
           setShowAlert(true);
           handleCloseEmailVerifyDialog();
+          
+          // Refresh family data to update verification status
+          familyActions.getFamilyUnitQuery.refetch?.();
         },
         onError: (error) => {
           setAlertMessage('Verification failed. Please try again.');
