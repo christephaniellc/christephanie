@@ -105,7 +105,7 @@ function SaveTheDatePage() {
           backgroundImage: `url(${ElPulpo})`,
           backgroundSize: 'cover',
           backgroundPosition: 'top',
-          height: 400,
+          height: 500, // Increased height for better mobile appearance
           zIndex: 49,
         }}
       >
@@ -117,7 +117,12 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '85px'
+              paddingBottom: '150px', // Increased bottom padding for mobile
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 50
             }}
           >
             <Button
