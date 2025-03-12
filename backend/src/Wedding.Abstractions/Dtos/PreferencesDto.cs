@@ -10,6 +10,8 @@ namespace Wedding.Abstractions.Dtos
         [DynamoDBProperty(typeof(ListEnumToStringConverter<NotificationPreferenceEnum>))]
         public List<NotificationPreferenceEnum>? NotificationPreference { get; set; }
 
+        public bool? AllowBetaScreenRecordings { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
         public SleepPreferenceEnum? SleepPreference { get; set; }
 
