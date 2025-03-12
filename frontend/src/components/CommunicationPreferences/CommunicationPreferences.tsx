@@ -654,6 +654,14 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                             handleOpenPhoneDialog();
                           }
                         }}
+                        sx={{
+                          border: isEnabled ? `1px solid ${theme.palette.secondary.main}` : 'none',
+                          backgroundColor: isEnabled && isVerified ? alpha(theme.palette.secondary.main, 0.15) : 'transparent',
+                          borderRadius: 1,
+                          mx: 0.5,
+                          mt: 0.5,
+                          mb: index < contactPreferences.length - 1 ? 0.5 : 0
+                        }}
                       >
                         <ListItemAvatar>
                           <Avatar 
@@ -731,7 +739,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                         <ArrowForwardIos fontSize="small" sx={{ color: alpha(theme.palette.text.primary, 0.3), fontSize: 14 }} />
                       </ListItemButton>
                     </ListItem>
-                    {index < contactPreferences.length - 1 && <Divider variant="inset" component="li" />}
+                    {index < contactPreferences.length - 1 && <Divider variant="fullWidth" component="li" sx={{ mx: 2 }} />}
                   </>
                 );
               })}
