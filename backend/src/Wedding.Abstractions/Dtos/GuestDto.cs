@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Wedding.Abstractions.Dtos.ClientInfo;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Abstractions.Dtos
@@ -29,6 +30,8 @@ namespace Wedding.Abstractions.Dtos
         public RsvpDto? Rsvp { get; set; }
 
         public PreferencesDto? Preferences { get; set; }
+
+        public List<ClientInfoDto>? ClientInfos { get; set; }
 
         /// <summary>
         /// If child
