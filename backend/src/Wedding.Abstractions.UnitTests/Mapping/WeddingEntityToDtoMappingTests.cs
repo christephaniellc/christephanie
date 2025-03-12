@@ -2,6 +2,7 @@
 using AutoMapper;
 using FluentAssertions;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.ClientInfo;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -25,6 +26,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                     cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                     cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                     cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                    cfg.AllowNullCollections = true;
                 }
             );
             _mapper = config.CreateMapper();
@@ -442,6 +444,220 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.PrefSleep.Should().Be(guestDto.Preferences.SleepPreference);
             entity.PrefFood.Should().Be(guestDto.Preferences.FoodPreference);
             entity.PrefFoodAllergies.Should().BeEquivalentTo(guestDto.Preferences.FoodAllergies);
+        }
+
+        [Test]
+        public void ClientInfoDto_To_String_Should_Serialize_Properly()
+        {
+            // Arrange
+            var dto = new ClientInfoDto
+            {
+                DateRecorded = new DateTime(2025, 3, 12, 12, 0, 0, DateTimeKind.Utc),
+                IpAddress = "192.168.1.1",
+                Os = "Windows",
+                Language = "en-US",
+                TimeZone = "America/New_York",
+                Referrer = "https://www.example.com"
+                // You can add more properties if needed.
+            };
+
+            // Act
+            var json = _mapper.Map<string?>(dto);
+
+            // Assert
+            json.Should().NotBeNull();
+            json.Should().Contain("192.168.1.1");
+            json.Should().Contain("Windows");
+        }
+
+        [Test]
+        public void String_To_ClientInfoDto_Should_Deserialize_Properly()
+        {
+            // Arrange
+            var dto = new ClientInfoDto
+            {
+                DateRecorded = new DateTime(2025, 3, 12, 12, 0, 0, DateTimeKind.Utc),
+                IpAddress = "192.168.1.1",
+                Os = "Windows",
+                Language = "en-US",
+                TimeZone = "America/New_York",
+                Referrer = "https://www.example.com"
+            };
+
+            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true
+            });
+
+            // Act
+            var mappedDto = _mapper.Map<ClientInfoDto>(json);
+
+            // Assert
+            mappedDto.Should().NotBeNull();
+            mappedDto.IpAddress.Should().Be("192.168.1.1");
+            mappedDto.Os.Should().Be("Windows");
+            mappedDto.Language.Should().Be("en-US");
+            mappedDto.TimeZone.Should().Be("America/New_York");
+            mappedDto.Referrer.Should().Be("https://www.example.com");
+        }
+
+        [Test]
+        public void List_ClientInfoDto_To_List_String_Should_Serialize_Properly()
+        {
+            // Arrange
+            var dtos = new List<ClientInfoDto>
+            {
+                new ClientInfoDto { DateRecorded = DateTime.UtcNow, IpAddress = "192.168.1.1", Os = "Windows" },
+                new ClientInfoDto { DateRecorded = DateTime.UtcNow, IpAddress = "10.0.0.1", Os = "macOS" }
+            };
+
+            // Act
+            var jsonList = _mapper.Map<List<string>?>(dtos);
+
+            // Assert
+            jsonList.Should().NotBeNull();
+            jsonList.Should().HaveCount(2);
+            jsonList[0].Should().Contain("192.168.1.1");
+            jsonList[1].Should().Contain("10.0.0.1");
+        }
+
+        [Test]
+        public void List_String_To_List_ClientInfoDto_Should_Deserialize_Properly()
+        {
+            // Arrange
+            var dto1 = new ClientInfoDto { DateRecorded = DateTime.UtcNow, IpAddress = "192.168.1.1", Os = "Windows" };
+            var dto2 = new ClientInfoDto { DateRecorded = DateTime.UtcNow, IpAddress = "10.0.0.1", Os = "macOS" };
+
+            var jsonList = new List<string>
+            {
+                JsonSerializer.Serialize(dto1, new JsonSerializerOptions { PropertyNameCaseInsensitive = true, AllowTrailingCommas = true }),
+                JsonSerializer.Serialize(dto2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true, AllowTrailingCommas = true })
+            };
+
+            // Act
+            var dtos = _mapper.Map<List<ClientInfoDto>?>(jsonList);
+
+            // Assert
+            dtos.Should().NotBeNull();
+            dtos.Should().HaveCount(2);
+            dtos[0].IpAddress.Should().Be("192.168.1.1");
+            dtos[1].IpAddress.Should().Be("10.0.0.1");
+        }
+
+        [Test]
+        public void Null_ClientInfoDto_Should_Map_To_Null_String()
+        {
+            // Arrange
+            ClientInfoDto? dto = null;
+
+            // Act
+            var result = _mapper.Map<string?>(dto);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public void Null_List_ClientInfoDto_Should_Map_To_Null_List_String()
+        {
+            // Arrange
+            List<ClientInfoDto>? dtos = null;
+
+            // Act
+            var result = _mapper.Map<List<string>?>(dtos);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public void Null_String_Should_Map_To_Null_ClientInfoDto()
+        {
+            // Arrange
+            string? json = null;
+
+            // Act
+            var result = _mapper.Map<ClientInfoDto>(json);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public void Null_List_String_Should_Map_To_Null_List_ClientInfoDto()
+        {
+            // Arrange
+            List<string>? jsonList = null;
+
+            // Act
+            var result = _mapper.Map<List<ClientInfoDto>?>(jsonList);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public void GuestDto_With_ClientInfos_Should_Map_Correctly()
+        {
+            // Arrange
+            var clientInfo1 = new ClientInfoDto
+            {
+                DateRecorded = new DateTime(2025, 3, 12, 12, 0, 0, DateTimeKind.Utc),
+                IpAddress = "192.168.1.1",
+                Os = "Windows",
+                Language = "en-US",
+                TimeZone = "America/New_York",
+                Referrer = "https://www.example.com"
+            };
+            var clientInfo2 = new ClientInfoDto
+            {
+                DateRecorded = new DateTime(2025, 3, 12, 12, 30, 0, DateTimeKind.Utc),
+                IpAddress = "10.0.0.1",
+                Os = "macOS",
+                Language = "en-US",
+                TimeZone = "America/Los_Angeles",
+                Referrer = "https://www.google.com"
+            };
+
+            var guestDto = new GuestDto
+            {
+                InvitationCode = "INV123",
+                GuestId = "GUEST123",
+                GuestNumber = 1,
+                Auth0Id = "auth0|123",
+                FirstName = "John",
+                AdditionalFirstNames = new List<string> { "Johnny" },
+                LastName = "Doe",
+                Roles = new List<RoleEnum> { RoleEnum.Guest },
+                Email = new VerifiedDto { /* Populate as needed */ },
+                Phone = new VerifiedDto { /* Populate as needed */ },
+                Rsvp = new RsvpDto { InvitationResponse = InvitationResponseEnum.Interested },
+                Preferences = new PreferencesDto { SleepPreference = SleepPreferenceEnum.Camping },
+                ClientInfos = new List<ClientInfoDto> { clientInfo1, clientInfo2 },
+                AgeGroup = AgeGroupEnum.Adult,
+                LastActivity = DateTime.UtcNow
+            };
+
+            // Act
+            // Map GuestDto to WeddingEntity; this will convert ClientInfos to List<string>
+            var weddingEntity = _mapper.Map<WeddingEntity>(guestDto);
+            // Now map back to GuestDto; this will deserialize the JSON strings back into ClientInfoDto objects
+            var mappedGuestDto = _mapper.Map<GuestDto>(weddingEntity);
+
+            // Assert
+            weddingEntity.ClientInfos.Should().NotBeNull();
+            weddingEntity.ClientInfos.Should().HaveCount(2);
+            // Check that the JSON strings contain expected content.
+            weddingEntity.ClientInfos[0].Should().Contain("192.168.1.1");
+            weddingEntity.ClientInfos[1].Should().Contain("10.0.0.1");
+
+            mappedGuestDto.ClientInfos.Should().NotBeNull();
+            mappedGuestDto.ClientInfos.Should().HaveCount(2);
+            mappedGuestDto.ClientInfos[0].IpAddress.Should().Be("192.168.1.1");
+            mappedGuestDto.ClientInfos[0].Os.Should().Be("Windows");
+            mappedGuestDto.ClientInfos[1].IpAddress.Should().Be("10.0.0.1");
+            mappedGuestDto.ClientInfos[1].Os.Should().Be("macOS");
         }
     }
 }

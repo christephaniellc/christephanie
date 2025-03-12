@@ -19,6 +19,12 @@ using Wedding.Lambdas.User.Find.Commands;
 using Wedding.Lambdas.User.Get.Validation;
 using Wedding.PublicApi.Logic.Services.Auth;
 using System.Linq;
+using Wedding.Abstractions.ViewModels;
+using Wedding.Lambdas.Guest.Patch.Commands;
+using Wedding.Lambdas.Guest.Patch.Requests;
+using Wedding.Lambdas.Guest.Patch.Validation;
+using Wedding.Lambdas.User.Patch.Commands;
+using Wedding.Lambdas.User.Patch.Validation;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -102,6 +108,31 @@ namespace Wedding.PublicApi.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<bool>> PatchGuest([FromBody] PatchUserRequest patchRequest, CancellationToken cancellationToken = default)
+        {
+            var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+            var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+            var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
+            var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+
+            var command = new PatchUserCommand(
+                authContext,
+                patchRequest.ClientInfo
+            );
+            command.Validate();
+            var result = await _dispatcher.ExecuteAsync<PatchUserCommand, bool>(command, cancellationToken);
+
+            return Ok(result);
         }
     }
 }
