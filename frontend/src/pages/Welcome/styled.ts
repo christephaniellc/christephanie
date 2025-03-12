@@ -13,7 +13,7 @@ const WelcomeContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'auto',
+  overflow: 'hidden',
 }));
 
 const BackgroundOverlay = styled(Box)(({ theme }) => ({
@@ -45,8 +45,6 @@ const WeddingInfoContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   // width: '100%',
   padding: theme.spacing(1.5),
-  backgroundColor: alpha('#000', 0.5), // Darker background for better readability
-  backdropFilter: 'blur(8px)', // Add blur effect
   borderRadius: theme.shape.borderRadius,
   marginBottom: theme.spacing(2),
   boxShadow: `0 4px 20px ${alpha('#000', 0.2)}`,
@@ -63,7 +61,6 @@ const WeddingInfoLayout = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
-  gap: theme.spacing(2),
   alignItems: 'center',
   // [theme.breakpoints.up('md')]: {
   //   flexDirection: 'row',
@@ -77,16 +74,11 @@ const MarriageAnnouncementBox = styled(Box)(({ theme }) => ({
   justifyContent: 'flex-start',
   alignItems: 'center',
   mx: 'auto',
-  padding: theme.spacing(1.5),
   backgroundColor: alpha(theme.palette.background.paper, 0.1),
   borderRadius: theme.shape.borderRadius,
   textAlign: 'center',
   whiteSpace: 'normal',
   wordWrap: 'break-word',
-  [theme.breakpoints.up('md')]: {
-    width: '200px',
-    marginRight: theme.spacing(2),
-  },
 }));
 
 const WeddingDetailsBox = styled(Box)(({ theme }) => ({
@@ -184,9 +176,6 @@ const QuoteText = styled(Typography)(({ theme }) => ({
 const TitleContainer = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   marginBottom: 0, // No margin to reduce space
-  [theme.breakpoints.up('md')]: {
-    marginBottom: theme.spacing(0.5), // Minimal margin for larger screens
-  },
 }));
 
 const StepperContainer = styled(Box)(({ theme }) => ({
@@ -215,6 +204,27 @@ const StepperContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+const StepperModal = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: alpha(theme.palette.background.paper, 0.95),
+  backdropFilter: 'blur(10px)',
+  borderTopLeftRadius: theme.shape.borderRadius * 2,
+  borderTopRightRadius: theme.shape.borderRadius * 2,
+  boxShadow: `0 -4px 20px ${alpha('#000', 0.3)}`,
+  transform: 'translateY(100%)',
+  transition: 'transform 0.3s ease-in-out',
+  zIndex: 1200,
+  padding: theme.spacing(2),
+  paddingBottom: theme.spacing(4), // Increased bottom padding
+  maxHeight: '80vh',
+  '&.visible': {
+    transform: 'translateY(0)',
+  },
+}));
+
 export {
   Image,
   WelcomeContainer,
@@ -233,4 +243,5 @@ export {
   QuoteText,
   TitleContainer,
   StepperContainer,
+  StepperModal,
 };

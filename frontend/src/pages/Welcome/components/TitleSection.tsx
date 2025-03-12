@@ -4,11 +4,9 @@ import NeonTitle from '@/components/NeonTitle';
 import { TitleContainer, QuoteText } from '../styled';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
-interface TitleSectionProps {
-  randomQuote: string;
-}
+interface TitleSectionProps {}
 
-const TitleSection: React.FC<TitleSectionProps> = ({ randomQuote }) => {
+const TitleSection: React.FC<TitleSectionProps> = () => {
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
   
@@ -27,10 +25,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({ randomQuote }) => {
         pulsate={true}
         flicker={false}
       />
-      
-      <QuoteText variant="caption">
-        {randomQuote}
-      </QuoteText>
     </TitleContainer>
   );
 };
