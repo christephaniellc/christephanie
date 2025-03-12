@@ -47,7 +47,7 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
         filter: `drop-shadow(${calculateShadow()})`,
       }}
     >
-      <Box display="flex" alignItems="center" width="100%">
+      <Box display="flex" alignItems="flex-start" width="100%" sx={{ height: 'auto', minHeight: '100%' }}>
         {guest && (
           <LargeAttendanceButton
             guestId={guest.guestId}

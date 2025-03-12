@@ -60,6 +60,7 @@ const LargeAttendanceButton = ({
         id={`wedding-attendance-radios-${guestId}`}
         justifyContent="center"
         mt={2}
+        sx={{ height: 'auto', flexGrow: 1 }}
       >
         <WeddingAttendanceRadios guestId={guestId} />
       </Box>
