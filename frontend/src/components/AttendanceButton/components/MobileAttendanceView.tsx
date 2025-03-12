@@ -128,7 +128,7 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
                   width: '100%', 
                   mt: 1,
                   fontSize: '0.7rem',
-                  color: getResponseColor(),
+                  color: 'white',
                   opacity: 0.9
                 }}>
                   <WeddingAttendanceRadios guestId={guestId} />

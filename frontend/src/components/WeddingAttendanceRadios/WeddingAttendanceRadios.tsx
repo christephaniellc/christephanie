@@ -177,6 +177,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
         wordBreak: 'break-word',
         lineHeight: {xs: 1.3, md: 'inherit'}, 
         maxHeight: {xs: '80px', md: 'auto'},
+        color: 'white',
       }}
     >
       {declined && (
