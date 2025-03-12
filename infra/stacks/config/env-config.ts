@@ -7,7 +7,6 @@ import * as cdk from 'aws-cdk-lib';
         region: string;
         githubRepo: string; // Format: "your-org/your-repo"
         githubBranch: string;
-        delegateHostedNameServers: string[] | undefined;
         subDomainPrefix: string;
         mailFromAddress: string;
         authAuthority: string;

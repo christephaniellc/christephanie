@@ -34,22 +34,8 @@ export class DnsStack extends cdk.Stack {
     console.log(`FullDomainName: ${props.fullDomainName}`);
     console.log(`FrontendUrl: ${props.frontendUrl}`);
     console.log(`ApiUrl: ${props.apiUrl}`);
-    console.log(`Hosted zone name servers (${props.env.delegateHostedNameServers?.length || 0}): ${props.env.delegateHostedNameServers?.join(',') || 'No NS found'}`);
     console.log(`CloudfrontDistribution: ${props.cloudFrontDistribution}`);
     console.log(`ApiGateway: ${apiGateway}`);
-
-    if (props.env.delegateHostedNameServers && props.env.delegateHostedNameServers.length > 0)     {
-        console.log(`Adding dev subdomain nameserver delegation record, namservers: ${props.env.delegateHostedNameServers?.join(',') || 'NS not found'}`);
-        new route53.RecordSet(this, `${applicationName}-dev-subdomain-delegation`, {
-            zone: props.hostedZone,
-            recordType: route53.RecordType.NS,
-            target: route53.RecordTarget.fromValues(...props.env.delegateHostedNameServers),
-            recordName: 'ns.dev-delegation',
-        });
-    }
-    else {
-        console.log(`INFO: No subdomain nameserver delegation records found.`);
-    }
 
     // Create an A record for the API Gateway custom domain.
     // Instead of using AWS-generated URLs for your API Gateway (e.g., abc123.execute-api.us-east-1.amazonaws.com), 
