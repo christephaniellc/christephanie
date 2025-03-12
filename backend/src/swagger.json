@@ -940,6 +940,76 @@
         ]
       }
     },
+    "/api/user": {
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/validate/address": {
       "post": {
         "tags": [
@@ -1325,11 +1395,114 @@
         ],
         "type": "string"
       },
+      "BrowserInfoDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientInfoDto": {
+        "type": "object",
+        "properties": {
+          "dateRecorded": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ipAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "os": {
+            "type": "string",
+            "nullable": true
+          },
+          "browser": {
+            "$ref": "#/components/schemas/BrowserInfoDto"
+          },
+          "screen": {
+            "$ref": "#/components/schemas/ScreenInfoDto"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "device": {
+            "$ref": "#/components/schemas/DeviceInfoDto"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/ConnectionInfoDto"
+          },
+          "geolocation": {
+            "$ref": "#/components/schemas/GeolocationInfoDto"
+          },
+          "referrer": {
+            "type": "string",
+            "nullable": true
+          },
+          "storageSupport": {
+            "$ref": "#/components/schemas/StorageSupportInfoDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConnectionInfoDto": {
+        "type": "object",
+        "properties": {
+          "effectiveType": {
+            "type": "string",
+            "nullable": true
+          },
+          "downlink": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "DeleteResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeviceInfoDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "touchSupport": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "hardwareConcurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "deviceMemory": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1446,6 +1619,22 @@
         ],
         "type": "string"
       },
+      "GeolocationInfoDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "GuestDto": {
         "required": [
           "roles"
@@ -1502,6 +1691,13 @@
           },
           "preferences": {
             "$ref": "#/components/schemas/PreferencesDto"
+          },
+          "clientInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientInfoDto"
+            },
+            "nullable": true
           },
           "ageGroup": {
             "$ref": "#/components/schemas/AgeGroupEnum"
@@ -1805,6 +2001,15 @@
         },
         "additionalProperties": false
       },
+      "PatchUserRequest": {
+        "type": "object",
+        "properties": {
+          "clientInfo": {
+            "$ref": "#/components/schemas/ClientInfoDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "PreferencesDto": {
         "type": "object",
         "properties": {
@@ -1813,6 +2018,10 @@
             "items": {
               "$ref": "#/components/schemas/NotificationPreferenceEnum"
             },
+            "nullable": true
+          },
+          "allowBetaScreenRecordings": {
+            "type": "boolean",
             "nullable": true
           },
           "sleepPreference": {
@@ -1866,6 +2075,7 @@
           "Rehearsal",
           "Staff",
           "Manor",
+          "BetaTester",
           "Admin"
         ],
         "type": "string"
@@ -1906,6 +2116,27 @@
         ],
         "type": "string"
       },
+      "ScreenInfoDto": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "colorDepth": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SleepPreferenceEnum": {
         "enum": [
           "Unknown",
@@ -1915,6 +2146,20 @@
           "Other"
         ],
         "type": "string"
+      },
+      "StorageSupportInfoDto": {
+        "type": "object",
+        "properties": {
+          "cookiesEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "localStorageEnabled": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "TwilioOtpStatusEnum": {
         "enum": [
