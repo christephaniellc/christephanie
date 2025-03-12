@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useLayoutEffect } from 'react';
 import { useUser } from '@/store/user';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useFamily } from '@/store/family';
@@ -49,6 +49,8 @@ const Welcome: React.FC = () => {
   const { user: auth0User } = useAuth0();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentNeedsModal, setContentNeedsModal] = useState(false);
   
   // Random background image
   const randomBgImage = useMemo(() => {
@@ -65,13 +67,57 @@ const Welcome: React.FC = () => {
       familyActions.getFamily();
     }
   }, [user, family, familyActions, auth0User]);
+
+  // Check if content needs the modal (only if it doesn't fit in the viewport)
+  useLayoutEffect(() => {
+    const checkContentFit = () => {
+      if (contentRef.current && containerRef.current) {
+        // Calculate the total height of all content
+        const titleSection = contentRef.current.querySelector('[data-section="title"]');
+        const weddingInfoSection = contentRef.current.querySelector('[data-section="wedding-info"]');
+        const stepperSection = contentRef.current.querySelector('[data-section="stepper"]');
+        
+        let totalContentHeight = 0;
+        if (titleSection) totalContentHeight += titleSection.getBoundingClientRect().height;
+        if (weddingInfoSection) totalContentHeight += weddingInfoSection.getBoundingClientRect().height;
+        if (stepperSection) totalContentHeight += stepperSection.getBoundingClientRect().height;
+        
+        // Add some margin between sections
+        totalContentHeight += 40; // Approximate margins between sections
+        
+        // Compare with available container height
+        const containerHeight = containerRef.current.getBoundingClientRect().height;
+        
+        // Set state based on whether content fits
+        setContentNeedsModal(totalContentHeight > containerHeight);
+      }
+    };
+    
+    // Check on mount and when auth0User changes (which might change content)
+    checkContentFit();
+    
+    // Also add a resize observer to check when window size changes
+    const resizeObserver = new ResizeObserver(checkContentFit);
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [auth0User, contentHeight]);
   
   // Handle scroll detection
   useEffect(() => {
+    // If content fits, no need for scroll-up modal
+    if (!contentNeedsModal) return;
+    
     const handleWheel = (e: WheelEvent) => {
       if (e.deltaY > 0) {
-        // Scrolling down
-        setIsModalVisible(true);
+        // Scrolling down - only show modal if content doesn't fit
+        if (contentNeedsModal) {
+          setIsModalVisible(true);
+        }
       } else if (e.deltaY < 0 && isModalVisible) {
         // Scrolling up
         setIsModalVisible(false);
@@ -90,8 +136,10 @@ const Welcome: React.FC = () => {
       const diff = startY - currentY;
       
       if (diff > 30) {
-        // Scrolling down
-        setIsModalVisible(true);
+        // Scrolling down - only show modal if content doesn't fit
+        if (contentNeedsModal) {
+          setIsModalVisible(true);
+        }
       } else if (diff < -30 && isModalVisible) {
         // Scrolling up
         setIsModalVisible(false);
@@ -110,39 +158,49 @@ const Welcome: React.FC = () => {
         container.removeEventListener('touchmove', handleTouchMove);
       };
     }
-  }, [isModalVisible]);
+  }, [isModalVisible, contentNeedsModal]);
   
   return (
     <WelcomeContainer ref={containerRef} height={contentHeight}>
       <BackgroundImage backgroundImage={randomBgImage} />
       <BackgroundOverlay />
       
-      <ContentContainer>
-        <TitleSection />
+      <ContentContainer ref={contentRef}>
+        <Box data-section="title">
+          <TitleSection />
+        </Box>
 
-        <WeddingInfoSection 
-          randomGettingMarriedQuote={getRandomItem(GETTING_MARRIED_EUPHEMISMS)}
-          user={user}
-        />
+        <Box data-section="wedding-info">
+          <WeddingInfoSection 
+            randomGettingMarriedQuote={getRandomItem(GETTING_MARRIED_EUPHEMISMS)}
+            user={user}
+          />
+        </Box>
 
-        {/* Only show in main content if modal is not visible */}
-        {!isModalVisible && <StepperSection auth0User={auth0User} />}
+        {/* Only show stepper directly if it fits or modal is not visible */}
+        {(!contentNeedsModal || !isModalVisible) && (
+          <Box data-section="stepper">
+            <StepperSection auth0User={auth0User} />
+          </Box>
+        )}
       </ContentContainer>
       
-      {/* Stepper section in modal */}
-      <StepperModal className={isModalVisible ? 'visible' : ''}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-          <IconButton 
-            onClick={() => setIsModalVisible(false)}
-            size="small"
-            aria-label="close"
-            sx={{ color: 'text.secondary' }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <StepperSection auth0User={auth0User} />
-      </StepperModal>
+      {/* Stepper section in modal - only when content doesn't fit */}
+      {contentNeedsModal && (
+        <StepperModal className={isModalVisible ? 'visible' : ''}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+            <IconButton 
+              onClick={() => setIsModalVisible(false)}
+              size="small"
+              aria-label="close"
+              sx={{ color: 'text.secondary' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <StepperSection auth0User={auth0User} />
+        </StepperModal>
+      )}
     </WelcomeContainer>
   );
 };
