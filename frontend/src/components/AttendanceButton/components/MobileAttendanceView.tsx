@@ -18,6 +18,8 @@ import CommunicationPreferences from '@/components/CommunicationPreferences';
 import CampingPreferences from '@/components/CampingPreferences';
 import AgeSelector from '@/components/AgeSelector';
 import FoodAllergies from '@/components/FoodPreferences';
+import StickFigureIcon from '@/components/StickFigureIcon';
+import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import { InvitationResponseEnum } from '@/types/api';
 
 interface MobileAttendanceViewProps {
@@ -86,7 +88,7 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
             <ListSubheader
               sx={{
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'space-between',
                 position: 'sticky',
                 top: 0,
@@ -95,17 +97,43 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
                 backdropFilter: 'blur(16px)',
                 borderRadius: 1,
                 boxShadow: 2,
-                p: 1,
+                p: 1.5,
                 mb: 1,
                 borderLeft: `4px solid ${getResponseColor()}`,
+                height: 'auto',
+                minHeight: '65px'
               }}
             >
-              <Typography variant="h6" component="div" color={getResponseColor()}>
-                {guest?.auth0Id === user?.sub ? 'You' : guest?.firstName}
-              </Typography>
-              <Typography variant="body2" color={getResponseColor()}>
-                {guest?.rsvp.invitationResponse}
-              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                  <Box display="flex" alignItems="center">
+                    <Typography variant="h6" component="div" color={getResponseColor()}>
+                      {guest?.auth0Id === user?.sub ? 'You' : guest?.firstName}
+                    </Typography>
+                    {guest?.ageGroup && (
+                      <Box ml={1} display="flex" alignItems="center">
+                        <StickFigureIcon 
+                          ageGroup={guest.ageGroup} 
+                          fontSize="small" 
+                          color={getResponseColor()} 
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                  <Typography variant="body2" color={getResponseColor()}>
+                    {guest?.rsvp.invitationResponse}
+                  </Typography>
+                </Box>
+                <Box sx={{ 
+                  width: '100%', 
+                  mt: 1,
+                  fontSize: '0.7rem',
+                  color: getResponseColor(),
+                  opacity: 0.9
+                }}>
+                  <WeddingAttendanceRadios guestId={guestId} />
+                </Box>
+              </Box>
             </ListSubheader>
             
             <ListItem 
