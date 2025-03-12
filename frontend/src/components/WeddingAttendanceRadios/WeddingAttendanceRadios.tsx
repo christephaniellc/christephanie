@@ -173,10 +173,10 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
       width="100%"
       sx={{
         fontSize: {xs: '0.65rem', md: '0.6rem'},
-        overflowY: 'auto',
+        overflowY: 'visible',
         wordBreak: 'break-word',
         lineHeight: {xs: 1.3, md: 'inherit'}, 
-        maxHeight: {xs: '80px', md: 'auto'},
+        height: 'auto',
         color: 'white',
       }}
     >
