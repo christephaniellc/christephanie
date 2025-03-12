@@ -47,7 +47,7 @@ const AllergyButtonGroup: React.FC<AllergyButtonGroupProps> = ({
       <Button
         id="no-allergies-button"
         color="secondary"
-        variant={chosenAllergies.join('') === 'none' ? 'contained' : 'outlined'}
+        variant={(chosenAllergies?.length === 0 || !chosenAllergies || chosenAllergies.join('') === 'none') ? 'contained' : 'outlined'}
         sx={{
           lineHeight: 1.2,
           justifyContent: 'flex-start',
@@ -78,7 +78,7 @@ const AllergyButtonGroup: React.FC<AllergyButtonGroupProps> = ({
       </Button>
 
       <Button
-        variant={chosenAllergies.join('') !== 'none' ? 'contained' : 'outlined'}
+        variant={(chosenAllergies && chosenAllergies.length > 0 && chosenAllergies.join('') !== 'none') ? 'contained' : 'outlined'}
         color="warning"
         sx={{
           width: isBreakpointUpMin ? '66.66%' : '100%',
@@ -93,7 +93,7 @@ const AllergyButtonGroup: React.FC<AllergyButtonGroupProps> = ({
           familyActions.getFamilyUnitQuery.isFetching
         }
       >
-        {chosenAllergies.join('') === 'none' ? (
+        {(!chosenAllergies || chosenAllergies.length === 0 || chosenAllergies.join('') === 'none') ? (
           <Typography sx={{ mx: 'auto' }}>I'm allergic to stuff</Typography>
         ) : (
           <Box

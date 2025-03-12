@@ -35,7 +35,8 @@ const ActiveEatingIcon: React.FC<ActiveEatingIconProps> = ({ guestId, filterColo
       return (
         <Box
           sx={{
-            filter: guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegan) && guest?.preferences?.foodAllergies.includes('none')
+            filter: guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegan) && 
+              (!guest?.preferences?.foodAllergies || guest?.preferences?.foodAllergies.includes('none'))
               ? ''
               : filterColorSecondary
           }}
@@ -50,7 +51,8 @@ const ActiveEatingIcon: React.FC<ActiveEatingIconProps> = ({ guestId, filterColo
       return (
         <Box
           sx={{
-            filter: guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegetarian) && guest?.preferences?.foodAllergies.includes('none')
+            filter: guest?.preferences?.foodPreference?.includes(FoodPreferenceEnum.Vegetarian) && 
+              (!guest?.preferences?.foodAllergies || guest?.preferences?.foodAllergies.includes('none'))
               ? ''
               : filterColorSecondary
           }}

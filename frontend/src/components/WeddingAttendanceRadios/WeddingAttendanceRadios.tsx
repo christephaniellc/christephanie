@@ -113,6 +113,8 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
 
     let setAllergyResponse =
       guest.preferences.foodAllergies !== null &&
+      guest.preferences.foodAllergies !== undefined &&
+      guest.preferences.foodAllergies.length > 0 &&
       guest.preferences.foodAllergies.join('') !== '' &&
       guest.preferences.foodAllergies.join('') !== 'none';
 

@@ -23,7 +23,7 @@ export const useFoodAllergies = (guestId: string) => {
   
   // Find custom allergies that aren't in the predefined list
   const customAllergies = useMemo(() => {
-    if (!guest?.preferences?.foodAllergies) return [];
+    if (!guest?.preferences?.foodAllergies || guest?.preferences?.foodAllergies.length === 0) return [];
     
     // Find allergies that are not in the standard list
     return guest.preferences.foodAllergies.filter(allergyName => 
@@ -113,7 +113,7 @@ export const useFoodAllergies = (guestId: string) => {
     
     familyActions.updateFamilyGuestFoodAllergies(
       guestId,
-      maybeAllergies.length ? maybeAllergies : ['none'],
+      maybeAllergies && maybeAllergies.length ? maybeAllergies : ['none'],
     );
     
     setAllergyIconProps(updatedAllergies);
