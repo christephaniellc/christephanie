@@ -118,7 +118,7 @@ function SaveTheDatePage() {
               justifyContent: 'center',
               alignItems: 'flex-end',
               paddingBottom: '150px', // Increased bottom padding for mobile
-              position: 'fixed',
+              //position: 'fixed', // this breaks the stepper bubble clicks
               bottom: 0,
               left: 0,
               right: 0,
