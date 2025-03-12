@@ -36,13 +36,13 @@ export class HostedZoneStack extends cdk.Stack {
             console.log(`Hosted zone id found in environment props: ${props.env.existingHostedZoneId}`);
             this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, `${applicationName}-hosted-zone-${environment}`, {
                     hostedZoneId: `${props.env.existingHostedZoneId}`,
-                    zoneName: environment == 'prod' ? `${domainName}` : `${this.fullDomainName}`,
+                    zoneName: `${this.fullDomainName}`,
                 });
         }
         else {
             console.log(`INFO: No hosted zone id found. Creating new hosted zone...`);
             this.hostedZone = new route53.HostedZone(this, `${applicationName}-hosted-zone-${environment}`, {
-                zoneName: environment == 'prod' ? `${domainName}` : `${this.fullDomainName}`,
+                zoneName: `${this.fullDomainName}`,
             });
             (this.hostedZone as any).applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
             hostedZoneNameServers = cdk.Fn.join(',', this.hostedZone.hostedZoneNameServers!);
