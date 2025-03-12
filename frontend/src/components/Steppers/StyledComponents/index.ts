@@ -10,9 +10,12 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   gap: 16,
   justifyContent: 'center',
   width: '100%',
-  maxHeight: '100%',
-  height: '100%',
-  paddingBottom: rem('40px'),
+  maxHeight: 'calc(100% - 150px)', // Adjusted to account for bottom navigation buttons
+  height: 'auto',
+  paddingBottom: rem('100px'), // Increased padding to ensure content doesn't overlap with buttons
   position: 'relative',
   overflow: 'auto',
+  [theme.breakpoints.down('sm')]: {
+    paddingBottom: rem('150px'), // Even more padding on mobile
+  }
 }));
