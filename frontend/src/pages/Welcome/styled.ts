@@ -217,9 +217,12 @@ const StepperModal = styled(Box)(({ theme }) => ({
   transform: 'translateY(100%)',
   transition: 'transform 0.3s ease-in-out',
   zIndex: 1200,
-  padding: theme.spacing(2),
-  paddingBottom: theme.spacing(4), // Increased bottom padding
-  maxHeight: '80vh',
+  padding: theme.spacing(1.5),
+  paddingBottom: theme.spacing(2),
+  maxHeight: '85vh',
+  overflow: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
   '&.visible': {
     transform: 'translateY(0)',
   },

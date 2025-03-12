@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   Stepper,
   Typography,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -26,6 +27,7 @@ import { Pages } from '@/routes/types';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
 import Countdowns from '@/components/Countdowns';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 // Step interface
 export interface Step {
@@ -81,6 +83,14 @@ const WelcomeStepper = () => {
   const stdStepper = useRecoilValue(stdStepperState);
   const navigate = useNavigate();
   const location = useLocation();
+  const { contentHeight } = useAppLayout();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // State to track whether button should be at top or bottom
+  const [buttonAtTop, setButtonAtTop] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stepperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   // Check for step query parameter on load
   React.useEffect(() => {
@@ -156,91 +166,150 @@ const WelcomeStepper = () => {
       return newSteps;
     });
   }, []);
+  
+  // Effect to calculate available space and determine button position
+  useEffect(() => {
+    const checkAvailableSpace = () => {
+      if (containerRef.current && stepperRef.current && buttonRef.current) {
+        // Calculate if we have enough space
+        const containerHeight = containerRef.current.clientHeight;
+        const stepperHeight = stepperRef.current.clientHeight;
+        const buttonHeight = buttonRef.current.clientHeight;
+        const headerHeight = 48; // Approximate height of the compact header
+        
+        // Calculate total content height
+        const totalContentHeight = headerHeight + stepperHeight + buttonHeight + 24; // Adding some padding
+        
+        // If content is too tall for container, move button to top
+        // We're using a threshold to prevent flickering when it's close to the boundary
+        const threshold = 20; // 20px threshold
+        setButtonAtTop(totalContentHeight > containerHeight - threshold);
+      }
+    };
+    
+    // Check on mount and when dimensions might change
+    checkAvailableSpace();
+    
+    // Set up ResizeObserver to respond to size changes
+    const resizeObserver = new ResizeObserver(checkAvailableSpace);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [contentHeight, isMobile]);
 
-  return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Step title card */}
-      <Card
-        elevation={3}
+  // Render action button component that can be placed at top or bottom
+  const ActionButton = () => (
+    <Paper
+      elevation={3}
+      ref={buttonRef}
+      sx={{
+        p: { xs: 1, sm: 1.5 },
+        backgroundColor: alpha(theme.palette.background.paper, 0.15),
+        backdropFilter: 'blur(10px)',
+        borderTop: buttonAtTop ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+        borderBottom: buttonAtTop ? `1px solid ${alpha(theme.palette.common.white, 0.1)}` : 'none',
+        boxShadow: buttonAtTop 
+          ? `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`
+          : `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        mb: buttonAtTop ? 1.5 : 0,
+        mt: buttonAtTop ? 0 : 1.5,
+      }}
+    >
+      <Box
         sx={{
-          mb: 2,
-          backgroundColor: alpha(theme.palette.background.paper, 0.2),
-          backdropFilter: 'blur(10px)',
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.3)}`,
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 1.5,
+          width: '100%',
         }}
       >
-        <CardHeader
-          title={
-            <Box display='flex'>
-              <Typography
-                variant="h5"
-                color="common.white"
-                fontWeight="medium"
-                sx={{
-                  fontSize: { xs: '1rem', sm: '1.5rem', md: '1.5rem' },
-                  wordBreak: 'break-word', // Ensures text wraps properly
-                  lineHeight: 1.2,
-                }}
-              >
-                {activeStepInfo.label}
-              </Typography>
-              {/* Countdown Section - either inline or positioned to the side */}
-              <Box width={"35%"} ml='auto'>
-                <CountdownBox>
-                  <Countdowns
-                    event="Wedding"
-                    interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-                  />
-                </CountdownBox>
-              </Box>
-            </Box>
-          }
-          subheader={
-            <Typography
-              variant="subtitle1"
-              color="common.white"
-              sx={{
-                opacity: 0.8,
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-              }}
-            >
-              {format(activeStepInfo.lastDate, 'MMMM d, yyyy')}
-            </Typography>
-          }
-          sx={{ pb: 1, pt: { sm: 0, md: 1.5 } }}
-        />
-        <CardContent sx={{ pt: 0 }}>
-          <Box mt={1.5}>
-            <Typography
-              variant="body2"
-              sx={{
-                color:
-                  user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                    ? theme.palette.success.main
-                    : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                      ? theme.palette.error.main
-                      : theme.palette.warning.main,
-                fontWeight: 'medium',
-                p: 1,
-                borderRadius: 1,
-                backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                display: 'inline-block',
-              }}
-            >
-              Status: {responseStatus}
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
+        <Button
+          variant="contained"
+          color={firstIncompleteStep ? 'secondary' : 'primary'}
+          size="large"
+          fullWidth
+          onClick={handleActionButtonClick}
+          sx={{
+            fontWeight: 'medium',
+            py: { xs: 0.75, sm: 1.25 },
+            fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+            wordBreak: 'break-word',
+            whiteSpace: 'normal', // Allow text to wrap
+            lineHeight: 1.2,
+            boxShadow: `4px 4px 0px ${alpha(
+              firstIncompleteStep ? theme.palette.secondary.dark : theme.palette.primary.main,
+              0.3,
+            )}`,
+          }}
+        >
+          {actionButtonText}
+        </Button>
+      </Box>
+    </Paper>
+  );
+
+  return (
+    <Box 
+      ref={containerRef}
+      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      {/* Compact header with countdown */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 1,
+          px: 1,
+          py: 0.5,
+          borderRadius: 1,
+          backgroundColor: alpha(theme.palette.background.paper, 0.15),
+          backdropFilter: 'blur(5px)',
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          color="common.white"
+          fontWeight="medium"
+          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+        >
+          Wedding
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography
+            variant="subtitle2"
+            color="common.white"
+            sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, opacity: 0.9 }}
+          >
+            <Countdowns
+              event="Wedding"
+              interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
+            />
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Action button shows at top when needed */}
+      {buttonAtTop && <ActionButton />}
 
       {/* Stepper section */}
       <Box
+        ref={stepperRef}
         sx={{
           flexGrow: 1,
           overflow: 'auto',
-          mb: 2,
-          maxHeight: { xs: '45vh', sm: '50vh', md: '60vh' }, // Add max height to prevent overflow
+          mb: 1,
+          maxHeight: buttonAtTop 
+            ? { xs: '55vh', sm: '60vh', md: '65vh' }
+            : { xs: '60vh', sm: '65vh', md: '70vh' },
         }}
       >
         <Stepper
@@ -273,19 +342,46 @@ const WelcomeStepper = () => {
                   },
                 }}
               >
-                <Typography
-                  color="common.white"
-                  fontWeight={activeStep === step.id ? 'medium' : 'normal'}
-                >
-                  {step.label}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="common.white"
-                  sx={{ opacity: 0.7, display: 'block' }}
-                >
-                  {format(step.lastDate, 'MMMM d, yyyy')}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <Box>
+                    <Typography
+                      color="common.white"
+                      fontWeight={activeStep === step.id ? 'medium' : 'normal'}
+                    >
+                      {step.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="common.white"
+                      sx={{ opacity: 0.7, display: 'block' }}
+                    >
+                      {format(step.lastDate, 'MMMM d, yyyy')}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Show status badge only for the first step */}
+                  {step.id === 0 && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color:
+                          user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+                            ? theme.palette.success.main
+                            : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                              ? theme.palette.error.main
+                              : theme.palette.warning.main,
+                        fontWeight: 'medium',
+                        fontSize: '0.7rem',
+                        p: 0.5,
+                        borderRadius: 1,
+                        backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                        ml: 1,
+                      }}
+                    >
+                      {responseStatus}
+                    </Typography>
+                  )}
+                </Box>
               </StepLabel>
               <StepContent
                 sx={{
@@ -302,55 +398,8 @@ const WelcomeStepper = () => {
         </Stepper>
       </Box>
 
-      {/* Action buttons */}
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 1.5, sm: 2 },
-          mt: 'auto',
-          backgroundColor: alpha(theme.palette.background.paper, 0.15),
-          backdropFilter: 'blur(10px)',
-          borderTop: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          boxShadow: `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
-          // Ensure buttons are always visible and properly positioned
-          position: 'relative', // Changed from sticky for better layout
-          zIndex: 10,
-          width: '100%',
-          marginTop: 2,
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2,
-            width: '100%',
-          }}
-        >
-          <Button
-            variant="contained"
-            color={firstIncompleteStep ? 'secondary' : 'primary'}
-            size="large"
-            fullWidth
-            onClick={handleActionButtonClick}
-            sx={{
-              fontWeight: 'medium',
-              py: { xs: 1, sm: 1.5 },
-              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-              wordBreak: 'break-word',
-              whiteSpace: 'normal', // Allow text to wrap
-              lineHeight: 1.3,
-              boxShadow: `4px 4px 0px ${alpha(
-                firstIncompleteStep ? theme.palette.secondary.dark : theme.palette.primary.main,
-                0.3,
-              )}`,
-            }}
-          >
-            {actionButtonText}
-          </Button>
-        </Box>
-      </Paper>
+      {/* Action button shows at bottom by default */}
+      {!buttonAtTop && <ActionButton />}
     </Box>
   );
 };

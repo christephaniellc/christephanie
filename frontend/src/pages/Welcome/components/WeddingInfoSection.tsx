@@ -36,7 +36,7 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
         {/* Marriage announcement with rolling rings animation */}
         <MarriageAnnouncementBox>
           <Typography variant="h6" color="common.white">
-            Are {randomGettingMarriedQuote}!
+            {randomGettingMarriedQuote}!
             {/*<RollingRingsAnimation />*/}
           </Typography>
         </MarriageAnnouncementBox>
