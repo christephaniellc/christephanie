@@ -36,7 +36,13 @@ const AllergySelectionModal: React.FC<AllergySelectionModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+    const value = event.target.value;
+    // Capitalize the first letter if there's text
+    if (value.length > 0) {
+      setSearchTerm(value.charAt(0).toUpperCase() + value.slice(1));
+    } else {
+      setSearchTerm(value);
+    }
   };
   
   // Filter allergies based on search term
@@ -52,11 +58,11 @@ const AllergySelectionModal: React.FC<AllergySelectionModalProps> = ({
   const organizedAllergies = useMemo(() => {
     // First, split into selected and unselected
     const selected = filteredAllergies.filter(allergy => 
-      guest.preferences.foodAllergies.includes(allergy.allergyName)
+      guest?.preferences?.foodAllergies?.includes(allergy.allergyName) || false
     );
     
     const unselected = filteredAllergies.filter(allergy => 
-      !guest.preferences.foodAllergies.includes(allergy.allergyName)
+      !guest?.preferences?.foodAllergies?.includes(allergy.allergyName)
     );
     
     // Combine with selected ones first
@@ -153,37 +159,28 @@ const AllergySelectionModal: React.FC<AllergySelectionModalProps> = ({
           display: 'flex',
           flexWrap: 'wrap',
           gap: 1,
-          maxHeight: '50vh',
+          maxHeight: '60vh',
           overflowY: 'auto',
         }}
       >
         {searchTerm && !filteredAllergies.length ? (
           <Box width="100%" mt={2}>
-            <Typography>No matches found. Add a custom allergy below.</Typography>
+            <Typography>No matches found. Use the button below to add a custom allergy.</Typography>
           </Box>
         ) : (
-          organizedAllergies.map((allergy) => (
-            <AllergyButton
-              key={allergy.allergyName}
-              allergy={allergy}
-              guestId={guestId}
-              handleGuestFoodAllergy={handleGuestFoodAllergy}
-            />
-          ))
+          <>
+            {organizedAllergies.map((allergy) => (
+              <AllergyButton
+                key={allergy.allergyName}
+                allergy={allergy}
+                guestId={guestId}
+                handleGuestFoodAllergy={handleGuestFoodAllergy}
+              />
+            ))}
+          </>
         )}
-      </Box>
-      
-      {/* Add custom allergy section */}
-      <Box 
-        sx={{ 
-          borderTop: `1px solid ${theme.palette.divider}`, 
-          p: 2,
-          mt: 'auto'
-        }}
-      >
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Don't see your allergy? Add a custom one:
-        </Typography>
+        
+        {/* Add custom allergy button */}
         <Button 
           onClick={() => {
             if (searchTerm.trim()) {

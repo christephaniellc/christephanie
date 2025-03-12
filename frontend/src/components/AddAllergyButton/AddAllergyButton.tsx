@@ -36,7 +36,13 @@ const AddAllergyButton: React.FC<AddAllergyButtonProps> = ({ guestId }) => {
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAllergyName(event.target.value);
+    const value = event.target.value;
+    // Capitalize the first letter if there's text
+    if (value.length > 0) {
+      setAllergyName(value.charAt(0).toUpperCase() + value.slice(1));
+    } else {
+      setAllergyName(value);
+    }
   };
 
   const handleAddAllergy = () => {

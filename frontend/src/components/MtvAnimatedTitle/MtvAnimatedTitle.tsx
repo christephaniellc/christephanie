@@ -150,7 +150,7 @@ const MtvAnimatedTitle = () => {
   const isInterestedStep = Object.values(saveTheDateSteps)[tabIndex]?.label === "Interested";
   
   return (
-    <Box p={2} height={110} display="flex" alignItems="center" width={1} position="relative">
+    <Box p={2} height={80} display="flex" alignItems="center" width={1} position="relative">
       {/* Arrow pointing to typography for the "Interested" step */}
       {isInterestedStep && (
         <Box
@@ -215,6 +215,7 @@ const MtvAnimatedTitle = () => {
           //   pl: '200px',
           // },
           filter: `drop-shadow(${boxShadow})`,
+          lineHeight: '24px',
           fontSize: { xs: rem(16), sm: rem(18), md: rem(20), lg: rem(22), xl: rem(24) },
         }}
       >
