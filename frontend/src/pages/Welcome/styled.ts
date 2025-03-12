@@ -199,9 +199,8 @@ const StepperContainer = styled(Box)(({ theme }) => ({
   marginRight: 'auto',
   marginBottom: theme.spacing(2),
   minHeight: '350px', // Increased to accommodate title
-  backgroundColor: alpha(theme.palette.background.paper, 0.65),
-  backdropFilter: 'blur(8px)',
   borderRadius: theme.shape.borderRadius,
+  justifyContent: 'flex-end',
   boxShadow: `0 4px 30px ${alpha('#000', 0.1)}`,
   padding: theme.spacing(1.5),
   overflow: 'visible', // Changed from 'auto' to prevent cutting off content
