@@ -86,7 +86,8 @@ public class Function
                 patchRequest.NotificationPreference,
                 patchRequest.SleepPreference,
                 patchRequest.FoodPreference,
-                patchRequest.FoodAllergies
+                patchRequest.FoodAllergies,
+                patchRequest.AllowBetaScreenRecordings
                 );
 
             if (string.IsNullOrEmpty(command.GuestId))
