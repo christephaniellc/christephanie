@@ -84,6 +84,10 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const hasBetaTesterRole = useMemo(() => 
     isBetaTester(guest)
   , [guest?.roles]);
+
+  const isOptedInForBetaTesting  = useMemo(() =>
+    guest?.allowBetaScreenRecordings !== null && guest?.allowBetaScreenRecordings === true
+  , [guest?.allowBetaScreenRecordings]);
   
   // Beta tester state
   const [isBetaTesting, setIsBetaTesting] = useState(false);
@@ -986,24 +990,30 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
               <Box sx={{ p: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
                   <Code sx={{ fontSize: 20, mr: 1 }} color="secondary" />
-                  Beta Testing Options
+                  Beta Test Opt-In
                 </Typography>
                 <Typography variant="caption" color="text.secondary" paragraph>
-                  As a beta tester, you have access to experimental features before they're released to everyone.
+                  You have been selected to help us beta test!  <br/><br/> 
+                  Should you opt-in, you shall consent to use a screen recording system (Lucky Orange) 
+                  while using our website. <br/> 
+                  Lucky Orange only records the page within your current browser window, and no other tabs and/or browser configuration. <br/> 
+                  We will only see our website and how it's being used for our own analysis.
+                  This will help us optimize for your screen size, usage, and other tiny things. <br/>
+                  If you say yes we will owe you a cookie!
                 </Typography>
                 
                 <FormGroup>
                   <FormControlLabel
                     control={
                       <Switch 
-                        checked={isBetaTesting}
+                        checked={hasBetaTesterRole && isOptedInForBetaTesting}
                         onChange={(e) => setIsBetaTesting(e.target.checked)}
                         color="secondary"
                       />
                     }
                     label={
                       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body2">Opt-in to beta features</Typography>
+                        <Typography variant="body2">Opt-in to screen recording</Typography>
                         <Typography variant="caption" color="text.secondary">
                           Try new features before they're officially released
                         </Typography>

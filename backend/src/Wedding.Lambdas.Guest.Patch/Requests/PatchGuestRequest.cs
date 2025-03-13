@@ -27,5 +27,6 @@ namespace Wedding.Lambdas.Guest.Patch.Requests
         public SleepPreferenceEnum? SleepPreference { get; set; }
         public FoodPreferenceEnum? FoodPreference { get; set; }
         public List<string>? FoodAllergies { get; set; }
+        public bool? AllowBetaScreenRecordings { get; set; }
     }
 }

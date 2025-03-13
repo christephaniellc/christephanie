@@ -1755,6 +1755,10 @@
             },
             "nullable": true
           },
+          "allowBetaScreenRecordings": {
+            "type": "boolean",
+            "nullable": true
+          },
           "email": {
             "$ref": "#/components/schemas/MaskedVerifiedModel"
           },
@@ -1996,6 +2000,10 @@
             "items": {
               "type": "string"
             },
+            "nullable": true
+          },
+          "allowBetaScreenRecordings": {
+            "type": "boolean",
             "nullable": true
           }
         },
