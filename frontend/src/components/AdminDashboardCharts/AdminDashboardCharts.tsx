@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper } from '@mui/material';
-import { FamilyUnitViewModel, InvitationResponseEnum, RsvpEnum, SleepPreferenceEnum, FoodPreferenceEnum, AgeGroupEnum } from '@/types/api';
+import { FamilyUnitViewModel, GuestDto, InvitationResponseEnum, RsvpEnum, SleepPreferenceEnum, FoodPreferenceEnum, AgeGroupEnum } from '@/types/api';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { rgba } from 'polished';
 import { 
@@ -160,7 +160,7 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
   );
 };
 
-type AdminTab = 'overview' | 'food' | 'accommodation' | 'rsvp';
+type AdminTab = 'overview' | 'food' | 'accommodation' | 'rsvp' | 'client-info';
 
 interface AdminDashboardChartsProps {
   families: FamilyUnitViewModel[];
@@ -189,7 +189,17 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         attendingFamilies: 0,
         declinedFamilies: 0,
         pendingFamilies: 0,
-        totalFamilies: 0
+        totalFamilies: 0,
+        clientInfo: {
+          deviceTypes: [],
+          browsers: [],
+          operatingSystems: [],
+          screenSizes: [],
+          languages: [],
+          connectionTypes: []
+        },
+        totalClientInfos: 0,
+        uniqueDevices: 0
       };
     }
     // Count all guests
@@ -210,6 +220,16 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
     let otherAccommodationGuests = 0;
     let unknownAccommodationGuests = 0;
     let allergiesCount: Record<string, number> = {};
+
+    // Client info metrics
+    let deviceTypesCount: Record<string, number> = {};
+    let browsersCount: Record<string, number> = {};
+    let operatingSystemsCount: Record<string, number> = {};
+    let screenSizesCount: Record<string, number> = {};
+    let languagesCount: Record<string, number> = {};
+    let connectionTypesCount: Record<string, number> = {};
+    let totalClientInfos = 0;
+    let deviceIds = new Set<string>(); // To count unique devices (approximation using browser+os+screen)
 
     // Count families by response type
     let attendingFamilies = 0;
@@ -258,6 +278,51 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         guest.preferences?.foodAllergies?.forEach(allergy => {
           allergiesCount[allergy] = (allergiesCount[allergy] || 0) + 1;
         });
+        
+        // Process client info if available (cast to GuestDto as this property exists only in that type)
+        const guestWithClientInfo = guest as unknown as GuestDto;
+        if (guestWithClientInfo.clientInfos && guestWithClientInfo.clientInfos.length > 0) {
+          guestWithClientInfo.clientInfos.forEach(clientInfo => {
+            totalClientInfos++;
+            
+            // Track device types
+            const deviceType = clientInfo.device?.type || 'unknown';
+            deviceTypesCount[deviceType] = (deviceTypesCount[deviceType] || 0) + 1;
+            
+            // Track browsers
+            const browserName = clientInfo.browser?.name || 'unknown';
+            browsersCount[browserName] = (browsersCount[browserName] || 0) + 1;
+            
+            // Track operating systems
+            const os = clientInfo.os || 'unknown';
+            operatingSystemsCount[os] = (operatingSystemsCount[os] || 0) + 1;
+            
+            // Track screen sizes (categorize by common breakpoints)
+            const width = clientInfo.screen?.width || 0;
+            let screenCategory = 'unknown';
+            if (width > 0) {
+              if (width < 576) screenCategory = 'mobile (<576px)';
+              else if (width < 768) screenCategory = 'small tablet (576px-767px)';
+              else if (width < 992) screenCategory = 'tablet (768px-991px)';
+              else if (width < 1200) screenCategory = 'laptop (992px-1199px)';
+              else if (width < 1600) screenCategory = 'desktop (1200px-1599px)';
+              else screenCategory = 'large (1600px+)';
+            }
+            screenSizesCount[screenCategory] = (screenSizesCount[screenCategory] || 0) + 1;
+            
+            // Track languages
+            const language = clientInfo.language || 'unknown';
+            languagesCount[language] = (languagesCount[language] || 0) + 1;
+            
+            // Track connection types
+            const connectionType = clientInfo.connection?.effectiveType || 'unknown';
+            connectionTypesCount[connectionType] = (connectionTypesCount[connectionType] || 0) + 1;
+            
+            // Approximate unique devices
+            const deviceId = `${browserName}-${os}-${width}`;
+            deviceIds.add(deviceId);
+          });
+        }
       });
       
       // Count family status
@@ -304,6 +369,68 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
       { name: 'Pending', value: pendingFamilies, color: '#FFC107' }
     ];
     
+    // Prepare client info data for charts
+    const deviceTypesData = Object.entries(deviceTypesCount)
+      .map(([name, value]) => ({ 
+        name, 
+        value, 
+        color: name === 'mobile' ? '#FF9800' : name === 'desktop' ? '#2196F3' : '#9C27B0' 
+      }))
+      .sort((a, b) => b.value - a.value);
+    
+    const browsersData = Object.entries(browsersCount)
+      .map(([name, value]) => ({ 
+        name, 
+        value, 
+        color: 
+          name === 'chrome' ? '#4CAF50' : 
+          name === 'firefox' ? '#FF9800' : 
+          name === 'safari' ? '#2196F3' : 
+          name === 'edge' ? '#3F51B5' : 
+          '#9E9E9E'
+      }))
+      .sort((a, b) => b.value - a.value);
+    
+    const operatingSystemsData = Object.entries(operatingSystemsCount)
+      .map(([name, value]) => ({ 
+        name, 
+        value, 
+        color: name.includes('win') ? '#2196F3' : 
+               name.includes('mac') ? '#9C27B0' : 
+               name.includes('linux') ? '#FF9800' : 
+               name.includes('android') ? '#4CAF50' : 
+               name.includes('ios') ? '#F44336' : '#9E9E9E'
+      }))
+      .sort((a, b) => b.value - a.value);
+    
+    const screenSizesData = Object.entries(screenSizesCount)
+      .map(([name, value]) => ({ 
+        name, 
+        value, 
+        color: 
+          name.includes('mobile') ? '#F44336' : 
+          name.includes('tablet') ? '#FF9800' : 
+          name.includes('laptop') ? '#4CAF50' : 
+          name.includes('desktop') ? '#2196F3' : '#9E9E9E'
+      }))
+      .sort((a, b) => b.value - a.value);
+      
+    const languagesData = Object.entries(languagesCount)
+      .map(([name, value]) => ({ name, value, color: '#E91E63' }))
+      .sort((a, b) => b.value - a.value);
+      
+    const connectionTypesData = Object.entries(connectionTypesCount)
+      .map(([name, value]) => ({ 
+        name, 
+        value, 
+        color: 
+          name === '4g' ? '#4CAF50' : 
+          name === '3g' ? '#FF9800' : 
+          name === '2g' ? '#F44336' : 
+          name === 'slow-2g' ? '#D32F2F' : '#9E9E9E'
+      }))
+      .sort((a, b) => b.value - a.value);
+
     return {
       totalGuests,
       attendingGuests,
@@ -318,7 +445,17 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
       attendingFamilies,
       declinedFamilies,
       pendingFamilies,
-      totalFamilies: families.length
+      totalFamilies: families.length,
+      clientInfo: {
+        deviceTypes: deviceTypesData,
+        browsers: browsersData,
+        operatingSystems: operatingSystemsData,
+        screenSizes: screenSizesData,
+        languages: languagesData,
+        connectionTypes: connectionTypesData
+      },
+      totalClientInfos,
+      uniqueDevices: deviceIds.size
     };
   }, [families]);
 
@@ -428,6 +565,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
             <Tab label="Food" value="food" />
             <Tab label="Accommodation" value="accommodation" />
             <Tab label="RSVP Details" value="rsvp" />
+            <Tab label="Client Info" value="client-info" />
           </Tabs>
         </Box>
         
@@ -743,6 +881,295 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               </Box>
             </Grid>
           </Grid>
+        )}
+        
+        {activeTab === 'client-info' && (
+          <>
+            {/* Client info summary */}
+            <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+              <Grid item xs={6} sm={3}>
+                <AnimatedCounter 
+                  value={metrics.totalClientInfos} 
+                  label="Total Sessions" 
+                  color="#2196F3" 
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <AnimatedCounter 
+                  value={metrics.uniqueDevices} 
+                  label="Unique Devices" 
+                  color="#4CAF50" 
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <AnimatedCounter 
+                  value={Math.round(metrics.totalClientInfos / metrics.totalGuests * 10) / 10} 
+                  label="Sessions Per Guest" 
+                  color="#FF9800" 
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <AnimatedCounter 
+                  value={metrics.clientInfo.deviceTypes.reduce((a, b) => a + (b.name === 'mobile' ? b.value : 0), 0)} 
+                  label="Mobile Sessions" 
+                  color="#E91E63" 
+                />
+              </Grid>
+            </Grid>
+            
+            <Grid container spacing={3}>
+              {/* Device Types Chart */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ height: 300 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center'
+                    }}
+                  >
+                    Device Types
+                  </Typography>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={metrics.clientInfo.deviceTypes}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {metrics.clientInfo.deviceTypes.map((entry, index) => (
+                          <Cell key={`cell-device-${index}`} fill={entry.color} stroke="#000" strokeWidth={2} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Grid>
+              
+              {/* Browsers Chart */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ height: 300 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center'
+                    }}
+                  >
+                    Browsers
+                  </Typography>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={metrics.clientInfo.browsers.slice(0, 5)}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                      />
+                      <YAxis 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {metrics.clientInfo.browsers.map((entry, index) => (
+                          <Cell 
+                            key={`cell-browser-${index}`} 
+                            fill={entry.color} 
+                            stroke="#000"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Grid>
+              
+              {/* Operating Systems Chart */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ height: 300 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center'
+                    }}
+                  >
+                    Operating Systems
+                  </Typography>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={metrics.clientInfo.operatingSystems.slice(0, 5)}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                      />
+                      <YAxis 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {metrics.clientInfo.operatingSystems.map((entry, index) => (
+                          <Cell 
+                            key={`cell-os-${index}`} 
+                            fill={entry.color} 
+                            stroke="#000"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Grid>
+              
+              {/* Screen Sizes Chart */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ height: 300 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center'
+                    }}
+                  >
+                    Screen Sizes
+                  </Typography>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={metrics.clientInfo.screenSizes}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis 
+                        type="number" 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                      />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        tick={{ fill: 'white' }}
+                        axisLine={{ stroke: 'white' }}
+                        width={100}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {metrics.clientInfo.screenSizes.map((entry, index) => (
+                          <Cell 
+                            key={`cell-screen-${index}`} 
+                            fill={entry.color} 
+                            stroke="#000"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Grid>
+              
+              {/* Connection Speed Chart */}
+              {metrics.clientInfo.connectionTypes.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ height: 300 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 2, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center'
+                      }}
+                    >
+                      Connection Types
+                    </Typography>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={metrics.clientInfo.connectionTypes}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {metrics.clientInfo.connectionTypes.map((entry, index) => (
+                            <Cell key={`cell-connection-${index}`} fill={entry.color} stroke="#000" strokeWidth={2} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </Grid>
+              )}
+              
+              {/* Languages Chart */}
+              {metrics.clientInfo.languages.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ height: 300 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 2, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center'
+                      }}
+                    >
+                      Languages
+                    </Typography>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={metrics.clientInfo.languages.slice(0, 5)}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fill: 'white' }}
+                          axisLine={{ stroke: 'white' }}
+                        />
+                        <YAxis 
+                          tick={{ fill: 'white' }}
+                          axisLine={{ stroke: 'white' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="value" fill="#E91E63" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          </>
         )}
       </Box>
     </Box>
