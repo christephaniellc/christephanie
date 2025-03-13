@@ -39,7 +39,14 @@ function Admin() {
         // Fetch data only once when the component mounts
         const response = await refetch();
         if (response.data) {
-          setFamilies(response.data);
+          const excludedCodes = ["BAAAD", "BAAAB"];
+          
+          // Filter out families whose invitationcode is in the excludedCodes array
+          const filteredFamilies = response.data.filter(
+            family => !excludedCodes.includes(family.invitationCode)
+          );
+
+          setFamilies(filteredFamilies);
         } else if (response.error) {
           setError('Failed to fetch families');
         }
