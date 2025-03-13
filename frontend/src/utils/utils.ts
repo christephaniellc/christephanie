@@ -13,7 +13,6 @@ export const collectClientInfo = (): ClientInfoDto => {
     // Make sure we're in a browser environment
     if (typeof window === 'undefined' || typeof navigator === 'undefined') {
       return {
-        dateRecorded: new Date(),
       };
     }
 
@@ -57,7 +56,6 @@ export const collectClientInfo = (): ClientInfoDto => {
 
     // Create the client info object
     return {
-      dateRecorded: new Date(),
       os: navigator.platform,
       browser: {
         name: browserName,
@@ -81,7 +79,6 @@ export const collectClientInfo = (): ClientInfoDto => {
     console.error('Error collecting client info:', error);
     // Return minimal info in case of error
     return {
-      dateRecorded: new Date(),
       browser: {
         name: 'unknown',
         version: 'error',
