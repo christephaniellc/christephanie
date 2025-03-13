@@ -49,7 +49,7 @@ export default class Api {
     return this.patch(`/guest`, patchGuestRequest);
   }
 
-  patchUser(clientInfo: ClientInfoDto): Promise<boolean> {
+  patchUser(clientInfo: ClientInfoDto): Promise<unknown> {
     try {
       const patchUserRequest: PatchUserRequest = {
         clientInfo: clientInfo
