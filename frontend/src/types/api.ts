@@ -54,8 +54,43 @@ export enum AgeGroupEnum {
   Adult = 'Adult',
 }
 
+export interface BrowserInfoDto {
+  name?: string | null;
+  version?: string | null;
+  userAgent?: string | null;
+}
+
+export interface ClientInfoDto {
+  /** @format date-time */
+  dateRecorded?: string;
+  ipAddress?: string | null;
+  os?: string | null;
+  browser?: BrowserInfoDto;
+  screen?: ScreenInfoDto;
+  language?: string | null;
+  timeZone?: string | null;
+  device?: DeviceInfoDto;
+  connection?: ConnectionInfoDto;
+  geolocation?: GeolocationInfoDto;
+  referrer?: string | null;
+  storageSupport?: StorageSupportInfoDto;
+}
+
+export interface ConnectionInfoDto {
+  effectiveType?: string | null;
+  /** @format double */
+  downlink?: number | null;
+}
+
 export interface DeleteResponse {
   success?: boolean;
+}
+
+export interface DeviceInfoDto {
+  type?: string | null;
+  touchSupport?: boolean | null;
+  hardwareConcurrency?: string | null;
+  deviceMemory?: string | null;
 }
 
 export interface FamilyUnitDto {
@@ -96,6 +131,13 @@ export enum FoodPreferenceEnum {
   BYOB = 'BYOB',
 }
 
+export interface GeolocationInfoDto {
+  /** @format double */
+  latitude?: number | null;
+  /** @format double */
+  longitude?: number | null;
+}
+
 export interface GuestDto {
   invitationCode?: string | null;
   guestId?: string | null;
@@ -110,6 +152,7 @@ export interface GuestDto {
   phone?: VerifiedDto;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
+  clientInfos?: ClientInfoDto[] | null;
   ageGroup?: AgeGroupEnum;
   /** @format date-time */
   lastActivity?: string | null;
@@ -125,6 +168,7 @@ export interface GuestViewModel {
   additionalFirstNames?: string[] | null;
   lastName?: string | null;
   roles: RoleEnum[] | null;
+  allowBetaScreenRecordings?: boolean | null;
   email?: MaskedVerifiedModel;
   phone?: MaskedVerifiedModel;
   rsvp?: RsvpDto;
@@ -249,10 +293,16 @@ export interface PatchGuestRequest {
   sleepPreference?: SleepPreferenceEnum;
   foodPreference?: FoodPreferenceEnum;
   foodAllergies?: string[] | null;
+  allowBetaScreenRecordings?: boolean | null;
+}
+
+export interface PatchUserRequest {
+  clientInfo?: ClientInfoDto;
 }
 
 export interface PreferencesDto {
   notificationPreference?: NotificationPreferenceEnum[] | null;
+  allowBetaScreenRecordings?: boolean | null;
   sleepPreference?: SleepPreferenceEnum;
   foodPreference?: FoodPreferenceEnum;
   foodAllergies?: string[] | null;
@@ -275,6 +325,7 @@ export enum RoleEnum {
   Rehearsal = 'Rehearsal',
   Staff = 'Staff',
   Manor = 'Manor',
+  BetaTester = 'BetaTester',
   Admin = 'Admin',
 }
 
@@ -294,12 +345,26 @@ export enum RsvpEnum {
   Declined = 'Declined',
 }
 
+export interface ScreenInfoDto {
+  /** @format int32 */
+  width?: number | null;
+  /** @format int32 */
+  height?: number | null;
+  /** @format int32 */
+  colorDepth?: number | null;
+}
+
 export enum SleepPreferenceEnum {
   Unknown = 'Unknown',
   Manor = 'Manor',
   Camping = 'Camping',
   Hotel = 'Hotel',
   Other = 'Other',
+}
+
+export interface StorageSupportInfoDto {
+  cookiesEnabled?: boolean | null;
+  localStorageEnabled?: boolean | null;
 }
 
 export enum TwilioOtpStatusEnum {
@@ -884,6 +949,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/api/user/me`,
         method: 'GET',
         secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name UserPartialUpdate
+     * @request PATCH:/api/user
+     * @secure
+     */
+    userPartialUpdate: (data: PatchUserRequest, params: RequestParams = {}) =>
+      this.request<boolean | null, ProblemDetails | void>({
+        path: `/api/user`,
+        method: 'PATCH',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
