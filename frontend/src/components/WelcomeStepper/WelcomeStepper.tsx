@@ -46,9 +46,9 @@ const steps: { [step: string]: Step } = {
     id: 0,
     label: 'Save the Date',
     description: `We're getting married on the 5th of July in Lovettsville, VA. For now,
-    we just want to get an idea of who's coming. We'll send out the official invitations
+    we just want to get an idea of who's coming and a few details. We'll send out the official invitations
     once we get your interest and mailing address!`,
-    lastDate: new Date('2025-04-01'),
+    lastDate: new Date('2025-04-16'),
     stepCompleted: false,
     stepUrl: routes[Pages.SaveTheDate].path,
   },
@@ -231,6 +231,23 @@ const WelcomeStepper = () => {
           width: '100%',
         }}
       >
+       <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',  // Aligns content to the right horizontally
+          alignItems: 'center',        // Centers content vertically
+          mt: 2,
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: '0.8rem',
+          }}
+        >
+          Complete step:
+        </Typography>
+      </Box>
         <Button
           variant="contained"
           color={firstIncompleteStep ? 'secondary' : 'primary'}
@@ -264,6 +281,7 @@ const WelcomeStepper = () => {
       {/* Compact header with countdown */}
       <Box
         sx={{
+          elevation: 3,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -283,6 +301,7 @@ const WelcomeStepper = () => {
         >
           Wedding
         </Typography>
+        
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography
             variant="subtitle2"
@@ -355,7 +374,7 @@ const WelcomeStepper = () => {
                       color="common.white"
                       sx={{ opacity: 0.7, display: 'block' }}
                     >
-                      {format(step.lastDate, 'MMMM d, yyyy')}
+                      Respond by: {format(step.lastDate, 'MMMM d, yyyy')}
                     </Typography>
                   </Box>
                   

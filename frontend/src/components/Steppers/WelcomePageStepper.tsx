@@ -34,7 +34,7 @@ const steps: { [step: string]: Step } = {
     id: 0,
     label: 'Save the Date',
     description: `We're getting married on the 5th of July in Lovettsville, VA.  For now,
-    we just want to get an idea of who's coming.  We'll send out the official invitations
+    we just want to get an idea of who's coming and a few details.  We'll send out the official invitations
     once we get your interest and mailing address!`,
     lastDate: new Date('2025-04-01'),
     stepCompleted: false,
@@ -169,7 +169,7 @@ export default function WelcomePageStepper() {
                     maxWidth: {xs: '180px', sm: '280px', md: '100%'}
                   }}
                 >
-                  {step.id === 0 && step.stepCompleted ? 'Thanks for responding!' : `${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
+                  {step.id === 0 && step.stepCompleted ? 'Thanks for responding!' : `Respond by: ${format(step.lastDate, 'EEEE ' + 'MMMM do, yyyy')}`}
                 </Typography>
               }
               sx={{
