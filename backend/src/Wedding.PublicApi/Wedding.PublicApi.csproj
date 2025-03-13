@@ -7,7 +7,7 @@
 		<OutputType>Exe</OutputType>
 		<!-- <UserSecretsId>0d907149-4e74-4852-9bbe-fc894c73f717</UserSecretsId> -->
 		<!-- <AWSProjectType>Lambda</AWSProjectType> -->
-		<Platforms>x64</Platforms>
+		<!-- <Platforms>x64</Platforms> -->
 		<!--   <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS> -->
 		<!--   <DockerfileContext>.</DockerfileContext> -->
 	</PropertyGroup>

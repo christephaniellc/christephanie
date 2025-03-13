@@ -32,29 +32,6 @@ namespace Wedding.Lambdas.Authorize.Providers
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        // private string GetRequiredPermissionByEndpoint(string methodArn)
-        // {
-        //     switch (methodArn)
-        //     {
-        //         case (LambdaArns.AdminFamilyUnitCreate):
-        //         case (LambdaArns.AdminFamilyUnitUpdate):
-        //         case (LambdaArns.AdminFamilyUnitDelete):
-        //             return RoleEnum.Admin.ToString();
-        //         default:
-        //             return RoleEnum.Guest.ToString();
-        //     }
-        // }
-
-        private bool IsAuthorizedToViewThisPage(GuestDto authenticatedUser, bool requiresFamilyBelonging, string methodInvitationCode)
-        {
-            if (authenticatedUser.IsAdmin())
-            {
-                return true;
-            }
-
-            return requiresFamilyBelonging ? authenticatedUser.InvitationCode.ToUpper() == methodInvitationCode.ToUpper() : true;
-        }
-
         /// <summary>
         /// Auth0User has UserId (auth0) and GuestId (lives on AppData obj)
         ///
