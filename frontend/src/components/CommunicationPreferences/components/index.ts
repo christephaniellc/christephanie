@@ -1,4 +1,5 @@
 export * from './AgeRestrictionCard';
+export * from './AuthMismatchPlaceholder';
 export * from './BetaTesterCard';
 export * from './ComingSoonBanner';
 export * from './ContactPreferenceItem';

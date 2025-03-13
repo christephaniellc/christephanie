@@ -13,6 +13,7 @@ import {
 } from './hooks';
 import {
   AgeRestrictionCard,
+  AuthMismatchPlaceholder,
   BetaTesterCard,
   EmailDialog,
   FeatureDisabledPlaceholder,
@@ -48,7 +49,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     handleUpdateCommunicationPreference,
     handleSubmitEmail,
     handleSubmitPhone,
-    familyActions
+    familyActions,
+    user // Get the Auth0 user
   } = useCommunicationPreferences(guestId);
 
   const {
@@ -101,7 +103,16 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     forceUpdateVerificationStatus
   } = useVerification(guest, guestId, showAlertMessage);
 
+  // Check if guest.auth0Id is valid but doesn't match the current user
+  const hasAuthMismatch = guest?.auth0Id && guest.auth0Id !== "" && guest.auth0Id !== user?.sub;
+  
+  // If guest has auth0Id that doesn't match current user, show auth mismatch message
+  if (hasAuthMismatch) {
+    return <AuthMismatchPlaceholder guest={guest} />;
+  }
+
   // If not current user, don't show anything
+  // This handles cases where the guest doesn't have an auth0Id assigned yet
   if (!isCurrentUser) {
     return null;
   }
