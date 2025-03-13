@@ -17,7 +17,6 @@ export const Countdowns = ({ event = 'Wedding', interested, guestId }: {
   const { screenWidth } = useAppLayout();
   const guest = useRecoilValue(guestSelector(guestId));
   // const shortScreen = contentHeight < 800;
-  const [user] = useUser();
   const familyUnit = useRecoilValue(familyState);
   const addressValidated = familyUnit?.mailingAddress;
   const today = new Date();

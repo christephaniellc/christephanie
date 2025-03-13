@@ -4,8 +4,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useFamily } from '@/store/family';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useQueryParamInvitationCode } from '@/hooks/useQueryParamInvitationCode';
-import { useRecoilValue } from 'recoil';
-import { randomWeddingEuphemismState } from '@/store/welcome';
 import WelcomeBg1 from '@/assets/WelcomePageBackground.jpg';
 import WelcomeBg2 from '@/assets/WelcomeBg2.jpg';
 import WelcomeBg3 from '@/assets/WelcomeBg3.jpg';
@@ -19,6 +17,31 @@ import StepperSection from './components/StepperSection';
 import { IconButton, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
+const GETTING_MARRIED_EUPHEMISMS = [
+  'are getting married',
+  'are gettin\' hitched',
+  'are tying the knot',
+  'are signing a legal document to proclaim togetherness',
+  'are joining the matrimony circus',
+  'are jumping on the marriage bus',
+  'are merging our hearts, bodies, and crippling debts',
+  'are jumping into the love lagoon',
+  'are making it legal',
+  'are teaming up for some marriage stuff',
+  'are tossing our hats into the marriage ring',
+  'are marrying and stuff',
+  'are linking up legally',
+  'are signing on for the whole matrimony thing',
+  'are putting rings on it',
+  'are sittin in a tree',
+  'would love your attendance and full attention, for a few days, max.',
+  'love each other like Kanye loves Kanye',
+];
+
+// Utility functions for random selections
+const getRandomItem = (array: string[]) => 
+  array[Math.floor(Math.random() * array.length)];
+
 const Welcome: React.FC = () => {
   const { contentHeight } = useAppLayout();
   const [user, _] = useUser();
@@ -28,7 +51,6 @@ const Welcome: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentNeedsModal, setContentNeedsModal] = useState(false);
-  const randomWeddingEuphemism = useRecoilValue(randomWeddingEuphemismState);
   
   // Random background image
   const randomBgImage = useMemo(() => {
@@ -150,7 +172,7 @@ const Welcome: React.FC = () => {
 
         <Box data-section="wedding-info">
           <WeddingInfoSection 
-            randomGettingMarriedQuote={randomWeddingEuphemism}
+            randomGettingMarriedQuote={getRandomItem(GETTING_MARRIED_EUPHEMISMS)}
             user={user}
           />
         </Box>
