@@ -118,12 +118,7 @@ function SaveTheDatePage() {
               justifyContent: 'center',
               alignItems: 'flex-end',
               paddingBottom: '90px',
-              px: 3,
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 50
+              zIndex: 5000
             }}
           >
             <Button
