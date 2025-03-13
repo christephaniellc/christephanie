@@ -10,7 +10,7 @@ namespace Wedding.Abstractions.Validation.Utility
             RuleFor(invitationCode => invitationCode.ToUpper())
                 .NotEmpty()
                 .Length(5).WithMessage("Invalid code.")
-                .Matches(@"^[A-HJ-NP-TV-Y]{5}$").WithMessage("Invalid code.");
+                .Matches(@"^[A-HJ-NP-TV-Y]{5}$").WithMessage("Invalid code: '{PropertyValue}'");
         }
 
         /// <summary>
