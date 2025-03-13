@@ -28,6 +28,7 @@ import StickFigureIcon from '@/components/StickFigureIcon';
 import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
 import Countdowns from '@/components/Countdowns';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, Text3dTypography } from '../AttendanceButton/AttendanceButton';
 
 // Step interface
 export interface Step {
@@ -231,18 +232,18 @@ const WelcomeStepper = () => {
           width: '100%',
         }}
       >
-       <Box
+      <Box
         sx={{
           display: 'flex',
           justifyContent: 'flex-end',  // Aligns content to the right horizontally
           alignItems: 'center',        // Centers content vertically
-          mt: 2,
         }}
       >
         <Typography
           variant="h6"
           sx={{
             fontSize: '0.8rem',
+            textAlign: 'right'
           }}
         >
           Complete step:
@@ -269,40 +270,8 @@ const WelcomeStepper = () => {
         >
           {actionButtonText}
         </Button>
-      </Box>
-    </Paper>
-  );
-
-  return (
-    <Box 
-      ref={containerRef}
-      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-    >
-      {/* Compact header with countdown */}
-      <Box
-        sx={{
-          elevation: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 1,
-          px: 1,
-          py: 0.5,
-          borderRadius: 1,
-          backgroundColor: alpha(theme.palette.background.paper, 0.15),
-          backdropFilter: 'blur(5px)',
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          color="common.white"
-          fontWeight="medium"
-          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-        >
-          Wedding
-        </Typography>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        {/* Wedding countdown */}
+        {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography
             variant="subtitle2"
             color="common.white"
@@ -313,9 +282,16 @@ const WelcomeStepper = () => {
               interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
             />
           </Typography>
-        </Box>
+        </Box> */}
       </Box>
+    </Paper>
+  );
 
+  return (
+    <Box 
+      ref={containerRef}
+      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
       {/* Action button shows at top when needed */}
       {buttonAtTop && <ActionButton />}
 
@@ -363,42 +339,90 @@ const WelcomeStepper = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                   <Box>
-                    <Typography
+                    <StephsActualFavoriteTypography
                       color="common.white"
                       fontWeight={activeStep === step.id ? 'medium' : 'normal'}
+                      sx={{
+                        //color: theme.palette.secondary.main
+                        fontSize: '1.2rem',
+                        textShadow: '-2px -2px 0 #000000, -1px -1px 0 #000000'
+                      }}
                     >
                       {step.label}
-                    </Typography>
-                    <Typography
+                    </StephsActualFavoriteTypography>
+                    {/* <Box sx={{
+                      backgroundColor: alpha(theme.palette.common.black, 0.4),
+                      borderRadius: 1,
+                    }}> */}
+                    <BlockTextTypography
+                    // <Typography
                       variant="caption"
-                      color="common.white"
-                      sx={{ opacity: 0.7, display: 'block' }}
+                      // color="common.white"
+                      shadowColor={'#222222'} 
+                      //maxPx={0}    
+                      maxPx={2}    
+                      sx={{ 
+                        opacity: 1.0, 
+                        display: 'block', 
+                        // textShadow: '1px 0px 0 #000000', 
+                        color: theme.palette.secondary.main,
+                        pl: 0.8,
+                        pt: 0.2,
+                        pr: 0.8,
+                        borderRadius: 1,                        
+                        backgroundColor: alpha('#000000', 0.15),
+                        //backgroundColor: alpha('#FFFFFF', 0.15),
+                        backdropFilter: 'blur(80px)',
+                        // backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                      }}
                     >
-                      Respond by: {format(step.lastDate, 'MMMM d, yyyy')}
-                    </Typography>
+                      {step.label !== 'Wedding Day' ? 'Respond by: ' : ''} {format(step.lastDate, 'MMMM d, yyyy')}
+                      {/* </Typography> */}
+                    </BlockTextTypography>
+                    {/* </Box> */}
                   </Box>
                   
                   {/* Show status badge only for the first step */}
                   {step.id === 0 && (
-                    <Typography
-                      variant="body2"
+                    <Box
                       sx={{
-                        color:
-                          user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                            ? theme.palette.success.main
-                            : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                        fontWeight: 'medium',
-                        fontSize: '0.7rem',
-                        p: 0.5,
-                        borderRadius: 1,
-                        backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                        display: 'inline-flex',
+                        position: 'relative',
                         ml: 1,
                       }}
                     >
-                      {responseStatus}
-                    </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color:
+                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+                              ? theme.palette.success.main
+                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                          fontWeight: 'medium',
+                          fontSize: '0.7rem',
+                          py: 0.6,
+                          px: 1,
+                          borderRadius: '16px',
+                          borderWidth: '1.5px',
+                          borderStyle: 'solid',
+                          borderColor:
+                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+                              ? theme.palette.success.main
+                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                          backdropFilter: 'blur(8px)',
+                          boxShadow: `0 2px 6px ${alpha('#000', 0.3)}`,
+                          textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.5)',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {responseStatus}
+                      </Typography>
+                    </Box>
                   )}
                 </Box>
               </StepLabel>
@@ -408,9 +432,11 @@ const WelcomeStepper = () => {
                   pb: 2,
                 }}
               >
-                <Typography variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
+                <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
                   {step.description}
-                </Typography>
+                </BlockTextTypographyLess>
+                {/* </Text3dTypography> */}
+                {/* </BlockTextTypography> */}
               </StepContent>
             </Step>
           ))}

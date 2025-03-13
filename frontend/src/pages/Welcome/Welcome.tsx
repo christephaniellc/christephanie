@@ -28,7 +28,7 @@ const GETTING_MARRIED_EUPHEMISMS = [
   'are jumping into the love lagoon',
   'are making it legal',
   'are teaming up for some marriage stuff',
-  'are tossing our hat into the marriage ring',
+  'are tossing our hats into the marriage ring',
   'are marrying and stuff',
   'are linking up legally',
   'are signing on for the whole matrimony thing',
