@@ -117,7 +117,8 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '150px', // Increased bottom padding for mobile
+              paddingBottom: '90px',
+              px: 3,
               position: 'fixed',
               bottom: 0,
               left: 0,
