@@ -1,4 +1,4 @@
-import { Box, useMediaQuery } from '@mui/material';
+import { Box, Typography, useMediaQuery } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { stdStepperState } from '@/store/steppers/steppers';
@@ -12,6 +12,7 @@ import { AttendanceButtonStatus } from './components/AttendanceButtonStatus';
 import { MobileAttendanceView } from './components/MobileAttendanceView';
 import { useAttendanceButtonContainer } from './hooks/useAttendanceButtonContainer';
 import { InvitationResponseEnum } from '@/types/api';
+import { useAuth0 } from '@auth0/auth0-react';
 
 // Re-export typography components to maintain backwards compatibility
 export * from './components/StyledComponents';
@@ -22,14 +23,17 @@ interface AttendanceButtonProps {
 }
 
 export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
-  const { semiTransparentBackgroundColor, theme, guest } = useAttendanceButtonContainer({ guestId });
+  const { semiTransparentBackgroundColor, theme, guest } = useAttendanceButtonContainer({
+    guestId,
+  });
+  const { user: auth0User } = useAuth0();
   const stdStepper = useRecoilValue(stdStepperState);
   const isNonAttendanceStep = stdStepper.tabIndex > 0;
   const isAttendanceStep = !isNonAttendanceStep;
-  
+
   // Check if we're on a small screen
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // If we're on a small screen and not on the attendance step, use the mobile view
   const shouldUseMobileView = isMobile && isNonAttendanceStep;
 
@@ -63,7 +67,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   }
 
   // Use the original layout for medium screens and up, or for the attendance step
-  
+
   return (
     <Box
       data-testid={'attendance-button'}
@@ -87,24 +91,28 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       }}
     >
       <AttendanceButtonMain guestId={guestId} />
-      
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' },
-        width: '100%',
-        mt: { xs: isAttendanceStep && isMobile ? 2 : 0, md: 0 }
-      }}>
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          width: '100%',
+          mt: { xs: isAttendanceStep && isMobile ? 2 : 0, md: 0 },
+        }}
+      >
         <AttendanceButtonStatus guestId={guestId} />
 
-        <Box sx={{ 
-          overflowY: 'auto', 
-          ml: { xs: 0, md: '2vw' },
-          mt: { xs: isAttendanceStep && isMobile ? 2 : 0, md: 0 },
-          flexGrow: 2,
-          display: 'flex',
-          justifyContent: stdStepper.currentStep[0] === 'ageGroup' ? 'center' : 'flex-start',
-          width: '100%'
-        }}>
+        <Box
+          sx={{
+            overflowY: 'auto',
+            ml: { xs: 0, md: '2vw' },
+            mt: { xs: isAttendanceStep && isMobile ? 2 : 0, md: 0 },
+            flexGrow: 2,
+            display: 'flex',
+            justifyContent: stdStepper.currentStep[0] === 'ageGroup' ? 'center' : 'flex-start',
+            width: '100%',
+          }}
+        >
           {CurrentComponent}
         </Box>
       </Box>
