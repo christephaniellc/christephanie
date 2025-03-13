@@ -270,19 +270,6 @@ const WelcomeStepper = () => {
         >
           {actionButtonText}
         </Button>
-        {/* Wedding countdown */}
-        {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography
-            variant="subtitle2"
-            color="common.white"
-            sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, opacity: 0.9 }}
-          >
-            <Countdowns
-              event="Wedding"
-              interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-            />
-          </Typography>
-        </Box> */}
       </Box>
     </Paper>
   );
@@ -343,43 +330,30 @@ const WelcomeStepper = () => {
                       color="common.white"
                       fontWeight={activeStep === step.id ? 'medium' : 'normal'}
                       sx={{
-                        //color: theme.palette.secondary.main
                         fontSize: '1.2rem',
                         textShadow: '-2px -2px 0 #000000, -1px -1px 0 #000000'
                       }}
                     >
                       {step.label}
                     </StephsActualFavoriteTypography>
-                    {/* <Box sx={{
-                      backgroundColor: alpha(theme.palette.common.black, 0.4),
-                      borderRadius: 1,
-                    }}> */}
                     <BlockTextTypography
-                    // <Typography
                       variant="caption"
-                      // color="common.white"
                       shadowColor={'#222222'} 
-                      //maxPx={0}    
                       maxPx={2}    
                       sx={{ 
                         opacity: 1.0, 
                         display: 'block', 
-                        // textShadow: '1px 0px 0 #000000', 
                         color: theme.palette.secondary.main,
                         pl: 0.8,
                         pt: 0.2,
                         pr: 0.8,
                         borderRadius: 1,                        
                         backgroundColor: alpha('#000000', 0.15),
-                        //backgroundColor: alpha('#FFFFFF', 0.15),
                         backdropFilter: 'blur(80px)',
-                        // backgroundColor: alpha(theme.palette.background.paper, 0.5),
                       }}
                     >
                       {step.label !== 'Wedding Day' ? 'Respond by: ' : ''} {format(step.lastDate, 'MMMM d, yyyy')}
-                      {/* </Typography> */}
                     </BlockTextTypography>
-                    {/* </Box> */}
                   </Box>
                   
                   {/* Show status badge only for the first step */}
@@ -435,8 +409,6 @@ const WelcomeStepper = () => {
                 <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
                   {step.description}
                 </BlockTextTypographyLess>
-                {/* </Text3dTypography> */}
-                {/* </BlockTextTypography> */}
               </StepContent>
             </Step>
           ))}
