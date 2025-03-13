@@ -172,6 +172,12 @@ namespace Wedding.Lambdas.Guest.Patch.Handlers
                 }
             }
 
+            if (command.AllowBetaScreenRecordings != null)
+            {
+                _logger.LogInformation($"Updating guest.Preferences.AllowBetaScreenRecordings from '{existingGuestEntity.PrefAllowBetaScreenRecordings ?? false}' to '{command.AllowBetaScreenRecordings}'");
+                existingGuestEntity.PrefAllowBetaScreenRecordings = command.AllowBetaScreenRecordings;
+            }
+
             _logger.LogInformation("About to save...");
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
