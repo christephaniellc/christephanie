@@ -1,4 +1,4 @@
-import { AddressDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest } from '@/types/api';
+import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -47,6 +47,22 @@ export default class Api {
 
   patchGuestDto(patchGuestRequest: PatchGuestRequest): Promise<GuestViewModel> {
     return this.patch(`/guest`, patchGuestRequest);
+  }
+
+  patchUser(clientInfo: ClientInfoDto): Promise<boolean> {
+    try {
+      const patchUserRequest: PatchUserRequest = {
+        clientInfo: clientInfo
+      };
+      return this.patch(`/user`, patchUserRequest).catch(err => {
+        // Don't let this break the app if it fails
+        console.error('Failed to patch user with client info:', err);
+        return Promise.resolve(false);
+      });
+    } catch (err) {
+      console.error('Error preparing client info patch:', err);
+      return Promise.resolve(false);
+    }
   }
 
   getMaskedValue(guestId: string, maskedValueType: NotificationPreferenceEnum): Promise<{ value: string, verified: boolean }> {
