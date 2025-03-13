@@ -66,16 +66,11 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
       <WeddingInfoLayout>
         {/* Marriage announcement with rolling rings animation */}
         <MarriageAnnouncementBox>
-          <BlockTextTypography variant="h6" 
+          <BlockTextTypography variant="h6"
           color="secondary"
           sx={{
-            //textShadow: '2px 2px 0 #000000, -2px -2px 0 #000000, 2px 0px 0 #000000, -2px -0px 0 #000000, 0px 2px 0 #000000, 0px -2px 0 #000000,-2px 2px 0 #000000, 2px -2px 0 #000000, 1px 1px 0 #000000, -1px -1px 0 #000000, 0px 1px 0 #000000, 0px -1px 0 #000000, 1px 0px 0 #000000, -1px 0px 0 #000000, -1px 1px 0 #000000, 1px -1px 0 #000000',
-            //textShadow: '4px 4px 0 #000000, -4px 0 0 #000, 0 4px 0 #000, 0 -4px 0 #000, 4px 4px 0 #000, -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000',
-            //textShadow: '5px 5px 0 #000000, 0px 5px 0 #000000, 0px -5px 0 #000000, 5px -5px 0 #000000, 4px 4px 0 #000000, 4px -4px 0 #000000, 3px 3px 0 #000000, 3px -3px 0 #000000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
-            //textShadow: '3px 3px 0 #000000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
             fontStyle: 'normal'
-            // fontSize: { xs: '0.8rem', sm: '0.9rem' }
-          }}>
+          }} shadowColor={'#000000'} maxPx={2}>
             {randomGettingMarriedQuote}!
             {/*<RollingRingsAnimation />*/}
           </BlockTextTypography>
