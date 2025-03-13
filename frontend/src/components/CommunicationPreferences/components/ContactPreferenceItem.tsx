@@ -9,17 +9,19 @@ import {
   Chip,
   useTheme,
   alpha,
-  Switch
+  Switch,
+  Button,
+  Typography
 } from '@mui/material';
 import { 
   EmailOutlined, 
   PhoneAndroid, 
-  Edit, 
+  EditOutlined, 
   VerifiedUser, 
-  Warning, 
-  ConstructionOutlined 
+  ErrorOutline, 
+  ConstructionOutlined,
+  CheckCircleOutline
 } from '@mui/icons-material';
-import { NotificationPreferenceEnum } from '@/types/api';
 
 interface ContactPreferenceItemProps {
   value: string;
@@ -45,123 +47,185 @@ export const ContactPreferenceItem = ({
   onEdit
 }: ContactPreferenceItemProps) => {
   const theme = useTheme();
+  const isEmail = value === 'Email';
   
   const icon = useMemo(() => 
-    value === 'Email' ? <EmailOutlined /> : <PhoneAndroid />
-  , [value]);
+    isEmail ? <EmailOutlined /> : <PhoneAndroid />
+  , [isEmail]);
+  
+  // Status indicators
+  const statusColor = isEnabled
+    ? isVerified 
+      ? 'success.main'
+      : 'error.main'
+    : 'text.disabled';
+    
+  const statusIcon = isEnabled
+    ? isVerified
+      ? <CheckCircleOutline fontSize="small" color="success" />
+      : <ErrorOutline fontSize="small" color="error" />
+    : null;
+    
+  const statusText = isEnabled
+    ? isVerified
+      ? 'Verified'
+      : 'Verification needed'
+    : 'Disabled';
   
   return (
     <ListItem 
       disablePadding
-      secondaryAction={
-        <Switch
-          edge="end"
-          checked={isEnabled}
-          disabled={isPending}
-          onChange={onToggle}
-          color="secondary"
-        />
-      }
+      sx={{
+        mb: 1,
+        px: 1
+      }}
     >
-      <ListItemButton
-        onClick={onEdit}
+      <Box
         sx={{
-          border: isEnabled ? `1px solid ${theme.palette.secondary.main}` : 'none',
-          backgroundColor: isEnabled && isVerified ? alpha(theme.palette.secondary.main, 0.15) : 'transparent',
-          borderRadius: 1,
-          mx: 0.5,
-          mt: 0.5,
-          mb: needsVerification ? 0 : 0.5
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          borderRadius: 2,
+          overflow: 'hidden',
+          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+          transition: 'all 0.2s ease',
+          bgcolor: isEnabled 
+            ? isVerified 
+              ? alpha(theme.palette.success.main, 0.05)
+              : alpha(theme.palette.error.main, 0.05)
+            : alpha(theme.palette.background.paper, 0.6),
+          '&:hover': {
+            bgcolor: isEnabled 
+              ? isVerified 
+                ? alpha(theme.palette.success.main, 0.08)
+                : alpha(theme.palette.error.main, 0.08)
+              : alpha(theme.palette.background.paper, 0.8),
+            boxShadow: isEnabled ? 1 : 0
+          }
         }}
       >
-        <ListItemAvatar>
-          <Avatar 
+        {/* Card header */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 1.5,
+            pb: 1,
+            borderBottom: isEnabled ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar 
+              sx={{ 
+                width: 32, 
+                height: 32,
+                bgcolor: isEnabled 
+                  ? alpha(theme.palette.primary.main, 0.15)
+                  : alpha(theme.palette.text.secondary, 0.1),
+                color: isEnabled 
+                  ? theme.palette.primary.main
+                  : theme.palette.text.secondary,
+                mr: 1.5
+              }}
+            >
+              {icon}
+            </Avatar>
+            
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                {value}
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                {statusIcon && (
+                  <Box sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
+                    {statusIcon}
+                  </Box>
+                )}
+                <Typography 
+                  variant="caption"
+                  sx={{ 
+                    color: statusColor,
+                    fontWeight: 500
+                  }}
+                >
+                  {statusText}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+          
+          <Switch
+            checked={isEnabled}
+            disabled={isPending}
+            onChange={onToggle}
+            color={isVerified ? 'success' : 'primary'}
+            size="medium"
+          />
+        </Box>
+        
+        {/* Card content - only shown if enabled */}
+        {isEnabled && (
+          <Box 
             sx={{ 
-              bgcolor: isEnabled 
-                ? alpha(theme.palette.secondary.main, 0.15)
-                : alpha(theme.palette.text.secondary, 0.1),
-              color: isEnabled 
-                ? theme.palette.secondary.main
-                : theme.palette.text.secondary
+              p: 1.5,
+              pt: 1,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}
           >
-            {icon}
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={
-            <Box display="flex" alignItems="center">
-              <Box component="span" fontWeight={500}>
-                {value}
-              </Box>
-              <Box ml={1.5} display="flex" gap={0.5}> {/* Added spacing before badges */}
-                {isComingSoon && (
-                  <Chip
-                    label="Coming Soon"
-                    size="small"
-                    color="info"
-                    icon={<ConstructionOutlined sx={{ fontSize: '0.7rem !important' }} />}
-                    sx={{ 
-                      height: 20, 
-                      '& .MuiChip-label': { 
-                        px: 0.5, 
-                        fontSize: '0.65rem' 
-                      }
-                    }}
-                  />
-                )}
-                {isEnabled && isVerified && (
-                  <Chip
-                    label="Verified"
-                    size="small"
-                    color="success"
-                    icon={<VerifiedUser sx={{ fontSize: '0.7rem !important' }} />}
-                    sx={{ 
-                      height: 20, 
-                      '& .MuiChip-label': { 
-                        px: 0.5, 
-                        fontSize: '0.65rem' 
-                      }
-                    }}
-                  />
-                )}
-                {needsVerification && (
-                  <Chip
-                    label="Unverified"
-                    size="small"
-                    color="error"
-                    icon={<Warning sx={{ fontSize: '0.7rem !important' }} />}
-                    sx={{ 
-                      height: 20, 
-                      '& .MuiChip-label': { 
-                        px: 0.5, 
-                        fontSize: '0.65rem' 
-                      }
-                    }}
-                  />
-                )}
-              </Box>
+            <Box>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  mb: 0.5
+                }}
+              >
+                Current {isEmail ? 'email' : 'phone'}:
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 500,
+                  wordBreak: 'break-all'
+                }}
+              >
+                {contactValue || 'Not set'}
+              </Typography>
             </Box>
-          }
-          secondary={
-            <Box component="span" sx={{ fontSize: '0.75rem' }}>
-              {contactValue || 'Not set'}
-            </Box>
-          }
-        />
-        {/* Edit icon */}
-        <Edit 
-          fontSize="small" 
-          sx={{ 
-            color: alpha(theme.palette.text.primary, 0.6),
-            mr: 1.5,
-            cursor: 'pointer',
-            '&:hover': {
-              color: theme.palette.primary.main
-            }
-          }} 
-        />
-      </ListItemButton>
+            
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={onEdit}
+              startIcon={<EditOutlined />}
+              sx={{ 
+                ml: 1,
+                whiteSpace: 'nowrap',
+                minWidth: 'auto'
+              }}
+            >
+              Edit
+            </Button>
+          </Box>
+        )}
+        
+        {/* Coming soon badge - show only if relevant */}
+        {isComingSoon && (
+          <Box sx={{ position: 'absolute', top: 8, right: 56 }}>
+            <Chip
+              label="Coming Soon"
+              size="small"
+              color="info"
+              sx={{ height: 20, fontSize: '0.65rem' }}
+            />
+          </Box>
+        )}
+      </Box>
     </ListItem>
   );
 };

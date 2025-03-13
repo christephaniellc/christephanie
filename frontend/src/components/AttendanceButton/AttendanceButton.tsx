@@ -53,13 +53,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       case 'foodAllergies':
         return <FoodAllergies guestId={guestId} />;
       case 'communicationPreference':
-        return guest.auth0Id !== auth0User.sub ? (
-          <CommunicationPreferences guestId={guestId} />
-        ) : (
-          <Box height={500}>
-            <Typography>Guest must be logged in to set communication preferences</Typography>
-          </Box>
-        );
+        return <CommunicationPreferences guestId={guestId} />;
       case 'camping':
         return <CampingPreferences guestId={guestId} />;
       default:
