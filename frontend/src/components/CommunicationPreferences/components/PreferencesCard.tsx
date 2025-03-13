@@ -1,4 +1,4 @@
-import { Card, List, Divider, Box, useTheme, alpha } from '@mui/material';
+import { Card, List, Divider, Box, useTheme, alpha, Typography } from '@mui/material';
 import { ContactPreferenceItem } from './ContactPreferenceItem';
 import { VerificationSection } from './VerificationSection';
 import { ComingSoonBanner } from './ComingSoonBanner';
@@ -53,15 +53,22 @@ export const PreferencesCard = ({
   
   return (
     <Card 
-      elevation={2}
+      elevation={3}
       sx={{
-        background: alpha(theme.palette.background.paper, 0.8),
+        background: alpha(theme.palette.background.paper, 0.9),
         backdropFilter: 'blur(10px)',
         borderRadius: 2,
-        overflow: 'visible'
+        overflow: 'visible',
+        transition: 'all 0.3s ease'
       }}
     >
-      <List disablePadding>
+      {/*<Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>*/}
+      {/*  <Typography variant="subtitle1" fontWeight="500" color="primary">*/}
+      {/*    How would you like to hear from us?*/}
+      {/*  </Typography>*/}
+      {/*</Box>*/}
+      
+      <List disablePadding sx={{ pt: 1 }}>
         {contactPreferences.map((value, index) => {
           const isEmail = value === 'Email';
           const isEnabled = isEmail ? isEmailOptedIn : isTextOptedIn;
@@ -112,7 +119,9 @@ export const PreferencesCard = ({
 
       {/* SMS Verification Coming Soon Banner - when verification isn't enabled but opted in */}
       {isTextOptedIn && !phoneVerified && !isSmsVerificationEnabled && (
-        <ComingSoonBanner feature="SMS" />
+        <Box sx={{ p: 2, pt: 0 }}>
+          <ComingSoonBanner feature="SMS" />
+        </Box>
       )}
     </Card>
   );

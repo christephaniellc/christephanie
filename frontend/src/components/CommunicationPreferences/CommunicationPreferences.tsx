@@ -3,7 +3,7 @@
  * Redesigned for better mobile experience and modern MUI design
  * Only displays for the current logged-in user (with matching auth0Id)
  */
-import { Snackbar, Alert, Stack } from '@mui/material';
+import { Snackbar, Alert, Stack, Box, Paper, Container } from '@mui/material';
 import { NotificationPreferenceEnum } from '@/types/api';
 import { 
   useCommunicationPreferences, 
@@ -226,55 +226,61 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   
   // Component rendering
   return (
-    <Stack
-      spacing={2}
-      width="100%"
-      height="auto"
-      my="auto"
-      p={1}
-      px={0}
-    >
-      {/* Header section */}
-      <PreferencesHeader isUnder13={isUnder13} />
+    <Container maxWidth="lg" disableGutters>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          borderRadius: 3, 
+          overflow: 'hidden',
+          background: 'transparent'
+        }}
+      >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Stack spacing={3}>
+            {/* Header section */}
+            {/*<PreferencesHeader isUnder13={isUnder13} />*/}
 
-      {/* Main content - either Age Restriction card or Preferences */}
-      {isUnder13 ? (
-        <AgeRestrictionCard />
-      ) : (
-        <>
-          {/* Main preferences card */}
-          <PreferencesCard
-            contactPreferences={contactPreferences}
-            isEmailOptedIn={isEmailOptedIn}
-            isTextOptedIn={isTextOptedIn}
-            emailVerified={emailVerified || forceEmailVerified}
-            phoneVerified={phoneVerified || forcePhoneVerified}
-            isEmailVerificationEnabled={isEmailVerificationEnabled}
-            isSmsVerificationEnabled={isSmsVerificationEnabled}
-            guestEmailAddress={guestEmailAddress}
-            guestPhoneNumber={guestPhoneNumber}
-            needsEmailVerification={needsEmailVerification && !forceEmailVerified}
-            needsPhoneVerification={needsPhoneVerification && !forcePhoneVerified}
-            isSendingEmailCode={isSendingEmailCode}
-            isSendingPhoneCode={isSendingPhoneCode}
-            isPending={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
-            onToggleEmail={handleToggleEmail}
-            onToggleText={handleToggleText}
-            onEditEmail={handleEmailDialogOpen}
-            onEditPhone={handlePhoneDialogOpen}
-            onVerifyEmail={handleSendEmailVerificationCode}
-            onVerifyPhone={handleSendPhoneVerificationCode}
-          />
-          
-          {/* Beta Tester Section - Only show for users with BetaTester role */}
-          {hasBetaTesterRole && (
-            <BetaTesterCard 
-              isOptedIn={isOptedInForBetaTesting || isBetaTesting} 
-              onChange={setIsBetaTesting} 
-            />
-          )}
-        </>
-      )}
+            {/* Main content - either Age Restriction card or Preferences */}
+            {isUnder13 ? (
+              <AgeRestrictionCard />
+            ) : (
+              <>
+                {/* Main preferences card */}
+                <PreferencesCard
+                  contactPreferences={contactPreferences}
+                  isEmailOptedIn={isEmailOptedIn}
+                  isTextOptedIn={isTextOptedIn}
+                  emailVerified={emailVerified || forceEmailVerified}
+                  phoneVerified={phoneVerified || forcePhoneVerified}
+                  isEmailVerificationEnabled={isEmailVerificationEnabled}
+                  isSmsVerificationEnabled={isSmsVerificationEnabled}
+                  guestEmailAddress={guestEmailAddress}
+                  guestPhoneNumber={guestPhoneNumber}
+                  needsEmailVerification={needsEmailVerification && !forceEmailVerified}
+                  needsPhoneVerification={needsPhoneVerification && !forcePhoneVerified}
+                  isSendingEmailCode={isSendingEmailCode}
+                  isSendingPhoneCode={isSendingPhoneCode}
+                  isPending={familyActions.patchFamilyMutation.isPending || familyActions.getFamilyUnitQuery.isFetching}
+                  onToggleEmail={handleToggleEmail}
+                  onToggleText={handleToggleText}
+                  onEditEmail={handleEmailDialogOpen}
+                  onEditPhone={handlePhoneDialogOpen}
+                  onVerifyEmail={handleSendEmailVerificationCode}
+                  onVerifyPhone={handleSendPhoneVerificationCode}
+                />
+                
+                {/* Beta Tester Section - Only show for users with BetaTester role */}
+                {hasBetaTesterRole && (
+                  <BetaTesterCard 
+                    isOptedIn={isOptedInForBetaTesting || isBetaTesting} 
+                    onChange={setIsBetaTesting} 
+                  />
+                )}
+              </>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
 
       {/* Dialog components */}
       <EmailDialog
@@ -321,7 +327,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         open={showAlert}
         autoHideDuration={6000}
         onClose={() => setShowAlert(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
           onClose={() => setShowAlert(false)} 
@@ -331,7 +337,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
           {alertMessage}
         </Alert>
       </Snackbar>
-    </Stack>
+    </Container>
   );
 };
 
