@@ -74,14 +74,16 @@ public class Function
 
                 return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
             }
-            
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
-            var patchRequest = JsonSerializationHelper.DeserializeFromFrontend<PatchUserRequest>(request.Body);
 
             var authContext = request.GetAuthContext();
+            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            var patchRequest = JsonSerializationHelper.DeserializeFromFrontend<PatchUserRequest>(request.Body);
+            patchRequest.ClientInfo.IpAddress = authContext.IpAddress;
+
             context.Logger.LogInformation($"invitationCode: {authContext.InvitationCode}");
             context.Logger.LogInformation($"guestId: {authContext.GuestId}");
             context.Logger.LogInformation($"roles: {authContext.Roles}");
+            context.Logger.LogInformation($"ipaddress: {authContext.IpAddress}");
 
             patchRequest!.Validate(nameof(patchRequest));
 
