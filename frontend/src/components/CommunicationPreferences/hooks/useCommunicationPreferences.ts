@@ -130,6 +130,7 @@ export const useCommunicationPreferences = (guestId: string) => {
     family,
     isCurrentUser,
     isUnder13,
+    user, // Include the Auth0 user
     
     // Beta tester state
     hasBetaTesterRole,
