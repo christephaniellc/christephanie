@@ -166,6 +166,132 @@ describe('CommunicationPreferences unmasked values.wip', () => {
   });
 });
 
+describe('User conditions display.wip', () => {
+  // Test for only showing prefs for current user and beta tester features
+  
+  it('should only show preferences for current user (has auth0Id).wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        auth0Id: 'auth0|123', // Has auth0Id - is current user
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: true,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Should show preferences UI
+    expect(screen.getByText('Choose how you'd like to receive updates about the wedding.')).toBeInTheDocument();
+  });
+
+  it('should not show anything for other users (no auth0Id).wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        auth0Id: '', // Empty auth0Id - not current user
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: true,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    const { container } = renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Component should not render anything
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('should show beta testing options for users with BetaTester role.wip', () => {
+    // Override the default mock for this specific test
+    jest.resetModules();
+    
+    // Mock isBetaTester function
+    jest.mock('@/utils/roles', () => ({
+      isBetaTester: jest.fn().mockReturnValue(true)
+    }));
+    
+    jest.mock('@/store/family', () => ({
+      guestSelector: () => ({
+        guestId: '123',
+        firstName: 'Test',
+        auth0Id: 'auth0|123', // Has auth0Id - is current user
+        roles: ['Guest', 'BetaTester'],
+        preferences: {
+          notificationPreference: [NotificationPreferenceEnum.Email],
+        },
+        email: {
+          maskedValue: 't***@e******.com',
+          verified: true,
+        },
+        phone: {
+          maskedValue: '***-***-7890',
+          verified: false,
+        },
+      }),
+      useFamily: () => [
+        null,
+        {
+          updateFamilyGuestCommunicationPreference: jest.fn(),
+          updateFamilyGuestEmail: jest.fn(),
+          updateFamilyGuestPhone: jest.fn(),
+          patchFamilyMutation: { isPending: false },
+          getFamilyUnitQuery: { isFetching: false },
+        },
+      ],
+    }), { virtual: true });
+    
+    renderWithProviders(<CommunicationPreferences guestId="123" />);
+    
+    // Should show beta testing options
+    expect(screen.getByText('Beta Testing Options')).toBeInTheDocument();
+    expect(screen.getByText('Opt-in to beta features')).toBeInTheDocument();
+  });
+});
+
 describe('Verification section display conditions.wip', () => {
   // Create custom test mocks for different verification states
   
