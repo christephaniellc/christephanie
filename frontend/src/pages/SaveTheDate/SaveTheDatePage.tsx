@@ -58,7 +58,12 @@ function SaveTheDatePage() {
   };
 
   const contentHeightWithStepper = useMemo(() => {
-    return genericQuestions ? '100%' : `${contentHeight - 155}px`
+    // Use full height for generic questions to allow scrolling
+    return genericQuestions ? '100%' : `${contentHeight - 140}px`
+  }, [contentHeight, genericQuestions]);
+
+  const remainingQuestionHeight = useMemo(() => {
+    return genericQuestions ? `${contentHeight - 230}px` : 0;
   }, [contentHeight, genericQuestions]);
 
   return (
@@ -67,7 +72,7 @@ function SaveTheDatePage() {
       <Box
         component={Container}
         onMouseMove={handleMouseMove}
-        pb={10}
+        pb={genericQuestions ? 2 : 10}
         px={2}
         sx={{
           zIndex: 50,
@@ -80,7 +85,10 @@ function SaveTheDatePage() {
         }}
       >
         <MtvAnimatedTitle />
-        <ButtonsContainer>
+        <ButtonsContainer
+          sx={{
+          }}
+        >
           {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
           {!genericQuestions && family && family.guests.length === 0 && (
             <AttendanceButton guestId={'0'} />
@@ -92,7 +100,7 @@ function SaveTheDatePage() {
             family.guests.map((guest: GuestViewModel) => (
               <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
             ))}
-          {genericQuestions && <>{FamilyQueryQuestion}</>}
+          {genericQuestions && <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>}
         </ButtonsContainer>
       </Box>
       <Box
@@ -118,7 +126,6 @@ function SaveTheDatePage() {
               justifyContent: 'center',
               alignItems: 'flex-end',
               paddingBottom: '90px',
-              zIndex: 5000
             }}
           >
             <Button
@@ -133,7 +140,12 @@ function SaveTheDatePage() {
             >
               <StephsActualFavoriteTypography
                 sx={{
-                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
+                  textShadow: `3px 3px 0 ${darken(
+                    stdStepper.currentStep[1].completed
+                      ? theme.palette.success.dark
+                      : theme.palette.error.dark,
+                    0.5,
+                  )}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
                 onClick={() => {
