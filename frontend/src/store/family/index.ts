@@ -212,7 +212,8 @@ export const useFamily = () => {
   const updateFamilyGuestBetaTestOptIn = useCallback(
     (guestId: string, allowBetaScreenRecordings: boolean) => {
       patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, allowBetaScreenRecordings}})
-    }
+    },
+    [],
   );
 
   const updateFamilyGuestInterest = useCallback(
