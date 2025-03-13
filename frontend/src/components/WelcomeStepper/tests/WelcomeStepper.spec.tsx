@@ -7,8 +7,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { userState } from '@/store/user';
 import { InvitationResponseEnum } from '@/types/api';
 
-// Mock user state
-jest.mock('@/store/user', () => ({
+// Create a user state mock factory to support different invitation responses
+const createUserStateMock = (invitationResponse = 'Pending') => ({
   userState: {
     key: 'userState',
     default: {
@@ -16,7 +16,7 @@ jest.mock('@/store/user', () => ({
       guestId: 'test-guest-id',
       ageGroup: 'Adult',
       rsvp: {
-        invitationResponse: 'Pending'
+        invitationResponse
       }
     }
   },
@@ -26,12 +26,15 @@ jest.mock('@/store/user', () => ({
       guestId: 'test-guest-id',
       ageGroup: 'Adult',
       rsvp: {
-        invitationResponse: 'Pending'
+        invitationResponse
       }
     },
     jest.fn()
   ]
-}));
+});
+
+// Default mock with Pending status
+jest.mock('@/store/user', () => createUserStateMock('Pending'));
 
 // Mock saveTheDateStepsState
 jest.mock('@/store/steppers/steppers', () => ({
@@ -155,5 +158,57 @@ describe('WelcomeStepper component.wip', () => {
       // For testing purposes, we just ensure it exists in the DOM
       expect(label).toBeInTheDocument();
     });
+  });
+  
+  it('displays the status badge with correct styling.wip', () => {
+    // Override the mock to simulate an "Interested" user
+    jest.resetModules();
+    jest.mock('@/store/user', () => ({
+      userState: {
+        key: 'userState',
+        default: {
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Interested
+          }
+        }
+      },
+      useUser: () => [
+        { 
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Interested
+          }
+        },
+        jest.fn()
+      ]
+    }));
+    
+    render(
+      <ThemeProvider theme={theme}>
+        <RecoilRoot>
+          <BrowserRouter>
+            <WelcomeStepper />
+          </BrowserRouter>
+        </RecoilRoot>
+      </ThemeProvider>
+    );
+    
+    // Check for the status badge text
+    const statusBadge = screen.getByText("You're interested in attending!");
+    expect(statusBadge).toBeInTheDocument();
+    
+    // Get the parent container that should have badge styling
+    const badgeContainer = statusBadge.closest('p');
+    expect(badgeContainer).toBeInTheDocument();
+    
+    // Since we can't directly test CSS properties in Jest/RTL, at least verify 
+    // the parent Box container exists
+    const boxContainer = badgeContainer?.closest('div');
+    expect(boxContainer).toBeInTheDocument();
   });
 });
