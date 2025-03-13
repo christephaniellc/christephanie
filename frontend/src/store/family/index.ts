@@ -209,6 +209,12 @@ export const useFamily = () => {
     [],
   );
 
+  const updateFamilyGuestBetaTestOptIn = useCallback(
+    (guestId: string, allowBetaScreenRecordings: boolean) => {
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, allowBetaScreenRecordings}})
+    }
+  );
+
   const updateFamilyGuestInterest = useCallback(
     (guestId: string, interested: InvitationResponseEnum) => {
       patchFamilyGuestMutation.mutate({
@@ -285,6 +291,11 @@ export const useFamily = () => {
         display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
       },
+      communicationPreference: {
+        ...prev.communicationPreference,
+          display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+          completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
+      },
       foodPreferences: {
         ...prev.foodPreferences,
         display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
@@ -296,11 +307,6 @@ export const useFamily = () => {
         ...prev.foodAllergies,
         display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
         completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
-      },
-      communicationPreference: {
-        ...prev.communicationPreference,
-          display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
-          completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
       },
       camping: {
         ...prev.camping,

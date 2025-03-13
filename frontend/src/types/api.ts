@@ -168,6 +168,7 @@ export interface GuestViewModel {
   additionalFirstNames?: string[] | null;
   lastName?: string | null;
   roles: RoleEnum[] | null;
+  allowBetaScreenRecordings?: boolean | null;
   email?: MaskedVerifiedModel;
   phone?: MaskedVerifiedModel;
   rsvp?: RsvpDto;
@@ -292,6 +293,7 @@ export interface PatchGuestRequest {
   sleepPreference?: SleepPreferenceEnum;
   foodPreference?: FoodPreferenceEnum;
   foodAllergies?: string[] | null;
+  allowBetaScreenRecordings?: boolean | null;
 }
 
 export interface PatchUserRequest {
