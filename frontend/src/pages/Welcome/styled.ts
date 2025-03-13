@@ -77,7 +77,6 @@ const MarriageAnnouncementBox = styled(Box)(({ theme }) => ({
   justifyContent: 'flex-start',
   alignItems: 'center',
   mx: 'auto',
-  backgroundColor: alpha(theme.palette.background.paper, 0.1),
   borderRadius: theme.shape.borderRadius,
   textAlign: 'center',
   whiteSpace: 'normal',
