@@ -35,8 +35,16 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       component: null,
       display: true,
     },
-    foodPreferences: {
+    communicationPreference: {
       id: 2,
+      completed: false,
+      label: 'Would you like to receive updates about the wedding?',
+      description: '',
+      component: null,
+      display: true,
+    },
+    foodPreferences: {
+      id: 3,
       completed: true,
       label: 'What kind of life is being sacrificed for your meal?',
       description: '',
@@ -44,23 +52,15 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       display: true,
     },
     foodAllergies: {
-      id: 3,
+      id: 4,
       completed: true,
       label: 'Which of these things will kill you if you eat them?',
       description: '',
       component: null,
       display: true,
     },
-    communicationPreference: {
-      id: 5,
-      completed: false,
-      label: 'How should we contact you?',
-      description: '',
-      component: null,
-      display: true,
-    },
     camping: {
-      id: 4,
+      id: 5,
       completed: false,
       label: 'Accommodations',
       description: '(we have bathrooms!)',
@@ -68,7 +68,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       display: true,
     },
     mailingAddress: {
-      id: 5,
+      id: 6,
       completed: false,
       label: "What's your snail mail?",
       description: '',
@@ -76,7 +76,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       display: true,
     },
     comments: {
-      id: 6,
+      id: 7,
       completed: false,
       label: 'Any comments?',
       description: '',

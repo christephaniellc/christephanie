@@ -116,6 +116,9 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty(typeof(ListEnumToStringConverter<NotificationPreferenceEnum>))]
         public List<NotificationPreferenceEnum>? PrefNotification { get; set; }
 
+        [DynamoDBProperty]
+        public bool? PrefAllowBetaScreenRecordings { get; set; }
+
         [DynamoDBProperty(typeof(EnumToStringConverter<SleepPreferenceEnum>))]
         public SleepPreferenceEnum? PrefSleep { get; set; }
 
@@ -124,6 +127,10 @@ namespace Wedding.Abstractions.Entities
 
         [DynamoDBProperty]
         public List<string>? PrefFoodAllergies { get; set; }
+        #endregion
+
+        #region ClientInfo
+        public List<string>? ClientInfos { get; set; }
         #endregion
     }
 

@@ -16,9 +16,6 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useFamily } from '@/store/family';
-import AttendanceButton from '@/components/AttendanceButton';
-import AddressEnvelope from '@/components/AddressEnvelope/AddressEnvelope';
-import { ButtonsContainer } from './StyledComponents';
 import IconButton from '@mui/material/IconButton';
 import {
   Check, CheckCircleOutlineTwoTone,
@@ -32,37 +29,25 @@ import { styled } from '@mui/material/styles';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
-import StickFigureIcon from '@/components/StickFigureIcon';
 import {
   SaveTheDateStep,
   saveTheDateStepsState,
   stdStepperState,
   stdTabIndex,
 } from '@/store/steppers/steppers';
-import MinHeightTextarea from '@/components/TextArea/AutosizedTextArea';
-import FoodAllergies from '@/components/FoodPreferences';
 import { userState } from '@/store/user';
-import CommunicationPreferences from '@/components/CommunicationPreferences/CommunicationPreferences';
-import { useAuth0 } from '@auth0/auth0-react';
-import CampingPreferences from '@/components/CampingPreferences/CampingPreferences';
 import Container from '@mui/material/Container';
 
 export default function SaveTheDateStepper() {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
 
-  const [family, familyActions] = useFamily();
+  const [_, familyActions] = useFamily();
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
-  const stdStepper = useRecoilValue(stdStepperState);
 
-  const [interestedStep, setInterestedStep] = useState<number>(1);
-  const [pendingSteps, setPendingSteps] = useState<number>(1);
-  const [declinedSteps, setDeclinedSteps] = useState<number>(1);
   const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
 
-  const guests = useMemo(() => family?.guests, [family]);
 
   // Effect that runs on initial load and when the location changes
   // This will check for the step query parameter and set the active step

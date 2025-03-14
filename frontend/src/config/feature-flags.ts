@@ -12,8 +12,8 @@
 
 export const FeatureFlags = {
   // Communication preferences features
-  ENABLE_COMMUNICATION_PREFERENCES: false, // Main flag to enable/disable the entire feature
-  ENABLE_EMAIL_VERIFICATION: false,        // Enable email verification flow
+  ENABLE_COMMUNICATION_PREFERENCES: true, // Main flag to enable/disable the entire feature
+  ENABLE_EMAIL_VERIFICATION: true,        // Enable email verification flow
   ENABLE_SMS_VERIFICATION: false,          // Enable SMS verification flow
   
   // Other feature flags can be added here as needed

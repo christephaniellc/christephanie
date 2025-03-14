@@ -23,9 +23,11 @@ import { InvitationResponseEnum } from '@/types/api';
 import Button from '@mui/material/Button';
 import { rem } from 'polished';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 const AddressEnvelope: React.FC = () => {
   const [familyUnit, familyActions] = useFamily();
+  const { contentHeight } = useAppLayout();
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
   const setSecondaryAddress = useSetRecoilState(secondaryAddressState);
@@ -103,7 +105,15 @@ const AddressEnvelope: React.FC = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center">
+    <Box 
+      display="flex" 
+      flexDirection="column" 
+      alignItems="center" 
+      sx={{
+        overflowY: 'auto',
+        height: "350px",
+      }}
+    >
       {areAllGuestsDeclinedOrPending && (
         <Fade in={true} timeout={500}>
           <Paper
@@ -124,9 +134,9 @@ const AddressEnvelope: React.FC = () => {
               color="secondary"
               sx={{ mb: 2, fontFamily: 'Snowstorm, sans-serif' }}
             >
-              Would you like to receive an announcement celebrating how great and perfect our lives
-              are in every way, with pictures of us laughing in different directions at real life
-              amazing stuff?
+              Would you like to receive a wedding announcement in the mail celebrating how great 
+              and perfect our lives are in every way, with pictures of us laughing in different 
+              directions at real life amazing stuff?
             </Typography>
 
             <ButtonGroup variant="contained" color="secondary" size="large" sx={{ mt: 2 }}>
@@ -172,7 +182,7 @@ const AddressEnvelope: React.FC = () => {
         <Box
           sx={{
             minWidth: '100%',
-            width: rem(400),
+            width: rem(300),
             maxWidth: '100%',
             height: '350px',
             borderRadius: '10px',
@@ -184,6 +194,7 @@ const AddressEnvelope: React.FC = () => {
             borderImageSource: gradientBorder,
             borderImageSlice: 1,
             padding: '16px',
+            pb: 0,
             textAlign: 'center',
             // add blur to the background
             backdropFilter: 'blur(16px)',
@@ -233,7 +244,7 @@ const AddressEnvelope: React.FC = () => {
               size="small"
               onChange={(e) => setCity(e.target.value)}
             />
-            <Box width="100%" textAlign="start">
+            <Box width="100%" textAlign="start" mb={3}>
               <TextField
                 disabled={disabled}
                 value={address?.state}

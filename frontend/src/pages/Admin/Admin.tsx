@@ -8,7 +8,7 @@ import { FamilyUnitViewModel } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
-import { GuestPopperState, getRandomAxis } from './components/AdminHelpers';
+import { GuestPopperState, getRandomAxis, getTierDetails } from './components/AdminHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
 import FamilyCard from './components/FamilyCard';
 import AdminDashboardCharts from '@/components/AdminDashboardCharts';
@@ -39,7 +39,33 @@ function Admin() {
         // Fetch data only once when the component mounts
         const response = await refetch();
         if (response.data) {
-          setFamilies(response.data);
+          const excludedCodes = ["BAAAD", "BAAAB"];
+          
+          // Filter out families whose invitationcode is in the excludedCodes array
+          const filteredFamilies = response.data.filter(
+            family => !excludedCodes.includes(family.invitationCode)
+          );
+
+          // Sort families by tier priority (lower priority number = higher priority)
+          // and then alphabetically by family name within each tier
+          const sortedFamilies = [...filteredFamilies].sort((a, b) => {
+            const aTierDetails = getTierDetails(a.tier);
+            const bTierDetails = getTierDetails(b.tier);
+            
+            // First sort by tier priority
+            const tierComparison = aTierDetails.priority - bTierDetails.priority;
+            
+            // If same tier, sort alphabetically by family name
+            if (tierComparison === 0) {
+              const aName = a.unitName?.toLowerCase() || '';
+              const bName = b.unitName?.toLowerCase() || '';
+              return aName.localeCompare(bName);
+            }
+            
+            return tierComparison;
+          });
+
+          setFamilies(sortedFamilies);
         } else if (response.error) {
           setError('Failed to fetch families');
         }
@@ -133,7 +159,7 @@ function Admin() {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={3} pb={15}>
           {families.map((family) => (
             <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
               <FamilyCard 

@@ -6,6 +6,7 @@ import { userState } from '@/store/user';
 import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
 import {
   AddressDto,
+  ClientInfoDto,
   FamilyUnitDto,
   FamilyUnitViewModel,
   FindUserResponse,
@@ -14,6 +15,7 @@ import {
   PatchFamilyUnitRequest,
   PatchGuestRequest,
 } from '@/types/api';
+import { collectClientInfo } from '@/utils/utils';
 import { familyState, reorderArrayByKey } from '@/store/family';
 import { addressState } from '@/store/address';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
@@ -52,6 +54,7 @@ interface ApiContextProps {
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
+  updateClientInfo: () => Promise<void>;
 }
 
 export const ApiContext = React.createContext({} as ApiContextProps);
@@ -75,7 +78,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   useEffect(() => {
     apiRef.current = new Api(getTokenFunc);
-  }, [user]);
+    console.log('API initialized or updated');
+  }, [getTokenFunc]);
 
   const queryKey = `invitationCode=${user?.invitationCode.trim()}&firstName=${user?.firstName.trim()}`;
   const findUserIdQuery = useQuery<FindUserResponse | undefined, ApiError>({
@@ -230,6 +234,25 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     }
   };
 
+  // Update client info - non-blocking
+  const updateClientInfo = async (): Promise<void> => {
+    try {
+      if (!apiRef.current) {
+        console.log('API not initialized yet, skipping client info update');
+        return;
+      }
+      const clientInfo = collectClientInfo();
+      // Fire and forget pattern - don't block the UI
+      apiRef.current.patchUser(clientInfo)
+        .then(() => console.log('Client info updated successfully'))
+        .catch(err => console.error('Client info update failed:', err));
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Failed to update client info:', error);
+      return Promise.resolve(); // Don't break the app if this fails
+    }
+  };
+
   return (
     <ApiContext.Provider
       value={{
@@ -243,6 +266,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         patchFamilyGuestMutation,
         getMaskedValueQuery,
         getAllFamilies,
+        updateClientInfo,
       }}
     >
       {props.children}

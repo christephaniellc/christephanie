@@ -1,31 +1,26 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
-import { styled } from '@mui/material/styles';
-import { familyState, useFamily } from '@/store/family';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useFamily } from '@/store/family';
+import React, { useMemo } from 'react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
-import { GuestViewModel, InvitationResponseEnum } from '@/types/api';
+import { GuestViewModel } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
-import { ButtonBase, darken, Typography, useTheme } from '@mui/material';
+import { darken, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import {
   StephsActualFavoriteTypography,
-  StephsFavoriteTypography,
+
 } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import LoadingBox from '@/components/LoadingBox';
-import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { useNavigate } from 'react-router-dom';
-import { dark } from '@mui/material/styles/createPalette';
 import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
 import { ButtonsContainer } from '@/components/Steppers/StyledComponents';
 
@@ -63,7 +58,12 @@ function SaveTheDatePage() {
   };
 
   const contentHeightWithStepper = useMemo(() => {
-    return genericQuestions ? '100%' : `${contentHeight - 155}px`
+    // Use full height for generic questions to allow scrolling
+    return genericQuestions ? '100%' : `${contentHeight - 140}px`
+  }, [contentHeight, genericQuestions]);
+
+  const remainingQuestionHeight = useMemo(() => {
+    return genericQuestions ? `${contentHeight - 230}px` : 0;
   }, [contentHeight, genericQuestions]);
 
   return (
@@ -72,7 +72,7 @@ function SaveTheDatePage() {
       <Box
         component={Container}
         onMouseMove={handleMouseMove}
-        pb={10}
+        pb={genericQuestions ? 2 : 10}
         px={2}
         sx={{
           zIndex: 50,
@@ -85,7 +85,10 @@ function SaveTheDatePage() {
         }}
       >
         <MtvAnimatedTitle />
-        <ButtonsContainer>
+        <ButtonsContainer
+          sx={{
+          }}
+        >
           {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
           {!genericQuestions && family && family.guests.length === 0 && (
             <AttendanceButton guestId={'0'} />
@@ -97,7 +100,7 @@ function SaveTheDatePage() {
             family.guests.map((guest: GuestViewModel) => (
               <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
             ))}
-          {genericQuestions && <>{FamilyQueryQuestion}</>}
+          {genericQuestions && <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>}
         </ButtonsContainer>
       </Box>
       <Box
@@ -110,7 +113,7 @@ function SaveTheDatePage() {
           backgroundImage: `url(${ElPulpo})`,
           backgroundSize: 'cover',
           backgroundPosition: 'top',
-          height: 400,
+          height: 500, // Increased height for better mobile appearance
           zIndex: 49,
         }}
       >
@@ -122,7 +125,7 @@ function SaveTheDatePage() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-end',
-              paddingBottom: '85px'
+              paddingBottom: '90px',
             }}
           >
             <Button
@@ -137,7 +140,12 @@ function SaveTheDatePage() {
             >
               <StephsActualFavoriteTypography
                 sx={{
-                  textShadow: `3px 3px 0 ${darken(stdStepper.currentStep[1].completed ? theme.palette.success.dark : theme.palette.error.dark, 0.5)}`,
+                  textShadow: `3px 3px 0 ${darken(
+                    stdStepper.currentStep[1].completed
+                      ? theme.palette.success.dark
+                      : theme.palette.error.dark,
+                    0.5,
+                  )}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
                 onClick={() => {

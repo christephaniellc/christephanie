@@ -67,7 +67,6 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit/all` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/admin/familyunit` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Delete', method: apigateway.HttpMethod.DELETE, path: `/admin/familyunit/{invitationCode}` },
-        { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Patch', method: apigateway.HttpMethod.PATCH, path: `/familyunit`, keepWarm: true },
@@ -77,6 +76,8 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone`, keepWarm: true },
         { name: 'Wedding.Lambdas.Validate.Email', method: apigateway.HttpMethod.POST, path: `/validate/email`, keepWarm: true },
         { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true, keepWarm: true },
+        { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me`, keepWarm: true },
+        { name: 'Wedding.Lambdas.User.Patch', method: apigateway.HttpMethod.PATCH, path: `/user`},
         { name: 'Wedding.Lambdas.Helloworld', method: apigateway.HttpMethod.GET, path: `/helloworld`, unauthorized: true },
         { name: 'Wedding.Lambdas.Admin.Setup', method: apigateway.HttpMethod.PUT, path: `/admin/setup`, unauthorized: true },
       ];

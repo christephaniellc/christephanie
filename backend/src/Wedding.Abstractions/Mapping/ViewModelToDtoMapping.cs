@@ -55,6 +55,11 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.AdditionalFirstNames, opt => opt.MapFrom(src => src.AdditionalFirstNames))
                     .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
                     .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles))
+                    .ForMember(dest => dest.AllowBetaScreenRecordings, opt =>
+                    {
+                        opt.PreCondition(src => src.Preferences != null && src.Preferences.AllowBetaScreenRecordings != null);
+                        opt.MapFrom(src => src.Preferences.AllowBetaScreenRecordings ?? false);
+                    })
                     .ForMember(dest => dest.Email, opt =>
                     {
                         opt.PreCondition(src => src.Email != null && !string.IsNullOrEmpty(src.Email.Value));
@@ -104,6 +109,11 @@ namespace Wedding.Abstractions.Mapping
                                 Verified = src.Phone.Verified
                             });
                     })
+                    // .ForMember(dest => dest.Preferences.AllowBetaScreenRecordings, opt =>
+                    // {
+                    //     opt.PreCondition(src => src.AllowBetaScreenRecordings != null);
+                    //     opt.MapFrom(src => src.AllowBetaScreenRecordings ?? false);
+                    // })
                     .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.GuestNumber, opt => opt.MapFrom(src => src.GuestNumber))
                     .ForMember(dest => dest.Auth0Id, opt => opt.MapFrom(src => src.Auth0Id))

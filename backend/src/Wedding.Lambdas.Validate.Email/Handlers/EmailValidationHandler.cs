@@ -9,7 +9,6 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.ThirdParty;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Requests;
 using Wedding.Lambdas.Validate.Email.Validation;
@@ -39,11 +38,11 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
         public async Task<ValidateEmailResponse> ExecuteAsync(RegisterEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Register Email Raw Query: {JsonSerializer.Serialize(command)}");
 
             var isRateLimited = await _dynamoDbProvider.CheckRateLimitAsync(command.AuthContext.Audience,
                 command.AuthContext.IpAddress,
-                "/validate/phone",
+                "/validate/email",
                 cancellationToken: cancellationToken);
 
             if (isRateLimited)
@@ -59,21 +58,21 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             }
             catch (ValidationException ex)
             {
-                // If phone number is coming in masked, may fail validation step. Load existing phone number if masked
+                // If email number is coming in masked, may fail validation step. Load existing email if masked
                 if (ex.Message.Contains("Invalid email") && command.Email.ToLower().Contains("***"))
                 {
                     var existingGuest = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
                         command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
                     if (existingGuest == null || existingGuest.Email == null)
                     {
-                        _logger.LogWarning("Invalid email, and saved guest phone information not found.");
+                        _logger.LogWarning("Invalid email, and saved guest email information not found.");
                         throw;
                     }
 
                     var savedEmail = _mapper.Map<VerifiedDto>(existingGuest.Email).Value;
                     if (string.IsNullOrEmpty(savedEmail))
                     {
-                        _logger.LogWarning("Invalid email, and saved guest phone number not found.");
+                        _logger.LogWarning("Invalid email, and saved guest email number not found.");
                         throw;
                     }
 
@@ -96,19 +95,23 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
+            var code = VerificationCodeHelper.GenerateCode();
+            var expiry = VerificationCodeHelper.GenerateExpiry();
+
+            _logger.LogInformation($"Generated code: {code}");
+            _logger.LogInformation($"Generated expiry: {expiry}");
+
             var verifyEmail = !string.IsNullOrEmpty(existingGuestEntity.Email)
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
-                : new VerifiedDto
-                {
-                    Value = command.Email,
-                    Verified = false,
-                    VerificationCode = VerificationCodeHelper.GenerateCode(),
-                    VerificationCodeExpiration = VerificationCodeHelper.GenerateExpiry()
-                };
+                : new VerifiedDto();
+            
+            verifyEmail.Verified = false;
+            verifyEmail.VerificationCode = code;
+            verifyEmail.VerificationCodeExpiration = expiry;
 
             _logger.LogInformation($"EmailValidationHandler: Sending code '{verifyEmail.VerificationCode} to email: {verifyEmail.Value}");
 
-            existingGuestEntity.Email = verifyEmail.ToString();
+            existingGuestEntity!.Email = verifyEmail.ToString();
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
@@ -123,13 +126,13 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
         public async Task<ValidateEmailResponse> ExecuteAsync(ResendEmailCodeCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Resend Email Code Raw Query: {JsonSerializer.Serialize(command)}");
             command.Validate(nameof(command));
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
-            if (existingGuestEntity == null || string.IsNullOrEmpty(existingGuestEntity.Phone))
+            if (existingGuestEntity == null || string.IsNullOrEmpty(existingGuestEntity.Email))
             {
-                throw new InvalidOperationException($"Guest with Invitation code '{command.AuthContext.InvitationCode}' and Guest ID '{command.AuthContext.GuestId}' does not exist, or does not have saved phone number.");
+                throw new InvalidOperationException($"Guest with Invitation code '{command.AuthContext.InvitationCode}' and Guest ID '{command.AuthContext.GuestId}' does not exist, or does not have saved email number.");
             }
 
             _logger.LogInformation($"Table audience: {command.AuthContext.Audience}");
@@ -137,19 +140,20 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            var phoneNumber = JsonSerializer.Deserialize<VerifiedDto>(existingGuestEntity.Phone)?.Value;
-            if (phoneNumber == null)
+            var email = JsonSerializer.Deserialize<VerifiedDto>(existingGuestEntity.Email)?.Value;
+            if (email == null)
             {
-                throw new ValidationException($"Phone is null or empty.");
+                throw new ValidationException($"Email is null or empty.");
             }
 
-            var register = new RegisterEmailCommand(command.AuthContext, phoneNumber);
+            var register = new RegisterEmailCommand(command.AuthContext, email);
             return await ExecuteAsync(register, cancellationToken);
         }
 
         public async Task<ValidateEmailResponse> ExecuteAsync(ValidateEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Validate Email Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Validate Email Code: {command.Code}");
             command.Validate(nameof(command));
 
             var existingGuestEntity = await _dynamoDbProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, command.AuthContext.InvitationCode, command.AuthContext.GuestId, cancellationToken);
@@ -161,15 +165,15 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
             _logger.LogInformation($"Table audience: {command.AuthContext.Audience}");
             _logger.LogInformation($"Invitation code: {command.AuthContext.InvitationCode}");
             _logger.LogInformation($"Guest ID: {command.AuthContext.GuestId}");
-            _logger.LogInformation($"Provided code: {command.Code}");
             _logger.LogInformation($"Found guest: {JsonSerializer.Serialize(existingGuestEntity)}");
 
-            if (string.IsNullOrEmpty(existingGuestEntity.Phone))
+            if (string.IsNullOrEmpty(existingGuestEntity.Email))
             {
-                throw new ValidationException($"Phone is null or empty.");
+                throw new ValidationException($"Email is null or empty.");
             }
 
-            var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
+            var expectedValidation = _mapper.Map<VerifiedDto>(existingGuestEntity.Email);
+            _logger.LogInformation($"Expected validation: {JsonSerializer.Serialize(expectedValidation)}");
 
             if (expectedValidation == null)
             {
@@ -208,7 +212,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
                     VerificationCode = null,
                     VerificationCodeExpiration = null
                 };
-                existingGuestEntity.Phone = verified.ToString();
+                existingGuestEntity.Email = verified.ToString();
             
                 await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
             

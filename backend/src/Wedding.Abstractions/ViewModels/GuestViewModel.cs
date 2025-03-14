@@ -23,6 +23,8 @@ namespace Wedding.Abstractions.ViewModels
 
         public required List<RoleEnum> Roles { get; set; }
 
+        public bool? AllowBetaScreenRecordings { get; set; }
+
         public MaskedVerifiedModel? Email { get; set; }
 
         public MaskedVerifiedModel? Phone { get; set; }

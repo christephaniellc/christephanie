@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import Bureaucracy from './Bureaucracy';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { RecoilRoot } from 'recoil';
 import { BrowserRouter } from 'react-router-dom';
+import Bureaucracy from './index';
 
 // Mock the useAppLayout hook
 jest.mock('@/context/Providers/AppState/useAppLayout', () => ({
