@@ -30,14 +30,14 @@ import Box from '@mui/material/Box';
 import { AgeGroupEnum } from '@/types/api';
 
 const StickFigureIcon = ({
-                           fontSize = 'inherit',
-                           hidden = false,
-                           color,
-                           error = false,
-                           loading,
-                           rotation,
-                           ageGroup = AgeGroupEnum.Under21,
-                         }: StickFigureIconProps) => {
+  fontSize = 'inherit',
+  hidden = false,
+  color,
+  error = false,
+  loading,
+  rotation,
+  ageGroup = AgeGroupEnum.Under21,
+}: StickFigureIconProps) => {
   const StickFigureAdults = [
     DirectionsRun,
     DirectionsWalk,
@@ -64,10 +64,12 @@ const StickFigureIcon = ({
     AirlineSeatReclineExtra,
   ];
 
-  const [stickFigureIndex] = useState(rotation || Math.floor(Math.random() * StickFigureAdults.length));
+  const [stickFigureIndex] = useState(Math.floor(Math.random() * StickFigureAdults.length));
 
   const RandomStickFigure = StickFigureAdults[stickFigureIndex];
-  const [stickFigureRotation, setStickFigureRotation] = useState(Number.isFinite(rotation) && rotation || Math.floor(Math.random() * 360));
+  const [stickFigureRotation, setStickFigureRotation] = useState(
+    (Number.isFinite(rotation) && rotation) || Math.floor(Math.random() * 360),
+  );
 
   // We'll use a ref to store the timer ID so we can cancel it on unmount or
   // when `loading` changes.
@@ -77,10 +79,11 @@ const StickFigureIcon = ({
     if (loading) {
       // Schedule rotation updates on the exact second boundary.
       const scheduleNextRotation = () => {
-
         timerRef.current = window.setTimeout(() => {
           // Update rotation on the exact second
-          setStickFigureRotation((prevRotation) => (prevRotation - Math.floor(Math.random() * 180)) % 360);
+          setStickFigureRotation(
+            (prevRotation) => (prevRotation - Math.floor(Math.random() * 180)) % 360,
+          );
 
           // Schedule the next rotation update
           scheduleNextRotation();
@@ -108,32 +111,41 @@ const StickFigureIcon = ({
       {ageGroup === AgeGroupEnum.Adult && (
         <Liquor sx={{ fontSize: 16, alignSelf: 'flex-start', opacity: hidden ? 0 : 1 }} />
       )}
-      {ageGroup !== AgeGroupEnum.Baby && <RandomStickFigure
-        elevation={10}
-        fontSize={fontSize}
-                                                            sx={{
-                                                              color: error ? 'error' : color,
-                                                              // width: hidden ? 0 : 'auto',
-                                                              transform: `rotateY(${stickFigureRotation}deg) rotateX(${stickFigureRotation}deg) rotateZ(${stickFigureRotation}deg)`,
-                                                              boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)',
-                                                              transition: 'all 1s ease-in-out',
-                                                              opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
-                                                              // visibility: hidden ? 'hidden' : 'visible',
-                                                            }} />}
-      {ageGroup === AgeGroupEnum.Baby && <BabyChangingStation fontSize={fontSize} sx={{
-        color: error ? 'error' : color,
-        // width: hidden ? 0 : 'auto',
-        transition: 'all 1s ease-in-out',
-        opacity: hidden ? 0 : 1,
-        // visibility: hidden ? 'hidden' : 'visible',
-      }} />}
+      {ageGroup !== AgeGroupEnum.Baby && (
+        <RandomStickFigure
+          elevation={10}
+          fontSize={fontSize}
+          sx={{
+            color: error ? 'error' : color,
+            // width: hidden ? 0 : 'auto',
+            transform: `rotateY(${stickFigureRotation}deg) rotateX(${stickFigureRotation}deg) rotateZ(${stickFigureRotation}deg)`,
+            boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)',
+            transition: 'all 1s ease-in-out',
+            opacity: hidden ? 0 : ageGroup === AgeGroupEnum.Under13 ? 0.2 : 1,
+            // visibility: hidden ? 'hidden' : 'visible',
+          }}
+        />
+      )}
+      {ageGroup === AgeGroupEnum.Baby && (
+        <BabyChangingStation
+          fontSize={fontSize}
+          sx={{
+            color: error ? 'error' : color,
+            // width: hidden ? 0 : 'auto',
+            transition: 'all 1s ease-in-out',
+            opacity: hidden ? 0 : 1,
+            // visibility: hidden ? 'hidden' : 'visible',
+          }}
+        />
+      )}
       {ageGroup === AgeGroupEnum.Under13 && (
-        <RandomStickFigure fontSize="small"
-                           sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? 'red' : color }} />
+        <RandomStickFigure
+          fontSize="small"
+          sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? 'red' : color }}
+        />
       )}
     </Box>
   );
-
 };
 
 export default StickFigureIcon;
