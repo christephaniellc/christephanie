@@ -1,7 +1,7 @@
 import { useContext, useRef } from 'react';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/Api';
-import { FamilyUnitViewModel, RoleEnum, InvitationResponseEnum, SleepPreferenceEnum, FoodPreferenceEnum, RsvpEnum, AgeGroupEnum } from '@/types/api';
+import { FamilyUnitViewModel, RoleEnum, InvitationResponseEnum, SleepPreferenceEnum, FoodPreferenceEnum, RsvpEnum, AgeGroupEnum, FamilyUnitDto } from '@/types/api';
 import { ApiContext } from '@/context/ApiContext';
 import { mockFamilyUnitDto } from '../../test-utils/mockResponses';
 
@@ -125,7 +125,7 @@ export const useAdminQueries = () => {
   const getAllFamiliesRef = useRef(apiContext.getAllFamilies);
   
   // Query to get all families with mock data until API endpoint is ready
-  const getAllFamiliesQuery = useQuery<FamilyUnitViewModel[], ApiError>({
+  const getAllFamiliesQuery = useQuery<FamilyUnitDto[], ApiError>({
     queryKey: ['getAllFamilies'],
     queryFn: () => getAllFamiliesRef.current(),
     refetchOnMount: false,
@@ -134,7 +134,7 @@ export const useAdminQueries = () => {
     staleTime: Infinity, // Prevent automatic refetching
     gcTime: Infinity, // Keep the data cached indefinitely 
     enabled: false, // Don't fetch on component mount, we'll do it manually
-  }) as UseQueryResult<FamilyUnitViewModel[], ApiError>;
+  }) as UseQueryResult<FamilyUnitDto[], ApiError>;
 
   return {
     getAllFamiliesQuery,
