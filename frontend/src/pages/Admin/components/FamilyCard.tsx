@@ -11,13 +11,13 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import PeopleIcon from '@mui/icons-material/People';
 
-import { FamilyUnitViewModel } from '@/types/api';
+import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
 import { getFamilyStatusColor } from './AdminHelpers';
 import GuestStatusItem from './GuestStatusItem';
 import TierSquare from './TierSquare';
 
 interface FamilyCardProps {
-  family: FamilyUnitViewModel;
+  family: FamilyUnitDto;
   onGuestClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
 }
 
