@@ -917,7 +917,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               </Grid>
             </Grid>
             
-            <Grid container spacing={3}>
+            <Grid container spacing={8}>
               {/* Device Types Chart */}
               <Grid item xs={12} md={6}>
                 <Box sx={{ height: 300 }}>

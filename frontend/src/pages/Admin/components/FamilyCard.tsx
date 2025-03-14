@@ -14,6 +14,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { FamilyUnitViewModel } from '@/types/api';
 import { getFamilyStatusColor } from './AdminHelpers';
 import GuestStatusItem from './GuestStatusItem';
+import TierSquare from './TierSquare';
 
 interface FamilyCardProps {
   family: FamilyUnitViewModel;
@@ -66,6 +67,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
       <CardHeader
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TierSquare tier={family.tier} />
             <Typography variant="h6" component="div">
               {family.unitName}
             </Typography>
