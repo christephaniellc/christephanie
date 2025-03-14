@@ -29,8 +29,7 @@ jest.mock('@/store/family', () => ({
       isIdle: true,
       isPending: false,
       error: null
-    },
-    updateFamilyGuestInterest: jest.fn()
+    }
   }]
 }));
 

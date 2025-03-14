@@ -20,7 +20,6 @@ jest.mock('../hooks/useAttendanceButtonMain', () => ({
         error: null
       }
     },
-    handleClick: jest.fn(),
     guest: {
       guestId: 'test-guest-id',
       rsvp: {
@@ -40,6 +39,15 @@ jest.mock('@/components/AttendanceButton/ClientSideImportedComponents/LargeAtten
   default: ({ guestId }: { guestId: string }) => <div data-testid="large-attendance-button">LargeAttendanceButton</div>
 }));
 
+jest.mock('@/components/WeddingAttendanceRadios', () => ({
+  __esModule: true,
+  default: ({ guestId, initialModalOpen, onModalClose }) => (
+    <div data-testid="wedding-attendance-radios">
+      {initialModalOpen ? 'Modal Open' : 'Modal Closed'}
+    </div>
+  )
+}));
+
 describe('AttendanceButtonMain', () => {
   it('renders the component correctly', () => {
     const theme = createTheme();
@@ -54,5 +62,27 @@ describe('AttendanceButtonMain', () => {
     
     expect(screen.getByRole('button')).toBeInTheDocument();
     expect(screen.getByTestId('large-attendance-button')).toBeInTheDocument();
+    
+    // Modal should not be rendered initially
+    expect(screen.queryByTestId('wedding-attendance-radios')).not.toBeInTheDocument();
+  });
+  
+  it('shows the modal when clicked', () => {
+    const theme = createTheme();
+    
+    render(
+      <RecoilRoot>
+        <ThemeProvider theme={theme}>
+          <AttendanceButtonMain guestId="test-guest-id" />
+        </ThemeProvider>
+      </RecoilRoot>
+    );
+    
+    // Click the button to open modal
+    fireEvent.click(screen.getByRole('button'));
+    
+    // Modal should be rendered now
+    expect(screen.getByTestId('wedding-attendance-radios')).toBeInTheDocument();
+    expect(screen.getByText('Modal Open')).toBeInTheDocument();
   });
 });

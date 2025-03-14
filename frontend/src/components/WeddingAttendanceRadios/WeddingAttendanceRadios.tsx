@@ -1,22 +1,22 @@
 import * as React from 'react';
 
-import { 
-  Box, 
-  Typography, 
-  Modal, 
-  IconButton, 
-  Paper, 
-  useTheme, 
+import {
+  Box,
+  Typography,
+  Modal,
+  IconButton,
+  Paper,
+  useTheme,
   useMediaQuery,
   Slider,
   SliderThumb,
-  Button
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { useMemo, useState, useEffect } from 'react';
 
-import { AgeGroupEnum, InvitationResponseEnum } from '@/types/api';
+import { AgeGroupEnum, InvitationResponseEnum, RsvpEnum } from '@/types/api';
 
 import StickFigureIcon from '@/components/StickFigureIcon';
 
@@ -52,7 +52,7 @@ const AttendanceSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-thumb': {
     height: 27,
     width: 27,
-    backgroundColor: `rgba(255, 255, 255,.98)`,
+    backgroundColor: `rgba(255, 255, 255, .98)`,
     backdropFilter: 'blur(80)',
     border: `1px solid ${theme.palette.secondary.main}`,
     '&:hover': {
@@ -74,30 +74,46 @@ const AttendanceSlider = styled(Slider)(({ theme }) => ({
   },
 }));
 
-const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
+interface WeddingAttendanceRadiosProps {
+  guestId: string;
+  initialModalOpen?: boolean;
+  onModalClose?: () => void;
+}
+
+const WeddingAttendanceRadios = ({ 
+  guestId, 
+  initialModalOpen = false, 
+  onModalClose 
+}: WeddingAttendanceRadiosProps) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(initialModalOpen);
   const { boxShadow } = useBoxShadow();
-  
+
   const guest = useRecoilValue(guestSelector(guestId));
   const family = useRecoilValue(familyState);
   const [, familyActions] = useFamily();
   const interested = guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
   const { user } = useAuth0();
   const isMe = guest?.auth0Id === user?.sub;
-  
-  // For attendance status slider
-  const [attendanceStatus, setAttendanceStatus] = useState<InvitationResponseEnum>(interested);
-  
+
+  // For invitation response slider
+  const [invitationResponse, setInvitationResponse] = useState<InvitationResponseEnum>(
+    guest?.rsvp?.invitationResponse || InvitationResponseEnum.Pending,
+  );
+
   useEffect(() => {
     if (guest?.rsvp?.invitationResponse) {
-      setAttendanceStatus(guest.rsvp.invitationResponse);
+      setInvitationResponse(guest.rsvp.invitationResponse);
     }
   }, [guest]);
-  
-  const attendanceStatusIndex = useMemo(() => {
-    switch (attendanceStatus) {
+
+  // Set modal open state when prop changes
+  useEffect(() => {
+    setModalOpen(initialModalOpen);
+  }, [initialModalOpen]);
+
+  const invitationResponseIndex = useMemo(() => {
+    switch (invitationResponse) {
       case InvitationResponseEnum.Interested:
         return 2;
       case InvitationResponseEnum.Declined:
@@ -106,10 +122,10 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
       default:
         return 1;
     }
-  }, [attendanceStatus]);
-  
-  // Translate slider value to attendance status
-  const getAttendanceStatusFromIndex = (index: number): InvitationResponseEnum => {
+  }, [invitationResponse]);
+
+  // Translate slider value to invitation response status
+  const getInvitationResponseFromIndex = (index: number): InvitationResponseEnum => {
     switch (index) {
       case 2:
         return InvitationResponseEnum.Interested;
@@ -120,12 +136,12 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
         return InvitationResponseEnum.Pending;
     }
   };
-  
+
   // Marks for the slider
-  const attendanceMarks = [
-    { label: 'No Thanks', value: 0 },
-    { label: 'Undecided', value: 1 },
-    { label: 'Attending', value: 2 },
+  const invitationResponseMarks = [
+    { label: 'Declined.', value: 0 },
+    { label: 'Undecided?', value: 1 },
+    { label: 'Interested!', value: 2 },
   ];
 
   const interestedOptions = [
@@ -141,6 +157,222 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
     () => interestedOptions[Math.floor(Math.random() * interestedOptions.length)],
     [interested],
   );
+
+  // For testing response formatting in different scenarios - remove in production
+  const testResponseScenarios = () => {
+    // This function won't execute in production, it's just to verify sentence formatting
+    const scenarios = [];
+
+    // Test scenario 1: You're attending one event
+    const scenario1 = createMockResponse({
+      isMe: true,
+      foodPreference: 'Omnivore',
+      ageGroup: AgeGroupEnum.Adult,
+      mailingAddress: { uspsVerified: true },
+      allergies: ['peanuts'],
+      interested: InvitationResponseEnum.Interested,
+      weddingRsvp: RsvpEnum.Attending,
+      sleepPreference: 'Camping'
+    });
+    scenarios.push({ name: "You attending one event", result: scenario1 });
+
+    // Test scenario 2: They're attending multiple events
+    const scenario2 = createMockResponse({
+      isMe: false,
+      foodPreference: 'Vegan',
+      ageGroup: AgeGroupEnum.Under21,
+      mailingAddress: { uspsVerified: true },
+      allergies: ['peanuts', 'gluten', 'dairy'],
+      interested: InvitationResponseEnum.Interested,
+      weddingRsvp: RsvpEnum.Attending,
+      rehearsalRsvp: RsvpEnum.Attending,
+      sleepPreference: 'Hotel'
+    });
+    scenarios.push({ name: "They attending multiple events", result: scenario2 });
+
+    // Test scenario 3: You're skipping some events, attending others
+    const scenario3 = createMockResponse({
+      isMe: true,
+      foodPreference: 'Vegetarian',
+      ageGroup: AgeGroupEnum.Adult,
+      mailingAddress: { uspsVerified: false },
+      allergies: [],
+      interested: InvitationResponseEnum.Interested,
+      weddingRsvp: RsvpEnum.Attending,
+      rehearsalRsvp: RsvpEnum.Declined,
+      sleepPreference: 'Other'
+    });
+    scenarios.push({ name: "You mixed attendance", result: scenario3 });
+
+    // Test scenario 4: They're pending
+    const scenario4 = createMockResponse({
+      isMe: false,
+      foodPreference: 'Unknown',
+      ageGroup: AgeGroupEnum.Baby,
+      mailingAddress: null,
+      allergies: [],
+      interested: InvitationResponseEnum.Pending,
+      sleepPreference: null
+    });
+    scenarios.push({ name: "They pending", result: scenario4 });
+
+    console.log("Response Formatting Test Scenarios:", scenarios);
+    return scenarios;
+  };
+
+  // Helper function for test scenarios
+  const createMockResponse = (args: any) => {
+    const mockGuest = {
+      preferences: {
+        foodPreference: args.foodPreference,
+        foodAllergies: args.allergies,
+        sleepPreference: args.sleepPreference
+      },
+      ageGroup: args.ageGroup,
+      rsvp: {
+        invitationResponse: args.interested,
+        wedding: args.weddingRsvp,
+        rehearsalDinner: args.rehearsalRsvp,
+        fourthOfJuly: args.fourthRsvp
+      }
+    };
+
+    const mockFamily = {
+      mailingAddress: args.mailingAddress,
+      invitationResponseNotes: args.notes
+    };
+
+    // Logic similar to the real response function
+    let response = '';
+
+    // Food preference
+    if (mockGuest.preferences.foodPreference) {
+      const foodText = {
+        'Unknown': 'A carnivorous',
+        'Vegan': 'A vegan',
+        'Vegetarian': 'A mostly-plant-eating',
+        'Omnivore': 'An equal-opportunity-eating',
+        'BYOB': 'A tiny'
+      }[mockGuest.preferences.foodPreference] || '';
+
+      response += foodText;
+    }
+
+    // Age group
+    if (mockGuest.ageGroup) {
+      const ageText = {
+        [AgeGroupEnum.Adult]: 'adult',
+        [AgeGroupEnum.Under21]: 'under 21 adult',
+        [AgeGroupEnum.Under13]: 'dependent',
+        [AgeGroupEnum.Baby]: 'baby'
+      }[mockGuest.ageGroup] || '';
+
+      response = `${response} ${ageText}`;
+    }
+
+    // Mailing address
+    if (!mockFamily.mailingAddress) {
+      response += ` who hasn't shared their address yet.`;
+    } else {
+      response += `, whose address we have`;
+      if (mockFamily.mailingAddress.uspsVerified) {
+        response += ` verified.`;
+      }
+    }
+
+    // Allergies
+    if (args.allergies && args.allergies.length > 0) {
+      const formattedAllergies = args.allergies.length === 1
+        ? args.allergies[0]
+        : args.allergies.length === 2
+          ? `${args.allergies[0]} or ${args.allergies[1]}`
+          : args.allergies.slice(0, -1).join(', ') + `, or ${args.allergies[args.allergies.length - 1]}`;
+
+      response += ` ${args.isMe ? 'You' : 'They'} will literally or figuratively die if ${
+        args.isMe ? 'you' : 'they'
+      } consume ${formattedAllergies}.`;
+    }
+
+    // Early returns for declined/pending
+    if (args.interested === InvitationResponseEnum.Declined) {
+      return (response += ` ${args.isMe ? "You've" : "They've"} declined the invitation.`);
+    }
+
+    if (args.interested === InvitationResponseEnum.Pending) {
+      return (response += ` ... still thinking about it for some reason.`);
+    }
+
+    // Format lists
+    const formatList = (items) => {
+      if (items.length === 0) return "";
+      if (items.length === 1) return items[0];
+      if (items.length === 2) return `${items[0]} and ${items[1]}`;
+
+      const allButLast = items.slice(0, -1).join(', ');
+      return `${allButLast}, and ${items[items.length - 1]}`;
+    };
+
+    // Only process events if the guest is interested
+    if (args.interested === InvitationResponseEnum.Interested) {
+      const attendingEvents = [];
+      const skippingEvents = [];
+
+      if (args.weddingRsvp) {
+        if (args.weddingRsvp === RsvpEnum.Attending) {
+          attendingEvents.push(`the wedding`);
+        } else if (args.weddingRsvp === RsvpEnum.Declined) {
+          skippingEvents.push(`the wedding`);
+        }
+      }
+
+      if (args.rehearsalRsvp) {
+        if (args.rehearsalRsvp === RsvpEnum.Attending) {
+          attendingEvents.push(`the rehearsal dinner`);
+        } else if (args.rehearsalRsvp === RsvpEnum.Declined) {
+          skippingEvents.push(`the rehearsal dinner`);
+        }
+      }
+
+      // Add attending events if any
+      if (attendingEvents.length > 0) {
+        response += ` ${args.isMe ? "You're" : "They're"} attending ${formatList(attendingEvents)}.`;
+      }
+
+      // Add skipping events if any
+      if (skippingEvents.length > 0) {
+        response += ` ${args.isMe ? "You're" : "They're"} skipping ${formatList(skippingEvents)}.`;
+      }
+    }
+
+    // Event handling is done within the interested conditional block above
+
+    // Sleep preference
+    if (mockGuest.preferences.sleepPreference) {
+      let sleepText = '';
+      switch (mockGuest.preferences.sleepPreference) {
+        case 'Hotel':
+          sleepText = `${args.isMe ? "You're" : "They're"} staying at a hotel.`;
+          break;
+        case 'Camping':
+          sleepText = `${args.isMe ? "You're" : "They're"} camping with us!`;
+          break;
+        case 'Other':
+          sleepText = `${args.isMe ? "You have your" : "They have their"} sleep situation figured out already.`;
+          break;
+      }
+
+      if (sleepText) {
+        response += ` ${sleepText}`;
+      }
+    }
+
+    // Notes
+    if (mockFamily.invitationResponseNotes) {
+      response += ` ${args.isMe ? "You" : "Someone in your party"} left us some feedback.`;
+    }
+
+    return response;
+  };
 
   const response = useMemo(() => {
     let overallResponse = ``;
@@ -197,22 +429,75 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
       }
     }
 
-    const setAllergyResponse =
+    const hasAllergies =
       guest.preferences.foodAllergies !== null &&
       guest.preferences.foodAllergies !== undefined &&
       guest.preferences.foodAllergies.length > 0 &&
       guest.preferences.foodAllergies.join('') !== '' &&
       guest.preferences.foodAllergies.join('') !== 'none';
 
-    if (setAllergyResponse) {
+    if (hasAllergies) {
+      // Format allergies nicely
+      const formattedAllergies = guest.preferences.foodAllergies.length === 1
+        ? guest.preferences.foodAllergies[0]
+        : guest.preferences.foodAllergies.length === 2
+          ? `${guest.preferences.foodAllergies[0]} or ${guest.preferences.foodAllergies[1]}`
+          : guest.preferences.foodAllergies.slice(0, -1).join(', ') + `, or ${guest.preferences.foodAllergies[guest.preferences.foodAllergies.length - 1]}`;
+
       overallResponse += ` ${isMe ? 'You' : 'They'} will literally or figuratively die if ${
         isMe ? 'you' : 'they'
-      } consume ${guest.preferences.foodAllergies.join(' or ')}.`;
+      } consume ${formattedAllergies}.`;
     }
 
-    if (interested === 'Declined') return (overallResponse += ` That's their problem now.`);
+    if (interested === 'Declined') return (overallResponse += ` ${isMe ? "You've" : "They've"} declined the invitation.`);
 
     if (interested === 'Pending') return (overallResponse += ` ${interestedOption}`);
+
+    // Add event responses differently based on invitation response status
+
+    // Function to properly format a list with commas and "and"
+    const formatList = (items: string[]) => {
+      if (items.length === 0) return "";
+      if (items.length === 1) return items[0];
+      if (items.length === 2) return `${items[0]} and ${items[1]}`;
+
+      const allButLast = items.slice(0, -1).join(', ');
+      return `${allButLast}, and ${items[items.length - 1]}`;
+    };
+
+    // Handle different invitation responses with different narratives
+    if (interested === InvitationResponseEnum.Interested) {
+      const attendingEvents = [];
+      const skippingEvents = [];
+
+      // Wedding RSVP
+      if (guest.rsvp?.wedding) {
+        if (guest.rsvp.wedding === RsvpEnum.Attending) {
+          attendingEvents.push(`the wedding`);
+        } else if (guest.rsvp.wedding === RsvpEnum.Declined) {
+          skippingEvents.push(`the wedding`);
+        }
+      }
+
+      // Rehearsal Dinner RSVP
+      if (guest.rsvp?.rehearsalDinner) {
+        if (guest.rsvp.rehearsalDinner === RsvpEnum.Attending) {
+          attendingEvents.push(`the rehearsal dinner`);
+        } else if (guest.rsvp.rehearsalDinner === RsvpEnum.Declined) {
+          skippingEvents.push(`the rehearsal dinner`);
+        }
+      }
+
+      // Add attending events if any
+      if (attendingEvents.length > 0) {
+        overallResponse += ` ${isMe ? "You're" : "They're"} attending ${formatList(attendingEvents)}.`;
+      }
+
+      // Add skipping events if any
+      if (skippingEvents.length > 0) {
+        overallResponse += ` ${isMe ? "You're" : "They're"} skipping ${formatList(skippingEvents)}.`;
+      }
+    }
 
     if (guest.preferences.sleepPreference) {
       const sleepPreferenceVerb = () => {
@@ -220,25 +505,28 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
           case 'Unknown':
             return ``;
           case 'Hotel':
-            return `${isMe ? "You're" : "They're"} staying at a hotel. `;
+            return `${isMe ? "You're" : "They're"} staying at a hotel.`;
           case 'Camping':
-            return `${isMe ? "You're" : "They're"} camping w/ us! `;
+            return `${isMe ? "You're" : "They're"} camping with us!`;
           case 'Other':
-            return 'have their sleep situation figured out already. ';
+            return `${isMe ? "You have your" : "They have their"} sleep situation figured out already.`;
           default:
             return '';
         }
       };
 
-      overallResponse += ` ${sleepPreferenceVerb()}`;
+      const sleepText = sleepPreferenceVerb();
+      if (sleepText) {
+        overallResponse += ` ${sleepText}`;
+      }
     }
 
     if (family.invitationResponseNotes) {
-      overallResponse += `You left us some feedback.`;
+      overallResponse += ` ${isMe ? "You" : "Someone in your party"} left us some feedback.`;
     }
 
     return overallResponse;
-  }, [interested, guest, family, isMe]);
+  }, [interested, guest, family, isMe, interestedOption]);
 
   const queryKey = ['updateFamilyUnit'];
   const queryClient = useQueryClient();
@@ -246,28 +534,30 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
   const declined = useMemo(() => interested === 'Declined', [interested]);
 
   const handleOpenModal = () => {
-    if (isMobile) {
-      setModalOpen(true);
-    }
+    setModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
+    // Call the parent's onModalClose callback if provided
+    if (onModalClose) {
+      onModalClose();
+    }
   };
 
+  // Content box - no longer clickable
   const contentBox = (
     <Box
       display={'flex'}
       alignItems="center"
       width="100%"
       sx={{
-        fontSize: {xs: modalOpen ? '1rem' : '0.65rem', md: '0.6rem'},
+        fontSize: { xs: modalOpen ? '1rem' : '0.65rem', md: modalOpen ? '1.2rem' : '0.6rem' },
         overflowY: 'visible',
         wordBreak: 'break-word',
-        lineHeight: {xs: modalOpen ? 1.5 : 1.3, md: 'inherit'}, 
+        lineHeight: { xs: modalOpen ? 1.5 : 1.3, md: 'inherit' },
         height: 'auto',
         color: 'white',
-        cursor: isMobile ? 'pointer' : 'default',
       }}
     >
       {declined && (
@@ -286,9 +576,8 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
 
   return (
     <>
-      <Box onClick={handleOpenModal}>
-        {contentBox}
-      </Box>
+      {/* Just render the content box without the click handler */}
+      <Box>{contentBox}</Box>
 
       <Modal
         open={modalOpen}
@@ -328,27 +617,29 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
           >
             <CloseIcon />
           </IconButton>
-          
+
           <Box sx={{ mb: 2 }}>
             <Typography variant="h5" component="h2" color="primary" gutterBottom>
               {isMe ? 'Your' : `${guest?.firstName}'s`} Details
             </Typography>
           </Box>
-          
-          <Box sx={{ 
-            p: 2, 
-            backgroundColor: 'rgba(255,255,255,0.1)', 
-            borderRadius: 2,
-            mb: 2 
-          }}>
+
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderRadius: 2,
+              mb: 2,
+            }}
+          >
             {contentBox}
           </Box>
-          
-          {/* Attendance Status Slider */}
+
+          {/* Invitation Response Slider */}
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
             <Box
               display="flex"
-              flexWrap='wrap'
+              flexWrap="wrap"
               sx={{
                 p: 2,
                 height: '100%',
@@ -364,15 +655,15 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
                 borderRadius: 2,
               }}
             >
-              <Typography 
-                variant="body1" 
-                width={'100%'} 
-                color='secondary' 
+              <Typography
+                variant="body1"
+                width={'100%'}
+                color="secondary"
                 sx={{ textAlign: 'center', mb: 2 }}
               >
-                {isMe ? 'Your' : `${guest?.firstName}'s`} RSVP Status
+                {isMe ? 'Your' : `${guest?.firstName}'s`} Invitation Response
               </Typography>
-              
+
               <Button
                 component={Paper}
                 elevation={10}
@@ -388,7 +679,7 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
                   justifyContent: 'center',
                   position: 'relative',
                   width: { xs: '180px', sm: 180 },
-                  minWidth: { xs: '180px', sm: 180 }, 
+                  minWidth: { xs: '180px', sm: 180 },
                   maxWidth: { xs: '180px', sm: 180 },
                   boxShadow: boxShadow,
                   backgroundColor: 'transparent',
@@ -414,52 +705,69 @@ const WeddingAttendanceRadios = ({ guestId }: { guestId: string }) => {
                     defaultValue={1}
                     max={2}
                     min={0}
-                    value={attendanceStatusIndex}
-                    marks={attendanceMarks}
+                    value={invitationResponseIndex}
+                    marks={invitationResponseMarks}
                     slots={{
                       thumb: AttendanceThumbComponent,
                     }}
                     onChange={(_, value) => {
-                      setAttendanceStatus(getAttendanceStatusFromIndex(value as number));
+                      setInvitationResponse(getInvitationResponseFromIndex(value as number));
                     }}
                     onChangeCommitted={(_event, value) => {
-                      const newStatus = getAttendanceStatusFromIndex(value as number);
-                      familyActions.updateFamilyGuestInterest(guestId, newStatus);
+                      const newStatus = getInvitationResponseFromIndex(value as number);
+                      familyActions.patchFamilyGuestMutation.mutate({
+                        updatedGuest: {
+                          guestId,
+                          invitationResponse: newStatus,
+                        },
+                      });
                     }}
                   />
                 </Box>
               </Button>
-              
-              <Typography 
-                variant="caption" 
-                color='secondary'
-                sx={{ 
+
+              <Typography
+                variant="caption"
+                color="secondary"
+                sx={{
                   width: '100%',
                   textAlign: 'center',
-                  mt: 2
+                  mt: 2,
                 }}
               >
-                {attendanceStatus === InvitationResponseEnum.Interested && "Looking forward to seeing you!"}
-                {attendanceStatus === InvitationResponseEnum.Declined && "Sorry you can't make it."}
-                {attendanceStatus === InvitationResponseEnum.Pending && "Still thinking about it?"}
+                {invitationResponse === InvitationResponseEnum.Interested && family.mailingAddress &&
+                  (family.mailingAddress.uspsVerified
+                    ? 'Huzzah! '
+                    : 'Please verify your address so we can mail your RSVP!')}
+                {invitationResponse === InvitationResponseEnum.Interested && !family.mailingAddress &&
+                  'Please provide your address so we can mail your RSVP!'}
+                {invitationResponse === InvitationResponseEnum.Declined && 'We understand, but we\'ll miss you!'}
+                {invitationResponse === InvitationResponseEnum.Pending &&
+                  'Take your time deciding - but not too much time!'}
               </Typography>
             </Box>
           </Box>
-          
+
           <Box sx={{ mt: 4 }}>
-            <Typography 
-              variant="h6" 
+            <Typography
+              variant="h6"
               color={
-                attendanceStatus === InvitationResponseEnum.Interested ? "secondary" : 
-                attendanceStatus === InvitationResponseEnum.Declined ? "error" : 
-                "info.main"
-              } 
+                invitationResponse === InvitationResponseEnum.Interested
+                  ? 'secondary'
+                  : invitationResponse === InvitationResponseEnum.Declined
+                    ? 'error'
+                    : 'info.main'
+              }
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
-              {attendanceStatus === InvitationResponseEnum.Interested && `Looking forward to seeing ${isMe ? 'you' : 'them'} at the wedding!`}
-              {attendanceStatus === InvitationResponseEnum.Declined && `We&apos;ll miss ${isMe ? 'you' : 'them'} at the wedding.`}
-              {attendanceStatus === InvitationResponseEnum.Pending && `Waiting for ${isMe ? 'your' : 'their'} decision.`}
+              {invitationResponse === InvitationResponseEnum.Interested &&
+                (family.mailingAddress?.uspsVerified
+                  ? 'Your RSVP will be mailed soon!'
+                  : 'Please give us your address in the next step or so, depending on where we put it last, so we can mail your RSVP!')}
+              {invitationResponse === InvitationResponseEnum.Declined && 'Wow.'}
+              {invitationResponse === InvitationResponseEnum.Pending &&
+                'Still thinking about it? Really?!'}
             </Typography>
           </Box>
         </Paper>
