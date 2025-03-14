@@ -25,6 +25,7 @@ namespace Wedding.Lambdas.Guest.Patch.Commands
         List<NotificationPreferenceEnum>? NotificationPreference = null,
         SleepPreferenceEnum? SleepPreference = null,
         FoodPreferenceEnum? FoodPreference = null,
-        List<string>? FoodAllergies = null) 
+        List<string>? FoodAllergies = null,
+        bool? AllowBetaScreenRecordings = null) 
         : IWeddingCommand;
 }

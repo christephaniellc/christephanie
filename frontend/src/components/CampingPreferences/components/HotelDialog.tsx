@@ -64,11 +64,12 @@ const HotelDialog: React.FC<HotelDialogProps> = ({ open, onClose, hotelOptions }
         sx: {
           backgroundColor: 'rgba(30, 30, 35, 0.9)',
           backgroundImage: 'none',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)',
+          overflow: 'hidden',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${theme.palette.secondary.main}`,
           borderRadius: 2,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-          overflow: 'hidden'
+          boxShadow: `0 8px 32px rgba(0,0,0,0.5)`,
         }
       }}
     >
@@ -80,7 +81,7 @@ const HotelDialog: React.FC<HotelDialogProps> = ({ open, onClose, hotelOptions }
             width: '100%',
             position: 'sticky',
             top: 0,
-            zIndex: 100,
+            zIndex: 150,
             backgroundColor: theme.palette.background.paper,
           }}
         >

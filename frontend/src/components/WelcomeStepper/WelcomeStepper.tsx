@@ -1,18 +1,19 @@
-import React, { useMemo } from 'react';
-import { 
-  Box, 
-  Button, 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  Divider, 
-  Paper, 
-  Step, 
-  StepContent, 
-  StepLabel, 
-  Stepper, 
-  Typography, 
-  useTheme 
+import React, { useMemo, useEffect, useState, useRef } from 'react';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Paper,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -24,6 +25,10 @@ import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/stepper
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import StickFigureIcon from '@/components/StickFigureIcon';
+import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
+import Countdowns from '@/components/Countdowns';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, Text3dTypography } from '../AttendanceButton/AttendanceButton';
 
 // Step interface
 export interface Step {
@@ -42,9 +47,9 @@ const steps: { [step: string]: Step } = {
     id: 0,
     label: 'Save the Date',
     description: `We're getting married on the 5th of July in Lovettsville, VA. For now,
-    we just want to get an idea of who's coming. We'll send out the official invitations
+    we just want to get an idea of who's coming and a few details. We'll send out the official invitations
     once we get your interest and mailing address!`,
-    lastDate: new Date('2025-04-01'),
+    lastDate: new Date('2025-04-16'),
     stepCompleted: false,
     stepUrl: routes[Pages.SaveTheDate].path,
   },
@@ -60,7 +65,10 @@ const steps: { [step: string]: Step } = {
   wedding: {
     id: 2,
     label: 'Wedding Day',
-    description: `July 5th, 2025! See you in ${differenceInDays(new Date('2025-07-05'), new Date())} days!`,
+    description: `July 5th, 2025! See you in ${differenceInDays(
+      new Date('2025-07-05'),
+      new Date(),
+    )} days!`,
     lastDate: new Date('2025-07-06'),
     stepCompleted: true,
     stepUrl: routes[Pages.Profile].path,
@@ -76,6 +84,14 @@ const WelcomeStepper = () => {
   const stdStepper = useRecoilValue(stdStepperState);
   const navigate = useNavigate();
   const location = useLocation();
+  const { contentHeight } = useAppLayout();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // State to track whether button should be at top or bottom
+  const [buttonAtTop, setButtonAtTop] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stepperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   // Check for step query parameter on load
   React.useEffect(() => {
@@ -89,13 +105,15 @@ const WelcomeStepper = () => {
 
   // Check if user is attending and all steps are completed
   const isUserAttending = useMemo(() => {
-    return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested || 
-          user.rsvp?.wedding === RsvpEnum.Attending;
+    return (
+      user.rsvp?.invitationResponse === InvitationResponseEnum.Interested ||
+      user.rsvp?.wedding === RsvpEnum.Attending
+    );
   }, [user.rsvp]);
 
   // Check if all steps are completed
   const allStepsCompleted = useMemo(() => {
-    return Object.values(stdSteps).every(step => step.completed);
+    return Object.values(stdSteps).every((step) => step.completed);
   }, [stdSteps]);
 
   // Find the first incomplete step
@@ -109,15 +127,15 @@ const WelcomeStepper = () => {
 
   // Determine response status message
   const responseStatus = useMemo(() => {
-    if (!user.rsvp) return "Please respond";
-    
+    if (!user.rsvp) return 'Please respond';
+
     switch (user.rsvp.invitationResponse) {
       case InvitationResponseEnum.Interested:
         return "You're interested in attending!";
       case InvitationResponseEnum.Declined:
         return "You've declined to attend";
       default:
-        return "Please respond";
+        return 'Please respond';
     }
   }, [user.rsvp]);
 
@@ -149,72 +167,151 @@ const WelcomeStepper = () => {
       return newSteps;
     });
   }, []);
+  
+  // Effect to calculate available space and determine button position
+  useEffect(() => {
+    const checkAvailableSpace = () => {
+      if (containerRef.current && stepperRef.current && buttonRef.current) {
+        // Calculate if we have enough space
+        const containerHeight = containerRef.current.clientHeight;
+        const stepperHeight = stepperRef.current.clientHeight;
+        const buttonHeight = buttonRef.current.clientHeight;
+        const headerHeight = 48; // Approximate height of the compact header
+        
+        // Calculate total content height
+        const totalContentHeight = headerHeight + stepperHeight + buttonHeight + 24; // Adding some padding
+        
+        // If content is too tall for container, move button to top
+        // We're using a threshold to prevent flickering when it's close to the boundary
+        const threshold = 20; // 20px threshold
+        setButtonAtTop(totalContentHeight > containerHeight - threshold);
+      }
+    };
+    
+    // Check on mount and when dimensions might change
+    checkAvailableSpace();
+    
+    // Set up ResizeObserver to respond to size changes
+    const resizeObserver = new ResizeObserver(checkAvailableSpace);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [contentHeight, isMobile]);
 
-  return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Step title card */}
-      <Card 
-        elevation={3} 
-        sx={{ 
-          mb: 2, 
-          backgroundColor: alpha(theme.palette.background.paper, 0.2),
-          backdropFilter: 'blur(10px)',
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.3)}`
+  // Render action button component that can be placed at top or bottom
+  const ActionButton = () => (
+    <Paper
+      elevation={3}
+      ref={buttonRef}
+      sx={{
+        p: { xs: 1, sm: 1.5 },
+        backgroundColor: alpha(theme.palette.background.paper, 0.15),
+        backdropFilter: 'blur(10px)',
+        borderTop: buttonAtTop ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+        borderBottom: buttonAtTop ? `1px solid ${alpha(theme.palette.common.white, 0.1)}` : 'none',
+        boxShadow: buttonAtTop 
+          ? `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`
+          : `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        mb: buttonAtTop ? 1.5 : 0,
+        mt: buttonAtTop ? 0 : 1.5,
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 1.5,
+          width: '100%',
         }}
       >
-        <CardHeader
-          title={
-            <Typography variant="h5" color="common.white" fontWeight="medium">
-              {activeStepInfo.label}
-            </Typography>
-          }
-          subheader={
-            <Typography variant="subtitle1" color="common.white" sx={{ opacity: 0.8 }}>
-              {format(activeStepInfo.lastDate, 'MMMM d, yyyy')}
-            </Typography>
-          }
-          sx={{ pb: 1 }}
-        />
-        <CardContent sx={{ pt: 0 }}>
-          <Box mt={1.5}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: user.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
-                  ? theme.palette.success.main 
-                  : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                    ? theme.palette.error.main
-                    : theme.palette.warning.main,
-                fontWeight: 'medium',
-                p: 1,
-                borderRadius: 1,
-                backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                display: 'inline-block'
-              }}
-            >
-              Status: {responseStatus}
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',  // Aligns content to the right horizontally
+          alignItems: 'center',        // Centers content vertically
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: '0.8rem',
+            textAlign: 'right'
+          }}
+        >
+          Complete step:
+        </Typography>
+      </Box>
+        <Button
+          variant="contained"
+          color={firstIncompleteStep ? 'secondary' : 'primary'}
+          size="large"
+          fullWidth
+          onClick={handleActionButtonClick}
+          sx={{
+            fontWeight: 'medium',
+            py: { xs: 0.75, sm: 1.25 },
+            fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+            wordBreak: 'break-word',
+            whiteSpace: 'normal', // Allow text to wrap
+            lineHeight: 1.2,
+            boxShadow: `4px 4px 0px ${alpha(
+              firstIncompleteStep ? '#000000' : theme.palette.primary.main,
+              0.3,
+            )}`,
+          }}
+        >
+          {actionButtonText}
+        </Button>
+      </Box>
+    </Paper>
+  );
+
+  return (
+    <Box 
+      ref={containerRef}
+      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      {/* Action button shows at top when needed */}
+      {buttonAtTop && <ActionButton />}
 
       {/* Stepper section */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', mb: 2 }}>
-        <Stepper 
-          activeStep={activeStep} 
-          orientation="vertical" 
-          sx={{ 
+      <Box
+        ref={stepperRef}
+        sx={{
+          flexGrow: 1,
+          overflow: 'auto',
+          mb: 1,
+          background: alpha(theme.palette.background.paper, 0.8),
+          pl: '7px',
+          pr: '12px',
+          borderRadius: '3px',
+          maxHeight: buttonAtTop 
+            ? { xs: '55vh', sm: '60vh', md: '65vh' }
+            : { xs: '60vh', sm: '65vh', md: '70vh' },
+        }}
+      >
+        <Stepper
+          activeStep={activeStep}
+          orientation="vertical"
+          sx={{
             '& .MuiStepConnector-line': {
               minHeight: { xs: 24, sm: 32 },
-              borderLeftColor: alpha(theme.palette.common.white, 0.3)
+              borderLeftColor: alpha(theme.palette.common.white, 0.3),
             },
             '& .MuiStepLabel-iconContainer': {
               bgcolor: alpha(theme.palette.background.paper, 0.2),
               backdropFilter: 'blur(5px)',
               borderRadius: '50%',
-              p: 0.5
-            }
+              p: 0.5,
+            },
           }}
         >
           {Object.entries(rsvpSteps).map(([key, step]) => (
@@ -222,89 +319,109 @@ const WelcomeStepper = () => {
               <StepLabel
                 icon={<StickFigureIcon rotation={0} fontSize="medium" ageGroup={user.ageGroup} />}
                 onClick={() => navigate(step.stepUrl || routes[Pages.SaveTheDate].path)}
-                sx={{ 
+                sx={{
                   cursor: 'pointer',
                   '&:hover': {
                     textDecoration: 'underline',
                     backgroundColor: alpha(theme.palette.common.white, 0.1),
                     borderRadius: 1,
-                  }
+                  },
                 }}
               >
-                <Typography color="common.white" fontWeight={activeStep === step.id ? 'medium' : 'normal'}>
-                  {step.label}
-                </Typography>
-                <Typography 
-                  variant="caption" 
-                  color="common.white" 
-                  sx={{ opacity: 0.7, display: 'block' }}
-                >
-                  {format(step.lastDate, 'MMMM d, yyyy')}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <Box>
+                    <StephsActualFavoriteTypography
+                      color="common.white"
+                      fontWeight={activeStep === step.id ? 'medium' : 'normal'}
+                      sx={{
+                        fontSize: '1.2rem',
+                        textShadow: '-2px -2px 0 #000000, -1px -1px 0 #000000'
+                      }}
+                    >
+                      {step.label}
+                    </StephsActualFavoriteTypography>
+                    {/* <BlockTextTypography */ }
+                    <Typography
+                      variant="caption"
+                      //shadowColor={'#222222'} 
+                      //maxPx={2}    
+                      sx={{ 
+                        opacity: 1.0, 
+                        display: 'block', 
+                        color: theme.palette.secondary.main,
+                        // pl: 0.8,
+                        // pt: 0.2,
+                        // pr: 0.8,
+                        // borderRadius: 1,                        
+                        // backgroundColor: alpha('#000000', 0.15),
+                        // backdropFilter: 'blur(80px)',
+                      }}
+                    >
+                      {step.label !== 'Wedding Day' ? 'Respond by: ' : ''} {format(step.lastDate, 'MMMM d, yyyy')}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Show status badge only for the first step */}
+                  {step.id === 0 && (
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        position: 'relative',
+                        ml: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color:
+                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+                              ? theme.palette.success.main
+                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                          fontWeight: 'medium',
+                          fontSize: '0.7rem',
+                          py: 0.6,
+                          px: 1,
+                          borderRadius: '16px',
+                          borderWidth: '1.5px',
+                          borderStyle: 'solid',
+                          borderColor:
+                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+                              ? theme.palette.success.main
+                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                          backdropFilter: 'blur(8px)',
+                          boxShadow: `0 2px 6px ${alpha('#000', 0.3)}`,
+                          textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.5)',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {responseStatus}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               </StepLabel>
               <StepContent
                 sx={{
                   borderLeft: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
-                  pb: 2
+                  pb: 2,
                 }}
               >
-                <Typography 
-                  variant="body2" 
-                  color="common.white" 
-                  sx={{ mb: 2, opacity: 0.9 }}
-                >
+                <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
                   {step.description}
-                </Typography>
+                </BlockTextTypographyLess>
               </StepContent>
             </Step>
           ))}
         </Stepper>
       </Box>
 
-      {/* Action buttons */}
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 2, 
-          mt: 'auto',
-          backgroundColor: alpha(theme.palette.background.paper, 0.15),
-          backdropFilter: 'blur(10px)',
-          borderTop: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          boxShadow: `0 -4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
-          // Ensure buttons are always visible and properly positioned
-          position: 'sticky',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          width: '100%'
-        }}
-      >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2,
-            width: '100%'
-          }}
-        >
-          <Button
-            variant="contained"
-            color={firstIncompleteStep ? 'secondary' : "primary"}
-            size="large"
-            fullWidth
-            onClick={handleActionButtonClick}
-            sx={{
-              fontWeight: 'medium',
-              py: 1.5,
-              boxShadow: `4px 4px 0px ${alpha(firstIncompleteStep ? theme.palette.secondary.dark : theme.palette.primary.main, 0.3)}`
-            }}
-          >
-            {actionButtonText}
-          </Button>
-        </Box>
-      </Paper>
+      {/* Action button shows at bottom by default */}
+      {!buttonAtTop && <ActionButton />}
     </Box>
   );
 };

@@ -10,9 +10,9 @@ export const ButtonsContainer = styled(Box)(({ theme }) => ({
   gap: 16,
   justifyContent: 'center',
   width: '100%',
-  maxHeight: '100%',
-  height: '100%',
-  paddingBottom: rem('40px'),
+  height: 'auto',
+  maxHeight: '100%', // Let parent container control the height constraint
   position: 'relative',
-  overflow: 'auto',
+  overflowY: 'auto',
+  overflowX: 'hidden',
 }));

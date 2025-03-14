@@ -25,6 +25,7 @@ export class HostedZoneStack extends cdk.Stack {
         this.fullDomainName = `${props.env.subDomainPrefix}.${domainName}`;
         this.frontendUrl = this.fullDomainName;             // E.g., dev.wedding.christephanie.com
         this.apiUrl = `${apiRoute}.${this.fullDomainName}`; // E.g., fianceapi.dev.wedding.christephanie.com
+        console.log(`Base domain name: ${domainName}`);
         console.log(`Full domain name: ${this.fullDomainName}`);
         console.log(`API url: ${this.apiUrl}`);
         console.log(`Predefined hosted zone ID: ${props.env.existingHostedZoneId}`);

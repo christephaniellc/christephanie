@@ -23,10 +23,10 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
       authorizationParams={{
         ...providerConfig.authorizationParams,
         state: JSON.stringify({
-          guest_id: guest.guestId
+          guest_id: guest.guestId,
+          returnTo: window.location.pathname
         }),
       }}
-
       cacheLocation="localstorage"
       useRefreshTokens
     >

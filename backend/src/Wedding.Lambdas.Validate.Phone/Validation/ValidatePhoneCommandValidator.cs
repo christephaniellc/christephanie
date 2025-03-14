@@ -22,7 +22,7 @@ namespace Wedding.Lambdas.Validate.Phone.Validation
                 .NotEmpty()
                 .WithMessage("Code cannot be empty")
                 .Length(6).WithMessage("Invalid code.")
-                .Matches(@"^[1-9]{6}$").WithMessage("Invalid code.");
+                .Matches(@"^[0-9]{6}$").WithMessage("Invalid code.");
             RuleFor(cmd => cmd.AuthContext)
                 .NotNull()
                 .SetValidator(new AuthContextValidator(false));

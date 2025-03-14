@@ -71,7 +71,7 @@ export const InvitationCodeInputs = () => {
           title={
             !user?.guestId
               ? 'Please enter your invitation to get started.'
-              : `Welcome back ${user?.firstName.toUpperCase()}!`
+              : `Welcome back ${user?.firstName.toLocaleUpperCase()}!`
           }
           subheader={
             !accessToken && !user?.guestId

@@ -57,7 +57,8 @@ export class RoleStack extends Stack {
         ],
         resources: [
           `arn:aws:s3:::www.${props.frontendUrl}`,
-          `arn:aws:s3:::www.${props.frontendUrl}/*`
+          `arn:aws:s3:::www.${props.frontendUrl}/*`,
+          `arn:aws:s3:::${applicationName}-setup-prod`
         ]
       })
     );

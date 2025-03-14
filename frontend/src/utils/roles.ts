@@ -20,3 +20,24 @@ export const isAdmin = (user?: Partial<GuestDto> | null): boolean => {
   
   return user.roles.includes(RoleEnum.Admin);
 };
+
+/**
+ * Checks if a user has the BetaTester role
+ * @param user The user object to check
+ * @returns boolean indicating if the user has BetaTester role
+ */
+export const isBetaTester = (user?: Partial<GuestDto> | null): boolean => {
+  if (!user) {
+    return false;
+  }
+  
+  if (!user.roles) {
+    return false;
+  }
+  
+  if (!Array.isArray(user.roles)) {
+    return false;
+  }
+  
+  return user.roles.includes(RoleEnum.BetaTester);
+};

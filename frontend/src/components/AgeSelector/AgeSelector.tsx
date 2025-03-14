@@ -136,10 +136,17 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
         backdropFilter: 'none',
         backgroundColor: 'transparent',
         boxShadow: 'none',
-        width: 200,
+        width: { xs: '100%', sm: 200 }, // Full width on mobile, 200px on larger screens
+        mx: 'auto', // Center the component horizontally
+        maxWidth: '250px', // Set a maximum width to prevent it from getting too wide
       }}
     >
-      <Typography variant="body1" width={'100%'} color='secondary'>
+      <Typography 
+        variant="body1" 
+        width={'100%'} 
+        color='secondary' 
+        sx={{ textAlign: 'center' }}
+      >
         Someone who's
       </Typography>
       <Button
@@ -153,14 +160,13 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           pb: 3,
           pr: 6,
           pl: 4,
-          mx: 'auto',
+          mx: 'auto', // Center horizontally
           display: 'flex',
           justifyContent: 'center',
-          // padding: theme.spacing(2),
           position: 'relative',
-          width: 150,
-          minWidth: 150,
-          maxWidth: 150,
+          width: { xs: '180px', sm: 150 }, // Wider on mobile
+          minWidth: { xs: '180px', sm: 150 }, // Wider on mobile
+          maxWidth: { xs: '180px', sm: 150 }, // Wider on mobile
           boxShadow: boxShadow,
           backgroundColor: 'transparent',
           flexGrow: 2,
@@ -203,7 +209,14 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           />
         </Box>
       </Button>
-      <Typography ml="auto" variant="caption" color='secondary'>
+      <Typography 
+        variant="caption" 
+        color='secondary'
+        sx={{ 
+          width: '100%',
+          textAlign: 'center'
+        }}
+      >
         ...That's who.
       </Typography>
     </Box>

@@ -9,6 +9,7 @@ import { userCommentState } from '@/store/userComment/userComment';
 import { useFamily } from '@/store/family';
 import { FamilyUnitDto } from '@/types/api';
 import { useEffect } from 'react';
+import { StephsActualFavoriteTypography } from '../AttendanceButton/AttendanceButton';
 
 // Mock "send" function that simulates an async request
 async function postComment(comment) {
@@ -52,7 +53,8 @@ export default function AutosizedTextArea() {
     familyActions.patchFamilyMutation.reset();
   }, [comment]);
 
-  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> = familyActions.patchFamilyMutation
+  const mutationState: UseMutationResult<FamilyUnitDto, ApiError> =
+    familyActions.patchFamilyMutation;
   // Handler to invoke the query
   const handleSend = () => {
     // Clear any previous data if you wish, or handle it differently
@@ -74,50 +76,63 @@ export default function AutosizedTextArea() {
   }, [family, setComment]);
 
   return (
-    <FormControl sx={{ width: 350, border: '1px solid #ccc', borderRadius: 1, p: 2 }}>
-      <FormLabel sx={{ mb: 1 }}>Your comment</FormLabel>
-      <Textarea
-        aria-label="minimum height"
-        minRows={3}
-        placeholder={family?.invitationResponseNotes || 'Tell us your feelings...'}
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
-      />
+    <Box display='flex' justifyContent='center' alignItems='center' flexWrap='wrap'>
+      <FormControl sx={{ width: 350, border: '1px solid #ccc', borderRadius: 1, p: 2 }}>
+        <FormLabel sx={{ mb: 1 }}>Your comment</FormLabel>
+        <Textarea
+          aria-label="minimum height"
+          minRows={3}
+          placeholder={family?.invitationResponseNotes || 'Tell us your feelings...'}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
+        />
 
-      {/* Row for the send button and any extra info */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleSend}
-          disabled={mutationState.status === 'pending' || !comment || familyActions.getFamilyUnitQuery.isFetching}
-        >
-          {isError ? `${error}` : ''}
-          {isFetching ? 'Sending...' : ''}
-          {isIdle && !isUnchanged ? 'Send' : ''}
-          {(isIdle || isSuccess) && isUnchanged ? 'Sent!' : ''}
-        </Button>
+        {/* Row for the send button and any extra info */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleSend}
+            disabled={
+              mutationState.status === 'pending' ||
+              !comment ||
+              familyActions.getFamilyUnitQuery.isFetching
+            }
+          >
+            {isError ? `${error}` : ''}
+            {isFetching ? 'Sending...' : ''}
+            {isIdle && !isUnchanged ? 'Send' : ''}
+            {(isIdle || isSuccess) && isUnchanged ? 'Sent!' : ''}
+          </Button>
+        </Box>
+
+        {/* Show a loading indicator or results */}
+        {isFetching && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <CircularProgress size={20} sx={{ mr: 1 }} />
+            <span>Sending your comment...</span>
+          </Box>
+        )}
+        {isError && (
+          <Box sx={{ color: 'error.main', mt: 1 }}>
+            Error: {(error as ApiError)?.description || 'Something went wrong.'}
+          </Box>
+        )}
+        {!!data && !isFetching && (
+          <Box sx={{ color: 'success.main', mt: 1 }}>
+            Successfully sent! Response: {family?.invitationResponseNotes}
+          </Box>
+        )}
+      </FormControl>
+      <Box sx={{ pt: '10px'}}>
+        <StephsActualFavoriteTypography sx={{fontSize: '1rem'}}>
+          Please note:
+          <br/>
+          Formal RSVP stage to come, along with a mailed invitation, huzzah!
+        </StephsActualFavoriteTypography>
       </Box>
-
-      {/* Show a loading indicator or results */}
-      {isFetching && (
-        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-          <CircularProgress size={20} sx={{ mr: 1 }} />
-          <span>Sending your comment...</span>
-        </Box>
-      )}
-      {isError && (
-        <Box sx={{ color: 'error.main', mt: 1 }}>
-          Error: {(error as ApiError)?.description || 'Something went wrong.'}
-        </Box>
-      )}
-      {!!data && !isFetching && (
-        <Box sx={{ color: 'success.main', mt: 1 }}>
-          Successfully sent! Response: {family?.invitationResponseNotes}
-        </Box>
-      )}
-    </FormControl>
+    </Box>
   );
 }
 
@@ -142,9 +157,7 @@ const Textarea = styled(BaseTextareaAutosize)(
 
       &:focus {
         border-color: ${blue[400]};
-        box-shadow: 0 0 0 3px ${
-    theme.palette.mode === 'dark' ? blue[600] : blue[200]
-  };
+        box-shadow: 0 0 0 3px ${theme.palette.mode === 'dark' ? blue[600] : blue[200]};
       }
 
       /* firefox */
