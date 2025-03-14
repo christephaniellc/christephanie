@@ -188,7 +188,10 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                 <Typography variant="body2">
                   {family.mailingAddress ? (
                     <>
-                      {family.mailingAddress.streetAddress}<br />
+                      {family.mailingAddress.streetAddress}<br />{family.mailingAddress.secondaryAddress !== null 
+                        ? family.mailingAddress.secondaryAddress 
+                        : ''}
+                      {family.mailingAddress.secondaryAddress !== undefined && <br/>}
                       {family.mailingAddress.city}, {family.mailingAddress.state} {family.mailingAddress.postalCode}
                     </>
                   ) : (
