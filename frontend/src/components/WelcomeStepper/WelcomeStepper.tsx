@@ -263,7 +263,7 @@ const WelcomeStepper = () => {
             whiteSpace: 'normal', // Allow text to wrap
             lineHeight: 1.2,
             boxShadow: `4px 4px 0px ${alpha(
-              firstIncompleteStep ? theme.palette.secondary.dark : theme.palette.primary.main,
+              firstIncompleteStep ? '#000000' : theme.palette.primary.main,
               0.3,
             )}`,
           }}
@@ -289,6 +289,10 @@ const WelcomeStepper = () => {
           flexGrow: 1,
           overflow: 'auto',
           mb: 1,
+          background: alpha(theme.palette.background.paper, 0.8),
+          pl: '7px',
+          pr: '12px',
+          borderRadius: '3px',
           maxHeight: buttonAtTop 
             ? { xs: '55vh', sm: '60vh', md: '65vh' }
             : { xs: '60vh', sm: '65vh', md: '70vh' },
@@ -336,24 +340,25 @@ const WelcomeStepper = () => {
                     >
                       {step.label}
                     </StephsActualFavoriteTypography>
-                    <BlockTextTypography
+                    {/* <BlockTextTypography */ }
+                    <Typography
                       variant="caption"
-                      shadowColor={'#222222'} 
-                      maxPx={2}    
+                      //shadowColor={'#222222'} 
+                      //maxPx={2}    
                       sx={{ 
                         opacity: 1.0, 
                         display: 'block', 
                         color: theme.palette.secondary.main,
-                        pl: 0.8,
-                        pt: 0.2,
-                        pr: 0.8,
-                        borderRadius: 1,                        
-                        backgroundColor: alpha('#000000', 0.15),
-                        backdropFilter: 'blur(80px)',
+                        // pl: 0.8,
+                        // pt: 0.2,
+                        // pr: 0.8,
+                        // borderRadius: 1,                        
+                        // backgroundColor: alpha('#000000', 0.15),
+                        // backdropFilter: 'blur(80px)',
                       }}
                     >
                       {step.label !== 'Wedding Day' ? 'Respond by: ' : ''} {format(step.lastDate, 'MMMM d, yyyy')}
-                    </BlockTextTypography>
+                    </Typography>
                   </Box>
                   
                   {/* Show status badge only for the first step */}

@@ -7,6 +7,28 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 import { FamilyUnitViewModel, InvitationResponseEnum, RsvpEnum, FoodPreferenceEnum, SleepPreferenceEnum } from '@/types/api';
 
+// Tier priority mapping (lower number = higher priority)
+export const TIER_PRIORITY = {
+  'Platinum+': 0,
+  'Platinum': 1,
+  'Gold': 2,
+  'Sapphire': 3,
+  'Ruby': 4,
+  'Amethyst': 5,
+  'Opal': 6,
+};
+
+// Tier colors for visual representation
+export const TIER_COLORS = {
+  'Platinum+': '#E5E4E2', // platinum silver with hint of blue
+  'Platinum': '#D9D9D9', // light platinum
+  'Gold': '#FFD700', // gold
+  'Sapphire': '#0F52BA', // deep blue
+  'Ruby': '#E0115F', // ruby red
+  'Amethyst': '#9966CC', // purple
+  'Opal': '#A8C3BC', // opal green-blue
+};
+
 // Helper function to get RSVP status color (legacy)
 export const getRsvpStatusColor = (status?: RsvpEnum) => {
   switch(status) {
@@ -173,4 +195,18 @@ export const getRandomNarrative = (guest: any) => {
 export const getRandomAxis = () => {
   const axes = ['X', 'Y'];
   return axes[Math.floor(Math.random() * axes.length)];
+};
+
+// Helper function to get tier details (color and priority)
+export const getTierDetails = (tier?: string | null) => {
+  if (!tier) {
+    return { color: '#9e9e9e', priority: 999 }; // Default gray for unknown tiers
+  }
+  
+  return {
+    color: TIER_COLORS[tier as keyof typeof TIER_COLORS] || '#9e9e9e',
+    priority: TIER_PRIORITY[tier as keyof typeof TIER_PRIORITY] !== undefined 
+      ? TIER_PRIORITY[tier as keyof typeof TIER_PRIORITY] 
+      : 999
+  };
 };
