@@ -10,7 +10,7 @@ export interface HotelOption {
   onShuttleRoute: boolean;
   driveMinsFromWedding: number;
   hotelBlock: boolean;
-  hotelRateAskFor: string | undefined;
+  bookingNote: string | undefined;
 }
 
 export interface PreferenceButtonProps {
