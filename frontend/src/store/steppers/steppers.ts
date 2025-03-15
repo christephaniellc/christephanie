@@ -38,7 +38,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     communicationPreference: {
       id: 2,
       completed: false,
-      label: 'Would you like to receive updates about the wedding?',
+      label: 'How can we notify you about wedding updates?',
       description: '',
       component: null,
       display: true,
@@ -62,7 +62,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     camping: {
       id: 5,
       completed: false,
-      label: 'Accommodations',
+      label: 'Where do you plan to stay?',
       description: '(we have bathrooms!)',
       component: null,
       display: true,
