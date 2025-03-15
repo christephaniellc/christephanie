@@ -145,7 +145,13 @@ export const InvitationCodeInputs = () => {
             {user.firstName && (
               <Typography variant="caption" sx={{ fontSize: rem(16) }}>
                 Not {user?.firstName}?{' '}
-                <Link sx={{ cursor: 'pointer' }} onClick={() => userActions.setUser(null)}>
+                <Link
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    window.localStorage.removeItem('user');
+                    window.location.reload();
+                  }}
+                >
                   Click here
                 </Link>
               </Typography>
