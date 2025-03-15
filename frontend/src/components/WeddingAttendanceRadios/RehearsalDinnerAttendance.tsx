@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Box, Button, Typography, useTheme, ButtonGroup, Paper } from '@mui/material';
+import { Box, Button, Typography, useTheme, ButtonGroup, Paper, Modal, IconButton, useMediaQuery } from '@mui/material';
 import { RsvpEnum, GuestViewModel } from '@/types/api';
 import { useFamily } from '@/store/family';
 import { styled } from '@mui/material/styles';
-import { darken } from '@mui/material';
+import { darken } from '@mui/material/styles';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
-import { Fireplace, LocalFireDepartment, Timer, WbTwilight, TvOutlined, Weekend } from '@mui/icons-material';
+import { Fireplace, LocalFireDepartment, Timer, WbTwilight, TvOutlined, Weekend, Close as CloseIcon } from '@mui/icons-material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 const TitlePaper = styled(Paper)(({ theme }) => ({
@@ -31,7 +31,7 @@ const TitlePaper = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const IconContainer = styled(Box)(({ theme }) => ({
+const IconContainer = styled(Box)(() => ({
   fontSize: '2rem',
   display: 'flex',
   alignItems: 'center',
@@ -47,6 +47,8 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
   const [family, familyActions] = useFamily();
   const [loading, setLoading] = useState(false);
   const { screenWidth } = useAppLayout();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [modalOpen, setModalOpen] = useState(false);
 
   const guest = useMemo(() => {
     if (!family?.guests) return null;
@@ -81,15 +83,27 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
 
   const isBreakpointUpMin = screenWidth > theme.breakpoints.values.md;
 
+  const handleOpenModal = () => {
+    if (isMobile) {
+      setModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   if (!guest) return null;
 
-  return (
+  // Define content for both the regular view and modal
+  const content = (
     <Box 
       display="flex" 
       flexDirection="column" 
       alignItems="center" 
       width="100%" 
       py={2}
+      sx={{ cursor: isMobile ? 'pointer' : 'default' }}
     >
       <TitlePaper elevation={3} sx={{ width: '100%', maxWidth: 600 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ position: 'relative', zIndex: 2 }}>
@@ -134,7 +148,10 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
           <Button
             variant={currentResponse === RsvpEnum.Attending ? 'contained' : 'outlined'}
             color="success"
-            onClick={() => updateRehearsalDinnerAttendance(RsvpEnum.Attending)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent modal from opening when buttons are clicked
+              updateRehearsalDinnerAttendance(RsvpEnum.Attending);
+            }}
             disabled={loading || familyActions.patchFamilyGuestMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
             sx={{
               lineHeight: 1.2,
@@ -163,7 +180,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
                     : 'none',
                 }}
               >
-                Yes, I'll be there!
+                Yes, I&apos;ll be there!
               </StephsActualFavoriteTypography>
             </Box>
           </Button>
@@ -171,7 +188,10 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
           <Button
             variant={currentResponse === RsvpEnum.Declined ? 'contained' : 'outlined'}
             color="error"
-            onClick={() => updateRehearsalDinnerAttendance(RsvpEnum.Declined)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent modal from opening when buttons are clicked
+              updateRehearsalDinnerAttendance(RsvpEnum.Declined);
+            }}
             disabled={loading || familyActions.patchFamilyGuestMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
             sx={{
               lineHeight: 1.2,
@@ -200,7 +220,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
                     : 'none',
                 }}
               >
-                Can't make it
+                Can&apos;t make it
               </StephsActualFavoriteTypography>
             </Box>
           </Button>
@@ -208,7 +228,10 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
           <Button
             variant={currentResponse === RsvpEnum.Pending ? 'contained' : 'outlined'}
             color="info"
-            onClick={() => updateRehearsalDinnerAttendance(RsvpEnum.Pending)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent modal from opening when buttons are clicked
+              updateRehearsalDinnerAttendance(RsvpEnum.Pending);
+            }}
             disabled={loading || familyActions.patchFamilyGuestMutation.status === 'pending' || familyActions.getFamilyUnitQuery.isFetching}
             sx={{
               lineHeight: 1.2,
@@ -263,6 +286,60 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({ g
         </Typography>
       </Box>
     </Box>
+  );
+
+  return (
+    <>
+      {/* Regular view that opens modal when clicked */}
+      <Box onClick={handleOpenModal}>
+        {content}
+      </Box>
+
+      {/* Modal view */}
+      <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="rehearsal-dinner-modal"
+        aria-describedby="rehearsal-dinner-details"
+      >
+        <Paper
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            pt: 6,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9))',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: 'white',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          {/* Content is rendered again inside the modal */}
+          {content}
+        </Paper>
+      </Modal>
+    </>
   );
 };
 

@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
   List,
   ListItem,
   ListSubheader,
-  Paper
+  Paper,
+  Button
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
 import { guestSelector } from '@/store/family';
@@ -21,6 +22,7 @@ import FoodAllergies from '@/components/FoodPreferences';
 import StickFigureIcon from '@/components/StickFigureIcon';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import { InvitationResponseEnum } from '@/types/api';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface MobileAttendanceViewProps {
   guestId: string;
@@ -30,12 +32,21 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
   const { semiTransparentBackgroundColor, theme, guest, getResponseColor } = useAttendanceButtonContainer({ guestId });
   const stdStepper = useRecoilValue(stdStepperState);
   const { user } = useAuth0();
+  const [modalOpen, setModalOpen] = useState(false);
   
   // Add these variables to match AttendanceButton logic
   const isNonAttendanceStep = stdStepper.tabIndex > 0;
   const isAttendanceStep = !isNonAttendanceStep;
   const isAttending = guest?.rsvp?.invitationResponse === InvitationResponseEnum.Interested;
   const showStepContent = isAttendanceStep || isAttending;
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
 
   // Determine the current component based on step
   const getCurrentComponent = () => {
@@ -114,15 +125,27 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
                       <Box ml={1} display="flex" alignItems="center">
                         <StickFigureIcon 
                           ageGroup={guest.ageGroup} 
-                          fontSize="small" 
-                          color={getResponseColor()} 
+                          fontSize="small"
+                          rotation={1}
                         />
                       </Box>
                     )}
                   </Box>
-                  <Typography variant="body2" color={getResponseColor()}>
-                    {guest?.rsvp.invitationResponse}
-                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <Typography variant="body2" color={getResponseColor()} sx={{ mr: 1 }}>
+                      {guest?.rsvp.invitationResponse}
+                    </Typography>
+                    <Button 
+                      size="small" 
+                      onClick={handleOpenModal} 
+                      variant="outlined" 
+                      color="secondary"
+                      startIcon={<EditIcon />}
+                      sx={{ minWidth: 0, p: '2px 8px' }}
+                    >
+                      Edit
+                    </Button>
+                  </Box>
                 </Box>
                 <Box sx={{ 
                   width: '100%', 
@@ -131,7 +154,11 @@ export const MobileAttendanceView = ({ guestId }: MobileAttendanceViewProps) => 
                   color: 'white',
                   opacity: 0.9
                 }}>
-                  <WeddingAttendanceRadios guestId={guestId} />
+                  <WeddingAttendanceRadios 
+                    guestId={guestId} 
+                    initialModalOpen={modalOpen} 
+                    onModalClose={handleCloseModal} 
+                  />
                 </Box>
               </Box>
             </ListSubheader>
