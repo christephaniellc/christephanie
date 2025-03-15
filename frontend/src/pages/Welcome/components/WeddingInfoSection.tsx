@@ -127,7 +127,11 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                     '@keyframes dateColorPulse': {
                       '0%': { color: theme.palette.common.white },
                       '35%': { color: theme.palette.common.white },
+                      '44%': { color: theme.palette.primary.light },
+                      '47%': { color: theme.palette.common.white},
                       '50%': { color: theme.palette.primary.light },
+                      '53%': { color: theme.palette.common.white },
+                      '56%': { color: theme.palette.primary.light },
                       '65%': { color: theme.palette.common.white },
                       '100%': { color: theme.palette.common.white }
                     },

@@ -115,7 +115,11 @@ export const privacyPolicyItems: {
   },
 };
 
-function PrivacyPolicy() {
+interface PrivacyPolicyProps { 
+  handleTabLink: (to: string) => void;
+ }
+
+function PrivacyPolicy({handleTabLink}: PrivacyPolicyProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   

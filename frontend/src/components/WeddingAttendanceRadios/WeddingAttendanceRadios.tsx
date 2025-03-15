@@ -404,7 +404,8 @@ const WeddingAttendanceRadios = ({
           case AgeGroupEnum.Adult:
             return 'adult';
           case AgeGroupEnum.Under21:
-            return 'under 21 adult';
+            return 'under 21 human';
+
           case AgeGroupEnum.Under13:
             return 'dependent';
           case AgeGroupEnum.Baby:
