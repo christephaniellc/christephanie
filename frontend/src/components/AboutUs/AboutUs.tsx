@@ -1,17 +1,24 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { ListSubheader } from '@mui/material';
+import { Link, ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
+import { useAuth0 } from '@auth0/auth0-react';
 
-function AboutUs() {
+interface AboutUsProps {
+  handleTabLink: (to: string) => void;
+}
+
+function AboutUs({handleTabLink}: AboutUsProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
+  const {user} = useAuth0();
+  const businessVerificationPhase = false;
   
   useEffect(() => {
     const controller = new AbortController();
@@ -41,10 +48,22 @@ function AboutUs() {
     };
   }, []);
 
+  const privacyPolicyLink = (
+      <Link onClick={() => handleTabLink('privacyPolicy')}>
+        [Privacy Policy]
+      </Link>
+  );
+
+  const termsOfServiceLink = (
+      <Link onClick={() => handleTabLink('tos')}>
+        [Terms of Service]
+      </Link>
+  );
+
   const aboutUsItems: {
     [key: string]: {
       subheader: string;
-      content: { subheader: string; content?: { subheader: string; content: string[] }[] }[];
+      content: { subheader: string; content?: { subheader: string; content: (string | JSX.Element)[] }[] }[];
     };
   } = {
     titleAboutUs: {
@@ -91,7 +110,9 @@ function AboutUs() {
                 'Access to the site is strictly by invitation, ensuring wedding and guest information remains private.',
                 'Guests create a secure Auth0 login account after their invitation code and first name are validated, allowing for easy future access.',
                 'Features include confirming attendance, submitting food preferences and allergies, accommodation choices, and providing registry information for contributions.',
-                'For further details, please review our [Privacy Policy](https://www.dev.wedding.christephanie.com/privacy-policy) and [Terms of Service](https://www.dev.wedding.christephanie.com/terms-of-service).',
+                <>
+                  For further details, please review our &nbsp; {privacyPolicyLink} &nbsp; and &nbsp; {termsOfServiceLink}.
+                </>
               ],
             },
             {
@@ -124,7 +145,7 @@ function AboutUs() {
             },
           ],
         },
-        {
+        ...(user || businessVerificationPhase ? [{
           subheader: 'Phone',
           content: [
             {
@@ -134,8 +155,8 @@ function AboutUs() {
               ],
             },
           ],
-        },
-        {
+        }] : []),
+        ...(user || businessVerificationPhase ? [{
           subheader: 'Business Address',
           content: [
             {
@@ -145,7 +166,7 @@ function AboutUs() {
               ],
             },
           ],
-        },
+        }] : []),
       ],
     },
     yourRights: {

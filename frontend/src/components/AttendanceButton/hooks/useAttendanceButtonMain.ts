@@ -14,23 +14,9 @@ export const useAttendanceButtonMain = ({ guestId }: { guestId: string }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const darkenCoefficent = useMemo(
-    () => (familyActions.patchFamilyGuestMutation.isPending || stdStepper.tabIndex > 0 ? 0.5 : 0),
-    [familyActions.patchFamilyGuestMutation.isPending, stdStepper.tabIndex]
+    () => (familyActions.patchFamilyGuestMutation.isPending ? 0.5 : 0),
+    [familyActions.patchFamilyGuestMutation.isPending]
   );
-
-  const setUserIsAttending = (interestedResponse: InvitationResponseEnum) => {
-    familyActions.updateFamilyGuestInterest(guestId, interestedResponse);
-  };
-
-  const handleClick = (invitationResponse: InvitationResponseEnum) => {
-    if (invitationResponse === InvitationResponseEnum.Interested) {
-      setUserIsAttending(InvitationResponseEnum.Declined);
-    } else if (invitationResponse === InvitationResponseEnum.Declined) {
-      setUserIsAttending(InvitationResponseEnum.Pending);
-    } else {
-      setUserIsAttending(InvitationResponseEnum.Interested);
-    }
-  };
 
   const buttonProps = useMemo(() => {
     switch (guest?.rsvp.invitationResponse) {
@@ -78,9 +64,7 @@ export const useAttendanceButtonMain = ({ guestId }: { guestId: string }) => {
   }, [buttonProps, darkenCoefficent, theme, shouldBeFullWidth]);
 
   const calculateShadow = () => {
-    const shadowX = stdStepper.tabIndex > 0 ? 0 : 10;
-    const shadowY = stdStepper.tabIndex > 0 ? 0 : 10;
-    return `${shadowX}px ${shadowY}px 0px ${
+    return `10px 10px 0px ${
       guest.rsvp.invitationResponse === InvitationResponseEnum.Interested
         ? theme.palette.primary.dark
         : guest.rsvp.invitationResponse === InvitationResponseEnum.Pending
@@ -92,7 +76,6 @@ export const useAttendanceButtonMain = ({ guestId }: { guestId: string }) => {
   return {
     theme,
     familyActions,
-    handleClick,
     guest,
     imgButtonSxProps,
     calculateShadow,
