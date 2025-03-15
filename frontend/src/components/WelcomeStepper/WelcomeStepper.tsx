@@ -29,6 +29,8 @@ import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
 import Countdowns from '@/components/Countdowns';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, Text3dTypography } from '../AttendanceButton/AttendanceButton';
+import { useAuth0 } from '@auth0/auth0-react';
+import LoadingBox from '@/components/LoadingBox';
 
 // Step interface
 export interface Step {
@@ -77,6 +79,7 @@ const steps: { [step: string]: Step } = {
 
 const WelcomeStepper = () => {
   const theme = useTheme();
+  const { user: auth0User } = useAuth0();
   const [activeStep, setActiveStep] = React.useState(0);
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
@@ -314,6 +317,7 @@ const WelcomeStepper = () => {
             },
           }}
         >
+          {/* Render each step */}
           {Object.entries(rsvpSteps).map(([key, step]) => (
             <Step key={key}>
               <StepLabel
