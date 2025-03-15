@@ -5,7 +5,9 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  Link,
   TextField,
+  Typography,
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
 import { invitationButtonSelectorState } from '@/store/invitationInputs';
@@ -16,6 +18,7 @@ import Box from '@mui/material/Box';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { rem } from 'polished';
 
 export const InvitationCodeInputs = () => {
   const api = useApiContext();
@@ -62,16 +65,22 @@ export const InvitationCodeInputs = () => {
 
   return (
     <Box display="flex" flexWrap="wrap" height={400} onMouseMove={boxShadow.handleMouseMove}>
-      <Card width={'100%'} mb={2} pb={2} component={Box} sx={{
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: boxShadow.boxShadow,
-      }}>
+      <Card
+        width={'100%'}
+        mb={2}
+        pb={2}
+        component={Box}
+        sx={{
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: boxShadow.boxShadow,
+        }}
+      >
         <CardHeader
           title={
             !user?.guestId
               ? 'Please enter your invitation to get started.'
-              : `Welcome back ${user?.firstName.toLocaleUpperCase()}!`
+              : `Welcome back ${user?.firstName}!`
           }
           subheader={
             !accessToken && !user?.guestId
@@ -89,9 +98,7 @@ export const InvitationCodeInputs = () => {
                   fullWidth
                   value={user?.invitationCode}
                   label="Enter your Invitation Code"
-                  onChange={(e) =>
-                    userActions.setUser({ ...user, invitationCode: e.target.value })
-                  }
+                  onChange={(e) => userActions.setUser({ ...user, invitationCode: e.target.value })}
                   variant="outlined"
                   sx={{
                     mb: 2,
@@ -109,9 +116,7 @@ export const InvitationCodeInputs = () => {
                   autoComplete={'off'}
                   value={user?.firstName}
                   label="First Name"
-                  onChange={(e) =>
-                    userActions.setUser({ ...user, firstName: e.target.value })
-                  }
+                  onChange={(e) => userActions.setUser({ ...user, firstName: e.target.value })}
                   variant="outlined"
                   sx={{
                     marginBottom: 2,
@@ -128,18 +133,22 @@ export const InvitationCodeInputs = () => {
         </CardContent>
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
-            {(
-              <Button
-                sx={{ width: '100%' }}
-                disabled={!user?.firstName || !user?.invitationCode}
-                fullWidth
-                variant="contained"
-                onClick={() =>
-                  user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser()
-                }
-              >
-                {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
-              </Button>
+            <Button
+              sx={{ width: '100%', mb: 2 }}
+              disabled={!user?.firstName || !user?.invitationCode}
+              fullWidth
+              variant="contained"
+              onClick={() => (user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser())}
+            >
+              {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
+            </Button>
+            {user.firstName && (
+              <Typography variant="caption" sx={{ fontSize: rem(16) }}>
+                Not {user?.firstName}?{' '}
+                <Link sx={{ cursor: 'pointer' }} onClick={() => userActions.setUser(null)}>
+                  Click here
+                </Link>
+              </Typography>
             )}
           </Box>
         </CardActions>
@@ -158,8 +167,8 @@ export const InvitationCodeInputs = () => {
                   auth0User
                     ? logOutFromAuth0()
                     : user.guestId
-                    ? signInWithAuth0(user.guestId)
-                    : console.log('no guestId');
+                      ? signInWithAuth0(user.guestId)
+                      : console.log('no guestId');
                 }}
               >
                 {auth0User ? 'Logout' : 'Login'}
