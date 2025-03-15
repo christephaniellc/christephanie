@@ -50,7 +50,7 @@ export const useCampingPreferences = (guestId: string) => {
       onShuttleRoute: true,
       driveMinsFromWedding: 18,
       hotelBlock: false,
-      hotelRateAskFor: "wedding rate"
+      bookingNote: "This hotel does not do formal wedding blocks, but they will give you a discount if you ask for the 'wedding rate'"
     },
     {
       name: 'Holiday Inn Express Charles Town, Ranson, WV',
@@ -62,7 +62,7 @@ export const useCampingPreferences = (guestId: string) => {
       onShuttleRoute: true,
       driveMinsFromWedding: 23,
       hotelBlock: true,
-      hotelRateAskFor: "Stubler Wedding block rate"
+      bookingNote: "We have reserved a block of hotel rooms here: ask for the 'Stubler Wedding block rate'"
     },
     {
       name: 'Lovettsville Area Hotels',
@@ -74,7 +74,7 @@ export const useCampingPreferences = (guestId: string) => {
       onShuttleRoute: false,
       driveMinsFromWedding: 0,
       hotelBlock: false,
-      hotelRateAskFor: undefined
+      bookingNote: undefined
     },
   ];
 

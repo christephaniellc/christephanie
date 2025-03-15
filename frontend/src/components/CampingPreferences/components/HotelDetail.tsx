@@ -67,17 +67,18 @@ const HotelDetail: React.FC<HotelDetailProps> = ({ hotel }) => {
             </Typography>
           )}
           
-          {/* Rate info */}
-          {hotel.hotelRateAskFor && (
-            <Typography variant="body2" color="primary.light">
-              <strong>Booking note:</strong> Ask for "{hotel.hotelRateAskFor}"
-            </Typography>
-          )}
-          
           {/* Drive time */}
           {hotel.driveMinsFromWedding > 0 && (
             <Typography variant="body2">
               <strong>Drive time to venue:</strong> {hotel.driveMinsFromWedding} minutes
+            </Typography>
+          )}
+          
+          {/* Rate info */}
+          {hotel.bookingNote && (
+            <Typography variant="body2" color="primary.light">
+              <span style={{ color: "#FFFFFF" }}><strong>Booking note:</strong></span><br/>
+              {hotel.bookingNote}.
             </Typography>
           )}
           
