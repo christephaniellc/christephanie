@@ -54,25 +54,39 @@ function Bureaucracy() {
   const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
+  const handleTabLink = (to: string) => {
+    
+    return setTabIndex(() => {
+      switch(to) {
+        case 'privacyPolicy':
+          return 1;
+        case 'tos':
+          return 2;
+        default:
+          return 0;
+      }
+    });
+  };
+
   // Legal items array (Bureaucracy only for now, more will be added manually)
   const legalItems: LegalItem[] = [
     {
       label: 'About Christephanie LLC',
-      component: <AboutUs />,
+      component: <AboutUs handleTabLink={handleTabLink} />,
     },
     {
       label: 'Privacy Policy',
-      component: <PrivacyPolicy />,
+      component: <PrivacyPolicy handleTabLink={handleTabLink} />,
     },
     {
       label: 'Terms of Service',
       component: <TermsOfService />,
     },
   ];
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-  };
 
   return (
     <Container
