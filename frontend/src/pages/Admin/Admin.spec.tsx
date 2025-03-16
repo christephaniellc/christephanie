@@ -138,6 +138,7 @@ describe('Updated Admin Dashboard.wip', () => {
     {
       invitationCode: 'ABC123',
       unitName: 'Smith Family',
+      tier: 'Platinum',
       guests: [
         { 
           firstName: 'John', 
@@ -146,7 +147,11 @@ describe('Updated Admin Dashboard.wip', () => {
           roles: [RoleEnum.Guest],
           ageGroup: AgeGroupEnum.Adult,
           rsvp: {
-            invitationResponse: InvitationResponseEnum.Interested
+            invitationResponse: InvitationResponseEnum.Interested,
+            invitationResponseAudit: {
+              lastUpdate: '2023-01-01T12:00:00Z',
+              username: 'john.smith'
+            }
           }
         },
         { 
@@ -156,7 +161,11 @@ describe('Updated Admin Dashboard.wip', () => {
           roles: [RoleEnum.Guest],
           ageGroup: AgeGroupEnum.Adult,
           rsvp: {
-            invitationResponse: InvitationResponseEnum.Pending
+            invitationResponse: InvitationResponseEnum.Pending,
+            invitationResponseAudit: {
+              lastUpdate: '2023-01-10T12:00:00Z',
+              username: 'jane.smith'
+            }
           }
         }
       ],
@@ -167,6 +176,34 @@ describe('Updated Admin Dashboard.wip', () => {
         postalCode: '12345'
       },
       familyUnitLastLogin: '2023-01-01T12:00:00Z'
+    },
+    {
+      invitationCode: 'XYZ789',
+      unitName: 'Jones Family',
+      tier: 'Gold',
+      guests: [
+        { 
+          firstName: 'Bob', 
+          lastName: 'Jones',
+          guestId: '789',
+          roles: [RoleEnum.Guest],
+          ageGroup: AgeGroupEnum.Adult,
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined,
+            invitationResponseAudit: {
+              lastUpdate: '2023-02-15T12:00:00Z',
+              username: 'bob.jones'
+            }
+          }
+        }
+      ],
+      mailingAddress: {
+        streetAddress: '456 Oak St',
+        city: 'Other Town',
+        state: 'NY',
+        postalCode: '54321'
+      },
+      familyUnitLastLogin: '2023-02-01T12:00:00Z'
     }
   ];
   
@@ -267,5 +304,54 @@ describe('Updated Admin Dashboard.wip', () => {
     
     expect(screen.getByText('No address provided')).toBeInTheDocument();
     expect(screen.getByText('Never logged in')).toBeInTheDocument();
+  });
+  
+  describe('Sort functionality.wip', () => {
+    beforeEach(() => {
+      // Override mock with extended family data
+      (useAdminQueries as jest.Mock).mockReturnValue({
+        getAllFamiliesQuery: {
+          refetch: jest.fn().mockResolvedValue({
+            data: mockFamilies
+          })
+        }
+      });
+    });
+    
+    it('should render sort options.wip', async () => {
+      renderWithTheme(<Admin />);
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+      
+      // Check if sort dropdown exists
+      expect(screen.getByLabelText('Sort by')).toBeInTheDocument();
+      
+      // Default sort option should be selected
+      expect(screen.getByText('Default (Tier, Name)')).toBeInTheDocument();
+    });
+    
+    it('should allow changing sort option.wip', async () => {
+      renderWithTheme(<Admin />);
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+      
+      // Open dropdown
+      fireEvent.mouseDown(screen.getByLabelText('Sort by'));
+      
+      // Should see all options
+      expect(screen.getByText('Default (Tier, Name)')).toBeInTheDocument();
+      expect(screen.getByText('Last Updated (Recent First)')).toBeInTheDocument();
+      expect(screen.getByText('RSVP Status (Declined First)')).toBeInTheDocument();
+      
+      // Select Last Updated option
+      fireEvent.click(screen.getByText('Last Updated (Recent First)'));
+      
+      // Dropdown should close and show selected option
+      expect(screen.getByDisplayValue('lastUpdated')).toBeInTheDocument();
+    });
   });
 });
