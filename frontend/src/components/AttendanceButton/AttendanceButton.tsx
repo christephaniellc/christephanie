@@ -71,6 +71,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
   return (
     <Box
       data-testid={'attendance-button'}
+      role="region"
+      aria-label={`Attendance options for ${guest?.firstName || 'guest'}`}
       sx={{
         position: 'relative',
         display: 'flex',
@@ -103,6 +105,8 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         <AttendanceButtonStatus guestId={guestId} />
 
         <Box
+          role="region"
+          aria-label={`${stdStepper.currentStep[0] || 'Attendance'} options`}
           sx={{
             overflowY: 'auto',
             ml: { xs: 0, md: '2vw' },
