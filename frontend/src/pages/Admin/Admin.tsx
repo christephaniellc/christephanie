@@ -5,7 +5,7 @@ import {
   FormControl, InputLabel, Select, MenuItem, SelectChangeEvent
 } from '@mui/material';
 
-import { FamilyUnitViewModel, InvitationResponseEnum } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 
@@ -18,7 +18,7 @@ import AdminDashboardCharts from '@/components/AdminDashboardCharts';
 type SortOption = 'default' | 'lastUpdated' | 'invitationStatus';
 
 function Admin() {
-  const [families, setFamilies] = useState<FamilyUnitViewModel[]>([]);
+  const [families, setFamilies] = useState<FamilyUnitDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('default');
@@ -34,7 +34,7 @@ function Admin() {
   });
 
   // Sort families based on selected sort option
-  const sortFamilies = (families: FamilyUnitViewModel[], sortOption: SortOption) => {
+  const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption) => {
     const filteredFamilies = [...families];
     
     switch(sortOption) {
@@ -96,7 +96,7 @@ function Admin() {
         // Sort by invitation status (declined first, then interested, then pending), then tier, then last name
         return filteredFamilies.sort((a, b) => {
           // Get invitation status priority (1: Declined, 2: Interested, 3: Pending)
-          const getStatusPriority = (family: FamilyUnitViewModel): number => {
+          const getStatusPriority = (family: FamilyUnitDto): number => {
             if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined)) {
               return 1; // Declined has highest priority
             } else if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested)) {
