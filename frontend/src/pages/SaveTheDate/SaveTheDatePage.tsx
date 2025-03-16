@@ -110,7 +110,7 @@ function SaveTheDatePage() {
                   <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
                 ))}
               {genericQuestions && !familyActions.getFamilyUnitQuery.isError && (
-                <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>
+                <Box height={remainingQuestionHeight} sx={{ overflow: 'auto' }}>{FamilyQueryQuestion}</Box>
               )}
             </>
           )}
