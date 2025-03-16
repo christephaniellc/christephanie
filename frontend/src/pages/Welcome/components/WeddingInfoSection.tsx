@@ -1,7 +1,23 @@
-import React from 'react';
-import { Box, Typography, useMediaQuery, Link, Tooltip } from '@mui/material';
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Typography, 
+  useMediaQuery, 
+  Link, 
+  Tooltip, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { CalendarMonth, LocationOn } from '@mui/icons-material';
+import { CalendarMonth, LocationOn, Google, Apple, Event } from '@mui/icons-material';
+import isMobile from 'is-mobile';
 import { 
   WeddingInfoContainer, 
   WeddingInfoLayout,
@@ -31,27 +47,45 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
   const theme = useTheme();
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('md'));
   
-  // Function to generate an .ics file calendar link
+  // State for calendar dialog
+  const [calendarDialogOpen, setCalendarDialogOpen] = useState(false);
+  
+  // Function to generate a properly formatted .ics file calendar link
   const generateCalendarLink = () => {
     const eventDetails = {
       title: "Steph & Topher's Wedding",
       description: "Steph and Topher's Wedding Celebration",
       location: "Lovettsville, VA",
-      startDate: "2025-07-05T18:00:00", // Assuming 6 PM start
-      endDate: "2025-07-05T23:00:00",   // Assuming 11 PM end
+      // Use UTC format with explicit timezone designator
+      startDate: "2025-07-05T18:00:00Z", // Assuming 6 PM UTC start
+      endDate: "2025-07-05T23:00:00Z",   // Assuming 11 PM UTC end
+    };
+    
+    // Format dates for iCalendar standard - should be in UTC format without separators
+    // YYYYMMDDTHHMMSSZ format for iCalendar
+    const formatDate = (dateString: string) => {
+      // Remove separators and ensure Z at the end
+      return dateString.replace(/[-:]/g, "").replace("T", "T").replace("Z", "Z");
     };
     
     // Format for iCalendar
     const icsContent = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
+      "PRODID:-//Christephanie//Wedding Calendar//EN",
       "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
       "BEGIN:VEVENT",
       `SUMMARY:${eventDetails.title}`,
       `DESCRIPTION:${eventDetails.description}`,
       `LOCATION:${eventDetails.location}`,
-      `DTSTART:${eventDetails.startDate.replace(/[-:]/g, "").replace("T", "")}00Z`,
-      `DTEND:${eventDetails.endDate.replace(/[-:]/g, "").replace("T", "")}00Z`,
+      // Add proper date formatting with UTC indicator
+      `DTSTART:${formatDate(eventDetails.startDate)}`,
+      `DTEND:${formatDate(eventDetails.endDate)}`,
+      // Add UID for uniqueness
+      `UID:${Math.random().toString(36).substring(2)}@christephanie.com`,
+      // Add timestamp
+      `DTSTAMP:${formatDate(new Date().toISOString())}`,
       "END:VEVENT",
       "END:VCALENDAR"
     ].join("\r\n");
@@ -59,6 +93,12 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
     // Create Blob and return data URL
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     return URL.createObjectURL(blob);
+  };
+  
+  // Function to handle calendar button click
+  const handleCalendarClick = (event: React.MouseEvent) => {
+    event.preventDefault(); // Prevent default link behavior
+    setCalendarDialogOpen(true);
   };
   
   return (
@@ -109,10 +149,10 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                 color: theme.palette.secondary.main
               }} 
             />
-            <Tooltip title="Add to calendar">
+            <Tooltip title="Click to add to calendar">
               <Link 
-                href={generateCalendarLink()} 
-                download="StephAndTopher_Wedding.ics"
+                href="#"
+                onClick={handleCalendarClick}
                 sx={{ 
                   textDecoration: 'none',
                   position: 'relative',
@@ -123,18 +163,10 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                   sx={{
                     position: 'relative',
                     overflow: 'visible',
-                    // Define keyframes for color animation
-                    '@keyframes dateColorPulse': {
-                      '0%': { color: theme.palette.common.white },
-                      '35%': { color: theme.palette.common.white },
-                      '44%': { color: theme.palette.primary.light },
-                      '47%': { color: theme.palette.common.white},
-                      '50%': { color: theme.palette.primary.light },
-                      '53%': { color: theme.palette.common.white },
-                      '56%': { color: theme.palette.primary.light },
-                      '65%': { color: theme.palette.common.white },
-                      '100%': { color: theme.palette.common.white }
-                    },
+                    // Add padding to create larger container area for sparkles
+                    padding: '20px',
+                    margin: '-20px', // Negative margin to keep the date in the same position
+                    // We now define the animation in the DateText component
                     // Define keyframes for sparkle animation
                     '@keyframes sparkle': {
                       '0%': { opacity: 0, transform: 'scale(0) rotate(0deg)' },
@@ -143,8 +175,8 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                     }
                   }}
                 >
-                  {/* Sparkle elements */}
-                  {[...Array(6)].map((_, i) => (
+                  {/* Sparkle elements - increased from 6 to 10 */}
+                  {[...Array(10)].map((_, i) => (
                     <Box
                       key={i}
                       sx={{
@@ -155,16 +187,17 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                         backgroundColor: theme.palette.secondary.main,
                         boxShadow: `0 0 6px 1px ${theme.palette.secondary.main}`,
                         opacity: 0,
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
+                        // Better distribution around the container with extended area
+                        top: `${10 + Math.random() * 80}%`, // Slightly more concentrated around the text
+                        left: `${10 + Math.random() * 80}%`, 
                         animation: `sparkle ${1 + Math.random() * 2}s ${Math.random() * 3}s infinite`,
                         zIndex: -50
                       }}
                     />
                   ))}
                   
-                  {/* Star sparkles */}
-                  {[...Array(3)].map((_, i) => (
+                  {/* Star sparkles - increased from 3 to 6 */}
+                  {[...Array(6)].map((_, i) => (
                     <Box
                       key={`star-${i}`}
                       sx={{
@@ -172,8 +205,9 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                         width: '10px',
                         height: '10px',
                         opacity: 0,
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
+                        // Better distribution with extended area
+                        top: `${10 + Math.random() * 80}%`,
+                        left: `${10 + Math.random() * 80}%`,
                         '&:before': {
                           content: '""',
                           position: 'absolute',
@@ -197,7 +231,15 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
                       position: 'relative',
-                      animation: 'dateColorPulse 4s infinite ease-in-out',
+                      zIndex: 1, // Ensure text stays in front of sparkles
+                      // Define bounce animation keyframes
+                      '@keyframes dateBounce': {
+                        '0%': { transform: 'translateY(0)' },
+                        '50%': { transform: 'translateY(-4px)' },
+                        '100%': { transform: 'translateY(0)' }
+                      },
+                      // Apply bounce animation instead of color animation
+                      animation: 'dateBounce 2s infinite ease-in-out',
                       '&:hover': {
                         color: theme.palette.primary.light,
                         textShadow: `1px 1px 2px rgba(0, 0, 0, 0.7), 2px 2px 2px #000000, 0 0 8px ${theme.palette.primary.light}`
@@ -232,8 +274,32 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                 color: theme.palette.secondary.main
               }} 
             />
+            {/* Use Google Maps as the default for all platforms */}
             <Link 
-              href="https://maps.google.com/?q=Lovettsville,VA" 
+              // Show specific venue if user is logged in, otherwise general location
+              href={user?.auth0Id 
+                ? (
+                  // For mobile, try native apps with fallback to Google Maps website
+                  // On desktop, always use Google Maps website
+                  isMobile ? (
+                    navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
+                      ? "maps://maps.google.com/?q=Stone+Manor+Inn+Lovettsville+VA"
+                      : navigator.userAgent.includes('Android')
+                        ? "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                        : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                  ) : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                )
+                : (
+                  // Same structure for non-logged in users
+                  isMobile ? (
+                    navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
+                      ? "maps://maps.google.com/?q=Lovettsville+VA"
+                      : navigator.userAgent.includes('Android')
+                        ? "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                        : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                  ) : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                )
+              }
               target="_blank" 
               rel="noopener noreferrer"
               sx={{ 
@@ -264,13 +330,80 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                   }
                 }}
               >
-                Lovettsville, VA
+                {user?.auth0Id ? "Stone Manor Inn, Lovettsville, VA" : "Lovettsville, VA"}
               </LocationText>
             </Link>
           </LocationBox>
           </Box>
         </WeddingDetailsBox>
       </WeddingInfoLayout>
+      
+      {/* Calendar Dialog */}
+      <Dialog
+        open={calendarDialogOpen}
+        onClose={() => setCalendarDialogOpen(false)}
+        aria-labelledby="calendar-dialog-title"
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 1,
+          }
+        }}
+      >
+        <DialogTitle id="calendar-dialog-title" sx={{ textAlign: 'center' }}>
+          Add to Calendar
+        </DialogTitle>
+        <DialogContent>
+          <List>
+            {/* Google Calendar Option */}
+            <ListItem 
+              button 
+              component="a" 
+              href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Steph+%26+Topher%27s+Wedding&dates=20250705T180000Z/20250705T230000Z&details=Steph+and+Topher%27s+Wedding+Celebration&location=Lovettsville,+VA`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ListItemIcon>
+                <Google />
+              </ListItemIcon>
+              <ListItemText primary="Google Calendar" />
+            </ListItem>
+            
+            {/* Apple Calendar Option (iCal) */}
+            <ListItem 
+              button 
+              component="a" 
+              href={generateCalendarLink()}
+              download="StephAndTopher_Wedding.ics"
+            >
+              <ListItemIcon>
+                <Apple />
+              </ListItemIcon>
+              <ListItemText primary="Apple Calendar (iCal)" />
+            </ListItem>
+            
+            {/* Generic Option (iCal) */}
+            <ListItem 
+              button
+              component="a" 
+              href={generateCalendarLink()}
+              download="StephAndTopher_Wedding.ics"
+            >
+              <ListItemIcon>
+                <Event />
+              </ListItemIcon>
+              <ListItemText primary="Other Calendar (iCal)" />
+            </ListItem>
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCalendarDialogOpen(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </WeddingInfoContainer>
   );
 };
