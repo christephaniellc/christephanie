@@ -136,7 +136,7 @@ describe('WeddingInfoSection.wip', () => {
     );
     
     // Should show specific venue for logged in users
-    expect(screen.getByText('Stone Manor Inn, Lovettsville, VA')).toBeInTheDocument();
+    expect(screen.getByText('Stone Manor, Lovettsville, VA')).toBeInTheDocument();
   });
   
   it('hides venue details when user is not logged in.wip', () => {
@@ -149,7 +149,7 @@ describe('WeddingInfoSection.wip', () => {
     
     // Should only show general location for non-logged in users
     expect(screen.getByText('Lovettsville, VA')).toBeInTheDocument();
-    expect(screen.queryByText('Stone Manor Inn, Lovettsville, VA')).not.toBeInTheDocument();
+    expect(screen.queryByText('Stone Manor, Lovettsville, VA')).not.toBeInTheDocument();
   });
   
   it('uses Google Maps links for location.wip', () => {
@@ -161,9 +161,26 @@ describe('WeddingInfoSection.wip', () => {
     );
     
     // Get the location link
-    const locationLink = screen.getByText('Stone Manor Inn, Lovettsville, VA').closest('a');
+    const locationLink = screen.getByText('Stone Manor, Lovettsville, VA').closest('a');
     
     // Check that it's a Google Maps link
     expect(locationLink).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
+  });
+  
+  it('renders the date text centered.wip', () => {
+    renderWithTheme(
+      <WeddingInfoSection 
+        randomGettingMarriedQuote="Test quote" 
+        user={loggedInUser} 
+      />
+    );
+    
+    // The date should be visible
+    const dateElement = screen.getByText('July 5, 2025');
+    expect(dateElement).toBeInTheDocument();
+    
+    // And should have centering styles
+    expect(dateElement).toHaveStyle('text-align: center');
+    expect(dateElement).toHaveStyle('width: 100%');
   });
 });
