@@ -136,7 +136,7 @@ describe('WeddingInfoSection.wip', () => {
     );
     
     // Should show specific venue for logged in users
-    expect(screen.getByText('Stone Manor Inn, Lovettsville, VA')).toBeInTheDocument();
+    expect(screen.getByText('Stone Manor, Lovettsville, VA')).toBeInTheDocument();
   });
   
   it('hides venue details when user is not logged in.wip', () => {
@@ -149,7 +149,7 @@ describe('WeddingInfoSection.wip', () => {
     
     // Should only show general location for non-logged in users
     expect(screen.getByText('Lovettsville, VA')).toBeInTheDocument();
-    expect(screen.queryByText('Stone Manor Inn, Lovettsville, VA')).not.toBeInTheDocument();
+    expect(screen.queryByText('Stone Manor, Lovettsville, VA')).not.toBeInTheDocument();
   });
   
   it('uses Google Maps links for location.wip', () => {
