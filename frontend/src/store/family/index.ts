@@ -96,7 +96,7 @@ export const guestSelector = selectorFamily<GuestViewModel | null, string>({
 
       // Overwrite only the changed fields (shallow merge) or do a full replace:
       console.log('unexpectedly setting guest stuff here');
-      const updatedGuests = familyUnit.guests.map((guest) => {
+      const updatedGuests = [...familyUnit.guests].map((guest) => {
         if (guest.guestId === guestId) {
           return {
             ...guest,
@@ -141,16 +141,19 @@ const somethingFamilySelector = selector({
 });
 
 export function reorderArrayByKey(array, key, matchValue) {
+  // Create a copy of the array to avoid mutating the original
+  const arrayCopy = [...array];
+  
   // Find the index of the element where the property matches the provided value
-  const index = array.findIndex((item) => item[key] === matchValue);
+  const index = arrayCopy.findIndex((item) => item[key] === matchValue);
 
   // If a matching element is found, remove it and place it at the beginning of the array
   if (index !== -1) {
-    const [matchingElement] = array.splice(index, 1);
-    array.unshift(matchingElement);
+    const [matchingElement] = arrayCopy.splice(index, 1);
+    arrayCopy.unshift(matchingElement);
   }
 
-  return array;
+  return arrayCopy;
 }
 
 export const useFamily = () => {
@@ -174,7 +177,7 @@ export const useFamily = () => {
           return value.auth0Id === user.auth0Id;
         });
         if (matchingUser) {
-          const sortedGuests = reorderArrayByKey(res.data.guests, 'auth0Id', auth0User.sub);
+          const sortedGuests = reorderArrayByKey([...res.data.guests], 'auth0Id', auth0User.sub);
           setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitViewModel);
         }
       }),
@@ -256,10 +259,10 @@ export const useFamily = () => {
   useEffect(() => {
     if (getFamilyUnitQuery.data && !family) {
       console.log('setting family from getFamilyUnitQuery');
-      const sortedGuests =
-        getFamilyUnitQuery.data.guests &&
-        getFamilyUnitQuery.data.guests.length > 1 &&
-        reorderArrayByKey(getFamilyUnitQuery.data.guests, 'auth0Id', auth0User.sub);
+      let sortedGuests = [];
+      if (getFamilyUnitQuery.data.guests && getFamilyUnitQuery.data.guests.length > 0) {
+        sortedGuests = reorderArrayByKey([...getFamilyUnitQuery.data.guests], 'auth0Id', auth0User.sub);
+      }
       console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
       setFamily({
         ...getFamilyUnitQuery.data,

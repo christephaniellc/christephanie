@@ -150,17 +150,19 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       console.log('patchFamilyGuestMutation success', data);
 
       setFamily((prev) => {
-        const sortedGuests = reorderArrayByKey(prev.guests, 'auth0Id', auth0User?.sub);
-        return { ...prev, guests: prev.guests.map((g) => (g.guestId === data.guestId ? data : g)) };
+        if (!prev || !prev.guests) return prev;
+        const sortedGuests = reorderArrayByKey([...prev.guests], 'auth0Id', auth0User?.sub);
+        return { ...prev, guests: sortedGuests.map((g) => (g.guestId === data.guestId ? data : g)) };
       });
     },
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
+      if (!family || !family.guests) return;
       const sortedGuests = reorderArrayByKey(
-        family.guests,
+        [...family.guests],
         'auth0Id',
         auth0User?.sub
-      )
+      );
       setFamily({ ...family, guests: sortedGuests });
     },
   });
@@ -175,21 +177,23 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationFn: ({ updatedFamily }: { updatedFamily: PatchFamilyUnitRequest }) =>
       apiRef.current.patchFamilyUnit(updatedFamily),
     onSuccess: (data) => {
+      if (!data || !data.guests) return;
       const sortedGuests = reorderArrayByKey(
-        data.guests,
+        [...data.guests],
         'auth0Id',
         auth0User?.sub
-      )
-      setFamily({...data, guests: sortedGuests})
+      );
+      setFamily({...data, guests: sortedGuests});
     },
 
     onError: (error: ApiError) => {
       console.error('Failed to update family', error);
+      if (!family || !family.guests) return;
       const sortedGuests = reorderArrayByKey(
-        family.guests,
+        [...family.guests],
         'auth0Id',
-        auth0User.sub
-      )
+        auth0User?.sub
+      );
       setFamily({...family, guests: sortedGuests});
     },
   });
