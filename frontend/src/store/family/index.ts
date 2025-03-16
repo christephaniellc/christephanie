@@ -174,7 +174,7 @@ export const useFamily = () => {
           return value.auth0Id === user.auth0Id;
         });
         if (matchingUser) {
-          const sortedGuests = reorderArrayByKey(res.data.guests, 'guestId', auth0User.sub);
+          const sortedGuests = reorderArrayByKey(res.data.guests, 'auth0Id', auth0User.sub);
           setFamily({ ...res.data, guests: sortedGuests } as FamilyUnitViewModel);
         }
       }),
@@ -259,7 +259,7 @@ export const useFamily = () => {
       const sortedGuests =
         getFamilyUnitQuery.data.guests &&
         getFamilyUnitQuery.data.guests.length > 1 &&
-        reorderArrayByKey(getFamilyUnitQuery.data.guests, 'guestId', auth0User.sub);
+        reorderArrayByKey(getFamilyUnitQuery.data.guests, 'auth0Id', auth0User.sub);
       console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
       setFamily({
         ...getFamilyUnitQuery.data,
