@@ -161,9 +161,26 @@ describe('WeddingInfoSection.wip', () => {
     );
     
     // Get the location link
-    const locationLink = screen.getByText('Stone Manor Inn, Lovettsville, VA').closest('a');
+    const locationLink = screen.getByText('Stone Manor, Lovettsville, VA').closest('a');
     
     // Check that it's a Google Maps link
     expect(locationLink).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
+  });
+  
+  it('renders the date text centered.wip', () => {
+    renderWithTheme(
+      <WeddingInfoSection 
+        randomGettingMarriedQuote="Test quote" 
+        user={loggedInUser} 
+      />
+    );
+    
+    // The date should be visible
+    const dateElement = screen.getByText('July 5, 2025');
+    expect(dateElement).toBeInTheDocument();
+    
+    // And should have centering styles
+    expect(dateElement).toHaveStyle('text-align: center');
+    expect(dateElement).toHaveStyle('width: 100%');
   });
 });
