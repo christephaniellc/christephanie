@@ -160,7 +160,7 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
   );
 };
 
-type AdminTab = 'overview' | 'food' | 'accommodation' | 'rsvp' | 'client-info';
+type AdminTab = 'overview' | 'food' | 'accommodation' | 'interest' | 'client-info';
 
 interface AdminDashboardChartsProps {
   families: FamilyUnitViewModel[];
@@ -180,7 +180,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         attendingGuests: 0,
         declinedGuests: 0,
         pendingGuests: 0,
-        rsvpData: [],
+        interestData: [],
         ageData: [],
         foodData: [],
         accommodationData: [],
@@ -332,7 +332,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
     });
     
     // Prepare data for charts
-    const rsvpData = [
+    const interestData = [
       { name: 'Interested', value: attendingGuests, color: '#4CAF50' },
       { name: 'Declined', value: declinedGuests, color: '#F44336' },
       { name: 'Pending', value: pendingGuests, color: '#FFC107' }
@@ -436,7 +436,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
       attendingGuests,
       declinedGuests,
       pendingGuests,
-      rsvpData,
+      interestData,
       ageData,
       foodData,
       accommodationData,
@@ -564,7 +564,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
             <Tab label="Overview" value="overview" />
             <Tab label="Food" value="food" />
             <Tab label="Accommodation" value="accommodation" />
-            <Tab label="RSVP Details" value="rsvp" />
+            <Tab label="Interest Details" value="interest" />
             <Tab label="Client Info" value="client-info" />
           </Tabs>
         </Box>
@@ -583,12 +583,12 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                     textAlign: 'center'
                   }}
                 >
-                  RSVP Status
+                  Interest Status
                 </Typography>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={metrics.rsvpData}
+                      data={metrics.interestData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -597,7 +597,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                       dataKey="value"
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
-                      {metrics.rsvpData.map((entry, index) => (
+                      {metrics.interestData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} stroke="#000" strokeWidth={2} />
                       ))}
                     </Pie>
@@ -759,7 +759,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           </Box>
         )}
         
-        {activeTab === 'rsvp' && (
+        {activeTab === 'interest' && (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
@@ -772,7 +772,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                     textAlign: 'center'
                   }}
                 >
-                  Family Unit RSVP Status
+                  Family Unit Interest Status
                 </Typography>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -817,7 +817,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                     textAlign: 'center'
                   }}
                 >
-                  RSVP Completion
+                  STD Completion
                 </Typography>
                 
                 <Box sx={{ position: 'relative', width: '100%', height: 30, mb: 2 }}>
