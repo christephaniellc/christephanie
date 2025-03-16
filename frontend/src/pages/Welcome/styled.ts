@@ -65,6 +65,8 @@ const WeddingInfoLayout = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   width: '100%',
   alignItems: 'center',
+  justifyContent: 'center', // Center content vertically
+  textAlign: 'center', // Center text within components
   // [theme.breakpoints.up('md')]: {
   //   flexDirection: 'row',
   // },
@@ -84,6 +86,10 @@ const MarriageAnnouncementBox = styled(Box)(({ theme }) => ({
 }));
 
 const WeddingDetailsBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center', // Center content horizontally
+  width: '100%', // Take up full width
   [theme.breakpoints.up('md')]: {
     flex: 1,
   },
@@ -92,6 +98,8 @@ const WeddingDetailsBox = styled(Box)(({ theme }) => ({
 const DateBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center', // Center horizontally 
+  width: '100%', // Take full width
   mx: 'auto',
   marginBottom: theme.spacing(0.8),
   paddingTop: theme.spacing(1),
@@ -158,6 +166,8 @@ const DateText = styled(Typography)(({ theme }) => ({
   color: theme.palette.common.white,
   fontWeight: 'medium',
   fontSize: '1.1rem',
+  textAlign: 'center', // Ensure text is centered
+  width: '100%', // Take up full width
   [theme.breakpoints.up('md')]: {
     fontSize: '1.2rem',
   },
