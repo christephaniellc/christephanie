@@ -238,11 +238,12 @@ export default function AutosizedTextArea() {
   const handleTyping = (e) => {
     const newValue = e.target.value;
     const isNewCharacter = newValue.length > comment.length;
+    const isDeleting = newValue.length < comment.length;
     
     setComment(newValue);
     
-    // Only trigger animation on new character input, not on deletions
-    if (isNewCharacter) {
+    // Trigger animation on both new character input and deletions
+    if (isNewCharacter || isDeleting) {
       // Trigger mouth animation sequence
       animateMouth();
     }
@@ -523,13 +524,41 @@ export default function AutosizedTextArea() {
         width: '100%', 
         textAlign: 'center',
         mt: 4,
-        opacity: 0.8,
+        mb: 2,
+        py: 1.5,
+        px: 3,
+        mx: 'auto',
+        maxWidth: 'fit-content',
+        borderRadius: 2,
+        border: `1px dashed ${theme.palette.secondary.main}`,
+        position: 'relative',
+        overflow: 'hidden',
+        zIndex: 1,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(0, 0, 0, 0.75)' 
+            : 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(8px)',
+          zIndex: -1,
+        }
       }}>
-        <Typography variant="caption" sx={{ 
+        <Typography sx={{ 
           fontStyle: 'italic',
-          color: theme.palette.text.secondary,
+          fontWeight: 'medium',
+          color: theme.palette.secondary.main,
+          fontSize: '0.95rem',
+          letterSpacing: '0.01em',
+          textShadow: theme.palette.mode === 'dark'
+            ? '0 1px 2px rgba(0,0,0,0.8)'
+            : 'none',
         }}>
-          Formal RSVP invitations to come in the mail. Stay tuned!
+          ✉️ Formal RSVP invitations will be coming in the mail soon! ✉️
         </Typography>
       </Box>
     </Box>

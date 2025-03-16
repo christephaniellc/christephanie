@@ -74,8 +74,11 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
         stdStepper.tabIndex === 0 && (
           <Paper
             sx={getButtonStyles()}
+            role="status"
+            aria-live="polite"
           >
             <DoubleArrow
+              aria-hidden="true"
               sx={{
                 mr: 2,
                 fontSize: '1.8rem',
@@ -93,6 +96,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
               }}
             />
             <DoubleArrow
+              aria-hidden="true"
               sx={{
                 mr: 2,
                 fontSize: '1.8rem',

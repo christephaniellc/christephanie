@@ -63,6 +63,22 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
   // Determine the click handler based on the current step
   const handleClick = isAttendanceStep ? toggleAttendanceStatus : handleOpenModal;
   
+  // Determine the aria label based on the current status
+  const getAriaLabel = () => {
+    if (!guest) return 'Loading attendance options';
+    
+    const currentStatus = guest.rsvp?.invitationResponse;
+    const firstName = guest.firstName || 'Guest';
+    
+    if (isAttendanceStep) {
+      // On attendance step - describe toggle behavior
+      return `${firstName}'s attendance status: ${currentStatus}. Click to change status.`;
+    } else {
+      // On other steps - describe modal opening behavior
+      return `${firstName}'s attendance status: ${currentStatus}. Click to open detailed RSVP options.`;
+    }
+  };
+
   return (
     <>
       <Button
@@ -71,6 +87,10 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
           familyActions.getFamilyUnitQuery.isFetching
         }
         onClick={handleClick}
+        aria-label={getAriaLabel()}
+        aria-haspopup={!isAttendanceStep}
+        aria-expanded={modalOpen}
+        aria-busy={!familyActions.patchFamilyGuestMutation.isIdle}
         sx={{
           alignItems: 'flex-start',
           boxShadow: 1,
@@ -89,7 +109,12 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
           filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
-        <Box display="flex" alignItems="flex-start" width="100%" sx={{ height: 'auto', minHeight: '100%' }}>
+        <Box 
+          display="flex" 
+          alignItems="flex-start" 
+          width="100%" 
+          sx={{ height: 'auto', minHeight: '100%' }}
+        >
           {guest && (
             <LargeAttendanceButton
               guestId={guest.guestId}

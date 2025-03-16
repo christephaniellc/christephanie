@@ -90,7 +90,14 @@ export const InvitationCodeInputs = () => {
   if (!user) return null;
 
   return (
-    <Box display="flex" flexWrap="wrap" height={400} onMouseMove={boxShadow.handleMouseMove}>
+    <Box 
+      display="flex" 
+      flexWrap="wrap" 
+      height={400} 
+      onMouseMove={boxShadow.handleMouseMove}
+      role="region"
+      aria-label="Invitation code entry form"
+    >
       <Card
         width={'100%'}
         mb={2}
@@ -113,19 +120,32 @@ export const InvitationCodeInputs = () => {
               ? `...or click Login below, if you've already created an account`
               : ''
           }
+          aria-live="polite"
         />
         <CardContent>
           <>
             {!user?.auth0Id && (
-              <>
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                }}
+                aria-label="Invitation details"
+              >
                 <TextField
                   autoComplete={'off'}
                   disabled={false}
                   fullWidth
-                  value={user?.invitationCode}
+                  value={user?.invitationCode || ''}
                   label="Enter your Invitation Code"
                   onChange={(e) => userActions.setUser({ ...user, invitationCode: e.target.value })}
                   variant="outlined"
+                  id="invitation-code-input"
+                  aria-required="true"
+                  aria-describedby="invitation-code-description"
+                  inputProps={{
+                    'aria-label': 'Invitation Code',
+                  }}
                   sx={{
                     mb: 2,
                     '& .MuiInputBase-input': {
@@ -140,15 +160,24 @@ export const InvitationCodeInputs = () => {
                     }
                   }}
                 />
+                <Typography id="invitation-code-description" sx={{ position: 'absolute', height: 1, width: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+                  Enter the invitation code from your wedding invitation
+                </Typography>
 
                 <TextField
                   fullWidth
                   disabled={false}
                   autoComplete={'off'}
-                  value={user?.firstName}
+                  value={user?.firstName || ''}
                   label="First Name"
                   onChange={(e) => userActions.setUser({ ...user, firstName: e.target.value })}
                   variant="outlined"
+                  id="firstname-input"
+                  aria-required="true"
+                  aria-describedby="firstname-description"
+                  inputProps={{
+                    'aria-label': 'First Name',
+                  }}
                   sx={{
                     marginBottom: 2,
                     '& .MuiInputBase-input': {
@@ -163,7 +192,10 @@ export const InvitationCodeInputs = () => {
                     }
                   }}
                 />
-              </>
+                <Typography id="firstname-description" sx={{ position: 'absolute', height: 1, width: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+                  Enter your first name as it appears on your invitation
+                </Typography>
+              </form>
             )}
           </>
         </CardContent>
@@ -175,6 +207,7 @@ export const InvitationCodeInputs = () => {
               fullWidth
               variant="contained"
               onClick={() => (user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser())}
+              aria-label={user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             >
               {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             </Button>
@@ -187,6 +220,15 @@ export const InvitationCodeInputs = () => {
                     window.localStorage.removeItem('user');
                     window.location.reload();
                   }}
+                  role="button"
+                  aria-label="Reset and enter a different name"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      window.localStorage.removeItem('user');
+                      window.location.reload();
+                    }
+                  }}
                 >
                   Click here
                 </Link>
@@ -197,9 +239,12 @@ export const InvitationCodeInputs = () => {
       </Card>
       {accessToken && user.guestId && (
         <>
-          <StephsFavoriteTypography mx="auto">OR</StephsFavoriteTypography>
+          <StephsFavoriteTypography mx="auto" aria-hidden="true">OR</StephsFavoriteTypography>
           <Card sx={{ width: '100%', mt: 2, pb: 2 }}>
-            <CardHeader subheader="Login with your existing account" />
+            <CardHeader 
+              subheader="Login with your existing account" 
+              aria-live="polite"
+            />
             <CardActions>
               <Button
                 fullWidth
@@ -212,6 +257,7 @@ export const InvitationCodeInputs = () => {
                       ? signInWithAuth0(user.guestId)
                       : console.log('no guestId');
                 }}
+                aria-label={auth0User ? 'Logout from your account' : 'Login with your existing account'}
               >
                 {auth0User ? 'Logout' : 'Login'}
               </Button>
