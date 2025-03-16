@@ -330,7 +330,7 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                   }
                 }}
               >
-                {user?.auth0Id ? "Stone Manor Inn, Lovettsville, VA" : "Lovettsville, VA"}
+                {user?.auth0Id ? "Stone Manor, Lovettsville, VA" : "Lovettsville, VA"}
               </LocationText>
             </Link>
           </LocationBox>
