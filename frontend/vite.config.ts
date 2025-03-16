@@ -5,9 +5,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
 import fs from 'fs';
 import { execSync } from 'child_process';
+import { Plugin } from 'vite';
 
 const env = process.env.VITE_ENV || 'development';
-const isProduction = process.env.DEPLOY_ENV === 'production';
+const isProduction = process.env.DEPLOY_ENV === 'prod';
+console.log(
+  `env: ${env}, isProduction: ${isProduction}, process.env.DEPLOY_ENV: ${process.env.DEPLOY_ENV}, process.env.VITE_ENV: ${process.env.VITE_ENV}`,
+);
 
 // Get current Git branch directly
 let gitBranch = 'unknown';
@@ -16,6 +20,23 @@ try {
 } catch (error) {
   console.warn('Could not determine Git branch:', error);
 }
+
+// Custom plugin to inject Lucky Orange script in production builds only
+const injectProductionScripts = (): Plugin => {
+  return {
+    name: 'inject-production-scripts',
+    transformIndexHtml(html) {
+      if (isProduction) {
+        // Add Lucky Orange script before closing body tag
+        return html.replace(
+          '</body>',
+          `  <script async defer src="https://tools.luckyorange.com/core/lo.js?site-id=0d258834"></script>\n  </body>`,
+        );
+      }
+      return html;
+    },
+  };
+};
 
 export default defineConfig({
   mode: isProduction ? 'production' : env,
@@ -34,6 +55,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html}', '**/*.{svg,png,jpg,gif}'],
       },
     }),
+    injectProductionScripts(),
   ],
   resolve: {
     alias: {
@@ -41,7 +63,7 @@ export default defineConfig({
     },
   },
   define: {
-    'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch)
+    'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
   },
   test: {
     environment: 'jsdom',
