@@ -49,7 +49,16 @@ export const BottomNav = () => {
   }, [stdStepper.currentStep]);
 
   return (
-    <Box position="fixed" bottom={0} width="100%" sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65}} component={Paper} elevation={5}>
+    <Box 
+      position="fixed" 
+      bottom={0} 
+      width="100%" 
+      sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65}} 
+      component={Paper} 
+      elevation={5}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <BottomNavigation
         sx={{ 
           backgroundColor: 'rgba(0,0,0,.7)', 
@@ -72,6 +81,7 @@ export const BottomNav = () => {
           showLabel={true}
           to={routes[Pages.Welcome].path!}
           icon={<HomeIcon />}
+          aria-label="Go to home page"
         />
         <BottomNavigationAction
           disabled={!auth0User}
@@ -81,6 +91,8 @@ export const BottomNav = () => {
           showLabel={true}
           to={routes[Pages.SaveTheDate].path!}
           icon={<ConnectWithoutContactIcon />}
+          aria-label="Go to Save the Date page"
+          aria-disabled={!auth0User}
         />
         <BottomNavigationAction
           color={activeLegalButtons}
@@ -89,31 +101,8 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<GavelIcon color={activeLegalButtons} />}
           onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
+          aria-label="View legal information and bureaucracy pages"
         />
-        {/*<BottomNavigationAction*/}
-        {/*  color={activeLegalButtons}*/}
-        {/*  sx={{ height: '100%', marginLeft: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
-        {/*  label="Privacy Policy"*/}
-        {/*  showLabel={true}*/}
-        {/*  icon={<ShieldIcon color={activeLegalButtons} />}*/}
-        {/*  onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}*/}
-        {/*/>*/}
-        {/*<BottomNavigationAction*/}
-        {/*  color={activeLegalButtons}*/}
-        {/*  sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
-        {/*  label="Terms of Service"*/}
-        {/*  showLabel={true}*/}
-        {/*  icon={<GavelIcon color={activeLegalButtons} />}*/}
-        {/*  onClick={() => handleNavigation(routes[Pages.TermsOfService].path!)}*/}
-        {/*/>*/}
-        {/*<BottomNavigationAction*/}
-        {/*  color={activeLegalButtons}*/}
-        {/*  sx={{ height: '100%', marginRight: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}*/}
-        {/*  label="About Us"*/}
-        {/*  showLabel={true}*/}
-        {/*  icon={<QuestionMark color={activeLegalButtons} />}*/}
-        {/*  onClick={() => handleNavigation(routes[Pages.AboutUs].path!)}*/}
-        {/*/>*/}
         {userIsAdmin && (
           <BottomNavigationAction
             label="Admin"
@@ -121,6 +110,7 @@ export const BottomNav = () => {
             showLabel={true}
             to={routes[Pages.Admin].path!}
             icon={<AdminPanelSettingsIcon />}
+            aria-label="Go to admin dashboard"
           />
         )}
         <BottomNavigationAction
@@ -128,8 +118,10 @@ export const BottomNav = () => {
           showLabel={true}
           icon={<ProfileIcon />}
           onClick={() => (auth0User ? logOutFromAuth0() : loginWithRedirect())}
+          aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
         />
       </BottomNavigation>
+      <AppVersionFooter />
     </Box>
   );
 };

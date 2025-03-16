@@ -79,6 +79,8 @@ export const ContactPreferenceItem = ({
         mb: 1,
         px: 1
       }}
+      role="listitem"
+      aria-labelledby={`${isEmail ? 'email' : 'phone'}-preference-title`}
     >
       <Box
         sx={{
@@ -103,6 +105,8 @@ export const ContactPreferenceItem = ({
             boxShadow: isEnabled ? 1 : 0
           }
         }}
+        role="group"
+        aria-label={`${value} notification preferences`}
       >
         {/* Card header */}
         <Box 
@@ -133,13 +137,20 @@ export const ContactPreferenceItem = ({
             </Avatar>
             
             <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ fontWeight: 500, lineHeight: 1.2 }}
+                id={`${isEmail ? 'email' : 'phone'}-preference-title`}
+              >
                 {value}
               </Typography>
               
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
                 {statusIcon && (
-                  <Box sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
+                  <Box 
+                    sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}
+                    aria-hidden="true"
+                  >
                     {statusIcon}
                   </Box>
                 )}
@@ -149,6 +160,7 @@ export const ContactPreferenceItem = ({
                     color: statusColor,
                     fontWeight: 500
                   }}
+                  role="status"
                 >
                   {statusText}
                 </Typography>
@@ -162,8 +174,24 @@ export const ContactPreferenceItem = ({
             onChange={onToggle}
             color={isVerified ? 'success' : 'primary'}
             size="medium"
+            inputProps={{
+              'aria-label': `${isEnabled ? 'Disable' : 'Enable'} ${isEmail ? 'email' : 'text message'} notifications`,
+              'aria-describedby': `${isEmail ? 'email' : 'sms'}-description`
+            }}
           />
         </Box>
+
+        {/* Hidden description for screen readers */}
+        <Typography 
+          id={`${isEmail ? 'email' : 'sms'}-description`}
+          sx={{ position: 'absolute', height: 1, width: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}
+        >
+          {isEnabled 
+            ? isVerified 
+              ? `${value} notifications are enabled and verified.` 
+              : `${value} notifications are enabled but need verification.`
+            : `${value} notifications are disabled.`}
+        </Typography>
         
         {/* Card content - only shown if enabled */}
         {isEnabled && (
@@ -175,9 +203,12 @@ export const ContactPreferenceItem = ({
               justifyContent: 'space-between',
               alignItems: 'center'
             }}
+            role="group"
+            aria-labelledby={`${isEmail ? 'email' : 'phone'}-contact-label`}
           >
             <Box>
               <Typography 
+                id={`${isEmail ? 'email' : 'phone'}-contact-label`}
                 variant="body2" 
                 sx={{ 
                   color: 'text.secondary',
@@ -203,6 +234,7 @@ export const ContactPreferenceItem = ({
               size="small"
               onClick={onEdit}
               startIcon={<EditOutlined />}
+              aria-label={`Edit ${isEmail ? 'email' : 'phone'} address`}
               sx={{ 
                 ml: 1,
                 whiteSpace: 'nowrap',
@@ -216,7 +248,10 @@ export const ContactPreferenceItem = ({
         
         {/* Coming soon badge - show only if relevant */}
         {isComingSoon && (
-          <Box sx={{ position: 'absolute', top: 8, right: 56 }}>
+          <Box 
+            sx={{ position: 'absolute', top: 8, right: 56 }}
+            aria-live="polite"
+          >
             <Chip
               label="Coming Soon"
               size="small"

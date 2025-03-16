@@ -36,40 +36,40 @@ export const useUser = () => {
   const { user: auth0User } = useAuth0();
 
   useEffect(() => {
-    if (findUserIdQuery.isLoading) {
+    if (findUserIdQuery?.isLoading) {
       setUserIdQuery(findUserIdQuery);
     }
-  }, [findUserIdQuery.isLoading]);
+  }, [findUserIdQuery?.isLoading]);
 
   useEffect(() => {
-    if (findUserIdQuery.status === 'success') {
+    if (findUserIdQuery?.status === 'success') {
       setUserIdQuery(findUserIdQuery);
     }
-  }, [findUserIdQuery.status]);
+  }, [findUserIdQuery?.status]);
 
   useEffect(() => {
-    if (findUserIdQuery.error) {
+    if (findUserIdQuery?.error) {
       setUserIdQuery(findUserIdQuery);
-      console.log(findUserIdQuery.error);
+      console.log(findUserIdQuery?.error);
     }
-  }, [findUserIdQuery.error, setUserIdQuery]);
+  }, [findUserIdQuery?.error, setUserIdQuery]);
 
   useEffect(() => {
-    if (findUserIdQuery.data) {
+    if (findUserIdQuery?.data) {
       const newUser = {
         ...user,
-        guestId: findUserIdQuery.data.guestId,
-        auth0Id: findUserIdQuery.data.auth0Id,
+        guestId: findUserIdQuery?.data.guestId,
+        auth0Id: findUserIdQuery?.data.auth0Id,
       };
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
     }
-  }, [findUserIdQuery.data, setUserIdQuery]);
+  }, [findUserIdQuery?.data, setUserIdQuery]);
 
   useEffect(() => {
-    if (auth0User && !getMeQuery.data && !getMeQuery.isLoading) {
+    if (auth0User && !getMeQuery?.data && !getMeQuery?.isLoading) {
       console.log('refetching me due to auth0User change')
-      getMeQuery.refetch()
+      getMeQuery?.refetch()
         .then((res) => {
           if (res.data) {
             setUser(res.data);
@@ -84,20 +84,20 @@ export const useUser = () => {
   
   // Additional effect specifically for getMeQuery data changes
   useEffect(() => {
-    if (getMeQuery.data) {
-      //console.log('getMeQuery data updated automatically:', getMeQuery.data);
+    if (getMeQuery?.data) {
+      //console.log('getMeQuery data updated automatically:', getMeQuery?.data);
       
       // Ensure roles are properly saved
       const updatedUser = {
-        ...getMeQuery.data,
-        roles: getMeQuery.data.roles || []
+        ...getMeQuery?.data,
+        roles: getMeQuery?.data.roles || []
       };
       //console.log('Setting updated user with roles:', updatedUser);
       
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
-  }, [getMeQuery.data, setUser]);
+  }, [getMeQuery?.data, setUser]);
 
   useEffect(() => {
     setUserIdQuery({ ...userIdQuery, error: null } as UseQueryResult<FindUserResponse | undefined, ApiError>);

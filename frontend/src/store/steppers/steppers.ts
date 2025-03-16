@@ -83,6 +83,14 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
       component: null,
       display: true,
     },
+    summary: {
+      id: 8,
+      completed: true,
+      label: 'Wedding Information Summary',
+      description: 'Review your information',
+      component: null,
+      display: true,
+    },
   },
 });
 

@@ -1,12 +1,31 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import SaveTheDateStepper from './SaveTheDateStepper';
-import { ThemeProvider } from '@mui/material/styles';
-import { createTheme } from '@mui/material/styles';
-import { RecoilRoot } from 'recoil';
+import { useTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import { userState } from '@/store/user';
-import { InvitationResponseEnum } from '@/types/api';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { mockUseTheme } from '../../../test-utils/mockContextProviders';
+
+// Mock theme hook
+jest.mock('@mui/material/styles', () => ({
+  ...jest.requireActual('@mui/material/styles'),
+  useTheme: jest.fn(),
+  styled: jest.requireActual('@mui/material/styles').styled,
+  stepConnectorClasses: {
+    alternativeLabel: 'alternativeLabel-class',
+    active: 'active-class',
+    completed: 'completed-class',
+    line: 'line-class',
+  },
+  stepLabelClasses: {
+    label: 'label-class',
+    completed: 'completed-class',
+  },
+  linearProgressClasses: {
+    colorPrimary: 'colorPrimary-class',
+    bar: 'bar-class',
+  },
+}));
 
 // Mock navigate
 const mockNavigate = jest.fn();
@@ -92,41 +111,42 @@ jest.mock('recoil', () => ({
   RecoilRoot: ({ children }: any) => children,
 }));
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3f51b5',
-    },
-    secondary: {
-      main: '#E9950C',
-    },
-    success: {
-      main: '#4caf50',
-    },
-    error: {
-      main: '#f44336',
-    },
-    warning: {
-      main: '#ff9800',
-    },
-    background: {
-      paper: '#121212',
-    },
-    common: {
-      white: '#ffffff',
-      black: '#000000'
-    }
-  },
-});
-
 describe('SaveTheDateStepper Component [wip]', () => {
+  beforeEach(() => {
+    // Mock the theme hook
+    mockUseTheme({
+      palette: {
+        mode: 'light',
+        primary: {
+          main: '#3f51b5',
+        },
+        secondary: {
+          main: '#E9950C',
+        },
+        success: {
+          main: '#4caf50',
+        },
+        error: {
+          main: '#f44336',
+        },
+        grey: {
+          200: '#eeeeee',
+          800: '#424242',
+        },
+      },
+      // Add other theme props that the component uses
+      applyStyles: () => ({
+        backgroundColor: '#f5f5f5',
+        borderColor: '#e0e0e0',
+      }),
+    });
+  });
+
   it('renders step buttons that are clickable [wip]', () => {
     render(
-      <ThemeProvider theme={theme}>
-        <BrowserRouter>
-          <SaveTheDateStepper />
-        </BrowserRouter>
-      </ThemeProvider>
+      <BrowserRouter>
+        <SaveTheDateStepper />
+      </BrowserRouter>
     );
     
     // Find all StepButtons

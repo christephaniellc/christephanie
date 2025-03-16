@@ -41,19 +41,63 @@ export const useAuth0Queries = () => {
     }, 5000); // Longer delay to ensure auth is complete and app is stable
   };
 
+  // Improved token refresh function with better error handling
   const getAccessTokenPleasePleasePlease = async () => {
     try {
-      if (!isAuthenticated) throw Error('User is not authenticated');
-    } catch (_e) {
-      await loginWithRedirect();
-    } finally {
-      console.log('getting access token');
-      await getAccessTokenSilently({
+      if (!isAuthenticated) {
+        console.log('User not authenticated, redirecting to login');
+        throw new Error('User is not authenticated');
+      }
+      
+      console.log('Attempting to refresh access token silently');
+      const token = await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
         },
+        // Set timeoutInSeconds to a lower value for faster testing
+        timeoutInSeconds: 10,
+        // Force a refresh rather than using a cached token
+        cacheMode: 'off'
       });
+      
+      console.log('Successfully refreshed access token');
+      return token;
+    } catch (error) {
+      console.error('Failed to get access token silently:', error);
+      
+      // If silent refresh fails, try redirect login
+      if (error instanceof Error && 
+         (error.message.includes('login_required') || 
+          error.message.includes('consent_required') || 
+          error.message.includes('interaction_required') ||
+          error.message === 'User is not authenticated')) {
+        
+        console.log('Silent refresh failed, redirecting to login');
+        await loginWithRedirect({
+          authorizationParams: {
+            audience: config.audience,
+          }
+        });
+      }
+      
+      throw error; // Propagate the error for handling upstream
     }
+  };
+  
+  // Helper function specifically for testing token expiry scenarios
+  const simulateTokenExpiry = async () => {
+    // This would only be used in development/testing
+    // Check if we're in production based on window.location.hostname
+    const isProduction = 
+      typeof window !== 'undefined' && 
+      window.location.hostname === 'www.wedding.christephanie.com';
+    
+    if (!isProduction) {
+      console.log('Simulating token expiry for testing');
+      localStorage.removeItem('@@auth0spajs@@::' + config.clientId + '::' + config.audience + '::openid profile email');
+      return true;
+    }
+    return false;
   };
 
   useEffect(() => {
@@ -71,5 +115,11 @@ export const useAuth0Queries = () => {
     }
   }, [auth0User, userActions.setUser, user]);
 
-  return { getAccessTokenPleasePleasePlease, logOutFromAuth0, signInWithAuth0, updateClientInfo };
+  return { 
+    getAccessTokenPleasePleasePlease, 
+    logOutFromAuth0, 
+    signInWithAuth0, 
+    updateClientInfo,
+    simulateTokenExpiry   // Include this for testing purposes
+  };
 };

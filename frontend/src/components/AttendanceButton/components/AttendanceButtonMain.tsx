@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import { useAttendanceButtonMain } from '../hooks/useAttendanceButtonMain';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
+import { InvitationResponseEnum } from '@/types/api';
 
 interface AttendanceButtonMainProps {
   guestId: string;
@@ -32,6 +33,52 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
     setModalOpen(false);
   };
   
+  // Function to handle circular toggling of attendance status
+  const toggleAttendanceStatus = () => {
+    if (!guest || !familyActions.patchFamilyGuestMutation.isIdle) return;
+    
+    let newStatus: InvitationResponseEnum;
+    
+    switch (guest.rsvp?.invitationResponse) {
+      case InvitationResponseEnum.Pending:
+        newStatus = InvitationResponseEnum.Interested;
+        break;
+      case InvitationResponseEnum.Interested:
+        newStatus = InvitationResponseEnum.Declined;
+        break;
+      case InvitationResponseEnum.Declined:
+      default:
+        newStatus = InvitationResponseEnum.Pending;
+        break;
+    }
+    
+    familyActions.patchFamilyGuestMutation.mutate({
+      updatedGuest: {
+        guestId,
+        invitationResponse: newStatus,
+      },
+    });
+  };
+  
+  // Determine the click handler based on the current step
+  const handleClick = isAttendanceStep ? toggleAttendanceStatus : handleOpenModal;
+  
+  // Determine the aria label based on the current status
+  const getAriaLabel = () => {
+    if (!guest) return 'Loading attendance options';
+    
+    const currentStatus = guest.rsvp?.invitationResponse;
+    const firstName = guest.firstName || 'Guest';
+    
+    if (isAttendanceStep) {
+      // On attendance step - describe toggle behavior
+      return `${firstName}'s attendance status: ${currentStatus}. Click to change status.`;
+    } else {
+      // On other steps - describe modal opening behavior
+      return `${firstName}'s attendance status: ${currentStatus}. Click to open detailed RSVP options.`;
+    }
+  };
+
   return (
     <>
       <Button
@@ -39,7 +86,11 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
           !familyActions.patchFamilyGuestMutation.isIdle ||
           familyActions.getFamilyUnitQuery.isFetching
         }
-        onClick={handleOpenModal}
+        onClick={handleClick}
+        aria-label={getAriaLabel()}
+        aria-haspopup={!isAttendanceStep}
+        aria-expanded={modalOpen}
+        aria-busy={!familyActions.patchFamilyGuestMutation.isIdle}
         sx={{
           alignItems: 'flex-start',
           boxShadow: 1,
@@ -58,7 +109,12 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
           filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
-        <Box display="flex" alignItems="flex-start" width="100%" sx={{ height: 'auto', minHeight: '100%' }}>
+        <Box 
+          display="flex" 
+          alignItems="flex-start" 
+          width="100%" 
+          sx={{ height: 'auto', minHeight: '100%' }}
+        >
           {guest && (
             <LargeAttendanceButton
               guestId={guest.guestId}
