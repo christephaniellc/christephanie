@@ -112,7 +112,7 @@ function SaveTheDatePage() {
                 !familyActions.getFamilyUnitQuery.isError &&
                 family &&
                 family.guests &&
-                family.guests.length > 1 &&
+                family.guests.length > 0 &&
                 family.guests.map((guest: GuestViewModel) => (
                   <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
                 ))}
