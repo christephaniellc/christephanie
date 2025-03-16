@@ -1,11 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import WelcomeStepper from '../WelcomeStepper';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { RecoilRoot } from 'recoil';
 import { BrowserRouter } from 'react-router-dom';
-import { userState } from '@/store/user';
-import { InvitationResponseEnum } from '@/types/api';
+import WelcomeStepper from '../index';
+import { InvitationResponseEnum } from '../../../types/api';
 
 // Create a user state mock factory to support different invitation responses
 const createUserStateMock = (invitationResponse = 'Pending') => ({

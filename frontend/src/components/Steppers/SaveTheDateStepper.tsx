@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 
 import { useFamily } from '@/store/family';
 import IconButton from '@mui/material/IconButton';
@@ -41,6 +42,7 @@ import Container from '@mui/material/Container';
 export default function SaveTheDateStepper() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user: auth0User } = useAuth0();
 
   const [_, familyActions] = useFamily();
   const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);

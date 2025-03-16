@@ -1,7 +1,7 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import { useFamily } from '@/store/family';
-import React, { useMemo } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
 import { GuestViewModel } from '@/types/api';
@@ -11,10 +11,8 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
-import {
-  StephsActualFavoriteTypography,
-
-} from '@/components/AttendanceButton/AttendanceButton';
+import SummaryView from '@/components/SummaryView';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
@@ -37,7 +35,7 @@ function SaveTheDatePage() {
   const theme = useTheme();
   const navigate = useNavigate();
   const genericQuestions = useMemo(
-    () => ['comments', 'mailingAddress'].includes(stdStepper.currentStep[0]),
+    () => ['comments', 'mailingAddress', 'summary'].includes(stdStepper.currentStep[0]),
     [stdStepper.currentStep],
   );
   const FamilyQueryQuestion = useMemo(() => {
@@ -46,6 +44,8 @@ function SaveTheDatePage() {
         return <AutosizedTextArea />;
       case 'mailingAddress':
         return <AddressEnvelope />;
+      case 'summary':
+        return <SummaryView />;
       default:
         return <></>;
     }
@@ -59,48 +59,75 @@ function SaveTheDatePage() {
 
   const contentHeightWithStepper = useMemo(() => {
     // Use full height for generic questions to allow scrolling
-    return genericQuestions ? '100%' : `${contentHeight - 140}px`
+    return genericQuestions ? '100%' : `${contentHeight - 140}px`;
   }, [contentHeight, genericQuestions]);
 
   const remainingQuestionHeight = useMemo(() => {
     return genericQuestions ? `${contentHeight - 230}px` : 0;
   }, [contentHeight, genericQuestions]);
 
+  // Current step name for accessibility labels
+  const currentStepName = stdStepper.currentStep[0] || 'attendance';
+  
   return (
-    <Box>
+    <Box role="main" aria-label="Save the date form">
       <SaveTheDateStepper />
       <Box
         component={Container}
         onMouseMove={handleMouseMove}
         pb={genericQuestions ? 2 : 10}
         px={2}
+        role="region"
+        aria-label={`${currentStepName} section`}
         sx={{
           zIndex: 50,
           display: 'flex',
           flexWrap: 'wrap',
-          backdropFilter: 'blur(20px)',
           position: 'relative',
           height: contentHeightWithStepper,
           overflow: 'hidden',
         }}
       >
         <MtvAnimatedTitle />
-        <ButtonsContainer
-          sx={{
-          }}
-        >
-          {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
-          {!genericQuestions && family && family.guests.length === 0 && (
-            <AttendanceButton guestId={'0'} />
+        <ButtonsContainer sx={{}}>
+          {(!auth0User && (
+            <LoadingBox isError={true} errorMessage={'Please log in to continue.'} />
+          )) || (
+            <>
+              {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
+              {familyActions.getFamilyUnitQuery.isError && (
+                <LoadingBox
+                  isError={true}
+                  errorMessage={
+                    familyActions.getFamilyUnitQuery.error?.description ||
+                    'Your session has expired. Please refresh and try again.'
+                  }
+                />
+              )}
+              {!genericQuestions &&
+                !familyActions.getFamilyUnitQuery.isError &&
+                family &&
+                family.guests.length === 0 && <AttendanceButton guestId={'0'} />}
+              {!genericQuestions &&
+                !familyActions.getFamilyUnitQuery.isError &&
+                family &&
+                family.guests &&
+                family.guests.length > 0 &&
+                family.guests.map((guest: GuestViewModel) => (
+                  <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+                ))}
+              {genericQuestions && !familyActions.getFamilyUnitQuery.isError && (
+                <Box 
+                  height={remainingQuestionHeight} 
+                  sx={{ overflow: 'auto' }}
+                  role="region"
+                  aria-label={`${currentStepName} form section`}
+                >
+                  {FamilyQueryQuestion}
+                </Box>
+              )}
+            </>
           )}
-          {!genericQuestions &&
-            family &&
-            family.guests &&
-            family.guests.length > 1 &&
-            family.guests.map((guest: GuestViewModel) => (
-              <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-            ))}
-          {genericQuestions && <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>}
         </ButtonsContainer>
       </Box>
       <Box
@@ -119,6 +146,8 @@ function SaveTheDatePage() {
       >
         {tabIndex < 10 && (
           <Box
+            role="navigation"
+            aria-label="Form navigation"
             sx={{
               width: '100%',
               height: '100%',
@@ -131,11 +160,29 @@ function SaveTheDatePage() {
             <Button
               variant="outlined"
               color="error"
+              aria-label="Go back to previous step"
               sx={{
                 backdropFilter: 'blur(20px)',
                 backgroundColor: 'rgba(0,0,0,.8)',
                 display: tabIndex > 0 ? 'inherit' : 'none',
                 flexShrink: 0,
+              }}
+              onClick={() => {
+                familyActions.getFamily();
+
+                // Find previous visible step
+                const stepsArray = Object.entries(saveTheDateSteps);
+                let prevIndex = tabIndex - 1;
+
+                // Find the previous visible step
+                while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
+                  prevIndex--;
+                }
+
+                // If we found a previous visible step, navigate to it
+                if (prevIndex >= 0) {
+                  handleNavigateToStep(stepsArray[prevIndex][0]);
+                }
               }}
             >
               <StephsActualFavoriteTypography
@@ -148,23 +195,6 @@ function SaveTheDatePage() {
                   )}`,
                   color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
-                onClick={() => {
-                  familyActions.getFamily();
-
-                  // Find previous visible step
-                  const stepsArray = Object.entries(saveTheDateSteps);
-                  let prevIndex = tabIndex - 1;
-
-                  // Find the previous visible step
-                  while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
-                    prevIndex--;
-                  }
-
-                  // If we found a previous visible step, navigate to it
-                  if (prevIndex >= 0) {
-                    handleNavigateToStep(stepsArray[prevIndex][0]);
-                  }
-                }}
               >
                 Wait, go back
               </StephsActualFavoriteTypography>
@@ -175,6 +205,7 @@ function SaveTheDatePage() {
               color={
                 stdStepper.currentStep[1].completed ? 'success' : ('error' as 'success' | 'error')
               }
+              aria-label={tabIndex < stdStepper.totalTabs - 1 ? "Continue to next step" : "Finish and submit form"}
               sx={{
                 flexShrink: 0,
                 backdropFilter: 'blur(20px)',
@@ -193,22 +224,27 @@ function SaveTheDatePage() {
                 // We don't want to use the all declined/pending logic to skip directly to the end
                 // The user should go through each step in order
                 // This allows them to see the mailing address step even if declined/pending
-
-                // Otherwise find next visible step
-                const stepsArray = Object.entries(saveTheDateSteps);
-                let nextIndex = tabIndex + 1;
-
-                // Find the next visible step
-                while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
-                  nextIndex++;
-                }
-
-                // If we found a next visible step, navigate to it
-                if (nextIndex < stepsArray.length) {
-                  handleNavigateToStep(stepsArray[nextIndex][0]);
+                
+                // If we're at the comments step (last step before summary), navigate to summary
+                if (stdStepper.currentStep[0] === 'comments') {
+                  handleNavigateToStep('summary');
                 } else {
-                  // If no more visible steps, navigate home
-                  navigate('/');
+                  // Otherwise find next visible step
+                  const stepsArray = Object.entries(saveTheDateSteps);
+                  let nextIndex = tabIndex + 1;
+  
+                  // Find the next visible step
+                  while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
+                    nextIndex++;
+                  }
+  
+                  // If we found a next visible step, navigate to it
+                  if (nextIndex < stepsArray.length) {
+                    handleNavigateToStep(stepsArray[nextIndex][0]);
+                  } else {
+                    // If no more visible steps, navigate home
+                    navigate('/');
+                  }
                 }
               }}
             >

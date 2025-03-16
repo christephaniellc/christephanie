@@ -50,7 +50,7 @@ export const invitationButtonSelectorState = selector<string>({
       if (user.auth0Id) return 'Account Created!';
       if (user.guestId) return 'Create Account';
     }
-    return `${userIdQuery?.data}`;
+    return 'Something went wrong';
   }
 });
 
