@@ -19,6 +19,7 @@ export const useAuth0Queries = () => {
   const logOutFromAuth0 = async () => {
     return await logout({ returnTo: config.returnTo } as LogoutOptions).then(() => {
       localStorage.clear();
+      window?.location.reload();
     });
   };
 
