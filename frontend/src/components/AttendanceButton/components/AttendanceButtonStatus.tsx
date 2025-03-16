@@ -126,7 +126,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
               }}
             >
               {isMobile
-                ? `Update response (${daysUntilDeadline} days left)`
+                ? `Click to update response (${daysUntilDeadline} days left)`
                 : `Click to update your response. You have ${daysUntilDeadline} days left to respond.`}
             </Typography>
           </Paper>
