@@ -75,7 +75,6 @@ function SaveTheDatePage() {
           zIndex: 50,
           display: 'flex',
           flexWrap: 'wrap',
-          backdropFilter: 'blur(20px)',
           position: 'relative',
           height: contentHeightWithStepper,
           overflow: 'hidden',
