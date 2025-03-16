@@ -4,7 +4,7 @@ import { styled, keyframes, darken } from '@mui/system';
 import { 
   FormControl, FormLabel, Button, Box, CircularProgress, 
   Typography, Card, useTheme, Fade, Zoom, Paper, 
-  Tooltip, IconButton
+  Tooltip, IconButton, Modal, useMediaQuery, SwipeableDrawer
 } from '@mui/material';
 import { useMutation, UseMutationResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/Api';
@@ -21,7 +21,8 @@ import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfi
 import TvSnow from '@/components/MtvAnimatedTitle/TvSnow';
 import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
-import { MoodBad, SentimentDissatisfied } from '@mui/icons-material';
+import { MoodBad, SentimentDissatisfied, Close } from '@mui/icons-material';
+import isMobile from '@/utils/is-mobile';
 
 // Common emojis for a wedding context
 const WEDDING_EMOJIS = ['❤️', '💍', '🎉', '🥂', '🍰', '💐', '🕊️', '✨', '🎊', '👰', '🤵', '🎵', '🏔️', '🏕️', '🌲'];
@@ -101,9 +102,11 @@ export default function AutosizedTextArea() {
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [activeCelebrationEmojis, setActiveCelebrationEmojis] = useState([]);
   const [showSnow, setShowSnow] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const textareaRef = useRef(null);
   const mouthOpenIcons = [SentimentVerySatisfiedIcon, MoodBad, SentimentDissatisfied];
   const RandomIcon = mouthOpenIcons[Math.floor(Math.random() * mouthOpenIcons.length)];
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
 
   // Create random emoji positions for celebration
@@ -176,6 +179,17 @@ export default function AutosizedTextArea() {
       textarea.selectionStart = start + emoji.length;
       textarea.selectionEnd = start + emoji.length;
     }, 0);
+  };
+  
+  // Handle modal open/close
+  const handleModalOpen = () => {
+    if (isMobile) {
+      setModalOpen(true);
+    }
+  };
+  
+  const handleModalClose = () => {
+    setModalOpen(false);
   };
 
   const isFetching = mutationState.status === 'pending';
@@ -270,6 +284,233 @@ export default function AutosizedTextArea() {
     return () => clearInterval(interval);
   }, []);
 
+  // Content to be rendered in both regular and modal views
+  const renderCardContent = (isModal = false) => (
+    <Card 
+      elevation={isModal ? 8 : 4}
+      sx={{
+        width: isModal ? '100%' : { xs: '95%', sm: 450, md: 500 },
+        borderRadius: 2,
+        p: 3,
+        background: theme.palette.mode === 'dark' 
+          ? 'linear-gradient(135deg, #171717 0%, #262626 100%)' 
+          : 'linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%)',
+        border: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#e0e0e0'}`,
+        boxShadow: isModal ? undefined : boxShadow,
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        animation: isSuccess ? `${pulseEffect} 1.5s ease-in-out` : 'none',
+        position: 'relative',
+        ...(isModal && {
+          maxHeight: '80vh',
+          overflowY: 'auto'
+        })
+      }}
+    >
+      <StephsActualFavoriteTypography
+        variant="h5"
+        sx={{
+          textAlign: 'center',
+          mb: 3,
+          color: theme.palette.secondary.main,
+          textShadow: `3px 3px 0 ${darken(theme.palette.secondary.dark, 0.5)}`,
+          animation: `${floatAnimation} 3s infinite ease-in-out`,
+        }}
+      >
+        Share Your Thoughts
+      </StephsActualFavoriteTypography>
+      
+      <FormControl sx={{ width: '100%' }}>
+        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <FormLabel
+            sx={{ 
+              color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark,
+              fontWeight: 'bold',
+            }}
+          >
+            Your message
+          </FormLabel>
+          
+          <Tooltip title="Add emoji">
+            <IconButton 
+              size="small" 
+              color="secondary"
+              onClick={() => setShowEmojis(!showEmojis)}
+              sx={{ 
+                animation: showEmojis ? `${glowEffect} 2s infinite` : 'none',
+                width: 40,
+                height: 40,
+                position: 'relative',
+              }}
+            >
+              {/* Display either open or closed mouth based on state */}
+              <Box sx={{ 
+                display: 'flex',
+                alignItems: 'center', 
+                justifyContent: 'center',
+              }}>
+                {showOpenMouth ? (
+                  <RandomIcon
+                    color="secondary"
+                    sx={{ fontSize: 24 }}
+                  />
+                ) : (
+                  <SentimentSatisfiedAltIcon 
+                    color="secondary"
+                    sx={{ fontSize: 24 }}
+                  />
+                )}
+              </Box>
+            </IconButton>
+          </Tooltip>
+        </Box>
+        
+        {/* Emoji picker */}
+        <Fade in={showEmojis}>
+          <Paper 
+            elevation={3}
+            sx={{ 
+              p: 1, 
+              mb: 2, 
+              display: showEmojis ? 'flex' : 'none',
+              flexWrap: 'wrap',
+              gap: 0.5,
+              maxWidth: '100%',
+              borderRadius: 2,
+              background: theme.palette.background.paper,
+            }}
+          >
+            {WEDDING_EMOJIS.map((emoji, index) => (
+              <Box 
+                key={index}
+                component="button"
+                onClick={() => insertEmoji(emoji)}
+                sx={{
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: rem(20),
+                  cursor: 'pointer',
+                  borderRadius: '50%',
+                  p: 0.5,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    transform: 'scale(1.2)',
+                    background: theme.palette.action.hover,
+                  }
+                }}
+              >
+                {emoji}
+              </Box>
+            ))}
+          </Paper>
+        </Fade>
+        
+        {/* Textarea */}
+        <Textarea
+          ref={textareaRef}
+          aria-label="comment text area"
+          minRows={4}
+          placeholder={family?.invitationResponseNotes || promptSuggestion}
+          value={comment}
+          onChange={handleTyping}
+          onFocus={handleModalOpen}
+          disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
+        />
+        
+        {/* Character counter */}
+        <Box sx={{ 
+          display: 'flex',
+          justifyContent: 'flex-end', 
+          mt: 0.5,
+          fontSize: rem(12),
+          fontStyle: 'italic',
+          color: comment.length > 500 ? 'error.main' : 'text.secondary',
+        }}>
+          {comment.length}/500 characters
+        </Box>
+
+        {/* Suggestion prompt */}
+        <Fade in={!comment && !family?.invitationResponseNotes}>
+          <Box sx={{ 
+            mt: 1.5, 
+            fontSize: rem(13),
+            fontStyle: 'italic',
+            color: theme.palette.text.secondary,
+            animation: `${pulseEffect} 4s infinite`,
+          }}>
+            <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
+              Need inspiration? How about: "{promptSuggestion}"
+            </Typography>
+          </Box>
+        </Fade>
+
+        {/* Row for the send button and any extra info */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleSend}
+            disabled={
+              isFetching || 
+              !comment || 
+              comment.length > 500 ||
+              familyActions.getFamilyUnitQuery.isFetching
+            }
+            startIcon={isUnchanged ? <CelebrationIcon /> : <SendIcon />}
+            sx={{
+              px: 3,
+              py: 1.2,
+              borderRadius: 8,
+              fontWeight: 'bold',
+              transition: 'all 0.3s',
+              '&:not(:disabled):hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)',
+              }
+            }}
+          >
+            {isError ? 'Try Again' : ''}
+            {isFetching ? 'Sending...' : ''}
+            {isIdle && !isUnchanged ? 'Send Message' : ''}
+            {(isIdle || isSuccess) && isUnchanged ? 'Message Sent!' : ''}
+          </Button>
+        </Box>
+
+        {/* Status messages */}
+        <Box sx={{ mt: 2, minHeight: '40px' }}>
+          {isFetching && (
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CircularProgress size={20} sx={{ mr: 1 }} color="secondary" />
+              <Typography variant="body2">Sending your message...</Typography>
+            </Box>
+          )}
+          
+          {isError && (
+            <Box sx={{ color: 'error.main' }}>
+              <Typography variant="body2">
+                Error: {(error as ApiError)?.description || 'Something went wrong. Please try again.'}
+              </Typography>
+            </Box>
+          )}
+          
+          {!!data && !isFetching && (
+            <Box sx={{ 
+              color: 'success.main',
+              p: 1,
+              borderLeft: `4px solid ${theme.palette.success.main}`,
+              bgcolor: theme.palette.success.light + '20',
+              borderRadius: '4px',
+            }}>
+              <Typography variant="body2">
+                Thank you for your message! We've saved it and look forward to seeing you at the wedding!
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </FormControl>
+    </Card>
+  );
+
   return (
     <Box
       display="flex"
@@ -299,226 +540,77 @@ export default function AutosizedTextArea() {
       {/* TV snow effect while loading */}
       {showSnow && <TvSnow />}
       
-      <Zoom in timeout={800}>
-        <Card 
-          elevation={4}
-          sx={{
-            width: { xs: '95%', sm: 450, md: 500 },
-            borderRadius: 2,
-            p: 3,
-            background: theme.palette.mode === 'dark' 
-              ? 'linear-gradient(135deg, #171717 0%, #262626 100%)' 
-              : 'linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%)',
-            border: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#e0e0e0'}`,
-            boxShadow,
-            overflow: 'hidden',
-            transition: 'all 0.3s ease',
-            animation: isSuccess ? `${pulseEffect} 1.5s ease-in-out` : 'none',
+      {/* Bottom swipeable drawer for mobile devices */}
+      <SwipeableDrawer
+        anchor="bottom"
+        open={modalOpen && isMobile}
+        onClose={handleModalClose}
+        onOpen={() => {}}
+        disableBackdropTransition={false}
+        disableDiscovery={true}
+        swipeAreaWidth={0}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        PaperProps={{
+          sx: {
+            height: 'auto',
+            maxHeight: '90vh',
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            background: 'transparent',
+            overflow: 'visible',
+          }
+        }}
+      >
+        <Box 
+          sx={{ 
+            width: '100%', 
             position: 'relative',
+            pt: 1
           }}
         >
-          <StephsActualFavoriteTypography
-            variant="h5"
+          {/* Drag indicator */}
+          <Box 
+            sx={{ 
+              width: 40, 
+              height: 5, 
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)',
+              borderRadius: 2,
+              mx: 'auto',
+              mb: 1
+            }} 
+          />
+          
+          <IconButton
+            onClick={handleModalClose}
             sx={{
-              textAlign: 'center',
-              mb: 3,
-              color: theme.palette.secondary.main,
-              textShadow: `3px 3px 0 ${darken(theme.palette.secondary.dark, 0.5)}`,
-              animation: `${floatAnimation} 3s infinite ease-in-out`,
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 10,
+              color: theme.palette.common.white,
+              backgroundColor: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+              },
             }}
           >
-            Share Your Thoughts
-          </StephsActualFavoriteTypography>
+            <Close />
+          </IconButton>
           
-          <FormControl sx={{ width: '100%' }}>
-            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <FormLabel
-                sx={{ 
-                  color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark,
-                  fontWeight: 'bold',
-                }}
-              >
-                Your message
-              </FormLabel>
-              
-              <Tooltip title="Add emoji">
-                <IconButton 
-                  size="small" 
-                  color="secondary"
-                  onClick={() => setShowEmojis(!showEmojis)}
-                  sx={{ 
-                    animation: showEmojis ? `${glowEffect} 2s infinite` : 'none',
-                    width: 40,
-                    height: 40,
-                    position: 'relative',
-                  }}
-                >
-                  {/* Display either open or closed mouth based on state */}
-                  <Box sx={{ 
-                    display: 'flex',
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                  }}>
-                    {showOpenMouth ? (
-                      <RandomIcon
-                        color="secondary"
-                        sx={{ fontSize: 24 }}
-                      />
-                    ) : (
-                      <SentimentSatisfiedAltIcon 
-                        color="secondary"
-                        sx={{ fontSize: 24 }}
-                      />
-                    )}
-                  </Box>
-                </IconButton>
-              </Tooltip>
-            </Box>
-            
-            {/* Emoji picker */}
-            <Fade in={showEmojis}>
-              <Paper 
-                elevation={3}
-                sx={{ 
-                  p: 1, 
-                  mb: 2, 
-                  display: showEmojis ? 'flex' : 'none',
-                  flexWrap: 'wrap',
-                  gap: 0.5,
-                  maxWidth: '100%',
-                  borderRadius: 2,
-                  background: theme.palette.background.paper,
-                }}
-              >
-                {WEDDING_EMOJIS.map((emoji, index) => (
-                  <Box 
-                    key={index}
-                    component="button"
-                    onClick={() => insertEmoji(emoji)}
-                    sx={{
-                      border: 'none',
-                      background: 'transparent',
-                      fontSize: rem(20),
-                      cursor: 'pointer',
-                      borderRadius: '50%',
-                      p: 0.5,
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        transform: 'scale(1.2)',
-                        background: theme.palette.action.hover,
-                      }
-                    }}
-                  >
-                    {emoji}
-                  </Box>
-                ))}
-              </Paper>
-            </Fade>
-            
-            {/* Textarea */}
-            <Textarea
-              ref={textareaRef}
-              aria-label="comment text area"
-              minRows={4}
-              placeholder={family?.invitationResponseNotes || promptSuggestion}
-              value={comment}
-              onChange={handleTyping}
-              disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
-            />
-            
-            {/* Character counter */}
-            <Box sx={{ 
-              display: 'flex',
-              justifyContent: 'flex-end', 
-              mt: 0.5,
-              fontSize: rem(12),
-              fontStyle: 'italic',
-              color: comment.length > 500 ? 'error.main' : 'text.secondary',
-            }}>
-              {comment.length}/500 characters
-            </Box>
-
-            {/* Suggestion prompt */}
-            <Fade in={!comment && !family?.invitationResponseNotes}>
-              <Box sx={{ 
-                mt: 1.5, 
-                fontSize: rem(13),
-                fontStyle: 'italic',
-                color: theme.palette.text.secondary,
-                animation: `${pulseEffect} 4s infinite`,
-              }}>
-                <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
-                  Need inspiration? How about: "{promptSuggestion}"
-                </Typography>
-              </Box>
-            </Fade>
-
-            {/* Row for the send button and any extra info */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleSend}
-                disabled={
-                  isFetching || 
-                  !comment || 
-                  comment.length > 500 ||
-                  familyActions.getFamilyUnitQuery.isFetching
-                }
-                startIcon={isUnchanged ? <CelebrationIcon /> : <SendIcon />}
-                sx={{
-                  px: 3,
-                  py: 1.2,
-                  borderRadius: 8,
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  '&:not(:disabled):hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)',
-                  }
-                }}
-              >
-                {isError ? 'Try Again' : ''}
-                {isFetching ? 'Sending...' : ''}
-                {isIdle && !isUnchanged ? 'Send Message' : ''}
-                {(isIdle || isSuccess) && isUnchanged ? 'Message Sent!' : ''}
-              </Button>
-            </Box>
-
-            {/* Status messages */}
-            <Box sx={{ mt: 2, minHeight: '40px' }}>
-              {isFetching && (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <CircularProgress size={20} sx={{ mr: 1 }} color="secondary" />
-                  <Typography variant="body2">Sending your message...</Typography>
-                </Box>
-              )}
-              
-              {isError && (
-                <Box sx={{ color: 'error.main' }}>
-                  <Typography variant="body2">
-                    Error: {(error as ApiError)?.description || 'Something went wrong. Please try again.'}
-                  </Typography>
-                </Box>
-              )}
-              
-              {!!data && !isFetching && (
-                <Box sx={{ 
-                  color: 'success.main',
-                  p: 1,
-                  borderLeft: `4px solid ${theme.palette.success.main}`,
-                  bgcolor: theme.palette.success.light + '20',
-                  borderRadius: '4px',
-                }}>
-                  <Typography variant="body2">
-                    Thank you for your message! We've saved it and look forward to seeing you at the wedding!
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </FormControl>
-        </Card>
-      </Zoom>
+          <Box sx={{ p: 2 }}>
+            {renderCardContent(true)}
+          </Box>
+        </Box>
+      </SwipeableDrawer>
+      
+      {/* Normal view for non-mobile */}
+      {!modalOpen && 
+        <Zoom in timeout={800}>
+          {renderCardContent(false)}
+        </Zoom>
+      }
       
       <Box sx={{ 
         width: '100%', 
