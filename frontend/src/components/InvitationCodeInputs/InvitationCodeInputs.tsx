@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Card,
@@ -19,9 +19,14 @@ import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { rem } from 'polished';
+import { useNavigate } from 'react-router-dom';
+import { stdStepperState } from '@/store/steppers/steppers';
+import routes from '@/routes';
+import { Pages } from '@/routes/types';
 
 export const InvitationCodeInputs = () => {
   const api = useApiContext();
+  const navigate = useNavigate();
   const [user, userActions] = useUser();
   const invitationButtonText = useRecoilValue(invitationButtonSelectorState);
   const { user: auth0User, isAuthenticated, getAccessTokenSilently } = useAuth0();
@@ -30,6 +35,14 @@ export const InvitationCodeInputs = () => {
 
   // Store the access token in state so we don't trigger errors during render.
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [hasAuthed, setHasAuthed] = useState(false);
+
+  useEffect(() => {
+    if (!!auth0User && !hasAuthed) {
+      setHasAuthed(true);
+    }
+  }, [auth0User]);
+
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -54,10 +67,23 @@ export const InvitationCodeInputs = () => {
     fetchToken();
   }, [isAuthenticated, getAccessTokenSilently]);
 
+  const stdStepper = useRecoilValue(stdStepperState);
+  const firstIncompleteStep = useMemo(() => {
+    const incompleteStep = Object.values(stdStepper.steps).find((step) => !step.completed);
+    return incompleteStep ? incompleteStep[0] : null;
+  }, [stdStepper.steps]);
+
+  useEffect(() => {
+    if (hasAuthed && firstIncompleteStep !== null) {
+      navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
+    }
+  }, [hasAuthed, firstIncompleteStep]);
+
   const handleFindUser = async () => {
     const result = await userActions.findUserIdQuery?.refetch();
     if (result && result.data && result.data.auth0Id) {
       userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
+      signInWithAuth0(result.data.guestId);
     }
   };
 
