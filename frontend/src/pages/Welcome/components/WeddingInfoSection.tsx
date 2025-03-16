@@ -140,9 +140,15 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
 
         {/* Wedding details with date and location */}
         <WeddingDetailsBox>
-        <Box>
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {/* Date Section */}
-          <DateBox>
+          <DateBox
+          sx={{
+            display: 'flex',
+            justifyContent: 'center', // Ensure content is centered
+            width: '100%',
+            maxWidth: '100%'
+          }}>
             <CalendarMonth 
               sx={{ 
                 mr: 1,
@@ -225,13 +231,15 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                   
                   <DateText 
                     variant="h4"
-                    sx={{              
+                    sx={{
                       fontWeight: '1000',  
                       textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7), 2px 2px 2px #000000',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
                       position: 'relative',
                       zIndex: 1, // Ensure text stays in front of sparkles
+                      width: '100%',
+                      textAlign: 'center', // Explicitly center the text
                       // Define bounce animation keyframes
                       '@keyframes dateBounce': {
                         '0%': { transform: 'translateY(0)' },

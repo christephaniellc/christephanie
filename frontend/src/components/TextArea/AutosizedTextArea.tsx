@@ -201,10 +201,7 @@ export default function AutosizedTextArea() {
   // Generate prompt ideas for user suggestions
   const promptIdeas = [
     "Can't wait to celebrate with you!",
-    "Any song requests for the DJ?",
-    "Dietary preferences we should know?",
-    "Looking forward to dancing the night away!",
-    "Excited to see the beautiful venue!",
+    "This website rules!",
   ];
 
   const getRandomPrompt = () => promptIdeas[Math.floor(Math.random() * promptIdeas.length)];
