@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -89,26 +89,51 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     enabled: false,
   }) as UseQueryResult<FindUserResponse | undefined, ApiError>;
 
+  const { getAccessTokenPleasePleasePlease } = useAuth0Queries();
+
+  // Helper function to handle token expiration with retry logic
+  const handleTokenExpiration = useCallback((failureCount: number, error: ApiError) => {
+    console.log(`API error occurred (attempt ${failureCount}):`, error);
+    
+    // If we have a 401 Unauthorized error (token expired)
+    if (error.status === 401) {
+      console.log('Token expired or authentication error detected, attempting to refresh...');
+      
+      // On first retry, try to refresh the token
+      if (failureCount <= 1) {
+        // Schedule token refresh as a side effect
+        getAccessTokenPleasePleasePlease()
+          .catch(refreshError => {
+            console.error('Failed to refresh token:', refreshError);
+            // If refresh fails and we've tried multiple times, log out
+            if (failureCount > 1) {
+              logout();
+            }
+          });
+        return true; // Retry the request
+      } else {
+        // After multiple failures, log out the user
+        console.error('Multiple authentication failures, logging out');
+        logout();
+        return false; // Stop retrying
+      }
+    }
+    
+    // For other errors, retry a few times then give up
+    return failureCount < 3;
+  }, [getAccessTokenPleasePleasePlease, logout]);
+
   const getMeQuery = useQuery<GuestDto, ApiError>({
     queryKey: ['getMeQuery', `${user.guestNumber}`],
     queryFn: () => apiRef.current!.getMe(),
-      retry: (failureCount, error) => {
-
-        if (error.status === 401) {
-          logout();
-        }
-
-        if (failureCount > 2) {
-          return false;
-        }
-      },
+    retry: handleTokenExpiration,
     enabled: !!auth0User && !user.lastActivity && !!apiRef.current.getMe,
   }) as UseQueryResult<GuestDto, ApiError>;
 
   const getFamilyUnitQuery = useQuery<FamilyUnitViewModel, ApiError>({
     queryKey: [`getFamilyUnit`],
     queryFn: () => apiRef.current!.getFamilyUnit(),
-    retry: false,
+    retry: handleTokenExpiration,
     enabled: !!auth0User,
   }) as UseQueryResult<FamilyUnitViewModel, ApiError>;
 

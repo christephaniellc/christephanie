@@ -1,7 +1,7 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import { useFamily } from '@/store/family';
-import React, { useMemo } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
 import { GuestViewModel } from '@/types/api';
@@ -11,10 +11,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
-import {
-  StephsActualFavoriteTypography,
-
-} from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
@@ -59,7 +56,7 @@ function SaveTheDatePage() {
 
   const contentHeightWithStepper = useMemo(() => {
     // Use full height for generic questions to allow scrolling
-    return genericQuestions ? '100%' : `${contentHeight - 140}px`
+    return genericQuestions ? '100%' : `${contentHeight - 140}px`;
   }, [contentHeight, genericQuestions]);
 
   const remainingQuestionHeight = useMemo(() => {
@@ -85,22 +82,38 @@ function SaveTheDatePage() {
         }}
       >
         <MtvAnimatedTitle />
-        <ButtonsContainer
-          sx={{
-          }}
-        >
-          {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
-          {!genericQuestions && family && family.guests.length === 0 && (
-            <AttendanceButton guestId={'0'} />
+        <ButtonsContainer sx={{}}>
+          {(!auth0User && (
+            <LoadingBox isError={true} errorMessage={'Please log in to continue.'} />
+          )) || (
+            <>
+              {familyActions.getFamilyUnitQuery.isFetching && !family && <LoadingBox />}
+              {familyActions.getFamilyUnitQuery.isError && (
+                <LoadingBox
+                  isError={true}
+                  errorMessage={
+                    familyActions.getFamilyUnitQuery.error?.description ||
+                    'Your session has expired. Please refresh and try again.'
+                  }
+                />
+              )}
+              {!genericQuestions &&
+                !familyActions.getFamilyUnitQuery.isError &&
+                family &&
+                family.guests.length === 0 && <AttendanceButton guestId={'0'} />}
+              {!genericQuestions &&
+                !familyActions.getFamilyUnitQuery.isError &&
+                family &&
+                family.guests &&
+                family.guests.length > 1 &&
+                family.guests.map((guest: GuestViewModel) => (
+                  <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
+                ))}
+              {genericQuestions && !familyActions.getFamilyUnitQuery.isError && (
+                <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>
+              )}
+            </>
           )}
-          {!genericQuestions &&
-            family &&
-            family.guests &&
-            family.guests.length > 1 &&
-            family.guests.map((guest: GuestViewModel) => (
-              <AttendanceButton guestId={guest.guestId} key={guest.guestId} />
-            ))}
-          {genericQuestions && <Box height={remainingQuestionHeight}>{FamilyQueryQuestion}</Box>}
         </ButtonsContainer>
       </Box>
       <Box
