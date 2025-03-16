@@ -134,6 +134,11 @@ export const InvitationCodeInputs = () => {
                       color: 'text.secondary !important',
                     },
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                    }
+                  }}
                 />
 
                 <TextField
@@ -151,6 +156,11 @@ export const InvitationCodeInputs = () => {
                       textAlign: 'center',
                       color: 'text.secondary !important',
                     },
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                    }
                   }}
                 />
               </>

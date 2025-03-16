@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
-import fs from 'fs';
 import { execSync } from 'child_process';
 import { Plugin } from 'vite';
 
