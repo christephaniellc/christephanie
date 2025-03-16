@@ -111,7 +111,6 @@ const AddressEnvelope: React.FC = () => {
       alignItems="center" 
       sx={{
         overflowY: 'auto',
-        height: "350px",
       }}
     >
       {areAllGuestsDeclinedOrPending && (
@@ -185,6 +184,7 @@ const AddressEnvelope: React.FC = () => {
             width: rem(300),
             maxWidth: '100%',
             height: '350px',
+            minHeight: '350px',
             borderRadius: '10px',
             margin: 'auto',
             position: 'relative',
