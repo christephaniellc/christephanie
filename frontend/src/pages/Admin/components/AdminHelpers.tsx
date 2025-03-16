@@ -16,6 +16,8 @@ export const TIER_PRIORITY = {
   'Ruby': 4,
   'Amethyst': 5,
   'Opal': 6,
+  'Amber': 0,
+  'Peridot': 0
 };
 
 // Tier colors for visual representation
@@ -27,6 +29,8 @@ export const TIER_COLORS = {
   'Ruby': '#E0115F', // ruby red
   'Amethyst': '#9966CC', // purple
   'Opal': '#A8C3BC', // opal green-blue
+  'Amber': '#FFBF00', // amber
+  'Peridot': '#B4C424', // peridot
 };
 
 // Helper function to get RSVP status color (legacy)
