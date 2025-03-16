@@ -42,6 +42,20 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
     setClientButtonValue(guest?.preferences?.foodPreference);
   }, [guest]);
 
+  // Get aria-label for selection status
+  const getButtonAriaLabel = (preference: FoodPreferenceEnum) => {
+    const isSelected = clientButtonValue === preference;
+    const buttonLabels = {
+      [FoodPreferenceEnum.Unknown]: "Only animals (meat-based diet)",
+      [FoodPreferenceEnum.Omnivore]: "All Life (eats both plants and animals)",
+      [FoodPreferenceEnum.Vegetarian]: "Mostly Plants (vegetarian diet)",
+      [FoodPreferenceEnum.Vegan]: "Vegan (plant-based diet only)",
+      [FoodPreferenceEnum.BYOB]: "Bring your own baby food/formula"
+    };
+    
+    return `${buttonLabels[preference]}${isSelected ? ' (selected)' : ''}`;
+  };
+
   return (
     <Stack
       display="flex"
@@ -52,6 +66,8 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
       alignItems="center"
       px={2}
       onMouseMove={handleMouseMove}
+      role="region"
+      aria-label={`Food preferences for ${guest.firstName || 'guest'}`}
     >
       <Paper
         elevation={5}
@@ -68,6 +84,8 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             sx={{
               backgroundColor: 'rgba(0,0,0,.8)',
             }}
+            role="radiogroup"
+            aria-label="Food preference options"
           >
             <Button
               sx={{
@@ -88,12 +106,16 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
               }
               onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Unknown)}
               value={FoodPreferenceEnum.Unknown}
+              aria-pressed={clientButtonValue === FoodPreferenceEnum.Unknown}
+              aria-label={getButtonAriaLabel(FoodPreferenceEnum.Unknown)}
+              role="radio"
               endIcon={
                 <Box
                   component={'img'}
                   src={`${Shark}`}
                   width={24}
                   height={24}
+                  alt="Shark icon representing meat-based diet"
                   sx={{
                     filter: !clientButtonValue?.includes(FoodPreferenceEnum.Unknown)
                       ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
@@ -122,6 +144,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                 familyActions.getFamilyUnitQuery.isFetching
               }
               value={FoodPreferenceEnum.Omnivore}
+              aria-pressed={clientButtonValue === FoodPreferenceEnum.Omnivore}
+              aria-label={getButtonAriaLabel(FoodPreferenceEnum.Omnivore)}
+              role="radio"
               onClick={() => handleSetFoodPreference(FoodPreferenceEnum.Omnivore)}
               endIcon={
                 <Box
@@ -129,6 +154,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   src={`${Omnivore}`}
                   width={24}
                   height={24}
+                  alt="Omnivore icon representing mixed diet"
                   sx={{
                     filter: !clientButtonValue?.includes(FoodPreferenceEnum.Omnivore)
                       ? 'brightness(0) saturate(100%) invert(75%) sepia(57%) saturate(5816%) hue-rotate(9deg) brightness(106%) contrast(91%)'
@@ -157,6 +183,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   : 'outlined') as 'contained' | 'outlined'
               }
               value={FoodPreferenceEnum.Vegetarian}
+              aria-pressed={clientButtonValue === FoodPreferenceEnum.Vegetarian}
+              aria-label={getButtonAriaLabel(FoodPreferenceEnum.Vegetarian)}
+              role="radio"
               endIcon={
                 <Box
                   sx={{
@@ -168,6 +197,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   src={`${Vegetarian}`}
                   width={20}
                   height={20}
+                  alt="Vegetarian icon"
                   mr={1}
                 />
               }
@@ -194,6 +224,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   src={`${Vegan}`}
                   width={20}
                   height={20}
+                  alt="Vegan icon"
                   mr={1}
                 />
               }
@@ -202,6 +233,9 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                 familyActions.getFamilyUnitQuery.isFetching
               }
               value={FoodPreferenceEnum.Vegan}
+              aria-pressed={clientButtonValue === FoodPreferenceEnum.Vegan}
+              aria-label={getButtonAriaLabel(FoodPreferenceEnum.Vegan)}
+              role="radio"
               variant={
                 (clientButtonValue?.includes(FoodPreferenceEnum.Vegan)
                   ? 'contained'
@@ -219,6 +253,8 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
             sx={{
               backgroundColor: 'rgba(0,0,0,.8)',
             }}
+            role="radiogroup"
+            aria-label="Baby food preference"
           >
             <Button
               sx={{
@@ -238,6 +274,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   width={32}
                   height={32}
                   mr={1}
+                  aria-hidden="true"
                 />
               }
               disabled={
@@ -249,6 +286,10 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
                   | 'contained'
                   | 'outlined'
               }
+              aria-pressed={true}
+              aria-label="Bring your own baby food - automatically selected for babies"
+              role="radio"
+              onClick={() => handleSetFoodPreference(FoodPreferenceEnum.BYOB)}
             >
               BYOB
             </Button>

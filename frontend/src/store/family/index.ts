@@ -329,6 +329,11 @@ export const useFamily = () => {
         display: true,
         completed: !!family.invitationResponseNotes,
       },
+      summary: {
+        ...prev.summary,
+        display: true,
+        completed: true,
+      }
     }));
   }, [family]);
 

@@ -61,14 +61,25 @@ export const PreferencesCard = ({
         overflow: 'visible',
         transition: 'all 0.3s ease'
       }}
+      role="region"
+      aria-label="Communication preferences"
     >
-      {/*<Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>*/}
-      {/*  <Typography variant="subtitle1" fontWeight="500" color="primary">*/}
-      {/*    How would you like to hear from us?*/}
-      {/*  </Typography>*/}
-      {/*</Box>*/}
+      <Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+        <Typography 
+          variant="subtitle1" 
+          fontWeight="500" 
+          color="primary"
+          id="communication-preferences-heading"
+        >
+          How would you like to hear from us?
+        </Typography>
+      </Box>
       
-      <List disablePadding sx={{ pt: 1 }}>
+      <List 
+        disablePadding 
+        sx={{ pt: 1 }}
+        aria-labelledby="communication-preferences-heading"
+      >
         {contactPreferences.map((value, index) => {
           const isEmail = value === 'Email';
           const isEnabled = isEmail ? isEmailOptedIn : isTextOptedIn;
@@ -78,7 +89,10 @@ export const PreferencesCard = ({
           const contactValue = isEmail ? guestEmailAddress : guestPhoneNumber;
           
           return (
-            <Box key={value}>
+            <Box 
+              key={value} 
+              id={`${isEmail ? 'email' : 'phone'}-preference-section`}
+            >
               <ContactPreferenceItem 
                 value={value}
                 isEnabled={isEnabled}
@@ -110,7 +124,12 @@ export const PreferencesCard = ({
               )}
               
               {index < contactPreferences.length - 1 && (
-                <Divider variant="fullWidth" component="li" sx={{ mx: 2 }} />
+                <Divider 
+                  variant="fullWidth" 
+                  component="li" 
+                  sx={{ mx: 2 }}
+                  aria-hidden="true"
+                />
               )}
             </Box>
           );
@@ -119,7 +138,11 @@ export const PreferencesCard = ({
 
       {/* SMS Verification Coming Soon Banner - when verification isn't enabled but opted in */}
       {isTextOptedIn && !phoneVerified && !isSmsVerificationEnabled && (
-        <Box sx={{ p: 2, pt: 0 }}>
+        <Box 
+          sx={{ p: 2, pt: 0 }}
+          role="status"
+          aria-live="polite"
+        >
           <ComingSoonBanner feature="SMS" />
         </Box>
       )}
