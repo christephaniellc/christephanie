@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { InvitationResponseEnum } from '@/types/api';
 import { RecoilRoot } from 'recoil';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
@@ -50,8 +51,13 @@ jest.mock('@/components/WeddingAttendanceRadios', () => ({
 }));
 
 jest.mock('../components/AttendanceStatusStepper', () => ({
-  AttendanceStatusStepper: ({ currentStatus }) => (
-    <div data-testid="attendance-status-stepper" data-status={currentStatus}>
+  AttendanceStatusStepper: ({ currentStatus, onStatusChange, disabled }) => (
+    <div 
+      data-testid="attendance-status-stepper" 
+      data-status={currentStatus}
+      data-disabled={disabled ? 'true' : 'false'}
+      onClick={() => onStatusChange && onStatusChange(InvitationResponseEnum.Interested)}
+    >
       Status Stepper
     </div>
   )
@@ -94,6 +100,60 @@ describe('AttendanceButtonMain', () => {
     const stepper = screen.getByTestId('attendance-status-stepper');
     expect(stepper).toBeInTheDocument();
     expect(stepper).toHaveAttribute('data-status', 'Pending');
+    expect(stepper).toHaveAttribute('data-disabled', 'false');
+  });
+  
+  it('should update status when stepper is clicked .wip', () => {
+    const theme = createTheme();
+    const mockMutate = jest.fn();
+    
+    // Set up mock to capture mutation call
+    jest.spyOn(require('../hooks/useAttendanceButtonMain'), 'useAttendanceButtonMain').mockImplementation(() => ({
+      familyActions: {
+        patchFamilyGuestMutation: {
+          isIdle: true,
+          mutate: mockMutate
+        },
+        getFamilyUnitQuery: {
+          isFetching: false
+        },
+        patchFamilyMutation: {
+          isPending: false,
+          error: null
+        }
+      },
+      guest: {
+        guestId: 'test-guest-id',
+        rsvp: {
+          invitationResponse: 'Pending'
+        }
+      },
+      imgButtonSxProps: {},
+      calculateShadow: () => '5px 5px 0px #000',
+      stdStepper: {
+        tabIndex: 0
+      }
+    }));
+    
+    render(
+      <RecoilRoot>
+        <ThemeProvider theme={theme}>
+          <AttendanceButtonMain guestId="test-guest-id" />
+        </ThemeProvider>
+      </RecoilRoot>
+    );
+    
+    // Click on the stepper
+    const stepper = screen.getByTestId('attendance-status-stepper');
+    fireEvent.click(stepper);
+    
+    // Verify update was called with the right params
+    expect(mockMutate).toHaveBeenCalledWith({
+      updatedGuest: {
+        guestId: 'test-guest-id',
+        invitationResponse: InvitationResponseEnum.Interested
+      }
+    });
   });
   
   it('shows the modal when clicked .wip', () => {
