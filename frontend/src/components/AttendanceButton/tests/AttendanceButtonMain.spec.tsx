@@ -11,6 +11,7 @@ jest.mock('../hooks/useAttendanceButtonMain', () => ({
     familyActions: {
       patchFamilyGuestMutation: {
         isIdle: true,
+        mutate: jest.fn(),
       },
       getFamilyUnitQuery: {
         isFetching: false
@@ -48,8 +49,16 @@ jest.mock('@/components/WeddingAttendanceRadios', () => ({
   )
 }));
 
+jest.mock('../components/AttendanceStatusStepper', () => ({
+  AttendanceStatusStepper: ({ currentStatus }) => (
+    <div data-testid="attendance-status-stepper" data-status={currentStatus}>
+      Status Stepper
+    </div>
+  )
+}));
+
 describe('AttendanceButtonMain', () => {
-  it('renders the component correctly', () => {
+  it('renders the component correctly .wip', () => {
     const theme = createTheme();
     
     render(
@@ -63,12 +72,60 @@ describe('AttendanceButtonMain', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
     expect(screen.getByTestId('large-attendance-button')).toBeInTheDocument();
     
+    // The stepper should be rendered regardless of which step we're on
+    expect(screen.getByTestId('attendance-status-stepper')).toBeInTheDocument();
+    expect(screen.getByTestId('attendance-status-stepper')).toHaveAttribute('data-status', 'Pending');
+    
     // Modal should not be rendered initially
     expect(screen.queryByTestId('wedding-attendance-radios')).not.toBeInTheDocument();
   });
   
-  it('shows the modal when clicked', () => {
+  it('shows the stepper with the correct status .wip', () => {
     const theme = createTheme();
+    
+    render(
+      <RecoilRoot>
+        <ThemeProvider theme={theme}>
+          <AttendanceButtonMain guestId="test-guest-id" />
+        </ThemeProvider>
+      </RecoilRoot>
+    );
+    
+    const stepper = screen.getByTestId('attendance-status-stepper');
+    expect(stepper).toBeInTheDocument();
+    expect(stepper).toHaveAttribute('data-status', 'Pending');
+  });
+  
+  it('shows the modal when clicked .wip', () => {
+    const theme = createTheme();
+    
+    // Mock the hook to return a non-attendance step
+    jest.spyOn(require('../hooks/useAttendanceButtonMain'), 'useAttendanceButtonMain').mockImplementation(() => ({
+      familyActions: {
+        patchFamilyGuestMutation: {
+          isIdle: true,
+          mutate: jest.fn(),
+        },
+        getFamilyUnitQuery: {
+          isFetching: false
+        },
+        patchFamilyMutation: {
+          isPending: false,
+          error: null
+        }
+      },
+      guest: {
+        guestId: 'test-guest-id',
+        rsvp: {
+          invitationResponse: 'Pending'
+        }
+      },
+      imgButtonSxProps: {},
+      calculateShadow: () => '5px 5px 0px #000',
+      stdStepper: {
+        tabIndex: 1 // This makes it non-attendance step
+      }
+    }));
     
     render(
       <RecoilRoot>
