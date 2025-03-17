@@ -31,6 +31,7 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, Text3dTypography } from '../AttendanceButton/AttendanceButton';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
+import { familyGuestsStates } from '@/store/family';
 
 // Step interface
 export interface Step {
@@ -80,6 +81,7 @@ const steps: { [step: string]: Step } = {
 const WelcomeStepper = () => {
   const theme = useTheme();
   const { user: auth0User } = useAuth0();
+  const attendanceState = useRecoilValue(familyGuestsStates);
   const [activeStep, setActiveStep] = React.useState(0);
   const user = useRecoilValue(userState);
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
@@ -106,24 +108,25 @@ const WelcomeStepper = () => {
     }
   }, [location.search]);
 
-  // Check if user is attending and all steps are completed
-  const isUserAttending = useMemo(() => {
-    return (
-      user.rsvp?.invitationResponse === InvitationResponseEnum.Interested ||
-      user.rsvp?.wedding === RsvpEnum.Attending
-    );
-  }, [user.rsvp]);
-
   // Check if all steps are completed
   const allStepsCompleted = useMemo(() => {
     return Object.values(stdSteps).every((step) => step.completed);
   }, [stdSteps]);
 
-  // Find the first incomplete step
+  // Find the first applicable incomplete step based on RSVP status
   const firstIncompleteStep = useMemo(() => {
-    const incompleteStep = Object.entries(stdSteps).find(([_, step]) => !step.completed);
+    // Define which steps are relevant for pending/declined guests
+    const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
+    
+    // If user is not attending (declined or pending), only show basic steps
+    const relevantSteps = attendanceState?.atLeastOneAttending 
+      ? Object.entries(stdSteps) 
+      : Object.entries(stdSteps).filter(([key]) => basicSteps.includes(key));
+    
+    // Find the first incomplete relevant step
+    const incompleteStep = relevantSteps?.find(([_, step]) => !step.completed);
     return incompleteStep ? incompleteStep[0] : null;
-  }, [stdSteps]);
+  }, [stdSteps, attendanceState]);
 
   // Current active step information
   const activeStepInfo = Object.values(rsvpSteps)[activeStep];
@@ -144,24 +147,38 @@ const WelcomeStepper = () => {
 
   // Handle primary action button click
   const handleActionButtonClick = () => {
-    if (isUserAttending && allStepsCompleted) {
-      // If user is attending and all steps are completed, go back to SaveTheDate
+    if ((attendanceState.atLeastOneAttending  && allStepsCompleted) || 
+        (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
+         stdSteps['attendance']?.completed && 
+         stdSteps['mailingAddress']?.completed)) {
+      // If user is attending and all steps are completed, or
+      // If user has declined and completed the required steps,
+      // go back to SaveTheDate
       navigate(routes[Pages.SaveTheDate].path);
     } else if (firstIncompleteStep) {
       // If there are incomplete steps, navigate to the first incomplete step
       navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
+    } else {
+      // Fallback to the main SaveTheDate page
+      navigate(routes[Pages.SaveTheDate].path);
     }
   };
 
   // Determine action button text
   const actionButtonText = useMemo(() => {
-    if (isUserAttending && allStepsCompleted) {
+    if ((attendanceState?.atLeastOneAttending  && allStepsCompleted) || 
+        (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
+         stdSteps['attendance']?.completed && 
+         stdSteps['mailingAddress']?.completed)) {
       return 'Update Response';
     } else if (firstIncompleteStep) {
       return `${stdSteps[firstIncompleteStep].label}`;
+    } else if (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+               user.rsvp?.invitationResponse === InvitationResponseEnum.Pending) {
+      return 'Complete Required Info';
     }
     return 'Respond';
-  }, [isUserAttending, allStepsCompleted, firstIncompleteStep, stdSteps]);
+  }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.invitationResponse]);
 
   React.useEffect(() => {
     setRsvpSteps((prev) => {

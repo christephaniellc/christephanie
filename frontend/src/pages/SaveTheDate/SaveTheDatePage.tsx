@@ -170,18 +170,29 @@ function SaveTheDatePage() {
               onClick={() => {
                 familyActions.getFamily();
 
-                // Find previous visible step
-                const stepsArray = Object.entries(saveTheDateSteps);
-                let prevIndex = tabIndex - 1;
-
-                // Find the previous visible step
-                while (prevIndex >= 0 && !stepsArray[prevIndex][1].display) {
-                  prevIndex--;
-                }
-
-                // If we found a previous visible step, navigate to it
-                if (prevIndex >= 0) {
-                  handleNavigateToStep(stepsArray[prevIndex][0]);
+                // Find previous visible step using same logic as next button
+                const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
+                const atLeastOneAttending = family?.guests?.some(
+                  guest => guest.rsvp?.invitationResponse === 'Interested'
+                ) ?? false;
+                
+                // Filter steps based on attendance
+                const visibleSteps = atLeastOneAttending
+                  ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
+                  : Object.entries(saveTheDateSteps).filter(
+                      ([key, step]) => basicSteps.includes(key) && step.display
+                    );
+                
+                // Find the current visible step index
+                const currentVisibleIndex = visibleSteps.findIndex(
+                  ([key]) => key === stdStepper.currentStep[0]
+                );
+                
+                // Go to the previous visible step
+                if (currentVisibleIndex > 0) {
+                  const prevStep = visibleSteps[currentVisibleIndex - 1][0];
+                  console.log('Navigating to previous visible step:', prevStep);
+                  handleNavigateToStep(prevStep);
                 }
               }}
             >
@@ -230,19 +241,31 @@ function SaveTheDatePage() {
                   handleNavigateToStep('summary');
                 } else {
                   // Otherwise find next visible step
-                  const stepsArray = Object.entries(saveTheDateSteps);
-                  let nextIndex = tabIndex + 1;
-  
-                  // Find the next visible step
-                  while (nextIndex < stepsArray.length && !stepsArray[nextIndex][1].display) {
-                    nextIndex++;
-                  }
-  
-                  // If we found a next visible step, navigate to it
-                  if (nextIndex < stepsArray.length) {
-                    handleNavigateToStep(stepsArray[nextIndex][0]);
+                  const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
+                  const atLeastOneAttending = family?.guests?.some(
+                    guest => guest.rsvp?.invitationResponse === 'Interested'
+                  ) ?? false;
+                  
+                  // Filter steps based on attendance
+                  const visibleSteps = atLeastOneAttending
+                    ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
+                    : Object.entries(saveTheDateSteps).filter(
+                        ([key, step]) => basicSteps.includes(key) && step.display
+                      );
+                  
+                  // Find the current visible step index
+                  const currentVisibleIndex = visibleSteps.findIndex(
+                    ([key]) => key === stdStepper.currentStep[0]
+                  );
+                  
+                  // Go to the next visible step
+                  if (currentVisibleIndex < visibleSteps.length - 1) {
+                    const nextStep = visibleSteps[currentVisibleIndex + 1][0];
+                    console.log('Navigating to next visible step:', nextStep);
+                    handleNavigateToStep(nextStep);
                   } else {
                     // If no more visible steps, navigate home
+                    console.log('No more visible steps, navigating home');
                     navigate('/');
                   }
                 }

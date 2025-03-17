@@ -117,7 +117,22 @@ export const BottomNav = () => {
           label={auth0User ? 'Logout' : 'Login'}
           showLabel={true}
           icon={<ProfileIcon />}
-          onClick={() => (auth0User ? logOutFromAuth0() : loginWithRedirect())}
+          onClick={() => {
+            if (auth0User) {
+              logOutFromAuth0();
+            } else {
+              // Force clean login by clearing any potentially cached data first
+              localStorage.removeItem('user');
+              // Use explicit parameters to ensure proper redirect
+              loginWithRedirect({
+                authorizationParams: {
+                  prompt: 'login', // Force login screen even if user has active session
+                  screen_hint: 'login',
+                  redirect_uri: window.location.origin,
+                }
+              });
+            }
+          }}
           aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
         />
       </BottomNavigation>

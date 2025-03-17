@@ -29,6 +29,7 @@ export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
       }}
       cacheLocation="localstorage"
       useRefreshTokens
+      skipRedirectCallback={false}
     >
       <QueryClientProvider client={queryClient}>
         <ApiContextProvider>
