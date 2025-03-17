@@ -10,7 +10,7 @@ import {
   Fade,
 } from '@mui/material';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { guestSelector, useFamily } from '@/store/family';
+import { guestSelector, useFamily, familyGuestsStates } from '@/store/family';
 import {
   addressState,
   cityAddressState,
@@ -27,6 +27,7 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 const AddressEnvelope: React.FC = () => {
   const [familyUnit, familyActions] = useFamily();
+  const attendanceState = useRecoilValue(familyGuestsStates);
   const { contentHeight } = useAppLayout();
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
@@ -37,17 +38,6 @@ const AddressEnvelope: React.FC = () => {
 
   // State for announcement preference (for declined/pending users)
   const [wantsAnnouncement, setWantsAnnouncement] = useState<boolean | null>(null);
-
-  // Check if all family members are declined or pending
-  const areAllGuestsDeclinedOrPending = useMemo(() => {
-    if (!familyUnit?.guests) return false;
-
-    return familyUnit.guests.every(
-      (guest) =>
-        guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
-        guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
-    );
-  }, [familyUnit?.guests]);
 
   const theme = useTheme();
   const gradientBorder = `
@@ -72,11 +62,12 @@ const AddressEnvelope: React.FC = () => {
 
       // If they already have a mailing address, that implies
       // they want an announcement
+      const areAllGuestsDeclinedOrPending = !attendanceState.atLeastOneAttending;
       if (areAllGuestsDeclinedOrPending) {
         setWantsAnnouncement(familyUnit.mailingAddress.uspsVerified);
       }
     }
-  }, [familyUnit, areAllGuestsDeclinedOrPending]);
+  }, [familyUnit, attendanceState]);
 
   const saveAddressState = useMemo(() => {
     return familyActions.validateFamilyAddress.status;
@@ -113,7 +104,7 @@ const AddressEnvelope: React.FC = () => {
         overflowY: 'auto',
       }}
     >
-      {areAllGuestsDeclinedOrPending && (
+      {!attendanceState.atLeastOneAttending && (
         <Fade in={true} timeout={500}>
           <Paper
             elevation={3}
@@ -177,7 +168,7 @@ const AddressEnvelope: React.FC = () => {
       )}
 
       {/* Only show the address form if the user wants an announcement or not declined/pending */}
-      {(!areAllGuestsDeclinedOrPending || wantsAnnouncement === true) && (
+      {(attendanceState.atLeastOneAttending || wantsAnnouncement === true) && (
         <Box
           sx={{
             minWidth: '100%',
@@ -290,7 +281,7 @@ const AddressEnvelope: React.FC = () => {
       )}
 
       {/* Show a message if they decline the announcement */}
-      {areAllGuestsDeclinedOrPending && wantsAnnouncement === false && (
+      {!attendanceState.atLeastOneAttending && wantsAnnouncement === false && (
         <Box
           sx={{
             mt: 4,
