@@ -4,6 +4,7 @@ import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImpor
 import { useAttendanceButtonMain } from '../hooks/useAttendanceButtonMain';
 import WeddingAttendanceRadios from '@/components/WeddingAttendanceRadios';
 import { InvitationResponseEnum } from '@/types/api';
+import { AttendanceStatusStepper } from './AttendanceStatusStepper';
 
 interface AttendanceButtonMainProps {
   guestId: string;
@@ -81,49 +82,67 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
 
   return (
     <>
-      <Button
-        disabled={
-          !familyActions.patchFamilyGuestMutation.isIdle ||
-          familyActions.getFamilyUnitQuery.isFetching
-        }
-        onClick={handleClick}
-        aria-label={getAriaLabel()}
-        aria-haspopup={!isAttendanceStep}
-        aria-expanded={modalOpen}
-        aria-busy={!familyActions.patchFamilyGuestMutation.isIdle}
-        sx={{
-          alignItems: 'flex-start',
-          boxShadow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: 2,
-          position: 'relative',
-          height: 'auto',
-          ...imgButtonSxProps,
-          color:
-            !familyActions.patchFamilyMutation.isIdle
-              ? 'white !important'
-              : 'inherit',
-          background: 'rgba(0,0,0,1)',
-          filter: `drop-shadow(${calculateShadow()})`,
-        }}
-      >
+      <Box display="flex" flexDirection="row" width="86%">
+
+      {/* Vertical stepper to show the status options - always visible */}
+      {guest && (
         <Box 
-          display="flex" 
-          alignItems="flex-start" 
-          width="100%" 
-          sx={{ height: 'auto', minHeight: '100%' }}
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            mr: 3
+          }}
         >
-          {guest && (
-            <LargeAttendanceButton
-              guestId={guest.guestId}
-              isPending={familyActions.patchFamilyMutation.isPending}
-              error={familyActions.patchFamilyMutation.error}
-            />
-          )}
+          <AttendanceStatusStepper 
+            currentStatus={guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending} 
+          />
         </Box>
-      </Button>
+      )}
+        <Button
+          disabled={
+            !familyActions.patchFamilyGuestMutation.isIdle ||
+            familyActions.getFamilyUnitQuery.isFetching
+          }
+          onClick={handleClick}
+          aria-label={getAriaLabel()}
+          aria-haspopup={!isAttendanceStep}
+          aria-expanded={modalOpen}
+          aria-busy={!familyActions.patchFamilyGuestMutation.isIdle}
+          sx={{
+            alignItems: 'flex-start',
+            boxShadow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: 2,
+            position: 'relative',
+            height: 'auto',
+            flexGrow: 1,
+            ...imgButtonSxProps,
+            color:
+              !familyActions.patchFamilyMutation.isIdle
+                ? 'white !important'
+                : 'inherit',
+            background: 'rgba(0,0,0,1)',
+            filter: `drop-shadow(${calculateShadow()})`,
+          }}
+        >
+          <Box 
+            display="flex" 
+            alignItems="flex-start" 
+            width="100%" 
+            sx={{ height: 'auto', minHeight: '100%' }}
+          >
+            {guest && (
+              <LargeAttendanceButton
+                guestId={guest.guestId}
+                isPending={familyActions.patchFamilyMutation.isPending}
+                error={familyActions.patchFamilyMutation.error}
+              />
+            )}
+          </Box>
+        </Button>
+      </Box>
 
       {/* Modal for attendance changes */}
       {modalOpen && guest && (
