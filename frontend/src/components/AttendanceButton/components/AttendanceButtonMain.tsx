@@ -82,7 +82,7 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
 
   return (
     <>
-      <Box display="flex" flexDirection="row" width="86%">
+      <Box display="flex" flexDirection="row" width="80%">
 
       {/* Vertical stepper to show the status options - always visible */}
       {guest && (
