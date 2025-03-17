@@ -38,6 +38,7 @@ import {
 } from '@/store/steppers/steppers';
 import { userState } from '@/store/user';
 import Container from '@mui/material/Container';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 export default function SaveTheDateStepper() {
   const navigate = useNavigate();
@@ -268,6 +269,18 @@ export default function SaveTheDateStepper() {
                 completed={!isStepActive && step.completed} 
                 key={key} 
                 active={isStepActive}
+                sx={{
+                  // '&::before': isStepActive
+                  // ? {
+                  //     content: '""',
+                  //     width: 8,
+                  //     height: 8,
+                  //     borderRadius: '50%',
+                  //     backgroundColor: theme.palette.common.white,
+                  //     display: isStepActive ? 'block' : 'none',
+                  //   }
+                  // : {},
+                }}
                 // sx={{
                 //   '&::before': isStepActive ? {
                 //     content: '""',
@@ -287,12 +300,6 @@ export default function SaveTheDateStepper() {
                   onClick={() => handleNavigateToStep(key)}
                   sx={{
                     cursor: 'pointer',
-                    // position: 'relative',
-                    // // Add extra styling for clarity of which step is active
-                    // ...(isStepActive && {
-                    //   zIndex: 10,
-                    //   transform: 'scale(1.1)',
-                    // }),
                   }}
                   StepIconComponent={StepperIcon}
                   active={isStepActive}
@@ -372,7 +379,26 @@ function StepperIcon(props: StepIconProps) {
   return (
     <StepperIconRoot ownerState={{ active }} className={className}>
       {active ? (
-        <TripOrigin color="primary" style={{ transform: 'scale(1.2)' }} />
+        <Box position="relative" display="flex">
+          <TripOrigin color="primary" style={{ transform: 'scale(1.1)' }} />
+          <Box 
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            transform: 'scale(0.6)',
+            color: 'white'
+          }}>
+            <FiberManualRecordIcon 
+              fontSize="small"
+          />
+         </Box>
+        </Box>
       ) : completed ? (
         // Completed step
         <CheckCircleOutlineTwoTone fontWeight={800} color="success" />
