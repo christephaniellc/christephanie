@@ -84,6 +84,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
         borderRight: `2px solid ${semiTransparentBackgroundColor}`,
         borderBottom: `2px solid ${semiTransparentBackgroundColor}`,
         backgroundColor: semiTransparentBackgroundColor,
+        //width: '96%',
         width: '100%',
         mr: 0,
         p: 2,
