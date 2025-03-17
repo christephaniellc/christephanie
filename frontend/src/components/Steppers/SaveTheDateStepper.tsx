@@ -269,32 +269,6 @@ export default function SaveTheDateStepper() {
                 completed={!isStepActive && step.completed} 
                 key={key} 
                 active={isStepActive}
-                sx={{
-                  // '&::before': isStepActive
-                  // ? {
-                  //     content: '""',
-                  //     width: 8,
-                  //     height: 8,
-                  //     borderRadius: '50%',
-                  //     backgroundColor: theme.palette.common.white,
-                  //     display: isStepActive ? 'block' : 'none',
-                  //   }
-                  // : {},
-                }}
-                // sx={{
-                //   '&::before': isStepActive ? {
-                //     content: '""',
-                //     position: 'absolute',
-                //     top: '-10px',
-                //     left: '50%',
-                //     transform: 'translateX(-50%)',
-                //     width: '24px',
-                //     height: '3px',
-                //     backgroundColor: theme.palette.primary.main,
-                //     boxShadow: `0 0 4px ${theme.palette.primary.main}`,
-                //     borderRadius: '2px',
-                //   } : {},
-                // }}
               >
                 <CustomStepLabel
                   onClick={() => handleNavigateToStep(key)}
