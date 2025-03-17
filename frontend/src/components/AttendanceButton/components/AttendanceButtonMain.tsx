@@ -84,7 +84,7 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
     <>
       <Box display="flex" flexDirection="row" width="80%">
 
-      {/* Vertical stepper to show the status options - always visible */}
+      {/* Vertical stepper to show the status options - always visible and clickable */}
       {guest && (
         <Box 
           sx={{ 
@@ -94,7 +94,18 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
           }}
         >
           <AttendanceStatusStepper 
-            currentStatus={guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending} 
+            currentStatus={guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
+            onStatusChange={(newStatus) => {
+              if (!familyActions.patchFamilyGuestMutation.isIdle) return;
+              
+              familyActions.patchFamilyGuestMutation.mutate({
+                updatedGuest: {
+                  guestId,
+                  invitationResponse: newStatus,
+                },
+              });
+            }}
+            disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching}
           />
         </Box>
       )}
