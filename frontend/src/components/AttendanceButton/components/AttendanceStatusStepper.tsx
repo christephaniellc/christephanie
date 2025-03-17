@@ -82,10 +82,21 @@ const StepperConnector = styled(Box, {
 
 interface AttendanceStatusStepperProps {
   currentStatus: InvitationResponseEnum;
+  onStatusChange?: (status: InvitationResponseEnum) => void;
+  disabled?: boolean;
 }
 
-export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = ({ currentStatus }) => {
+export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = ({ 
+  currentStatus,
+  onStatusChange,
+  disabled = false
+}) => {
   const theme = useTheme();
+  
+  const handleStatusClick = (status: InvitationResponseEnum) => {
+    if (disabled || !onStatusChange) return;
+    onStatusChange(status);
+  };
 
   return (
     <Box
@@ -103,7 +114,19 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
       >
 
         {/* Interested Step - First */}
-        <Box role="listitem" aria-label="Interested option">
+        <Box 
+          role="listitem" 
+          aria-label="Interested option"
+          onClick={() => handleStatusClick(InvitationResponseEnum.Interested)}
+          sx={{ 
+            cursor: disabled ? 'default' : 'pointer',
+            opacity: disabled ? 0.7 : 1,
+            transition: 'transform 0.2s',
+            '&:hover': {
+              transform: disabled ? 'none' : 'scale(1.1)'
+            }
+          }}
+        >
             <StepperCircle
                 active={currentStatus === InvitationResponseEnum.Interested}
                 status="interested"
@@ -124,13 +147,25 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
         />
       
       {/* Declined Step - Second */}
-      <Box role="listitem" aria-label="Declined option">
+      <Box 
+        role="listitem" 
+        aria-label="Declined option"
+        onClick={() => handleStatusClick(InvitationResponseEnum.Declined)}
+        sx={{ 
+          cursor: disabled ? 'default' : 'pointer',
+          opacity: disabled ? 0.7 : 1,
+          transition: 'transform 0.2s',
+          '&:hover': {
+            transform: disabled ? 'none' : 'scale(1.1)'
+          }
+        }}
+      >
         <StepperCircle
           active={currentStatus === InvitationResponseEnum.Declined}
           status="declined"
           filled={currentStatus === InvitationResponseEnum.Declined}
-              />
-          </Box>
+        />
+      </Box>
 
           <StepperConnector
               active={
@@ -145,7 +180,19 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
           />
 
           {/* Pending Step - Last */}
-          <Box role="listitem" aria-label="Pending option">
+          <Box 
+            role="listitem" 
+            aria-label="Pending option"
+            onClick={() => handleStatusClick(InvitationResponseEnum.Pending)}
+            sx={{ 
+              cursor: disabled ? 'default' : 'pointer',
+              opacity: disabled ? 0.7 : 1,
+              transition: 'transform 0.2s',
+              '&:hover': {
+                transform: disabled ? 'none' : 'scale(1.1)'
+              }
+            }}
+          >
               <StepperCircle
                   active={currentStatus === InvitationResponseEnum.Pending}
                   status="pending"
