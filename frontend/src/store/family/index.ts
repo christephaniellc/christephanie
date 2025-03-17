@@ -39,6 +39,14 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
     const nobodyComing = guests.every(
       (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined,
     );
+    
+    let everyoneIsLame = familyUnit.guests?.every(
+      (guest) =>
+        guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
+        guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
+    ) ?? true;
+    const atLeastOneAttending = !everyoneIsLame;
+
     const attendingLastNames = guests
       .filter((user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Interested)
       .map((user) => user.lastName);
@@ -62,6 +70,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
       mailingAddressEntered,
       mailingAddressUspsVerified,
       nobodyComing,
+      atLeastOneAttending,
       saveTheDateComplete,
       allAllergiesResponded,
     } as FamilyGuestsStates;
@@ -111,6 +120,22 @@ export const guestSelector = selectorFamily<GuestViewModel | null, string>({
         guests: updatedGuests,
       } as FamilyUnitViewModel);
     },
+});
+
+export const attendanceState = selector({
+  key: 'attendanceState',
+  get: ({ get }) => {
+    const familyUnit = get(familyState);
+    if (!familyUnit?.guests) return false;
+
+    let everyoneIsLame = familyUnit.guests.every(
+      (guest) =>
+        guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
+        guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
+    );
+    const atLeastOneAttending = !everyoneIsLame;
+    return {atLeastOneAttending};
+  },
 });
 
 const somethingFamilySelector = selector({
