@@ -4,7 +4,7 @@ import { styled, keyframes, darken } from '@mui/system';
 import { 
   FormControl, FormLabel, Button, Box, CircularProgress, 
   Typography, Card, useTheme, Fade, Zoom, Paper, 
-  Tooltip, IconButton, Modal, useMediaQuery, SwipeableDrawer
+  Modal, useMediaQuery, SwipeableDrawer, IconButton
 } from '@mui/material';
 import { useMutation, UseMutationResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/Api';
@@ -16,13 +16,12 @@ import { useEffect, useState, useRef } from 'react';
 import { StephsActualFavoriteTypography } from '../AttendanceButton/AttendanceButton';
 import SendIcon from '@mui/icons-material/Send';
 import CelebrationIcon from '@mui/icons-material/Celebration';
-import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
-import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import TvSnow from '@/components/MtvAnimatedTitle/TvSnow';
 import { rem } from 'polished';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
-import { MoodBad, SentimentDissatisfied, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import isMobile from '@/utils/is-mobile';
+import TalkingFace from '@/components/TalkingFace';
 
 // Common emojis for a wedding context
 const WEDDING_EMOJIS = ['❤️', '💍', '🎉', '🥂', '🍰', '💐', '🕊️', '✨', '🎊', '👰', '🤵', '🎵', '🏔️', '🏕️', '🌲'];
@@ -104,8 +103,7 @@ export default function AutosizedTextArea() {
   const [showSnow, setShowSnow] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const textareaRef = useRef(null);
-  const mouthOpenIcons = [SentimentVerySatisfiedIcon, MoodBad, SentimentDissatisfied];
-  const RandomIcon = mouthOpenIcons[Math.floor(Math.random() * mouthOpenIcons.length)];
+  const talkingFaceRef = useRef(null);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
 
@@ -203,50 +201,12 @@ export default function AutosizedTextArea() {
   // Generate prompt ideas for user suggestions
   const promptIdeas = [
     "Can't wait to celebrate with you!",
-    "Any song requests for the DJ?",
-    "Dietary preferences we should know?",
-    "Looking forward to dancing the night away!",
-    "Excited to see the beautiful venue!",
+    "This website rules!",
   ];
 
   const getRandomPrompt = () => promptIdeas[Math.floor(Math.random() * promptIdeas.length)];
   const [promptSuggestion, setPromptSuggestion] = useState(getRandomPrompt());
-  const [showOpenMouth, setShowOpenMouth] = useState(false);
   const typingTimeoutRef = useRef(null);
-  const mouthToggleRef = useRef(null);
-
-  // Handle mouth animation sequences
-  const animateMouth = () => {
-    // Clear any existing animations
-    if (mouthToggleRef.current) {
-      mouthToggleRef.current.forEach(clearTimeout);
-    }
-    
-    // Create a random sequence of mouth open/close timings
-    const toggleSequence = [];
-    const toggleCount = 3 + Math.floor(Math.random() * 3); // 3-5 toggles
-    
-    for (let i = 0; i < toggleCount; i++) {
-      // Random time between 50-150ms for each toggle
-      const toggleTime = 50 + Math.floor(Math.random() * 100);
-      
-      toggleSequence.push(
-        setTimeout(() => {
-          setShowOpenMouth(prev => !prev);
-        }, i * toggleTime)
-      );
-    }
-    
-    // Always end with mouth closed
-    toggleSequence.push(
-      setTimeout(() => {
-        setShowOpenMouth(false);
-      }, toggleCount * 100 + 50)
-    );
-    
-    // Save the timeouts so we can clear them if needed
-    mouthToggleRef.current = toggleSequence;
-  };
 
   // Track when the user is typing
   const handleTyping = (e) => {
@@ -257,9 +217,9 @@ export default function AutosizedTextArea() {
     setComment(newValue);
     
     // Trigger animation on both new character input and deletions
-    if (isNewCharacter || isDeleting) {
+    if ((isNewCharacter || isDeleting) && talkingFaceRef.current) {
       // Trigger mouth animation sequence
-      animateMouth();
+      talkingFaceRef.current.animateMouth();
     }
   };
 
@@ -268,9 +228,6 @@ export default function AutosizedTextArea() {
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
-      }
-      if (mouthToggleRef.current) {
-        mouthToggleRef.current.forEach(clearTimeout);
       }
     };
   }, []);
@@ -331,38 +288,14 @@ export default function AutosizedTextArea() {
             Your message
           </FormLabel>
           
-          <Tooltip title="Add emoji">
-            <IconButton 
-              size="small" 
-              color="secondary"
-              onClick={() => setShowEmojis(!showEmojis)}
-              sx={{ 
-                animation: showEmojis ? `${glowEffect} 2s infinite` : 'none',
-                width: 40,
-                height: 40,
-                position: 'relative',
-              }}
-            >
-              {/* Display either open or closed mouth based on state */}
-              <Box sx={{ 
-                display: 'flex',
-                alignItems: 'center', 
-                justifyContent: 'center',
-              }}>
-                {showOpenMouth ? (
-                  <RandomIcon
-                    color="secondary"
-                    sx={{ fontSize: 24 }}
-                  />
-                ) : (
-                  <SentimentSatisfiedAltIcon 
-                    color="secondary"
-                    sx={{ fontSize: 24 }}
-                  />
-                )}
-              </Box>
-            </IconButton>
-          </Tooltip>
+          <TalkingFace
+            ref={talkingFaceRef}
+            showEmojis={showEmojis}
+            onToggleEmojis={() => setShowEmojis(!showEmojis)}
+            tooltipTitle="Add emoji"
+            color="secondary"
+            iconSize={24}
+          />
         </Box>
         
         {/* Emoji picker */}

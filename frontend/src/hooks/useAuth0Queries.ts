@@ -5,26 +5,61 @@ import { useCallback, useContext, useEffect } from 'react';
 import { ApiContext } from '@/context/ApiContext';
 
 export const useAuth0Queries = () => {
-  const { getAccessTokenSilently, loginWithRedirect, user: auth0User, isAuthenticated, logout } = useAuth0();
+  const {
+    getAccessTokenSilently,
+    loginWithRedirect,
+    user: auth0User,
+    isAuthenticated,
+    logout,
+  } = useAuth0();
   const config = getConfig();
   const [user, userActions] = useUser();
   const apiContext = useContext(ApiContext);
 
   const logOutFromAuth0 = async () => {
-    return await logout({ returnTo: config.returnTo } as LogoutOptions).then(() => {
-      localStorage.removeItem('user');
-      localStorage.removeItem('family');
+    // Clear Auth0-specific tokens first
+    const auth0CacheKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('@@auth0spajs@@') || 
+      key.includes(config.clientId) ||
+      key.includes('auth0')
+    );
+    
+    auth0CacheKeys.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    // Clear application state
+    localStorage.removeItem('user');
+    localStorage.removeItem('family');
+    sessionStorage.removeItem('auth_redirect_to');
+    
+    // Then call Auth0 logout - this has to be last as it navigates away
+    return await logout({
+      returnTo: config.returnTo,
+      // Set explicit options to ensure clean logout
+      clientID: config.clientId,
+      federated: true // Log out from Auth0 session as well
+    } as LogoutOptions).then(() => {
+      // As a final precaution, clear any remaining localStorage
+      localStorage.clear();
+      // Force a complete page reload to reset all app state
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.href = '/';
+      }
     });
   };
 
-  const signInWithAuth0 = useCallback(async (guestId: string) => {
-    return await loginWithRedirect({
-      authorizationParams: {
-        screen_hint: 'signup',
-        guest_id: guestId,
-      },
-    });
-  }, [loginWithRedirect]);  
+  const signInWithAuth0 = useCallback(
+    async (guestId: string) => {
+      return await loginWithRedirect({
+        authorizationParams: {
+          screen_hint: 'signup',
+          guest_id: guestId,
+        },
+      });
+    },
+    [loginWithRedirect],
+  );
 
   const updateClientInfo = () => {
     // Completely separate this from the auth flow - run it in the background
@@ -32,9 +67,11 @@ export const useAuth0Queries = () => {
     setTimeout(() => {
       try {
         // Fire and forget - don't even await the promise
-        apiContext.updateClientInfo().catch(err => {
-          console.log('Client info update failed, but this is non-critical:', err);
-        });
+        if (apiContext && apiContext.updateClientInfo) {
+          apiContext.updateClientInfo().catch((err) => {
+            console.log('Client info update failed, but this is non-critical:', err);
+          });
+        }
       } catch (err) {
         console.log('Failed to call client info update, but this is non-critical:', err);
       }
@@ -48,7 +85,7 @@ export const useAuth0Queries = () => {
         console.log('User not authenticated, redirecting to login');
         throw new Error('User is not authenticated');
       }
-      
+
       console.log('Attempting to refresh access token silently');
       const token = await getAccessTokenSilently({
         authorizationParams: {
@@ -57,44 +94,46 @@ export const useAuth0Queries = () => {
         // Set timeoutInSeconds to a lower value for faster testing
         timeoutInSeconds: 10,
         // Force a refresh rather than using a cached token
-        cacheMode: 'off'
+        cacheMode: 'off',
       });
-      
+
       console.log('Successfully refreshed access token');
       return token;
     } catch (error) {
       console.error('Failed to get access token silently:', error);
-      
+
       // If silent refresh fails, try redirect login
-      if (error instanceof Error && 
-         (error.message.includes('login_required') || 
-          error.message.includes('consent_required') || 
+      if (
+        error instanceof Error &&
+        (error.message.includes('login_required') ||
+          error.message.includes('consent_required') ||
           error.message.includes('interaction_required') ||
-          error.message === 'User is not authenticated')) {
-        
+          error.message === 'User is not authenticated')
+      ) {
         console.log('Silent refresh failed, redirecting to login');
         await loginWithRedirect({
           authorizationParams: {
             audience: config.audience,
-          }
+          },
         });
       }
-      
+
       throw error; // Propagate the error for handling upstream
     }
   };
-  
+
   // Helper function specifically for testing token expiry scenarios
   const simulateTokenExpiry = async () => {
     // This would only be used in development/testing
     // Check if we're in production based on window.location.hostname
-    const isProduction = 
-      typeof window !== 'undefined' && 
-      window.location.hostname === 'www.wedding.christephanie.com';
-    
+    const isProduction =
+      typeof window !== 'undefined' && window.location.hostname === 'www.wedding.christephanie.com';
+
     if (!isProduction) {
       console.log('Simulating token expiry for testing');
-      localStorage.removeItem('@@auth0spajs@@::' + config.clientId + '::' + config.audience + '::openid profile email');
+      localStorage.removeItem(
+        '@@auth0spajs@@::' + config.clientId + '::' + config.audience + '::openid profile email',
+      );
       return true;
     }
     return false;
@@ -109,17 +148,17 @@ export const useAuth0Queries = () => {
       };
       userActions.setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
-      
+
       // Fire and forget client info update
       updateClientInfo();
     }
   }, [auth0User, userActions.setUser, user]);
 
-  return { 
-    getAccessTokenPleasePleasePlease, 
-    logOutFromAuth0, 
-    signInWithAuth0, 
+  return {
+    getAccessTokenPleasePleasePlease,
+    logOutFromAuth0,
+    signInWithAuth0,
     updateClientInfo,
-    simulateTokenExpiry   // Include this for testing purposes
+    simulateTokenExpiry, // Include this for testing purposes
   };
 };

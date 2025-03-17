@@ -92,8 +92,8 @@ const theme = createTheme({
   },
 });
 
-describe('WelcomeStepper component.wip', () => {
-  it('renders the stepper with step title.wip', () => {
+describe('WelcomeStepper component [wip]', () => {
+  it('renders the stepper with step title [wip]', () => {
     render(
       <ThemeProvider theme={theme}>
         <RecoilRoot>
@@ -108,7 +108,7 @@ describe('WelcomeStepper component.wip', () => {
     expect(screen.getByText('Save the Date')).toBeInTheDocument();
   });
   
-  it('ensures action buttons are positioned correctly for mobile visibility.wip', () => {
+  it('ensures action buttons are positioned correctly for mobile visibility [wip]', () => {
     render(
       <ThemeProvider theme={theme}>
         <RecoilRoot>
@@ -159,7 +159,7 @@ describe('WelcomeStepper component.wip', () => {
     });
   });
   
-  it('displays the status badge with correct styling.wip', () => {
+  it('displays the status badge with correct styling [wip]', () => {
     // Override the mock to simulate an "Interested" user
     jest.resetModules();
     jest.mock('@/store/user', () => ({
@@ -209,5 +209,346 @@ describe('WelcomeStepper component.wip', () => {
     // the parent Box container exists
     const boxContainer = badgeContainer?.closest('div');
     expect(boxContainer).toBeInTheDocument();
+  });
+  
+  it('shows only basic steps when user has declined [wip]', () => {
+    // Create mock implementation for saveTheDateStepsState with specific completed statuses
+    const mockSaveTheDateSteps = {
+      key: 'saveTheDateStepsState',
+      default: {
+        attendance: {
+          id: 0,
+          completed: true,
+          label: 'Are you interested in attending?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        ageGroup: {
+          id: 1,
+          completed: false,
+          label: 'What kind of person are we catering to?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        communicationPreference: {
+          id: 2,
+          completed: false,
+          label: 'How can we notify you about wedding updates?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        mailingAddress: {
+          id: 6,
+          completed: false,
+          label: "What's your snail mail?",
+          description: '',
+          component: null,
+          display: true,
+        },
+        comments: {
+          id: 7,
+          completed: false,
+          label: 'Any comments?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        summary: {
+          id: 8,
+          completed: false,
+          label: 'Wedding Information Summary',
+          description: 'Review your information',
+          component: null,
+          display: true,
+        }
+      }
+    };
+    
+    // Override the mock to simulate a "Declined" user
+    jest.resetModules();
+    jest.mock('@/store/steppers/steppers', () => ({
+      ...mockSaveTheDateSteps,
+      stdStepperState: {
+        key: 'stdStepperState',
+        default: {
+          steps: mockSaveTheDateSteps.default,
+          tabIndex: 0,
+          totalTabs: 6,
+          currentStep: ['attendance', { completed: true }]
+        }
+      },
+      stdTabIndex: {
+        key: 'stdTabIndex',
+        default: 0
+      }
+    }));
+    
+    jest.mock('@/store/user', () => ({
+      userState: {
+        key: 'userState',
+        default: {
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        }
+      },
+      useUser: () => [
+        { 
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        },
+        jest.fn()
+      ]
+    }));
+    
+    render(
+      <ThemeProvider theme={theme}>
+        <RecoilRoot>
+          <BrowserRouter>
+            <WelcomeStepper />
+          </BrowserRouter>
+        </RecoilRoot>
+      </ThemeProvider>
+    );
+    
+    // Check for the declined status badge
+    const statusBadge = screen.getByText("You've declined to attend");
+    expect(statusBadge).toBeInTheDocument();
+    
+    // The button should direct to the next basic step (mailingAddress) for declined users
+    const actionButton = screen.getByText("What's your snail mail?");
+    expect(actionButton).toBeInTheDocument();
+  });
+  
+  it('shows "Update Response" button when declined user has completed required steps [wip]', () => {
+    // Create mock implementation for saveTheDateStepsState with all basic steps completed
+    const mockSaveTheDateSteps = {
+      key: 'saveTheDateStepsState',
+      default: {
+        attendance: {
+          id: 0,
+          completed: true,
+          label: 'Are you interested in attending?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        ageGroup: {
+          id: 1,
+          completed: false, // Not needed for declined users
+          label: 'What kind of person are we catering to?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        mailingAddress: {
+          id: 6,
+          completed: true, // This is completed
+          label: "What's your snail mail?",
+          description: '',
+          component: null,
+          display: true,
+        },
+        comments: {
+          id: 7,
+          completed: true, // This is completed
+          label: 'Any comments?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        summary: {
+          id: 8,
+          completed: true, // This is completed
+          label: 'Wedding Information Summary',
+          description: 'Review your information',
+          component: null,
+          display: true,
+        }
+      }
+    };
+    
+    // Override the mock to simulate a "Declined" user with completed basic steps
+    jest.resetModules();
+    jest.mock('@/store/steppers/steppers', () => ({
+      ...mockSaveTheDateSteps,
+      stdStepperState: {
+        key: 'stdStepperState',
+        default: {
+          steps: mockSaveTheDateSteps.default,
+          tabIndex: 0,
+          totalTabs: 5,
+          currentStep: ['attendance', { completed: true }]
+        }
+      },
+      stdTabIndex: {
+        key: 'stdTabIndex',
+        default: 0
+      }
+    }));
+    
+    jest.mock('@/store/user', () => ({
+      userState: {
+        key: 'userState',
+        default: {
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        }
+      },
+      useUser: () => [
+        { 
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        },
+        jest.fn()
+      ]
+    }));
+    
+    render(
+      <ThemeProvider theme={theme}>
+        <RecoilRoot>
+          <BrowserRouter>
+            <WelcomeStepper />
+          </BrowserRouter>
+        </RecoilRoot>
+      </ThemeProvider>
+    );
+    
+    // Check for the declined status badge
+    const statusBadge = screen.getByText("You've declined to attend");
+    expect(statusBadge).toBeInTheDocument();
+    
+    // The button should show "Update Response" since all required steps are completed
+    const actionButton = screen.getByText("Update Response");
+    expect(actionButton).toBeInTheDocument();
+  });
+  
+  it('shows "Update Response" button when declined user has completed required steps [wip]', () => {
+    // Create mock implementation for saveTheDateStepsState with all basic steps completed
+    const mockSaveTheDateSteps = {
+      key: 'saveTheDateStepsState',
+      default: {
+        attendance: {
+          id: 0,
+          completed: true,
+          label: 'Are you interested in attending?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        ageGroup: {
+          id: 1,
+          completed: false, // Not needed for declined users
+          label: 'What kind of person are we catering to?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        mailingAddress: {
+          id: 6,
+          completed: true, // This is completed
+          label: "What's your snail mail?",
+          description: '',
+          component: null,
+          display: true,
+        },
+        comments: {
+          id: 7,
+          completed: true, // This is completed
+          label: 'Any comments?',
+          description: '',
+          component: null,
+          display: true,
+        },
+        summary: {
+          id: 8,
+          completed: true, // This is completed
+          label: 'Wedding Information Summary',
+          description: 'Review your information',
+          component: null,
+          display: true,
+        }
+      }
+    };
+    
+    // Override the mock to simulate a "Declined" user with completed basic steps
+    jest.resetModules();
+    jest.mock('@/store/steppers/steppers', () => ({
+      ...mockSaveTheDateSteps,
+      stdStepperState: {
+        key: 'stdStepperState',
+        default: {
+          steps: mockSaveTheDateSteps.default,
+          tabIndex: 0,
+          totalTabs: 5,
+          currentStep: ['attendance', { completed: true }]
+        }
+      },
+      stdTabIndex: {
+        key: 'stdTabIndex',
+        default: 0
+      }
+    }));
+    
+    jest.mock('@/store/user', () => ({
+      userState: {
+        key: 'userState',
+        default: {
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        }
+      },
+      useUser: () => [
+        { 
+          auth0Id: 'test-user',
+          guestId: 'test-guest-id',
+          ageGroup: 'Adult',
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined
+          }
+        },
+        jest.fn()
+      ]
+    }));
+    
+    render(
+      <ThemeProvider theme={theme}>
+        <RecoilRoot>
+          <BrowserRouter>
+            <WelcomeStepper />
+          </BrowserRouter>
+        </RecoilRoot>
+      </ThemeProvider>
+    );
+    
+    // Check for the declined status badge
+    const statusBadge = screen.getByText("You've declined to attend");
+    expect(statusBadge).toBeInTheDocument();
+    
+    // The button should show "Update Response" since all required steps are completed
+    const actionButton = screen.getByText("Update Response");
+    expect(actionButton).toBeInTheDocument();
   });
 });
