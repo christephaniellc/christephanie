@@ -17,9 +17,35 @@ export const useAuth0Queries = () => {
   const apiContext = useContext(ApiContext);
 
   const logOutFromAuth0 = async () => {
-    return await logout({ returnTo: config.returnTo } as LogoutOptions).then(() => {
+    // Clear Auth0-specific tokens first
+    const auth0CacheKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('@@auth0spajs@@') || 
+      key.includes(config.clientId) ||
+      key.includes('auth0')
+    );
+    
+    auth0CacheKeys.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    // Clear application state
+    localStorage.removeItem('user');
+    localStorage.removeItem('family');
+    sessionStorage.removeItem('auth_redirect_to');
+    
+    // Then call Auth0 logout - this has to be last as it navigates away
+    return await logout({
+      returnTo: config.returnTo,
+      // Set explicit options to ensure clean logout
+      clientID: config.clientId,
+      federated: true // Log out from Auth0 session as well
+    } as LogoutOptions).then(() => {
+      // As a final precaution, clear any remaining localStorage
       localStorage.clear();
-      window?.location.reload();
+      // Force a complete page reload to reset all app state
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.href = '/';
+      }
     });
   };
 
@@ -41,9 +67,11 @@ export const useAuth0Queries = () => {
     setTimeout(() => {
       try {
         // Fire and forget - don't even await the promise
-        apiContext.updateClientInfo().catch((err) => {
-          console.log('Client info update failed, but this is non-critical:', err);
-        });
+        if (apiContext && apiContext.updateClientInfo) {
+          apiContext.updateClientInfo().catch((err) => {
+            console.log('Client info update failed, but this is non-critical:', err);
+          });
+        }
       } catch (err) {
         console.log('Failed to call client info update, but this is non-critical:', err);
       }
