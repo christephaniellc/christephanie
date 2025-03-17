@@ -95,10 +95,14 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 },
               }}
             />
+            {isMobile &&
+              `Click to update response (${daysUntilDeadline} days left) `}
+
             <DoubleArrow
               aria-hidden="true"
               sx={{
                 mr: 2,
+                ml: 1,
                 fontSize: '1.8rem',
                 color: getResponseColor(),
                 strokeWidth: 1.5,
@@ -125,9 +129,8 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 lineHeight: isMobile ? 1.2 : 'inherit',
               }}
             >
-              {isMobile
-                ? `Click to update response (${daysUntilDeadline} days left)`
-                : `Click to update your response. You have ${daysUntilDeadline} days left to respond.`}
+              {!isMobile &&
+                `Click to update your response. You have ${daysUntilDeadline} days left to respond.`}
             </Typography>
           </Paper>
         )}
