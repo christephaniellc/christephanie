@@ -134,7 +134,7 @@ const VerifyEmail = () => {
     setTimeout(() => {
       // Navigate back to the communication preferences page
       if (verificationSuccess) {
-        navigate('/save-the-date?verified=true');
+        navigate('/save-the-date?step=communicationPreference');
       } else {
         navigate('/save-the-date');
       }
@@ -147,9 +147,9 @@ const VerifyEmail = () => {
         elevation={3} 
         sx={{ 
           p: 4, 
+          backdropFilter: 'blur(20px)',
           borderRadius: 2,
-          backdropFilter: 'blur(10px)',
-          bgcolor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: 'rgba(0,0,0,.1)',
           textAlign: 'center'
         }}
       >
@@ -166,7 +166,12 @@ const VerifyEmail = () => {
           </Box>
         ) : verificationSuccess ? (
           // Success state
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+          <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              py: 2 
+            }}>
             <CheckCircleOutline 
               sx={{ 
                 fontSize: 80, 
