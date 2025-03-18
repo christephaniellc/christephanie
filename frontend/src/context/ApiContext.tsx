@@ -235,8 +235,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['validateEmail'],
     // Don't auto-retry to prevent infinite loops
     retry: 0,
-    // Add cacheTime to prevent duplicates
-    cacheTime: 60000, // 1 minute cache
+    // Add gcTime (formerly cacheTime) to prevent duplicates
+    gcTime: 60000, // 1 minute cache
     mutationFn: ({ email, token, action }) => {
       // Log the mutation parameters for debugging
       console.log(`Email validation request: email=${email}, action=${action}, has token=${!!token}`);
