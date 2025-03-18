@@ -49,7 +49,8 @@ export function forceAuth0Logout(): void {
  * to perform a nuclear logout when testing auth issues
  */
 export function createDevLoginDebugButton(): void {
-  if (false && process.env.NODE_ENV !== 'prod') {
+  const env = import.meta.env.VITE_ENV || 'development';
+  if (false && env !== 'prod' && env !== 'production') {
     const config = getConfig();
     
     // Only add in development

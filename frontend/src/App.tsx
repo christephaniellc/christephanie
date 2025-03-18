@@ -19,7 +19,7 @@ import AuthDebugger from '@/utils/AuthDebugger';
 
 function App() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading, env } = useAuth0();
 
   // Check for redirects after login
   useEffect(() => {
@@ -45,7 +45,7 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
-      {process.env.NODE_ENV !== 'prod' && <AuthDebugger />}
+      {false && <AuthDebugger />}
 
       <Sidebar />
       <Suspense fallback={<Loading />}>
