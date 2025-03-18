@@ -226,6 +226,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     onError: (error) => console.error('Failed to validate phone', error),
   });
 
+  // EMERGENCY DISABLED VERSION
   const validateEmailMutation = useMutation<
     { success: boolean },
     ApiError,
@@ -238,6 +239,15 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     // Add gcTime (formerly cacheTime) to prevent duplicates
     gcTime: 60000, // 1 minute cache
     mutationFn: ({ email, token, action }) => {
+      // EMERGENCY FIX: Only allow token validation, block registration calls
+      if (action === 'register') {
+        console.log('EMERGENCY FIX: Blocking email registration call to prevent API abuse');
+        return Promise.resolve({ success: true }); // Return fake success
+      }
+      if (action === 'validate') {
+        console.log('EMERGENCY FIX: Blocking email validate call to prevent API abuse');
+        return Promise.resolve({ success: true }); // Return fake success
+      }
       // Log the mutation parameters for debugging
       console.log(`Email validation request: email=${email}, action=${action}, has token=${!!token}`);
       // Only proceed if email is provided
