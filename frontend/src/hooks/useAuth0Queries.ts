@@ -91,7 +91,7 @@ export const useAuth0Queries = () => {
   };
 
   const signInWithAuth0 = useCallback(
-    async (guestId: string) => {
+    async (guestId: string, auth0Id?: string) => {
       // Clear any existing Auth0 session first to force a fresh login
       clearAllAuth0Data(config.clientId);
       
@@ -101,8 +101,9 @@ export const useAuth0Queries = () => {
       // Force a completely new authentication flow with prompt=login
       return await loginWithRedirect({
         authorizationParams: {
-          screen_hint: 'signup',
+          screen_hint: auth0Id ? 'login' : 'signup',
           guest_id: guestId,
+          redirect_uri: window.location.origin,
           prompt: 'login', // Force Auth0 to show the login page, ignoring any existing session
         },
         // Always create a new transaction
