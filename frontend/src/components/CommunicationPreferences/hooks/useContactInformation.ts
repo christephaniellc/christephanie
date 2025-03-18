@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApiContext } from '@/context/ApiContext';
 import { getConfig } from '@/auth_config';
 import { NotificationPreferenceEnum } from '@/types/api';
@@ -25,24 +25,36 @@ export const useContactInformation = (guestId: string) => {
   const emailQuery = useQuery({
     queryKey: ['unmaskedEmail', guestId],
     queryFn: () => fetchMaskedValue('email'),
-    enabled: false,
-    onSuccess: (data) => {
-      if (data && data.value) {
-        setEmailValue(data.value);
+    enabled: false
+  });
+  
+  // Handle email query success manually
+  useEffect(() => {
+    if (emailQuery.data) {
+      const data = emailQuery.data;
+      if (data && (typeof data === 'string' || data.value)) {
+        const valueToUse = typeof data === 'string' ? data : data.value;
+        setEmailValue(valueToUse);
       }
     }
-  });
+  }, [emailQuery.data]);
   
   const phoneQuery = useQuery({
     queryKey: ['unmaskedPhone', guestId],
     queryFn: () => fetchMaskedValue('text'),
-    enabled: false,
-    onSuccess: (data) => {
-      if (data && data.value) {
-        setPhoneValue(data.value);
+    enabled: false
+  });
+  
+  // Handle phone query success manually
+  useEffect(() => {
+    if (phoneQuery.data) {
+      const data = phoneQuery.data;
+      if (data && (typeof data === 'string' || data.value)) {
+        const valueToUse = typeof data === 'string' ? data : data.value;
+        setPhoneValue(valueToUse);
       }
     }
-  });
+  }, [phoneQuery.data]);
 
   // Loading states
   const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);

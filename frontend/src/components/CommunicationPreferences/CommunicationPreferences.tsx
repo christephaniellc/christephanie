@@ -3,6 +3,7 @@
  * Redesigned for better mobile experience and modern MUI design
  * Only displays for the current logged-in user (with matching auth0Id)
  */
+import { useEffect, useState } from 'react';
 import { Snackbar, Alert, Stack, Box, Paper, Container } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { NotificationPreferenceEnum } from '@/types/api';
