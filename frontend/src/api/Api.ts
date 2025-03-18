@@ -189,7 +189,10 @@ export default class Api {
     requiresAuth: boolean
   ): Promise<RequestInit> {
     const headers = await this.buildHeaders(requiresAuth);
-    const config: RequestInit = { method, headers };
+    const config: RequestInit = { 
+      method, 
+      headers
+    };
     if (data != null) config.body = JSON.stringify(data);
     return config;
   }
@@ -201,15 +204,28 @@ export default class Api {
     }
     const token = await this.getAccessTokenSilently();
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    return { method, body: formData, headers };
+    return { 
+      method, 
+      body: formData, 
+      headers
+    };
   }
 
   private async buildHeaders(requiresAuth: boolean): Promise<Record<string, string>> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
     if (requiresAuth) {
-      const token = await this.getAccessTokenSilently();
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      try {
+        const token = await this.getAccessTokenSilently();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          console.warn('No token available for authenticated request');
+        }
+      } catch (error) {
+        console.error('Error getting access token:', error);
       }
     }
     return headers;
@@ -217,10 +233,30 @@ export default class Api {
 
   private async compositeResponseHandler<T>(
   promise: Promise<Response>,
-  callback?: (_response: Awaited<T>) => Awaited<T>
+  callback?: (_response: Awaited<T>) => Awaited<T>,
+  retryCount: number = 0
 ): Promise<Awaited<T>> {
   try {
     const response = await promise;
+    
+    // Handle 403 Forbidden errors specifically
+    if (response.status === 403 && retryCount < 2) {
+      console.log(`Received 403 error (attempt ${retryCount + 1}), refreshing token and retrying...`);
+      
+      // Force token refresh
+      try {
+        // Get a fresh token directly
+        await this.getAccessTokenSilently();
+        
+        // Recreate the promise with the fresh token
+        const retry = await promise;
+        return this.compositeResponseHandler(Promise.resolve(retry), callback, retryCount + 1);
+      } catch (refreshError) {
+        console.error('Failed to refresh token after 403:', refreshError);
+        // Continue with normal error handling if token refresh fails
+      }
+    }
+    
     let result = await this.handleResponse<Awaited<T>>(response);
     if (callback) {
       result = callback(result);
@@ -231,30 +267,37 @@ export default class Api {
   }
 }
   async get<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
+    const requestConfig = await this.buildConfig('GET', null, true);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async getPublic<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, false)), callback);
+    const requestConfig = await this.buildConfig('GET', null, false);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async post<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
+    const requestConfig = await this.buildConfig('POST', data, true);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async patch<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PATCH', data, true)), callback);
+    const requestConfig = await this.buildConfig('PATCH', data, true);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async put<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('PUT', data, true)), callback);
+    const requestConfig = await this.buildConfig('PUT', data, true);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async delete<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('DELETE', data, true)), callback);
+    const requestConfig = await this.buildConfig('DELETE', data, true);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 
   async postForm<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildMutipartFormConfig('POST', data)), callback);
+    const requestConfig = await this.buildMutipartFormConfig('POST', data);
+    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, requestConfig), callback);
   }
 }
