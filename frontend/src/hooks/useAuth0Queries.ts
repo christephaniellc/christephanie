@@ -115,11 +115,11 @@ export const useAuth0Queries = () => {
           redirect_uri: window.location.origin
         },
         timeoutInSeconds: 15,
-        detailedResponse: true
+        // Don't use detailedResponse because it causes typing issues
       });
 
       console.log('Successfully refreshed access token');
-      return token.access_token;
+      return token;
     } catch (error) {
       console.error('Failed to get access token silently:', error);
       
