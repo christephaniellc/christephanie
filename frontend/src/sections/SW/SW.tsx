@@ -27,6 +27,23 @@ function SW() {
     }
   }, [setOfflineReady, setNeedRefresh, notificationsActions]);
 
+  const handleReload = useCallback(() => {
+    console.log('Updating service worker and reloading the page');
+    // First close the notification
+    close();
+    // Then trigger the service worker update and force reload
+    try {
+      updateServiceWorker(true);
+      // As a fallback, force page reload after a short delay
+      setTimeout(() => {
+        console.log('Forcing page reload as fallback');
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error('Error updating service worker, forcing reload:', error);
+      window.location.reload();
+    }
+  }, [close, updateServiceWorker]);
 
   useEffect(() => {
     if (offlineReady) {
@@ -44,14 +61,14 @@ function SW() {
           persist: true,
           action: (
             <>
-              <Button onClick={() => updateServiceWorker(true)}>Reload</Button>
+              <Button onClick={handleReload}>Reload</Button>
               <Button onClick={close}>Close</Button>
             </>
           ),
         },
       });
     }
-  }, [close, needRefresh, offlineReady, notificationsActions, updateServiceWorker]);
+  }, [close, needRefresh, offlineReady, notificationsActions, updateServiceWorker, handleReload]);
 
   return null;
 }
