@@ -45,6 +45,7 @@ export const useAuth0Providers = () => {
     },
     cacheLocation: 'localstorage', // Use localStorage instead of sessionStorage
     useRefreshTokens: true, // Enable refresh tokens
+    useRefreshTokensFallback: true, // Use fallback if refresh token is missing
   };
 
   return { providerConfig };

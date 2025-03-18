@@ -214,8 +214,10 @@ export default class Api {
   private async buildHeaders(requiresAuth: boolean): Promise<Record<string, string>> {
     const headers: Record<string, string> = { 
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Origin': window.location.origin
     };
+    
     if (requiresAuth) {
       try {
         const token = await this.getAccessTokenSilently();
@@ -223,11 +225,16 @@ export default class Api {
           headers['Authorization'] = `Bearer ${token}`;
         } else {
           console.warn('No token available for authenticated request');
+          // Handle the missing token gracefully - the caller will retry
         }
       } catch (error) {
         console.error('Error getting access token:', error);
+        
+        // Don't add token but don't block the request - 
+        // let the server respond with 401/403 so we can retry with refresh
       }
     }
+    
     return headers;
   }
 
@@ -239,26 +246,32 @@ export default class Api {
   try {
     const response = await promise;
     
-    // Handle 403 Forbidden errors specifically
-    if (response.status === 403 && retryCount < 2) {
-      console.log(`Received 403 error (attempt ${retryCount + 1}), waiting before retry...`);
-      
-      // Wait a moment before retrying (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+    // Handle 401 Unauthorized or 403 Forbidden errors specifically
+    if ((response.status === 401 || response.status === 403) && retryCount < 3) {
+      console.log(`Received ${response.status} error (attempt ${retryCount + 1}), attempting to refresh token...`);
       
       try {
-        // Don't force token refresh here - it can cause logout loops
-        // Just retry the request with existing token
-        const config = await this.buildConfig(
-          response.type as string, 
-          null, 
-          true
-        );
+        // First attempt to get a fresh token by forcing a refresh
+        const token = await this.getAccessTokenSilently();
         
+        if (!token) {
+          console.warn('Failed to refresh token, but continuing with retry...');
+        }
+        
+        // Wait a moment before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+        
+        // Rebuild the request with the new token
+        const method = response.type as string || 'GET'; // Default to GET if type is not available
+        const config = await this.buildConfig(method, null, true);
+        
+        // Make a fresh request with the new token
         const retry = await fetch(response.url, config);
+        
+        // Continue with the retry chain
         return this.compositeResponseHandler(Promise.resolve(retry), callback, retryCount + 1);
-      } catch (retryError) {
-        console.error('Request retry failed:', retryError);
+      } catch (refreshError) {
+        console.error('Token refresh or request retry failed:', refreshError);
         // Continue with normal error handling if retry fails
       }
     }
