@@ -87,74 +87,22 @@ export const useAuth0Queries = () => {
       }
 
       console.log('Attempting to refresh access token silently');
-      
-      // Try to get token from cache first
-      try {
-        const cachedToken = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: config.audience,
-            scope: 'openid profile email offline_access'
-          },
-          timeoutInSeconds: 5
-        });
-        
-        if (cachedToken) {
-          console.log('Successfully got access token from cache');
-          return cachedToken;
-        }
-      } catch (cacheError) {
-        console.log('Cache retrieval failed, will try with auth params:', cacheError);
-        // Continue to the next attempt
-      }
-      
-      // If cached token failed or wasn't available, try a fresh request
       const token = await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
-          scope: 'openid profile email offline_access',
-          redirect_uri: window.location.origin
         },
-        timeoutInSeconds: 15,
-        // Don't use detailedResponse because it causes typing issues
+        // Set timeoutInSeconds to a lower value for faster testing
+        timeoutInSeconds: 10,
+        // Force a refresh rather than using a cached token
+        cacheMode: 'off',
       });
 
       console.log('Successfully refreshed access token');
       return token;
     } catch (error) {
       console.error('Failed to get access token silently:', error);
-      
-      // Handle the specific Missing Refresh Token error
-      if (error instanceof Error && 
-          (error.message.includes('Missing Refresh Token') || 
-           error.message.includes('invalid_grant'))) {
-        
-        console.log('Refresh token missing or invalid, initiating a new login flow');
-        
-        // Don't redirect immediately to avoid interrupting user experience
-        // Instead, return a valid but dummy token to keep the app running temporarily
-        // and schedule a redirect for later
-        
-        setTimeout(() => {
-          // Display a friendly message about re-login
-          if (confirm('Your session needs to be renewed. Click OK to log in again.')) {
-            loginWithRedirect({
-              authorizationParams: {
-                audience: config.audience,
-                scope: 'openid profile email offline_access',
-                prompt: 'login' // Force a fresh login
-              },
-              appState: {
-                returnTo: window.location.pathname
-              }
-            });
-          }
-        }, 500);
-        
-        // Return null to signal the token isn't available but we've handled it
-        return null;
-      }
 
-      // For other errors, try redirect login if appropriate
+      // If silent refresh fails, try redirect login
       if (
         error instanceof Error &&
         (error.message.includes('login_required') ||
@@ -166,11 +114,7 @@ export const useAuth0Queries = () => {
         await loginWithRedirect({
           authorizationParams: {
             audience: config.audience,
-            scope: 'openid profile email offline_access'
           },
-          appState: {
-            returnTo: window.location.pathname
-          }
         });
       }
 
