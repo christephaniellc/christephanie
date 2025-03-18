@@ -95,18 +95,21 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const handleTokenExpiration = useCallback((failureCount: number, error: ApiError) => {
     console.log(`API error occurred (attempt ${failureCount}):`, error);
     
-    // If we have a 401 Unauthorized error (token expired)
-    if (error.status === 401) {
+    // If we have a 401 Unauthorized or 403 Forbidden error (token expired or invalid)
+    if (error.status === 401 || error.status === 403) {
       console.log('Token expired or authentication error detected, attempting to refresh...');
       
-      // On first retry, try to refresh the token
-      if (failureCount <= 1) {
-        // Schedule token refresh as a side effect
-        getAccessTokenPleasePleasePlease()
+      // On first few retries, try to refresh the token
+      if (failureCount <= 2) {
+        // Schedule token refresh as a side effect with cache busting
+        getAccessTokenSilently({ ignoreCache: true, cacheMode: 'off' })
+          .then(() => {
+            console.log('Token refreshed successfully');
+          })
           .catch(refreshError => {
             console.error('Failed to refresh token:', refreshError);
             // If refresh fails and we've tried multiple times, log out
-            if (failureCount > 1) {
+            if (failureCount > 2) {
               logout();
             }
           });
@@ -121,7 +124,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     
     // For other errors, retry a few times then give up
     return failureCount < 3;
-  }, [getAccessTokenPleasePleasePlease, logout]);
+  }, [getAccessTokenSilently, logout]);
 
   const getMeQuery = useQuery<GuestDto, ApiError>({
     queryKey: ['getMeQuery', `${user.guestNumber}`],
