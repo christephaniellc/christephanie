@@ -110,7 +110,6 @@ const VerifyEmail = () => {
       isMounted = false;
     };
   }, []);
-  }, [searchParams]);
 
   // Track if navigation has been triggered to prevent double navigation
   const hasNavigatedRef = useRef(false);
