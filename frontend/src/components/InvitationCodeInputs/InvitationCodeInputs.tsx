@@ -83,7 +83,7 @@ export const InvitationCodeInputs = () => {
     const result = await userActions.findUserIdQuery?.refetch();
     if (result && result.data && result.data.auth0Id) {
       userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
-      signInWithAuth0(result.data.guestId);
+      signInWithAuth0(result.data.guestId, result.data.auth0Id);
     }
   };
 
@@ -128,7 +128,7 @@ export const InvitationCodeInputs = () => {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                  user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
                 }}
                 aria-label="Invitation details"
               >
@@ -156,7 +156,7 @@ export const InvitationCodeInputs = () => {
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                      user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
                     }
                   }}
                 />
@@ -188,7 +188,7 @@ export const InvitationCodeInputs = () => {
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser();
+                      user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
                     }
                   }}
                 />
@@ -206,7 +206,9 @@ export const InvitationCodeInputs = () => {
               disabled={!user?.firstName || !user?.invitationCode}
               fullWidth
               variant="contained"
-              onClick={() => (user?.guestId ? signInWithAuth0(user.guestId) : handleFindUser())}
+              onClick={() => (user?.guestId 
+                ? signInWithAuth0(user.guestId, user.auth0Id) 
+                : handleFindUser())}
               aria-label={user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             >
               {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
@@ -254,7 +256,7 @@ export const InvitationCodeInputs = () => {
                   auth0User
                     ? logOutFromAuth0()
                     : user.guestId
-                      ? signInWithAuth0(user.guestId)
+                      ? signInWithAuth0(user.guestId, user.auth0Id)
                       : console.log('No GuestId found.');
                 }}
                 aria-label={auth0User ? 'Logout from your account' : 'Login with your existing account'}
