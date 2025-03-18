@@ -32,6 +32,11 @@ const VerifyEmail = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Skip rerunning verification if we already completed it
+    if (!isVerifying && (verificationSuccess || errorMessage)) {
+      return;
+    }
+    
     const token = searchParams.get('token');
     const email = searchParams.get('email') || '';
     
@@ -41,35 +46,66 @@ const VerifyEmail = () => {
       return;
     }
 
+    // Create a flag to track if this effect is still relevant
+    let isMounted = true;
+    
     // Verify the email using the token
     const verifyEmail = async () => {
+      // Guard against duplicate execution
+      if (!isMounted || !isVerifying) return;
+      
       try {
-        setIsVerifying(true);
+        console.log(`Verifying email token: ${token.substring(0, 8)}... for email: ${email}`);
         
         // Call the API to validate the email with the token
-        await validateEmailMutation.mutateAsync({
+        const result = await validateEmailMutation.mutateAsync({
           email,
           token: token,
           action: 'validate'
         });
         
-        // If validation is successful
-        setVerificationSuccess(true);
-        
-        // Refresh family data to get updated verification status
-        await familyActions.getFamilyUnitQuery.refetch();
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          console.log('Email verification result:', result);
+          // If validation is successful
+          setVerificationSuccess(true);
+          
+          // Refresh family data to get updated verification status - with delay
+          setTimeout(() => {
+            if (isMounted) {
+              familyActions.getFamilyUnitQuery.refetch();
+            }
+          }, 1000);
+        }
         
       } catch (error) {
-        console.error('Email verification failed:', error);
-        setVerificationSuccess(false);
-        setErrorMessage('Email verification failed. The token may be invalid or expired.');
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          console.error('Email verification failed:', error);
+          setVerificationSuccess(false);
+          setErrorMessage('Email verification failed. The token may be invalid or expired.');
+        }
       } finally {
-        setIsVerifying(false);
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          setIsVerifying(false);
+        }
       }
     };
 
-    verifyEmail();
-  }, [searchParams, validateEmailMutation, familyActions]);
+    // Add a small delay to avoid racing conditions
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        verifyEmail();
+      }
+    }, 500);
+    
+    // Cleanup function to prevent state updates if the component unmounts
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [searchParams]);
 
   const handleContinue = () => {
     // Navigate back to the communication preferences page
