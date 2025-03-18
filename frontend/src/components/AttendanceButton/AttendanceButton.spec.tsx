@@ -103,7 +103,7 @@ describe('AttendanceButton component.wip', () => {
 
   test('renders the proper status message for pending response.wip', () => {
     renderWithTheme(<AttendanceButton guestId="123" />);
-    expect(screen.getByText(/Click to update your response/)).toBeInTheDocument();
+    expect(screen.getByText(/Click to update this response/)).toBeInTheDocument();
     expect(screen.getByText(/days left to respond/)).toBeInTheDocument();
   });
 
