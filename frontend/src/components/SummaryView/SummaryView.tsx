@@ -26,6 +26,7 @@ import CommentIcon from '@mui/icons-material/Comment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HelpIcon from '@mui/icons-material/Help';
 import CancelIcon from '@mui/icons-material/Cancel';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 const SummaryView: React.FC = () => {
   const [family] = useFamily();
@@ -309,6 +310,9 @@ const SummaryView: React.FC = () => {
           <Box sx={{ 
             width: '100%', 
             textAlign: 'center',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            display: 'flex',
             mt: 4,
             mb: 2,
             py: 1.5,
@@ -334,17 +338,28 @@ const SummaryView: React.FC = () => {
               zIndex: -1,
             }
           }}>
-            <Typography sx={{ 
-              fontWeight: 'medium',
+            <Box sx={{
+              pr: 2,
               color: theme.palette.secondary.main,
-              fontSize: '0.95rem',
-              letterSpacing: '0.01em',
-              textShadow: theme.palette.mode === 'dark'
-                ? '0 1px 2px rgba(0,0,0,0.8)'
-                : 'none',
+              verticalAlign: 'center'
             }}>
-              ✉️ Formal RSVP invitations will be coming in the mail soon! ✉️
-            </Typography>
+              <MailOutlineIcon/>
+            </Box>
+            <Box sx={{
+              flex: 1
+            }}>
+              <Typography sx={{ 
+                fontWeight: 'medium',
+                color: theme.palette.secondary.main,
+                fontSize: '0.95rem',
+                letterSpacing: '0.01em',
+                textShadow: theme.palette.mode === 'dark'
+                  ? '0 1px 2px rgba(0,0,0,0.8)'
+                  : 'none',
+              }}>
+                  Formal RSVP invitations will be coming in the mail soon!
+              </Typography>
+            </Box>
           </Box>
 
           <Divider sx={{ my: 2 }} />
@@ -533,48 +548,6 @@ const SummaryView: React.FC = () => {
           </List>
         </CardContent>
       </Card>
-
-      <Box sx={{ 
-        width: '100%', 
-        textAlign: 'center',
-        mt: 4,
-        mb: 2,
-        py: 1.5,
-        px: 3,
-        mx: 'auto',
-        maxWidth: 'fit-content',
-        borderRadius: 2,
-        border: `1px dashed ${theme.palette.secondary.main}`,
-        position: 'relative',
-        overflow: 'hidden',
-        zIndex: 1,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: theme.palette.mode === 'dark' 
-            ? 'rgba(0, 0, 0, 0.75)' 
-            : 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(8px)',
-          zIndex: -1,
-        }
-      }}>
-        <Typography sx={{ 
-          fontStyle: 'italic',
-          fontWeight: 'medium',
-          color: theme.palette.secondary.main,
-          fontSize: '0.95rem',
-          letterSpacing: '0.01em',
-          textShadow: theme.palette.mode === 'dark'
-            ? '0 1px 2px rgba(0,0,0,0.8)'
-            : 'none',
-        }}>
-          ✉️ Formal RSVP invitations will be coming in the mail soon! ✉️
-        </Typography>
-      </Box>
 
       <Button 
         variant="contained" 

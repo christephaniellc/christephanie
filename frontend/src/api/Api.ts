@@ -9,8 +9,20 @@ export type ApiError = {
 };
 
 export default class Api {
+  // Cache the token and its expiry time
+  private tokenCache: { token: string | null; expiresAt: number } = { 
+    token: null, 
+    expiresAt: 0 
+  };
+  
   // eslint-disable-next-line no-unused-vars
   constructor(private readonly getAccessTokenSilently: () => Promise<string | null>) {
+  }
+  
+  // Public method to clear token cache
+  clearTokenCache() {
+    console.log('Clearing token cache');
+    this.tokenCache = { token: null, expiresAt: 0 };
   }
 
   getJwt = async () => {
@@ -85,6 +97,12 @@ export default class Api {
     return this.post(`/validate/email`, { email, token, action });
   }
 
+  // Public method to clear token cache
+  clearTokenCache() {
+    console.log('Clearing token cache');
+    this.tokenCache = { token: null, expiresAt: 0 };
+  }
+
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
       case 200:
@@ -94,9 +112,14 @@ export default class Api {
         return this.handleRecoverableError(response);
 
       case 401:
+        // Clear token cache on authentication error
+        this.clearTokenCache();
         return this.handleUnRecoverableError(response);
 
       case 403:
+        // Also clear token cache on authorization error
+        this.clearTokenCache();
+        console.log('403 Forbidden error, cleared token cache');
         return this.handleUnRecoverableError(response);
 
       case 404:
@@ -203,12 +226,6 @@ export default class Api {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     return { method, body: formData, headers };
   }
-
-  // Cache the token and its expiry time
-  private tokenCache: { token: string | null; expiresAt: number } = { 
-    token: null, 
-    expiresAt: 0 
-  };
 
   // Helper to decode JWT and get expiration time
   private decodeJwt(token: string): { exp?: number } {

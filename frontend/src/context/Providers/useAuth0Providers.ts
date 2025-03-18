@@ -45,6 +45,19 @@ export const useAuth0Providers = () => {
     },
     cacheLocation: 'localstorage', // Use localStorage instead of sessionStorage
     useRefreshTokens: true, // Enable refresh tokens
+    
+    // Add these additional Auth0 options to improve token management
+    skipRedirectCallback: false, // Process redirect on load
+    advancedOptions: {
+      defaultScope: 'openid profile email', // Ensure consistent scopes
+    },
+    useRefreshTokensFallback: true, // Use refreshToken as fallback
+    
+    // Add session cleanup settings
+    logoutParams: {
+      federated: true, // Log out from Identity Provider too
+      returnTo: window.location.origin + '/', // Always return to home page
+    },
   };
 
   return { providerConfig };
