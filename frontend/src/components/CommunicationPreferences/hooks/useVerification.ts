@@ -62,7 +62,7 @@ export const useVerification = (
   };
 
   // Email verification methods
-  // EMERGENCY FIX: Disabled version to prevent infinite API calls
+  // Reactivated with safety measures
   const sendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void, 
@@ -74,11 +74,48 @@ export const useVerification = (
       return;
     }
 
-    // EMERGENCY FIX: Block all calls
-    console.log('EMERGENCY FIX: Email verification temporarily disabled');
-    showAlertMessage('Email verification has been temporarily disabled due to maintenance. Please try again later.', 'info');
-    setIsSendingEmailCode(false);
-    return;
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
+    
+    // Use the email value passed in or fall back to guest email
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Sending verification email to: ${emailToVerify}`);
+    
+    // Track the timestamp to detect duplicate calls
+    const timestamp = Date.now();
+    const currentTimestamp = timestamp;
+    
+    // Use mutateAsync to better control the flow
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
+      {
+        onSuccess: () => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
+            setIsSendingEmailCode(false);
+          }
+        },
+        onError: (error) => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Failed to send verification email. Please try again later.', 'error');
+            setIsSendingEmailCode(false);
+          }
+        }
+      }
+    ).finally(() => {
+      // Ensure loading state is always reset
+      if (timestamp === currentTimestamp) {
+        setIsSendingEmailCode(false);
+      }
+    });
 
     // Original code left commented out for future reference
     /*
@@ -115,7 +152,7 @@ export const useVerification = (
     */
   };
 
-  // EMERGENCY FIX: Disabled version to prevent infinite API calls
+  // Reactivated with safety measures
   const resendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void,
@@ -123,11 +160,48 @@ export const useVerification = (
   ) => {
     if (!isEmailVerificationEnabled) return;
 
-    // EMERGENCY FIX: Block all calls
-    console.log('EMERGENCY FIX: Email verification temporarily disabled');
-    showAlertMessage('Email verification has been temporarily disabled due to maintenance. Please try again later.', 'info');
-    setIsSendingEmailCode(false);
-    return;
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
+    
+    // Use the email value passed in or fall back to guest email
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Resending verification email to: ${emailToVerify}`);
+    
+    // Track the timestamp to detect duplicate calls
+    const timestamp = Date.now();
+    const currentTimestamp = timestamp;
+    
+    // Use mutateAsync to better control the flow
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
+      {
+        onSuccess: () => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('New verification email sent! Please check your inbox.', 'success');
+            setIsSendingEmailCode(false);
+          }
+        },
+        onError: (error) => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Failed to send verification email. Please try again later.', 'error');
+            setIsSendingEmailCode(false);
+          }
+        }
+      }
+    ).finally(() => {
+      // Ensure loading state is always reset
+      if (timestamp === currentTimestamp) {
+        setIsSendingEmailCode(false);
+      }
+    });
 
     /* Original code commented out
     // Ensure we have an email to verify
