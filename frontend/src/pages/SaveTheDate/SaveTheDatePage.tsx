@@ -191,7 +191,7 @@ function SaveTheDatePage() {
                 // Go to the previous visible step
                 if (currentVisibleIndex > 0) {
                   const prevStep = visibleSteps[currentVisibleIndex - 1][0];
-                  console.log('Navigating to previous visible step:', prevStep);
+                  //console.log('Navigating to previous visible step:', prevStep);
                   handleNavigateToStep(prevStep);
                 }
               }}
@@ -261,11 +261,11 @@ function SaveTheDatePage() {
                   // Go to the next visible step
                   if (currentVisibleIndex < visibleSteps.length - 1) {
                     const nextStep = visibleSteps[currentVisibleIndex + 1][0];
-                    console.log('Navigating to next visible step:', nextStep);
+                    //console.log('Navigating to next visible step:', nextStep);
                     handleNavigateToStep(nextStep);
                   } else {
                     // If no more visible steps, navigate home
-                    console.log('No more visible steps, navigating home');
+                    //console.log('No more visible steps, navigating home');
                     navigate('/');
                   }
                 }

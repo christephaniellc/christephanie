@@ -50,7 +50,20 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           width: '100%',
           overflow: 'hidden',
         }}
-      >        
+      >   
+        <Box sx={{ 
+          p: 2, 
+          backgroundColor: 'rgba(0,0,0,.2)' 
+        }}>
+          <Typography 
+            variant="body1" 
+            color="white" 
+            fontWeight="medium"
+            data-testid="camping-description"
+          >
+            Click options for details!
+          </Typography>
+        </Box>     
         {/* Selection buttons */}
         <PreferenceButtonGroup
           campingPreferences={campingPreferences}

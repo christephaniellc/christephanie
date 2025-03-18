@@ -41,7 +41,7 @@ const VerifyEmail = () => {
   useEffect(() => {
     // Only process the token once per page load
     if (verificationProcessedRef.current) {
-      console.log('Token already processed, skipping');
+      //console.log('Token already processed, skipping');
       return;
     }
     
@@ -56,8 +56,6 @@ const VerifyEmail = () => {
       verificationProcessedRef.current = true;
       return;
     }
-    
-    console.log(`Starting email verification with token: ${token.substring(0, 8)}... for email: ${email}`);
     
     // Mark as processed immediately to prevent double-processing
     verificationProcessedRef.current = true;
@@ -79,7 +77,6 @@ const VerifyEmail = () => {
         
         if (!isMounted) return;
         
-        console.log('Email verification result:', result);
         setVerificationSuccess(true);
         setIsVerifying(false);
         
@@ -117,7 +114,6 @@ const VerifyEmail = () => {
   const handleContinue = () => {
     // Prevent multiple clicks
     if (hasNavigatedRef.current) {
-      console.log('Navigation already triggered, ignoring');
       return;
     }
     
@@ -126,7 +122,6 @@ const VerifyEmail = () => {
     
     // Cancel any pending API calls
     if (validateEmailMutation.isPending) {
-      console.log('Cancelling pending email validation before navigation');
       validateEmailMutation.reset();
     }    
     // Navigate back to the main page with a small delay to let UI updates finish

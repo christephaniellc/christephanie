@@ -43,9 +43,7 @@ export const useContactInformation = (guestId: string) => {
       
       // Determine masked value type from enum
       const maskedValueType = type === 'email' ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
-      
-      console.log(`Fetching ${type} value for guest ID: ${guestId}`);
-      
+          
       // Make the API call
       const url = `${getConfig().webserviceUrl}/guest/maskedvalues?guestId=${encodeURIComponent(guestId)}&maskedValueType=${encodeURIComponent(maskedValueType)}`;
       
@@ -62,7 +60,6 @@ export const useContactInformation = (guestId: string) => {
       }
       
       const data = await response.json();
-      console.log(`Received ${type} data:`, data);
 
       // Handle response that might be just a string instead of an object
       const responseData = typeof data === 'string' 
@@ -72,10 +69,8 @@ export const useContactInformation = (guestId: string) => {
       // Store response
       if (type === 'email') {
         setEmailResponse(responseData);
-        console.log('Setting email value to:', responseData.value);
       } else {
         setPhoneResponse(responseData);
-        console.log('Setting phone value to:', responseData.value);
       }
 
       // Return the response data, ensuring it has the expected format
@@ -97,13 +92,10 @@ export const useContactInformation = (guestId: string) => {
   const fetchUnmaskedEmailValue = async () => {
     setIsLoadingEmail(true);
     try {
-      console.log('Fetching unmasked email value');
       const result = await fetchMaskedValue('email');
-      console.log('Fetch email result:', result);
       if (result) {
         // Handle both string and object responses
         const emailVal = typeof result === 'string' ? result : result.value;
-        console.log('Setting email value directly to:', emailVal);
         setEmailValue(emailVal);
       } else {
         console.error('No email value returned from API');
