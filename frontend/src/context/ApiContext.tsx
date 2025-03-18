@@ -64,12 +64,23 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const address = useRecoilValue(addressState);
   const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
 
-  // Function to get access token - keeping it simple and letting Auth0 handle token management
+  // Function to get access token - with better error handling
   const getTokenFunc = React.useCallback(async () => {
     try {
-      return await getAccessTokenSilently();
+      // First try without any special params to use cached token
+      return await getAccessTokenSilently({
+        authorizationParams: {
+          audience: getConfig().audience,
+          scope: 'openid profile email offline_access'
+        },
+        // Use a shorter timeout for better UX
+        timeoutInSeconds: 5
+      });
     } catch (err) {
-      console.error('Failed to get token:', err);
+      console.warn('Failed to get token from cache:', err);
+      
+      // Don't attempt to refresh here to avoid loops
+      // Just return null and let the caller handle it
       return null;
     }
   }, [getAccessTokenSilently]);

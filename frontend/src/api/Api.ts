@@ -241,19 +241,25 @@ export default class Api {
     
     // Handle 403 Forbidden errors specifically
     if (response.status === 403 && retryCount < 2) {
-      console.log(`Received 403 error (attempt ${retryCount + 1}), refreshing token and retrying...`);
+      console.log(`Received 403 error (attempt ${retryCount + 1}), waiting before retry...`);
       
-      // Force token refresh
+      // Wait a moment before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+      
       try {
-        // Get a fresh token directly
-        await this.getAccessTokenSilently();
+        // Don't force token refresh here - it can cause logout loops
+        // Just retry the request with existing token
+        const config = await this.buildConfig(
+          response.type as string, 
+          null, 
+          true
+        );
         
-        // Recreate the promise with the fresh token
-        const retry = await promise;
+        const retry = await fetch(response.url, config);
         return this.compositeResponseHandler(Promise.resolve(retry), callback, retryCount + 1);
-      } catch (refreshError) {
-        console.error('Failed to refresh token after 403:', refreshError);
-        // Continue with normal error handling if token refresh fails
+      } catch (retryError) {
+        console.error('Request retry failed:', retryError);
+        // Continue with normal error handling if retry fails
       }
     }
     
