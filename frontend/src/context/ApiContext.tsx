@@ -3,6 +3,7 @@ import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
+import { getConfig } from '@/auth_config';
 import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
 import {
   AddressDto,
@@ -63,6 +64,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const [family, setFamily] = useRecoilState(familyState);
   const address = useRecoilValue(addressState);
   const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
+  const config = getConfig();
 
   // Function to get access token - with better error handling
   const getTokenFunc = React.useCallback(async () => {
@@ -70,7 +72,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       // First try without any special params to use cached token
       return await getAccessTokenSilently({
         authorizationParams: {
-          audience: getConfig().audience,
+          audience: config.audience,
           scope: 'openid profile email offline_access'
         },
         // Use a shorter timeout for better UX
@@ -83,7 +85,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       // Just return null and let the caller handle it
       return null;
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessTokenSilently, config.audience]);
 
   const apiRef = React.useRef(new Api(getTokenFunc));
 
