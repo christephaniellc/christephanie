@@ -14,6 +14,9 @@ import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
 import './assets/styles/fonts.css';
 
+// Import the Auth debugger for development mode
+import AuthDebugger from '@/utils/AuthDebugger';
+
 function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth0();
@@ -42,6 +45,7 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
+      {process.env.NODE_ENV !== 'prod' && <AuthDebugger />}
 
       <Sidebar />
       <Suspense fallback={<Loading />}>

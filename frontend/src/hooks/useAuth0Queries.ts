@@ -3,6 +3,7 @@ import { getConfig } from '@/auth_config';
 import { useUser } from '@/store/user';
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { ApiContext } from '@/context/ApiContext';
+import { clearAllAuth0Data, forceAuth0Logout } from '@/utils/auth0-cleanup';
 
 export const useAuth0Queries = () => {
   const {
@@ -17,48 +18,102 @@ export const useAuth0Queries = () => {
   const apiContext = useContext(ApiContext);
 
   const logOutFromAuth0 = async () => {
-    // Clear Auth0-specific tokens first
-    const auth0CacheKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('@@auth0spajs@@') || 
-      key.includes(config.clientId) ||
-      key.includes('auth0')
-    );
+    console.log('Performing complete Auth0 logout');
     
-    auth0CacheKeys.forEach(key => {
-      localStorage.removeItem(key);
-    });
+    // Reset our refresh tracking state
+    lastTokenRefresh.current = 0;
+    
+    // Clear API token cache if available
+    if (apiContext && apiContext.clearTokenCache) {
+      console.log('Clearing API token cache');
+      apiContext.clearTokenCache();
+    }
+
+    // Use our dedicated utility to clear ALL Auth0 data
+    clearAllAuth0Data(config.clientId);
     
     // Clear application state
     localStorage.removeItem('user');
     localStorage.removeItem('family');
     sessionStorage.removeItem('auth_redirect_to');
+
+    // NEW: Perform nuclear cleanup
+    localStorage.clear();
+    sessionStorage.clear();    
+    // Navigate directly to Auth0 logout endpoint
+    forceAuth0Logout();
     
-    // Then call Auth0 logout - this has to be last as it navigates away
-    return await logout({
-      returnTo: config.returnTo,
-      // Set explicit options to ensure clean logout
-      clientID: config.clientId,
-      federated: true // Log out from Auth0 session as well
-    } as LogoutOptions).then(() => {
-      // As a final precaution, clear any remaining localStorage
-      localStorage.clear();
-      // Force a complete page reload to reset all app state
-      if (typeof window !== 'undefined' && window.location) {
-        window.location.href = '/';
+    // Ensure returnTo is set to the home page
+    const homeUrl = window.location.origin + '/';
+    
+    // Then call Auth0 logout with all cleanup options
+    try {
+      // Set strongest possible logout options
+      const logoutOptions: LogoutOptions = {
+        returnTo: homeUrl, // Always return to home page
+        clientID: config.clientId,
+        federated: true, // Log out from Identity Provider session
+        openUrl: true,   // Let Auth0 handle the redirect
+      };
+      
+      console.log('Calling Auth0 logout with options:', logoutOptions);
+      
+      // First attempt with openUrl:false to try to handle it programmatically
+      try {
+        await logout({
+          ...logoutOptions,
+          openUrl: false
+        } as LogoutOptions);
+        
+        // If we reach here, logout succeeded but we need to redirect manually
+        console.log('Logout successful, redirecting to home page');
+        window.location.href = homeUrl + '?logout=' + Date.now();
+      } catch (err) {
+        console.log('First logout attempt failed, trying with openUrl:true', err);
+        // This will automatically redirect to returnTo
+        await logout(logoutOptions);
       }
-    });
+    } catch (error) {
+      console.error('Error during Auth0 logout:', error);
+      
+      // If Auth0 logout fails, perform manual cleanup and redirect
+      // As a final precaution, clear ALL localStorage and sessionStorage
+      console.log('Final storage cleanup after failed logout');
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Last resort: Use the direct Auth0 logout URL
+      console.log('Using direct Auth0 logout URL as final fallback');
+      forceAuth0Logout();
+    }
+    
+    return Promise.resolve(); // Resolve the promise to indicate logout completion
   };
 
   const signInWithAuth0 = useCallback(
     async (guestId: string) => {
+      // Clear any existing Auth0 session first to force a fresh login
+      clearAllAuth0Data(config.clientId);
+      
+      // Add a small delay to ensure cleanup completes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force a completely new authentication flow with prompt=login
       return await loginWithRedirect({
         authorizationParams: {
           screen_hint: 'signup',
           guest_id: guestId,
+          prompt: 'login', // Force Auth0 to show the login page, ignoring any existing session
         },
+        // Always create a new transaction
+        appState: { 
+          invitationFlow: true,
+          timestamp: Date.now(), 
+          guestId 
+        }
       });
     },
-    [loginWithRedirect],
+    [loginWithRedirect, config.clientId],
   );
 
   const updateClientInfo = () => {
