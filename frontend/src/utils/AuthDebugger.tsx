@@ -9,8 +9,9 @@ export const AuthDebugger = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    const env = import.meta.env.VITE_ENV || 'development';
     // Only create button once and only in development
-    if (!isInitialized && process.env.NODE_ENV !== 'prod') {
+    if (!isInitialized && env !== 'prod' && env !== 'production') {
       try {
         createDevLoginDebugButton();
         setIsInitialized(true);
