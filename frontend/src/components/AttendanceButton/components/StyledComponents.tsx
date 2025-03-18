@@ -35,28 +35,28 @@ export const BlockTextTypographyLess = styled(Typography)(({ theme }) => ({
 }));
 
 interface BlockTextTypographyProps {
-  shadowColor: string;
-  maxPx: number;
+  shadowcolor: string;
+  maxpx: number;
 }
 
-export const BlockTextTypography = styled(Typography)<BlockTextTypographyProps>(({ theme, shadowColor = '#000000', maxPx = '2'}) => ({
+export const BlockTextTypography = styled(Typography)<BlockTextTypographyProps>(({ theme, shadowcolor = '#000000', maxpx = '2'}) => ({
     textShadow: `
-      ${maxPx}px ${maxPx}px 0 ${shadowColor}, 
-      -${maxPx}px -${maxPx}px 0 ${shadowColor}, 
-      ${maxPx}px 0px 0 ${shadowColor}, 
-      -${maxPx}px -0px 0 ${shadowColor}, 
-      0px ${maxPx}px 0 ${shadowColor}, 
-      0px -${maxPx}px 0 ${shadowColor},
-      -${maxPx}px ${maxPx}px 0 ${shadowColor}, 
-      ${maxPx}px -${maxPx}px 0 ${shadowColor}, 
-      1px 1px 0 ${shadowColor}, 
-      -1px -1px 0 ${shadowColor}, 
-      0px 1px 0 ${shadowColor}, 
-      0px -1px 0 ${shadowColor}, 
-      1px 0px 0 ${shadowColor}, 
-      -1px 0px 0 ${shadowColor}, 
-      -1px 1px 0 ${shadowColor},
-      1px -1px 0 ${shadowColor}
+      ${maxpx}px ${maxpx}px 0 ${shadowcolor}, 
+      -${maxpx}px -${maxpx}px 0 ${shadowcolor}, 
+      ${maxpx}px 0px 0 ${shadowcolor}, 
+      -${maxpx}px -0px 0 ${shadowcolor}, 
+      0px ${maxpx}px 0 ${shadowcolor}, 
+      0px -${maxpx}px 0 ${shadowcolor},
+      -${maxpx}px ${maxpx}px 0 ${shadowcolor}, 
+      ${maxpx}px -${maxpx}px 0 ${shadowcolor}, 
+      1px 1px 0 ${shadowcolor}, 
+      -1px -1px 0 ${shadowcolor}, 
+      0px 1px 0 ${shadowcolor}, 
+      0px -1px 0 ${shadowcolor}, 
+      1px 0px 0 ${shadowcolor}, 
+      -1px 0px 0 ${shadowcolor}, 
+      -1px 1px 0 ${shadowcolor},
+      1px -1px 0 ${shadowcolor}
     `,
 }));
 
