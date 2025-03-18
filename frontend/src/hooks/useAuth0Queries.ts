@@ -1,8 +1,9 @@
 import { LogoutOptions, useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
 import { useUser } from '@/store/user';
-import { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { ApiContext } from '@/context/ApiContext';
+import { clearAllAuth0Data, forceAuth0Logout } from '@/utils/auth0-cleanup';
 
 export const useAuth0Queries = () => {
   const {
@@ -17,48 +18,103 @@ export const useAuth0Queries = () => {
   const apiContext = useContext(ApiContext);
 
   const logOutFromAuth0 = async () => {
-    // Clear Auth0-specific tokens first
-    const auth0CacheKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('@@auth0spajs@@') || 
-      key.includes(config.clientId) ||
-      key.includes('auth0')
-    );
+    console.log('Performing complete Auth0 logout');
     
-    auth0CacheKeys.forEach(key => {
-      localStorage.removeItem(key);
-    });
+    // Reset our refresh tracking state
+    lastTokenRefresh.current = 0;
+    
+    // Clear API token cache if available
+    if (apiContext && apiContext.clearTokenCache) {
+      console.log('Clearing API token cache');
+      apiContext.clearTokenCache();
+    }
+
+    // Use our dedicated utility to clear ALL Auth0 data
+    clearAllAuth0Data(config.clientId);
     
     // Clear application state
     localStorage.removeItem('user');
     localStorage.removeItem('family');
     sessionStorage.removeItem('auth_redirect_to');
+
+    // NEW: Perform nuclear cleanup
+    localStorage.clear();
+    sessionStorage.clear();    
+    // Navigate directly to Auth0 logout endpoint
+    forceAuth0Logout();
     
-    // Then call Auth0 logout - this has to be last as it navigates away
-    return await logout({
-      returnTo: config.returnTo,
-      // Set explicit options to ensure clean logout
-      clientID: config.clientId,
-      federated: true // Log out from Auth0 session as well
-    } as LogoutOptions).then(() => {
-      // As a final precaution, clear any remaining localStorage
-      localStorage.clear();
-      // Force a complete page reload to reset all app state
-      if (typeof window !== 'undefined' && window.location) {
-        window.location.href = '/';
+    // Ensure returnTo is set to the home page
+    const homeUrl = window.location.origin + '/';
+    
+    // Then call Auth0 logout with all cleanup options
+    try {
+      // Set strongest possible logout options
+      const logoutOptions: LogoutOptions = {
+        returnTo: homeUrl, // Always return to home page
+        clientID: config.clientId,
+        federated: true, // Log out from Identity Provider session
+        openUrl: true,   // Let Auth0 handle the redirect
+      };
+      
+      console.log('Calling Auth0 logout with options:', logoutOptions);
+      
+      // First attempt with openUrl:false to try to handle it programmatically
+      try {
+        await logout({
+          ...logoutOptions,
+          openUrl: false
+        } as LogoutOptions);
+        
+        // If we reach here, logout succeeded but we need to redirect manually
+        console.log('Logout successful, redirecting to home page');
+        window.location.href = homeUrl + '?logout=' + Date.now();
+      } catch (err) {
+        console.log('First logout attempt failed, trying with openUrl:true', err);
+        // This will automatically redirect to returnTo
+        await logout(logoutOptions);
       }
-    });
+    } catch (error) {
+      console.error('Error during Auth0 logout:', error);
+      
+      // If Auth0 logout fails, perform manual cleanup and redirect
+      // As a final precaution, clear ALL localStorage and sessionStorage
+      console.log('Final storage cleanup after failed logout');
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Last resort: Use the direct Auth0 logout URL
+      console.log('Using direct Auth0 logout URL as final fallback');
+      forceAuth0Logout();
+    }
+    
+    return Promise.resolve(); // Resolve the promise to indicate logout completion
   };
 
   const signInWithAuth0 = useCallback(
-    async (guestId: string) => {
+    async (guestId: string, auth0Id?: string) => {
+      // Clear any existing Auth0 session first to force a fresh login
+      clearAllAuth0Data(config.clientId);
+      
+      // Add a small delay to ensure cleanup completes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force a completely new authentication flow with prompt=login
       return await loginWithRedirect({
         authorizationParams: {
-          screen_hint: 'signup',
+          screen_hint: auth0Id ? 'login' : 'signup',
           guest_id: guestId,
+          redirect_uri: window.location.origin,
+          prompt: 'login', // Force Auth0 to show the login page, ignoring any existing session
         },
+        // Always create a new transaction
+        appState: { 
+          invitationFlow: true,
+          timestamp: Date.now(), 
+          guestId 
+        }
       });
     },
-    [loginWithRedirect],
+    [loginWithRedirect, config.clientId],
   );
 
   const updateClientInfo = () => {
@@ -78,7 +134,11 @@ export const useAuth0Queries = () => {
     }, 5000); // Longer delay to ensure auth is complete and app is stable
   };
 
-  // Improved token refresh function with better error handling
+  // Track the last token refresh timestamp to prevent excessive refreshes
+  const lastTokenRefresh = useRef<number>(0);
+  const MIN_REFRESH_INTERVAL = 10000; // Minimum 10 seconds between refreshes
+
+  // Improved token refresh function with better error handling and rate limiting
   const getAccessTokenPleasePleasePlease = async () => {
     try {
       if (!isAuthenticated) {
@@ -86,19 +146,50 @@ export const useAuth0Queries = () => {
         throw new Error('User is not authenticated');
       }
 
+      // Add rate limiting to prevent excessive token refreshes
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastTokenRefresh.current;
+      
+      if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
+        console.log(`Token refresh requested too soon (${timeSinceLastRefresh}ms since last refresh), throttling`);
+        // Wait a bit before allowing another refresh
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Update timestamp before making the request
+      lastTokenRefresh.current = Date.now();
+      
       console.log('Attempting to refresh access token silently');
+      // Include specific scope and audience to ensure correct claims
       const token = await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
+          scope: 'openid profile email',
         },
-        // Set timeoutInSeconds to a lower value for faster testing
-        timeoutInSeconds: 10,
-        // Force a refresh rather than using a cached token
-        cacheMode: 'off',
+        // Set timeoutInSeconds to a reasonable value
+        timeoutInSeconds: 15,
+        // Using 'on' for more reliable caching
+        cacheMode: 'on',
+        // Add detailed timestamp for debugging
+        detailedResponse: true
       });
-
-      console.log('Successfully refreshed access token');
-      return token;
+      
+      // Log token details (without exposing the actual token)
+      if (!!token) {
+        if (token['id_token']) {
+          console.log('Successfully refreshed access token with expiry:', 
+            !!token['expires_at']
+              ? new Date(token['expires_at'] * 1000).toISOString()
+              : 'unknown');
+          return !!token['access_token'] ? token['access_token'] : token.toString();
+        } else {
+          console.log('Successfully refreshed access token');
+          return token.toString();
+        }
+      } else {
+        console.log('Token refresh completed but no token returned');
+        throw new Error('No token returned from refresh');
+      }
     } catch (error) {
       console.error('Failed to get access token silently:', error);
 
@@ -114,6 +205,8 @@ export const useAuth0Queries = () => {
         await loginWithRedirect({
           authorizationParams: {
             audience: config.audience,
+            // Ensure we're requesting all needed scopes
+            scope: 'openid profile email',
           },
         });
       }

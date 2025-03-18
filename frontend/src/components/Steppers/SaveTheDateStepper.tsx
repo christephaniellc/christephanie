@@ -67,12 +67,12 @@ export default function SaveTheDateStepper() {
         );
         
     // Debug the filtering conditions
-    console.log('Step filtering info:', {
-      atLeastOneAttending: familyState.atLeastOneAttending,
-      basicSteps,
-      allSteps: Object.keys(saveTheDateSteps),
-      filteredSteps: relevantSteps.map(([key]) => key)
-    });
+    // console.log('Step filtering info:', {
+    //   atLeastOneAttending: familyState.atLeastOneAttending,
+    //   basicSteps,
+    //   allSteps: Object.keys(saveTheDateSteps),
+    //   filteredSteps: relevantSteps.map(([key]) => key)
+    // });
         
     // When attendance status changes, we need to update the visibleStepIndex in the next render
     const currentStepKey = Object.keys(saveTheDateSteps)[tabIndex];
@@ -102,20 +102,20 @@ export default function SaveTheDateStepper() {
       if (isStepVisible) {
         // Set the global tab index for this step
         const index = Object.keys(saveTheDateSteps).indexOf(step);
-        console.log('Setting step index from URL params:', step, index);
+        //console.log('Setting step index from URL params:', step, index);
         setTabIndex(index);
         
         // Also update the visible index for this step
         const visibleIndex = visibleSteps.findIndex(([key]) => key === step);
         if (visibleIndex !== -1) {
-          console.log('Setting visibleStepIndex to', visibleIndex, 'for step', step);
+          //console.log('Setting visibleStepIndex to', visibleIndex, 'for step', step);
           setVisibleStepIndex(visibleIndex);
         }
       } else {
         // If the step shouldn't be visible, redirect to the first visible step
         const firstVisibleStep = visibleSteps[0]?.[0] || 'attendance';
         const firstVisibleIndex = Object.keys(saveTheDateSteps).indexOf(firstVisibleStep);
-        console.log('Redirecting to first visible step:', firstVisibleStep);
+        //console.log('Redirecting to first visible step:', firstVisibleStep);
         setTabIndex(firstVisibleIndex);
         setVisibleStepIndex(0); // First visible step
         navigate(`/save-the-date?step=${firstVisibleStep}`, { replace: true });
@@ -149,13 +149,13 @@ export default function SaveTheDateStepper() {
       // Current step is visible
       if (visibleIndex !== visibleStepIndex) {
         setVisibleStepIndex(visibleIndex);
-        console.log('Setting visibleStepIndex to', visibleIndex, 'for step', currentStepKey);
+        //console.log('Setting visibleStepIndex to', visibleIndex, 'for step', currentStepKey);
       }
     } else {
       // Current step is not visible, set to the first visible step
       if (visibleStepIndex !== 0) {
         setVisibleStepIndex(0);
-        console.log('Step not found in visible steps, setting to 0');
+        //console.log('Step not found in visible steps, setting to 0');
         
         // Update URL to match the first visible step
         const firstVisibleStep = visibleSteps[0]?.[0];
@@ -183,12 +183,12 @@ export default function SaveTheDateStepper() {
         // Redirect to the first visible step
         const firstVisibleStep = visibleSteps[0]?.[0] || 'attendance';
         const firstVisibleIndex = Object.keys(saveTheDateSteps).indexOf(firstVisibleStep);
-        console.log('Current step not visible, redirecting to:', firstVisibleStep);
+        //console.log('Current step not visible, redirecting to:', firstVisibleStep);
         setTabIndex(firstVisibleIndex);
         const newUrl = `/save-the-date?step=${firstVisibleStep}`;
         window.history.replaceState(null, '', newUrl);
       } else if (currentStepKey && currentUrlStep !== currentStepKey) {
-        console.log('Updating URL to match current step:', currentStepKey);
+        //console.log('Updating URL to match current step:', currentStepKey);
         // Use history.replaceState to update URL without adding new history entry
         const newUrl = `/save-the-date?step=${currentStepKey}`;
         window.history.replaceState(null, '', newUrl);
@@ -215,22 +215,22 @@ export default function SaveTheDateStepper() {
       
       navigate(`/save-the-date?step=${step}`);
     } else {
-      console.log('Attempted to navigate to invisible step:', step);
+      //console.log('Attempted to navigate to invisible step:', step);
     }
   };
 
   // Debug log to help troubleshoot step index issues
-  console.log('SaveTheDateStepper render state:', {
-    visibleStepIndex,
-    tabIndex,
-    currentStepKey: Object.keys(saveTheDateSteps)[tabIndex],
-    currentUrlStep: new URLSearchParams(location.search).get('step'),
-    visibleSteps: visibleSteps.map(([key, step], index) => ({
-      key,
-      completed: step.completed,
-      active: index === visibleStepIndex
-    })),
-  });
+  // console.log('SaveTheDateStepper render state:', {
+  //   visibleStepIndex,
+  //   tabIndex,
+  //   currentStepKey: Object.keys(saveTheDateSteps)[tabIndex],
+  //   currentUrlStep: new URLSearchParams(location.search).get('step'),
+  //   visibleSteps: visibleSteps.map(([key, step], index) => ({
+  //     key,
+  //     completed: step.completed,
+  //     active: index === visibleStepIndex
+  //   })),
+  // });
 
   // Get the theme for styling
   const theme = useTheme();
@@ -268,7 +268,7 @@ export default function SaveTheDateStepper() {
               <Step 
                 completed={!isStepActive && step.completed} 
                 key={key} 
-                active={isStepActive}
+                active={isStepActive ? true : undefined}
               >
                 <CustomStepLabel
                   onClick={() => handleNavigateToStep(key)}
@@ -276,7 +276,7 @@ export default function SaveTheDateStepper() {
                     cursor: 'pointer',
                   }}
                   StepIconComponent={StepperIcon}
-                  active={isStepActive}
+                  active={isStepActive ? "true" : undefined}
                 ></CustomStepLabel>
               </Step>
             );
@@ -347,11 +347,11 @@ function StepperIcon(props: StepIconProps) {
   const theme = useTheme();
   
   // Log the props to help debug
-  console.log('StepperIcon props:', { active, completed });
+  //console.log('StepperIcon props:', { active, completed });
   
   // Use explicit Material-UI icons for better distinction
   return (
-    <StepperIconRoot ownerState={{ active }} className={className}>
+    <StepperIconRoot ownerState={{ active: active || false }} className={className}>
       {active ? (
         <Box position="relative" display="flex">
           <TripOrigin color="primary" style={{ transform: 'scale(1.1)' }} />
@@ -414,7 +414,7 @@ const StepperIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(({ t
   } : {}),
 }));
 
-const CustomStepLabel = styled(StepLabel)<StepLabelProps & { active?: boolean }>(({ theme, active }) => ({
+const CustomStepLabel = styled(StepLabel)<StepLabelProps & { active?: string | undefined }>(({ theme, active }) => ({
   [`& .${stepLabelClasses.label}`]: {
     ...theme.applyStyles('dark', {}),
   },
@@ -427,7 +427,7 @@ const CustomStepLabel = styled(StepLabel)<StepLabelProps & { active?: boolean }>
     }
   },
   // For our active prop passed directly
-  ...(active ? {
+  ...(active === "true" ? {
     color: `${theme.palette.primary.main} !important`,
     fontWeight: 'bold',
     '& svg': {

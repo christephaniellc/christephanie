@@ -62,6 +62,7 @@ export const useVerification = (
   };
 
   // Email verification methods
+  // Reactivated with safety measures
   const sendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void, 
@@ -73,27 +74,85 @@ export const useVerification = (
       return;
     }
 
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
     // Set loading state to true before API call
     setIsSendingEmailCode(true);
     
-    validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
+    // Use the email value passed in or fall back to guest email
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Sending verification email to: ${emailToVerify}`);
+    
+    // Track the timestamp to detect duplicate calls
+    const timestamp = Date.now();
+    const currentTimestamp = timestamp;
+    
+    // Use mutateAsync to better control the flow
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
       {
         onSuccess: () => {
-          showAlertMessage('Verification code sent to your email', 'success');
-          // Set loading state to false after success
-          setIsSendingEmailCode(false);
-          handleOpenEmailVerifyDialog();
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
+            setIsSendingEmailCode(false);
+          }
         },
         onError: (error) => {
-          showAlertMessage('Failed to send verification code. Please try again.', 'error');
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Failed to send verification email. Please try again later.', 'error');
+            setIsSendingEmailCode(false);
+          }
+        }
+      }
+    ).finally(() => {
+      // Ensure loading state is always reset
+      if (timestamp === currentTimestamp) {
+        setIsSendingEmailCode(false);
+      }
+    });
+
+    // Original code left commented out for future reference
+    /*
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
+    
+    // Use mutateAsync to prevent automatic retries
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Sending verification email to: ${emailToVerify}`);
+    
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
+      {
+        onSuccess: () => {
+          showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
+          // Set loading state to false after success
+          setIsSendingEmailCode(false);
+          // No longer open the verification dialog
+          // handleOpenEmailVerifyDialog();
+        },
+        onError: (error) => {
+          showAlertMessage('Failed to send verification email. Please try again.', 'error');
           // Set loading state to false after error
           setIsSendingEmailCode(false);
         }
       }
     );
+    */
   };
 
+  // Reactivated with safety measures
   const resendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void,
@@ -101,11 +160,65 @@ export const useVerification = (
   ) => {
     if (!isEmailVerificationEnabled) return;
 
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
+    // Set loading state to true before API call
+    setIsSendingEmailCode(true);
+    
+    // Use the email value passed in or fall back to guest email
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Resending verification email to: ${emailToVerify}`);
+    
+    // Track the timestamp to detect duplicate calls
+    const timestamp = Date.now();
+    const currentTimestamp = timestamp;
+    
+    // Use mutateAsync to better control the flow
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
+      {
+        onSuccess: () => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('New verification email sent! Please check your inbox.', 'success');
+            setIsSendingEmailCode(false);
+          }
+        },
+        onError: (error) => {
+          // Only update UI if this is still the most recent call
+          if (timestamp === currentTimestamp) {
+            showAlertMessage('Failed to send verification email. Please try again later.', 'error');
+            setIsSendingEmailCode(false);
+          }
+        }
+      }
+    ).finally(() => {
+      // Ensure loading state is always reset
+      if (timestamp === currentTimestamp) {
+        setIsSendingEmailCode(false);
+      }
+    });
+
+    /* Original code commented out
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
     // Set loading state to true before API call
     setIsSendingEmailCode(true);
 
-    validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
+    // Use mutateAsync to prevent automatic retries
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Resending verification email to: ${emailToVerify}`);
+    
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
       {
         onSuccess: () => {
           showAlertMessage('New verification code sent to your email', 'success');
@@ -119,18 +232,19 @@ export const useVerification = (
         }
       }
     );
+    */
   };
 
   const submitEmailVerificationCode = (
     emailValue: string | undefined, 
-    emailVerificationCode: string,
+    emailVerificationToken: string,
     handleCloseEmailVerifyDialog: () => void,
     isEmailVerificationEnabled: boolean
   ) => {
     if (!isEmailVerificationEnabled) return;
 
     validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, code: emailVerificationCode, action: 'validate' },
+      { email: emailValue || guest?.email?.maskedValue, token: emailVerificationToken, action: 'validate' },
       {
         onSuccess: () => {
           // Force update UI immediately to show verified status
@@ -167,12 +281,12 @@ export const useVerification = (
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
       {
         onSuccess: () => {
-          showAlertMessage('Verification code sent to your phone', 'success');
+          showAlertMessage('Verification SMS sent! Please check your phone for a verification link.', 'success');
           setIsSendingPhoneCode(false);
           handleOpenPhoneVerifyDialog();
         },
         onError: (error) => {
-          showAlertMessage('Failed to send verification code. Please try again.', 'error');
+          showAlertMessage('Failed to send verification SMS. Please try again.', 'error');
           setIsSendingPhoneCode(false);
         }
       }

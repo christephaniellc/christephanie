@@ -40,9 +40,7 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<PhoneValidationHandler>();
-
-        //serviceCollection.AddScoped<IAwsSmsHelper, AwsSmsHelper>();
-
+        
         serviceCollection.AddSingleton<Lazy<Task<ITwilioSmsProvider>>>(sp =>
         {
             return new Lazy<Task<ITwilioSmsProvider>>(async () =>

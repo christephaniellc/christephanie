@@ -110,7 +110,7 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
           color="secondary"
           sx={{
             fontStyle: 'normal'
-          }} shadowColor={'#000000'} maxPx={2}>
+          }} shadowcolor={'#000000'} maxpx={2}>
             {randomGettingMarriedQuote}!
             {/*<RollingRingsAnimation />*/}
           </BlockTextTypography>

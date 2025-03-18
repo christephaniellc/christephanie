@@ -9,8 +9,20 @@ export type ApiError = {
 };
 
 export default class Api {
+  // Cache the token and its expiry time
+  private tokenCache: { token: string | null; expiresAt: number } = { 
+    token: null, 
+    expiresAt: 0 
+  };
+  
   // eslint-disable-next-line no-unused-vars
   constructor(private readonly getAccessTokenSilently: () => Promise<string | null>) {
+  }
+  
+  // Public method to clear token cache
+  clearTokenCache() {
+    console.log('Clearing token cache');
+    this.tokenCache = { token: null, expiresAt: 0 };
   }
 
   getJwt = async () => {
@@ -81,8 +93,8 @@ export default class Api {
     return this.post(`/validate/phone`, { phoneNumber, code, action });
   }
 
-  validateEmail(email: string, code?: string, action?: string): Promise<{ success: boolean }> {
-    return this.post(`/validate/email`, { email, code, action });
+  validateEmail(email: string, token?: string, action?: string): Promise<{ success: boolean }> {
+    return this.post(`/validate/email`, { email, token, action });
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -94,9 +106,14 @@ export default class Api {
         return this.handleRecoverableError(response);
 
       case 401:
+        // Clear token cache on authentication error
+        this.clearTokenCache();
         return this.handleUnRecoverableError(response);
 
       case 403:
+        // Also clear token cache on authorization error
+        this.clearTokenCache();
+        console.log('403 Forbidden error, cleared token cache');
         return this.handleUnRecoverableError(response);
 
       case 404:
@@ -204,32 +221,94 @@ export default class Api {
     return { method, body: formData, headers };
   }
 
+  // Helper to decode JWT and get expiration time
+  private decodeJwt(token: string): { exp?: number } {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Failed to decode JWT:', e);
+      return {};
+    }
+  }
+
   private async buildHeaders(requiresAuth: boolean): Promise<Record<string, string>> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    
     if (requiresAuth) {
-      const token = await this.getAccessTokenSilently();
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      // Current time in seconds
+      const now = Math.floor(Date.now() / 1000);
+      
+      // Check if we have a valid cached token (with 30 seconds buffer)
+      if (this.tokenCache.token && this.tokenCache.expiresAt > now + 30) {
+        headers['Authorization'] = `Bearer ${this.tokenCache.token}`;
+        return headers;
+      }
+      
+      // Get a fresh token
+      try {
+        const token = await this.getAccessTokenSilently();
+        if (token) {
+          // Cache the token with its expiry
+          const decodedToken = this.decodeJwt(token);
+          this.tokenCache = { 
+            token: token, 
+            expiresAt: decodedToken.exp || (now + 3600) // Default 1hr if can't decode
+          };
+          
+          // Add authorization header
+          headers['Authorization'] = `Bearer ${token}`;
+          
+          // Log token expiry for debugging (not the token itself)
+          if (decodedToken.exp) {
+            const expiryDate = new Date(decodedToken.exp * 1000).toISOString();
+            console.log(`Using token with expiry: ${expiryDate}`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to get auth token for request:', error);
       }
     }
+    
     return headers;
   }
 
   private async compositeResponseHandler<T>(
-  promise: Promise<Response>,
-  callback?: (_response: Awaited<T>) => Awaited<T>
-): Promise<Awaited<T>> {
-  try {
-    const response = await promise;
-    let result = await this.handleResponse<Awaited<T>>(response);
-    if (callback) {
-      result = callback(result);
+    promise: Promise<Response>,
+    callback?: (_response: Awaited<T>) => Awaited<T>
+  ): Promise<Awaited<T>> {
+    try {
+      // Add request tracking
+      const requestStartTime = Date.now();
+      const requestId = Math.random().toString(36).substring(2, 10);
+      
+      try {
+        const response = await promise;
+        // Log response details for debugging
+        console.log(`API ${requestId} - ${response.status} ${response.url} (${Date.now() - requestStartTime}ms)`);
+        
+        let result = await this.handleResponse<Awaited<T>>(response);
+        if (callback) {
+          result = callback(result);
+        }
+        return result;
+      } catch (error) {
+        // Add structured error logging
+        if (error instanceof Response) {
+          console.error(`API ${requestId} - Error ${error.status} ${error.url} (${Date.now() - requestStartTime}ms)`);
+        } else {
+          console.error(`API ${requestId} - Error (${Date.now() - requestStartTime}ms):`, error);
+        }
+        throw error;
+      }
+    } catch (reason) {
+      return this.handleRejected<Awaited<T>>(reason);
     }
-    return result;
-  } catch (reason) {
-    return this.handleRejected<Awaited<T>>(reason);
   }
-}
   async get<T>(path: string, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
     return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('GET', null, true)), callback);
   }

@@ -2,14 +2,14 @@ import React, { useRef, useState } from 'react';
 import { guestSelector, useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
 import { AgeGroupEnum, FoodPreferenceEnum } from '@/types/api';
-import { ButtonGroup, darken, useTheme } from '@mui/material';
+import { ButtonGroup, darken, Typography, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Shark from '@/assets/shark.svg';
 import Omnivore from '@/assets/Omnivore.png';
 import Vegetarian from '@/assets/Vegetarian.png';
 import Vegan from '@/assets/Vegan.png';
-import { Stack } from '@mui/system';
+import { alpha, Stack } from '@mui/system';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Paper from '@mui/material/Paper';
 import BabyBottleIcon from '@/components/SharkIcon/BottleIcon';
@@ -77,6 +77,20 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
+        <Box sx={{ p: 2, pb: 1, 
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <Typography 
+            variant="subtitle1" 
+            fontWeight="500" 
+            color="white"
+            id="food-preferences-heading"
+            sx={{
+              textShadow: '1px 0px 0 #000000',
+            }}
+          >
+            These are delicious to me:
+          </Typography>
+        </Box>
         {guest.ageGroup !== AgeGroupEnum.Baby && (
           <ButtonGroup
             fullWidth
