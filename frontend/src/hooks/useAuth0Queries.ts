@@ -119,13 +119,13 @@ export const useAuth0Queries = () => {
       });
       
       // Log token details (without exposing the actual token)
-      if (token) {
-        if (typeof token === 'object' && 'id_token' in token && token.id_token) {
+      if (!!token) {
+        if (token['id_token']) {
           console.log('Successfully refreshed access token with expiry:', 
-            'expires_at' in token && token.expires_at 
-              ? new Date(token.expires_at * 1000).toISOString()
+            !!token['expires_at']
+              ? new Date(token['expires_at'] * 1000).toISOString()
               : 'unknown');
-          return 'access_token' in token ? token.access_token : token.toString();
+          return !!token['access_token'] ? token['access_token'] : token.toString();
         } else {
           console.log('Successfully refreshed access token');
           return token.toString();
