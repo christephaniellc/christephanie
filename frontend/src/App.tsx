@@ -19,7 +19,7 @@ import AuthDebugger from '@/utils/AuthDebugger';
 
 function App() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, env } = useAuth0();
+  const { isAuthenticated, isLoading } = useAuth0();
 
   // Check for redirects after login
   useEffect(() => {
