@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Common.Configuration.Identity;
 
 namespace Wedding.Common.Helpers.AWS
@@ -24,7 +25,23 @@ namespace Wedding.Common.Helpers.AWS
             return new AmazonSimpleEmailServiceClient();
         }
 
-        public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, string subject, string body, CancellationToken cancellationToken)
+        public async Task<SendEmailResponse?> SendValidationEmail(AuthContext authContext, VerifiedDto email, CancellationToken cancellationToken)
+        {
+            var token = EmailTemplateHelper.GenerateTokenVerificationLink(_config, authContext.Audience, authContext.InvitationCode, authContext.GuestId, email.VerificationCode);
+            var bodies = EmailTemplateHelper.SendVerificationCodeTemplate(email, token, cancellationToken);
+
+            var result = await SendEmail(toAddresses: new List<string> { email.Value },
+                subject: "Email Verification Code",
+                textBody: bodies.textBody,
+                htmlBody: bodies.htmlBody,
+                cancellationToken);
+
+            Console.WriteLine($"SES response: {JsonSerializer.Serialize(result)}");
+            Console.WriteLine($"Send email result: {result.HttpStatusCode} {JsonSerializer.Serialize(result.ResponseMetadata)}");
+            return result;
+        }
+
+        public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, string subject, string textBody, string htmlBody, CancellationToken cancellationToken)
         {
             using (var sesClient = CreateSesClient())
             {
@@ -41,7 +58,8 @@ namespace Wedding.Common.Helpers.AWS
                         Subject = new Content(_config.ApplicationName + " " + subject),
                         Body = new Body
                         {
-                            Text = new Content(body)
+                            Html = new Content { Charset = "UTF-8", Data = htmlBody },
+                            Text = new Content { Charset = "UTF-8", Data = textBody },
                         }
                     }
                 };
@@ -51,20 +69,6 @@ namespace Wedding.Common.Helpers.AWS
 
                 return response;
             }
-        }
-
-        public async Task<SendEmailResponse?> SendVerificationCode(VerifiedDto email, CancellationToken cancellationToken)
-        {
-            Console.WriteLine($"Sending verification email using Amazon SES. Email: {email.Value} Code: {email.VerificationCode}");
-
-            var result = await SendEmail(toAddresses: new List<string> { email.Value }, 
-               subject: "Email Verification Code", 
-               body: $"Your wedding email verification code is: {email.VerificationCode}", 
-               cancellationToken);
-
-            Console.WriteLine($"SES response: {JsonSerializer.Serialize(result)}");
-            Console.WriteLine($"Send email result: {result.HttpStatusCode} {JsonSerializer.Serialize(result.ResponseMetadata)}");
-            return result;
         }
     }
 }

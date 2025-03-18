@@ -4,5 +4,7 @@
     {
         public string? ApplicationName { get; set; }
         public string? MailFromAddress { get; set; }
+        public string? DomainName { get; set; }
+        public string? EncryptionKey { get; set; }
     }
 }
