@@ -48,7 +48,7 @@ interface ApiContextProps {
   validateEmailMutation: UseMutationResult<
     { success: boolean },
     ApiError,
-    { email: string, code?: string, action?: string },
+    { email: string, token?: string, action?: string },
     unknown
   >;
   
