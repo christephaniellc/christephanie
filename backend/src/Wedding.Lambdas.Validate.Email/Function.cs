@@ -6,11 +6,11 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Common.Serialization;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Handlers;
@@ -46,7 +46,7 @@ public class Function
             {
                  //var logger = sp.GetRequiredService<ILogger<IAwsSesHelper>>();
                  var config = await AwsParameterCache.GetConfigAsync<ApplicationConfiguration>();
-                 return new AwsSesHelper(config);
+                return new AwsSesHelper(config);
             });
         });
         
@@ -76,23 +76,32 @@ public class Function
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<EmailValidationHandler>();
             
-            var phoneRequest = JsonSerializationHelper.DeserializeFromFrontend<ValidateEmailRequest>(request.Body);
-            context.Logger.LogInformation($"Deserialized Input: {JsonSerializer.Serialize(phoneRequest)}");
+            var emailRequest = JsonSerializationHelper.DeserializeFromFrontend<ValidateEmailRequest>(request.Body);
+            context.Logger.LogInformation($"Deserialized Input: {JsonSerializer.Serialize(emailRequest)}");
 
-            phoneRequest.Validate(nameof(phoneRequest));
+            emailRequest.Validate(nameof(emailRequest));
 
-            if (phoneRequest.Action == VerifyEnum.Register)
+            if (emailRequest.Action == VerifyEnum.Register)
             {
-                var command = new RegisterEmailCommand(authContext, phoneRequest.Email ?? string.Empty);
+                var command = new RegisterEmailCommand(authContext, emailRequest.Email ?? string.Empty);
                 var result = await handler.ExecuteAsync(command);
                 return result.OkResponse();
             }
 
-            if (phoneRequest.Action == VerifyEnum.Validate)
+            if (emailRequest.Action == VerifyEnum.Validate)
             {
-                var command = new ValidateEmailCommand(authContext, phoneRequest.Code ?? string.Empty);
-                var result = await handler.ExecuteAsync(command);
-                return result.OkResponse();
+                if (!string.IsNullOrEmpty(emailRequest.Token))
+                {
+                    var command = new ValidateEmailTokenCommand(emailRequest.Token);
+                    var result = await handler.ExecuteAsync(command);
+                    return result.OkResponse();
+                }
+                else
+                {
+                    var command = new ValidateEmailCommand(authContext, emailRequest.Code ?? string.Empty);
+                    var result = await handler.ExecuteAsync(command);
+                    return result.OkResponse();
+                }
             }
 
             // Otherwise, resend code

@@ -9,6 +9,7 @@ import * as cdk from 'aws-cdk-lib';
         githubBranch: string;
         subDomainPrefix: string;
         mailFromAddress: string;
+        encryptionKey: string;
         authAuthority: string;
         allowOrigins: string[] | undefined;
         existingHostedZoneId: string | undefined;

@@ -99,7 +99,8 @@ new DnsStack(app, `DnsStack-${env}`, {
 //----------------------------------------------------------------
 new ParamsStack(app, `ParamsStack-${env}`, {
   env: config,
-  apiUrl: hostedzoneStack.apiUrl
+  apiUrl: hostedzoneStack.apiUrl,
+  fullDomainName: hostedzoneStack.fullDomainName
 });
 
 //----------------------------------------------------------------
