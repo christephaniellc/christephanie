@@ -187,15 +187,12 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     handleOpenPhoneDialog();
     
     // Fetch the unmasked value from API
-    console.log('Opening phone dialog and fetching phone');
+    //console.log('Opening phone dialog and fetching phone');
     fetchUnmaskedPhoneValue();
   };
 
   // Submit handlers for email and phone
-  const onSubmitEmail = () => {
-    console.log('Submitting email with value:', emailValue);
-    console.log('Email response:', emailResponse);
-    
+  const onSubmitEmail = () => {    
     // First submit the email update
     handleSubmitEmail(
       emailValue, 

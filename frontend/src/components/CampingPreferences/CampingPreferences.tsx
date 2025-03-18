@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Paper, Box, Typography } from '@mui/material';
+import { Stack, Paper, Box, Typography, alpha, useTheme } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { CampingPreferencesProps } from './types';
@@ -8,9 +8,11 @@ import {
   PreferenceButtonGroup, 
   PreferenceDescription 
 } from './components';
+import theme from '@/store/theme';
 
 const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
+  const theme = useTheme();
   const { screenWidth } = useAppLayout();
   const {
     campingPreferences,
@@ -50,7 +52,21 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           width: '100%',
           overflow: 'hidden',
         }}
-      >        
+      >   
+        <Box sx={{ p: 2, 
+          pb: 1, 
+          background: alpha(theme.palette.background.paper, 0.9),
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
+        }}>
+          <Typography 
+            variant="subtitle1" 
+            fontWeight="500" 
+            color="primary"
+            id="camping-preferences-heading"
+          >
+            Click options for details!
+          </Typography>
+        </Box>    
         {/* Selection buttons */}
         <PreferenceButtonGroup
           campingPreferences={campingPreferences}
