@@ -233,11 +233,27 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     unknown
   >({
     mutationKey: ['validateEmail'],
-    mutationFn: ({ email, token, action }) => apiRef.current.validateEmail(email, token, action),
+    // Don't auto-retry to prevent infinite loops
+    retry: 0,
+    // Add cacheTime to prevent duplicates
+    cacheTime: 60000, // 1 minute cache
+    mutationFn: ({ email, token, action }) => {
+      // Log the mutation parameters for debugging
+      console.log(`Email validation request: email=${email}, action=${action}, has token=${!!token}`);
+      // Only proceed if email is provided
+      if (!email) {
+        console.error("Cannot validate email: No email provided");
+        return Promise.reject(new Error("No email provided"));
+      }
+      return apiRef.current.validateEmail(email, token, action);
+    },
     onSuccess: (data) => {
       console.log('Email validation successful', data);
       // Refresh the family data to show updated verification status
-      getFamilyUnitQuery.refetch();
+      setTimeout(() => {
+        // Use a small delay to avoid race conditions
+        getFamilyUnitQuery.refetch();
+      }, 1000);
     },
     onError: (error) => console.error('Failed to validate email', error),
   });

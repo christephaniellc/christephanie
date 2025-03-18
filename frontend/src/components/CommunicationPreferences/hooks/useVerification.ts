@@ -73,11 +73,21 @@ export const useVerification = (
       return;
     }
 
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
     // Set loading state to true before API call
     setIsSendingEmailCode(true);
     
-    validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
+    // Use mutateAsync to prevent automatic retries
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Sending verification email to: ${emailToVerify}`);
+    
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
       {
         onSuccess: () => {
           showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
@@ -102,11 +112,21 @@ export const useVerification = (
   ) => {
     if (!isEmailVerificationEnabled) return;
 
+    // Ensure we have an email to verify
+    if (!emailValue && !guest?.email?.maskedValue) {
+      showAlertMessage('No email address provided', 'error');
+      return;
+    }
+
     // Set loading state to true before API call
     setIsSendingEmailCode(true);
 
-    validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, action: 'register' },
+    // Use mutateAsync to prevent automatic retries
+    const emailToVerify = emailValue || guest?.email?.maskedValue;
+    console.log(`Resending verification email to: ${emailToVerify}`);
+    
+    validateEmailMutation.mutateAsync(
+      { email: emailToVerify, action: 'register' },
       {
         onSuccess: () => {
           showAlertMessage('New verification code sent to your email', 'success');
