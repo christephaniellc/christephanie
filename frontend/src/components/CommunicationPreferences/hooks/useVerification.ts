@@ -124,14 +124,14 @@ export const useVerification = (
 
   const submitEmailVerificationCode = (
     emailValue: string | undefined, 
-    emailVerificationCode: string,
+    emailVerificationToken: string,
     handleCloseEmailVerifyDialog: () => void,
     isEmailVerificationEnabled: boolean
   ) => {
     if (!isEmailVerificationEnabled) return;
 
     validateEmailMutation.mutate(
-      { email: emailValue || guest?.email?.maskedValue, code: emailVerificationCode, action: 'validate' },
+      { email: emailValue || guest?.email?.maskedValue, token: emailVerificationToken, action: 'validate' },
       {
         onSuccess: () => {
           // Force update UI immediately to show verified status
