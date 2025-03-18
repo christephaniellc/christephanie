@@ -52,13 +52,6 @@ interface ApiContextProps {
     unknown
   >;
   
-  validateEmailTokenMutation: UseMutationResult<
-    { success: boolean },
-    ApiError,
-    { token: string, email?: string },
-    unknown
-  >;
-  
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
   updateClientInfo: () => Promise<void>;
@@ -248,22 +241,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     },
     onError: (error) => console.error('Failed to validate email', error),
   });
-  
-  const validateEmailTokenMutation = useMutation<
-    { success: boolean },
-    ApiError,
-    { token: string, email?: string },
-    unknown
-  >({
-    mutationKey: ['validateEmailToken'],
-    mutationFn: ({ token, email }) => apiRef.current.validateEmailToken(token, email),
-    onSuccess: (data) => {
-      console.log('Email token validation successful', data);
-      // Refresh the family data to show updated verification status
-      getFamilyUnitQuery.refetch();
-    },
-    onError: (error) => console.error('Failed to validate email token', error),
-  });
 
   // Function to get unmasked email or phone
   const getMaskedValueQuery = (guestId: string, type: 'email' | 'text') => {
@@ -313,7 +290,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         validateAddressMutation,
         validatePhoneMutation,
         validateEmailMutation,
-        validateEmailTokenMutation,
         getFamilyUnitQuery,
         patchFamilyMutation,
         patchFamilyGuestMutation,
