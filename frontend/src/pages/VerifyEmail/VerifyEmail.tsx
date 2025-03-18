@@ -128,13 +128,13 @@ const VerifyEmail = () => {
     if (validateEmailMutation.isPending) {
       console.log('Cancelling pending email validation before navigation');
       validateEmailMutation.reset();
-    }
-    
+    }    
     // Navigate back to the main page with a small delay to let UI updates finish
     setTimeout(() => {
       // Navigate back to the communication preferences page
       if (verificationSuccess) {
-        navigate('/save-the-date?step=communicationPreference');
+        // Add verified=true to ensure proper state update
+        navigate(`/save-the-date?step=communicationPreference&verified=true`);
       } else {
         navigate('/save-the-date');
       }
@@ -183,7 +183,7 @@ const VerifyEmail = () => {
               Email Verified Successfully!
             </Typography>
             <Typography variant="body1" sx={{ mb: 4 }}>
-              Your email address has been verified. You will now receive updates and notifications about our wedding.
+              Your email address has been verified. You will now receive updates and notifications about our wedding!
             </Typography>
             <Button 
               variant="contained" 
