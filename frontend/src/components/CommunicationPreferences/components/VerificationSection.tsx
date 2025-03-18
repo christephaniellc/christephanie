@@ -79,7 +79,7 @@ export const VerificationSection = ({
             lineHeight: 1.4
           }}
         >
-          To ensure delivery to the correct address, we sent a verification code to:
+          To ensure delivery to the correct address, we sent a verification link to:
           <Box 
             component="span" 
             sx={{ 
