@@ -4,6 +4,7 @@
  * Only displays for the current logged-in user (with matching auth0Id)
  */
 import { Snackbar, Alert, Stack, Box, Paper, Container } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import { NotificationPreferenceEnum } from '@/types/api';
 import { 
   useCommunicationPreferences, 
@@ -24,6 +25,9 @@ import {
 } from './components';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
+  const [searchParams] = useSearchParams();
+  const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+  
   // Custom hooks for component state and logic
   const {
     guest,
@@ -106,6 +110,20 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     submitPhoneVerificationCode,
     forceUpdateVerificationStatus
   } = useVerification(guest, guestId, showAlertMessage);
+
+  // Check if redirected from successful verification
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      setShowVerificationSuccess(true);
+      showAlertMessage('Email verified successfully!', 'success');
+      
+      // Clear the param after showing the message
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('verified');
+      window.history.replaceState(null, '', `${window.location.pathname}`);
+    }
+  }, [searchParams, showAlertMessage]);
 
   // Check if guest.auth0Id is valid but doesn't match the current user
   const hasAuthMismatch = guest?.auth0Id && guest.auth0Id !== "" && guest.auth0Id !== user?.sub;
