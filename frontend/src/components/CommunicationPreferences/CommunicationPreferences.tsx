@@ -114,26 +114,38 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     // submitEmailVerificationCode,
   } = useVerification(guest, guestId, showAlertMessage);
 
-  // Check if redirected from successful verification
+  // Check if redirected from successful verification - use a ref to prevent multiple executions
+  const processedVerificationRef = useRef(false);
+  
   useEffect(() => {
     const verified = searchParams.get('verified');
     
-    if (verified === 'true') {
+    // Only process verification parameter once to prevent multiple API calls
+    if (verified === 'true' && !processedVerificationRef.current) {
+      // Mark as processed immediately
+      processedVerificationRef.current = true;
+      
+      // Update UI
       setShowVerificationSuccess(true);
       showAlertMessage('Email verified successfully!', 'success');
       
+      // Force update the verification status in the UI
       forceUpdateVerificationStatus('email', true);
-        
-        // Refresh family data
-        familyActions.getFamilyUnitQuery.refetch()
-          .catch(err => console.error('Error refreshing family data after verification:', err));
-      }
       
       // Clear the params after showing the message and updating state
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('verified');
-      window.history.replaceState(null, '', `${window.location.pathname}`);
-  }, [searchParams, showAlertMessage, forceUpdateVerificationStatus, familyActions.getFamilyUnitQuery]);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/[&?]verified=true/, ''));
+      
+      // Refresh family data exactly once with 500ms delay to ensure UI updates first
+      const timeoutId = setTimeout(() => {
+        console.log('Refreshing family data after verification...');
+        familyActions.getFamilyUnitQuery.refetch()
+          .catch(err => console.error('Error refreshing family data after verification:', err));
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  // Empty dependency array - this effect should run exactly once after mount
+  }, []);
 
   // Check if guest.auth0Id is valid but doesn't match the current user
   const hasAuthMismatch = guest?.auth0Id && guest.auth0Id !== "" && guest.auth0Id !== user?.sub;
