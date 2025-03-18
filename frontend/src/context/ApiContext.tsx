@@ -267,14 +267,34 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         console.log(`Allowing email registration call for ${email}`);
       }
       
-      // For token validation with actual tokens, always proceed
-      if (action === 'validate' && token) {
+      // For token validation, implement deduplication to prevent multiple identical validations
+      if (action === 'validate') {
+        // Require a token for validation
+        if (!token) {
+          console.warn('Attempted to validate email without a token');
+          return Promise.reject(new Error("No validation token provided"));
+        }
+        
+        const now = Date.now();
+        
+        // Create a cache key for this specific token validation
+        const validationCacheKey = `validate:${email}:${token.substring(0, 8)}`;
+        const lastCallTime = emailRequestCache.current[validationCacheKey] || 0;
+        const timeSinceLastCall = now - lastCallTime;
+        
+        // Only allow a specific token to be validated once every 10 seconds
+        // This prevents duplicate API calls when component re-renders or races occur
+        if (lastCallTime > 0 && timeSinceLastCall < 10000) {
+          console.log(`Deduplicating token validation for ${email}, last attempted ${Math.round(timeSinceLastCall/1000)}s ago`);
+          return Promise.resolve({ success: true });
+        }
+        
+        // Update the validation timestamp
+        emailRequestCache.current[validationCacheKey] = now;
         console.log(`Processing token validation for ${email}`);
+        
+        // Make the actual API call
         return apiRef.current.validateEmail(email, token, action);
-      } else if (action === 'validate' && !token) {
-        // Prevent validate calls without tokens
-        console.warn('Attempted to validate email without a token');
-        return Promise.reject(new Error("No validation token provided"));
       }
       
       // If rate limiting passed, proceed with the actual API call

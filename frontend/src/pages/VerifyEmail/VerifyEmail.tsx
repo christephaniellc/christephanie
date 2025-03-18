@@ -34,96 +34,112 @@ const VerifyEmail = () => {
   // Use ref to ensure we only run the verification once
   const hasRunRef = useRef(false);
   
+  // Use another ref to store the verification result to prevent double-processing
+  const verificationProcessedRef = useRef(false);
+  const tokenRef = useRef<string | null>(null);
+  
   useEffect(() => {
-    // Skip rerunning verification if we already completed it
-    if (!isVerifying && (verificationSuccess || errorMessage)) {
+    // Only process the token once per page load
+    if (verificationProcessedRef.current) {
+      console.log('Token already processed, skipping');
       return;
     }
     
-    // EMERGENCY FIX: Use ref to ensure this only runs once per component lifecycle
-    if (hasRunRef.current) {
-      console.log('Verification already attempted, skipping');
-      return;
-    }
-    hasRunRef.current = true;
-    
+    // Get token from URL once and store in ref
     const token = searchParams.get('token');
+    tokenRef.current = token;
     const email = searchParams.get('email') || '';
     
     if (!token) {
       setIsVerifying(false);
       setErrorMessage('No verification token found in URL. Please check your email link and try again.');
+      verificationProcessedRef.current = true;
       return;
     }
-
+    
+    console.log(`Starting email verification with token: ${token.substring(0, 8)}... for email: ${email}`);
+    
+    // Mark as processed immediately to prevent double-processing
+    verificationProcessedRef.current = true;
+    
     // Create a flag to track if this effect is still relevant
     let isMounted = true;
     
-    // Verify the email using the token
+    // Define verification function
     const verifyEmail = async () => {
-      // Guard against duplicate execution
-      if (!isMounted || !isVerifying) return;
+      if (!isMounted) return;
       
       try {
-        console.log(`Verifying email token: ${token.substring(0, 8)}... for email: ${email}`);
-        
-        // Call the API to validate the email with the token
+        // Call the API to validate the email with the token - only once!
         const result = await validateEmailMutation.mutateAsync({
           email,
           token: token,
           action: 'validate'
         });
         
-        // Only update state if the component is still mounted
-        if (isMounted) {
-          console.log('Email verification result:', result);
-          // If validation is successful
-          setVerificationSuccess(true);
-          
-          // Refresh family data to get updated verification status - with delay
-          setTimeout(() => {
-            if (isMounted) {
-              familyActions.getFamilyUnitQuery.refetch();
-            }
-          }, 1000);
-        }
+        if (!isMounted) return;
         
+        console.log('Email verification result:', result);
+        setVerificationSuccess(true);
+        setIsVerifying(false);
+        
+        // Clear URL parameters to prevent accidental refresh issues
+        window.history.replaceState(null, '', window.location.pathname);
+        
+        // Refresh family data with a single attempt
+        setTimeout(() => {
+          if (isMounted) {
+            familyActions.getFamilyUnitQuery.refetch()
+              .catch(err => console.error('Error refreshing family data:', err));
+          }
+        }, 1000);
       } catch (error) {
-        // Only update state if the component is still mounted
-        if (isMounted) {
-          console.error('Email verification failed:', error);
-          setVerificationSuccess(false);
-          setErrorMessage('Email verification failed. The token may be invalid or expired.');
-        }
-      } finally {
-        // Only update state if the component is still mounted
-        if (isMounted) {
-          setIsVerifying(false);
-        }
+        if (!isMounted) return;
+        
+        console.error('Email verification failed:', error);
+        setVerificationSuccess(false);
+        setErrorMessage('Email verification failed. The token may be invalid or expired.');
+        setIsVerifying(false);
       }
     };
 
-    // Add a small delay to avoid racing conditions
-    const timeoutId = setTimeout(() => {
-      if (isMounted) {
-        verifyEmail();
-      }
-    }, 500);
+    // Execute verification with a small delay to ensure UI is ready
+    setTimeout(verifyEmail, 500);
     
-    // Cleanup function to prevent state updates if the component unmounts
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
     };
+  }, []);
   }, [searchParams]);
 
+  // Track if navigation has been triggered to prevent double navigation
+  const hasNavigatedRef = useRef(false);
+  
   const handleContinue = () => {
-    // Navigate back to the communication preferences page
-    if (verificationSuccess) {
-      navigate('/save-the-date?verified=true');
-    } else {
-      navigate('/save-the-date');
+    // Prevent multiple clicks
+    if (hasNavigatedRef.current) {
+      console.log('Navigation already triggered, ignoring');
+      return;
     }
+    
+    // Mark as navigated
+    hasNavigatedRef.current = true;
+    
+    // Cancel any pending API calls
+    if (validateEmailMutation.isPending) {
+      console.log('Cancelling pending email validation before navigation');
+      validateEmailMutation.reset();
+    }
+    
+    // Navigate back to the main page with a small delay to let UI updates finish
+    setTimeout(() => {
+      // Navigate back to the communication preferences page
+      if (verificationSuccess) {
+        navigate('/save-the-date?verified=true');
+      } else {
+        navigate('/save-the-date');
+      }
+    }, 100);
   };
 
   return (
