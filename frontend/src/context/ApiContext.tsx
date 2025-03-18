@@ -55,6 +55,8 @@ interface ApiContextProps {
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
   updateClientInfo: () => Promise<void>;
+  clearTokenCache: () => boolean; // Function to manually clear token cache
+  apiInstance?: Api; // Expose the API instance for direct access
 }
 
 export const ApiContext = React.createContext({} as ApiContextProps);
@@ -398,6 +400,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       return Promise.resolve(); // Don't break the app if this fails
     }
   };
+  
+  // Add function to manually clear token cache
+  const clearTokenCache = () => {
+    if (apiRef.current && typeof apiRef.current.clearTokenCache === 'function') {
+      console.log('Manually clearing token cache');
+      apiRef.current.clearTokenCache();
+      return true;
+    }
+    return false;
+  };
 
   return (
     <ApiContext.Provider
@@ -413,6 +425,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         getMaskedValueQuery,
         getAllFamilies,
         updateClientInfo,
+        clearTokenCache, // Add the clearTokenCache function
+        apiInstance: apiRef.current, // Expose the API instance
       }}
     >
       {props.children}

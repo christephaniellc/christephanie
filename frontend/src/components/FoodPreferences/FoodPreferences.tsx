@@ -81,7 +81,7 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           <Typography 
             variant="subtitle1" 
             fontWeight="500" 
-            color="white"
+            color="primary"
             id="food-preferences-heading"
           >
             These are delicious to me:
