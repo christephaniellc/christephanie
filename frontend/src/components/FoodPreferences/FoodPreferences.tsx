@@ -77,12 +77,16 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
-        <Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+        <Box sx={{ p: 2, pb: 1, 
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
           <Typography 
             variant="subtitle1" 
             fontWeight="500" 
-            color="primary"
+            color="white"
             id="food-preferences-heading"
+            sx={{
+              textShadow: '1px 0px 0 #000000',
+            }}
           >
             These are delicious to me:
           </Typography>
