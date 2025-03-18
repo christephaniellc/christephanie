@@ -8,7 +8,8 @@ import {
   Box, 
   Typography, 
   useTheme, 
-  alpha 
+  alpha,
+  CircularProgress
 } from '@mui/material';
 import { PhoneAndroid } from '@mui/icons-material';
 
@@ -19,6 +20,7 @@ interface PhoneDialogProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   isSmsVerificationEnabled: boolean;
+  isLoading?: boolean;
 }
 
 export const PhoneDialog = ({
@@ -27,7 +29,8 @@ export const PhoneDialog = ({
   defaultValue,
   onChange,
   onSubmit,
-  isSmsVerificationEnabled
+  isSmsVerificationEnabled,
+  isLoading = false
 }: PhoneDialogProps) => {
   const theme = useTheme();
   
@@ -52,29 +55,38 @@ export const PhoneDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Phone Number"
-          type="tel"
-          fullWidth
-          variant="outlined"
-          defaultValue={defaultValue} 
-          onChange={(e) => onChange(e.target.value)}
-          helperText={!isSmsVerificationEnabled ? 
-            "SMS verification coming soon! You'll be able to verify your phone in a future update." : 
-            "Your phone number will need to be verified after updating"}
-        />
+        {isLoading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" py={2}>
+            <CircularProgress size={24} color="secondary" />
+            <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
+              Loading your phone number...
+            </Typography>
+          </Box>
+        ) : (
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Phone Number"
+            type="tel"
+            fullWidth
+            variant="outlined"
+            value={defaultValue || ''} 
+            onChange={(e) => onChange(e.target.value)}
+            helperText={!isSmsVerificationEnabled ? 
+              "SMS verification coming soon! You'll be able to verify your phone in a future update." : 
+              "Your phone number will need to be verified after updating"}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button 
           onClick={onSubmit} 
-          disabled={!defaultValue}
+          disabled={!defaultValue || isLoading}
           color="secondary"
           variant="contained"
         >
-          Update
+          {isLoading ? 'Loading...' : 'Update'}
         </Button>
       </DialogActions>
     </Dialog>
