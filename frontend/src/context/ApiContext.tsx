@@ -3,7 +3,6 @@ import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
-import { getConfig } from '@/auth_config';
 import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
 import {
   AddressDto,
@@ -64,28 +63,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const [family, setFamily] = useRecoilState(familyState);
   const address = useRecoilValue(addressState);
   const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
-  const config = getConfig();
 
-  // Function to get access token - with better error handling
+  // Function to get access token - keeping it simple and letting Auth0 handle token management
   const getTokenFunc = React.useCallback(async () => {
     try {
-      // First try without any special params to use cached token
-      return await getAccessTokenSilently({
-        authorizationParams: {
-          audience: config.audience,
-          scope: 'openid profile email offline_access'
-        },
-        // Use a shorter timeout for better UX
-        timeoutInSeconds: 5
-      });
+      return await getAccessTokenSilently();
     } catch (err) {
-      console.warn('Failed to get token from cache:', err);
-      
-      // Don't attempt to refresh here to avoid loops
-      // Just return null and let the caller handle it
+      console.error('Failed to get token:', err);
       return null;
     }
-  }, [getAccessTokenSilently, config.audience]);
+  }, [getAccessTokenSilently]);
 
   const apiRef = React.useRef(new Api(getTokenFunc));
 
@@ -108,21 +95,18 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const handleTokenExpiration = useCallback((failureCount: number, error: ApiError) => {
     console.log(`API error occurred (attempt ${failureCount}):`, error);
     
-    // If we have a 401 Unauthorized or 403 Forbidden error (token expired or invalid)
-    if (error.status === 401 || error.status === 403) {
+    // If we have a 401 Unauthorized error (token expired)
+    if (error.status === 401) {
       console.log('Token expired or authentication error detected, attempting to refresh...');
       
-      // On first few retries, try to refresh the token
-      if (failureCount <= 2) {
-        // Schedule token refresh as a side effect with cache busting
-        getAccessTokenSilently({ ignoreCache: true, cacheMode: 'off' })
-          .then(() => {
-            console.log('Token refreshed successfully');
-          })
+      // On first retry, try to refresh the token
+      if (failureCount <= 1) {
+        // Schedule token refresh as a side effect
+        getAccessTokenPleasePleasePlease()
           .catch(refreshError => {
             console.error('Failed to refresh token:', refreshError);
             // If refresh fails and we've tried multiple times, log out
-            if (failureCount > 2) {
+            if (failureCount > 1) {
               logout();
             }
           });
@@ -137,7 +121,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     
     // For other errors, retry a few times then give up
     return failureCount < 3;
-  }, [getAccessTokenSilently, logout]);
+  }, [getAccessTokenPleasePleasePlease, logout]);
 
   const getMeQuery = useQuery<GuestDto, ApiError>({
     queryKey: ['getMeQuery', `${user.guestNumber}`],
