@@ -241,15 +241,15 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     retry: 0,
     // Add gcTime (formerly cacheTime) to prevent duplicates
     gcTime: 60000, // 1 minute cache
-    mutationFn: ({ email, token, action }) => {
-      // Validate inputs
-      if (!email) {
-        console.error("Cannot validate email: No email provided");
-        return Promise.reject(new Error("No email provided"));
-      }
+    mutationFn: ({ email, token, action }) => {    
       
       // Create a rate-limiting implementation with proper cache
       if (action === 'register') {
+        // Validate inputs
+        if (!email) {
+        console.error("Cannot validate email: No email provided");
+        return Promise.reject(new Error("No email provided"));
+      }
         const now = Date.now();
         const cacheKey = `${email}:${action}`;
         const lastCallTime = emailRequestCache.current[cacheKey] || 0;
