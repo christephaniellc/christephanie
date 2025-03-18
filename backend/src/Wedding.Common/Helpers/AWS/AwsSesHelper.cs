@@ -28,7 +28,7 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<SendEmailResponse?> SendValidationEmail(AuthContext authContext, VerifiedDto email, CancellationToken cancellationToken)
         {
             var token = EmailTemplateHelper.GenerateTokenVerificationLink(_config, authContext.Audience, authContext.InvitationCode, authContext.GuestId, email.VerificationCode);
-            var bodies = EmailTemplateHelper.SendVerificationCodeTemplate(email, token, cancellationToken);
+            var bodies = EmailTemplateHelper.SendVerificationCodeTemplate(_config, email, token, cancellationToken);
 
             var result = await SendEmail(toAddresses: new List<string> { email.Value },
                 subject: "Email Verification Code",

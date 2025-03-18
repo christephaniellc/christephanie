@@ -8,7 +8,8 @@ import {
   Box, 
   Typography, 
   useTheme, 
-  alpha 
+  alpha,
+  CircularProgress
 } from '@mui/material';
 import { EmailOutlined } from '@mui/icons-material';
 
@@ -18,6 +19,7 @@ interface EmailDialogProps {
   defaultValue: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  isLoading?: boolean;
 }
 
 export const EmailDialog = ({
@@ -25,7 +27,8 @@ export const EmailDialog = ({
   onClose,
   defaultValue,
   onChange,
-  onSubmit
+  onSubmit,
+  isLoading = false
 }: EmailDialogProps) => {
   const theme = useTheme();
   
@@ -50,27 +53,36 @@ export const EmailDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Email Address"
-          type="email"
-          fullWidth
-          variant="outlined"
-          defaultValue={defaultValue} 
-          onChange={(e) => onChange(e.target.value)}
-          helperText="Your email will need to be verified after updating"
-        />
+        {isLoading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" py={2}>
+            <CircularProgress size={24} color="secondary" />
+            <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
+              Loading your email address...
+            </Typography>
+          </Box>
+        ) : (
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Email Address"
+            type="email"
+            fullWidth
+            variant="outlined"
+            value={defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            helperText="Your email will need to be verified after updating"
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button 
           onClick={onSubmit} 
-          disabled={!defaultValue}
+          disabled={(!defaultValue && !isLoading) || isLoading}
           color="secondary"
           variant="contained"
         >
-          Update
+          {isLoading ? 'Loading...' : 'Update'}
         </Button>
       </DialogActions>
     </Dialog>
