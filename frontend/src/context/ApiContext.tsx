@@ -229,11 +229,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const validateEmailMutation = useMutation<
     { success: boolean },
     ApiError,
-    { email: string, code?: string, action?: string },
+    { email: string, token?: string, action?: string },
     unknown
   >({
     mutationKey: ['validateEmail'],
-    mutationFn: ({ email, code, action }) => apiRef.current.validateEmail(email, code, action),
+    mutationFn: ({ email, token, action }) => apiRef.current.validateEmail(email, token, action),
     onSuccess: (data) => {
       console.log('Email validation successful', data);
       // Refresh the family data to show updated verification status

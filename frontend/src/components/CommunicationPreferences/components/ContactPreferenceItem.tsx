@@ -69,7 +69,7 @@ export const ContactPreferenceItem = ({
   const statusText = isEnabled
     ? isVerified
       ? 'Verified'
-      : 'Verification needed'
+      : 'Verification needed, see below'
     : 'Disabled';
   
   return (

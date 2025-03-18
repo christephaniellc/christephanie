@@ -80,13 +80,14 @@ export const useVerification = (
       { email: emailValue || guest?.email?.maskedValue, action: 'register' },
       {
         onSuccess: () => {
-          showAlertMessage('Verification code sent to your email', 'success');
+          showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
           // Set loading state to false after success
           setIsSendingEmailCode(false);
-          handleOpenEmailVerifyDialog();
+          // No longer open the verification dialog
+          // handleOpenEmailVerifyDialog();
         },
         onError: (error) => {
-          showAlertMessage('Failed to send verification code. Please try again.', 'error');
+          showAlertMessage('Failed to send verification email. Please try again.', 'error');
           // Set loading state to false after error
           setIsSendingEmailCode(false);
         }
@@ -167,12 +168,12 @@ export const useVerification = (
       { phoneNumber: phoneValue || guest?.phone?.maskedValue, action: 'register' },
       {
         onSuccess: () => {
-          showAlertMessage('Verification code sent to your phone', 'success');
+          showAlertMessage('Verification SMS sent! Please check your phone for a verification link.', 'success');
           setIsSendingPhoneCode(false);
           handleOpenPhoneVerifyDialog();
         },
         onError: (error) => {
-          showAlertMessage('Failed to send verification code. Please try again.', 'error');
+          showAlertMessage('Failed to send verification SMS. Please try again.', 'error');
           setIsSendingPhoneCode(false);
         }
       }

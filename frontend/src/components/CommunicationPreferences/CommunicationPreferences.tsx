@@ -21,8 +21,7 @@ import {
   FeatureDisabledPlaceholder,
   PhoneDialog,
   PreferencesCard,
-  PreferencesHeader,
-  VerificationDialog
+  PreferencesHeader
 } from './components';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
@@ -63,6 +62,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setEmailValue,
     phoneValue,
     setPhoneValue,
+    // We're still destructuring these but not using them directly
     phoneVerificationCode,
     setPhoneVerificationCode,
     emailVerificationCode,
@@ -88,14 +88,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const {
     isEmailDialogOpen,
     isPhoneDialogOpen,
-    isEmailVerifyDialogOpen,
-    isPhoneVerifyDialogOpen,
     handleOpenEmailDialog,
     handleCloseEmailDialog,
-    handleOpenEmailVerifyDialog,
-    handleCloseEmailVerifyDialog,
     handleOpenPhoneDialog,
     handleClosePhoneDialog,
+    // We're keeping the references but not using them
+    handleOpenEmailVerifyDialog,
+    handleCloseEmailVerifyDialog,
     handleOpenPhoneVerifyDialog,
     handleClosePhoneVerifyDialog
   } = useDialogState();
@@ -104,12 +103,13 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     forceEmailVerified,
     forcePhoneVerified,
     sendEmailVerificationCode,
-    resendEmailVerificationCode,
-    submitEmailVerificationCode,
     sendPhoneVerificationCode,
     resendPhoneVerificationCode,
     submitPhoneVerificationCode,
     forceUpdateVerificationStatus
+    // No longer using these since verification is now done via email link
+    // resendEmailVerificationCode,
+    // submitEmailVerificationCode,
   } = useVerification(guest, guestId, showAlertMessage);
 
   // Check if redirected from successful verification
@@ -203,22 +203,24 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     );
   };
 
-  const handleResendEmailVerificationCode = () => {
-    resendEmailVerificationCode(
-      emailValue, 
-      setIsSendingEmailCode,
-      isEmailVerificationEnabled
-    );
-  };
+  // These handlers are no longer used with the dialog-free verification approach
+  
+  // const handleResendEmailVerificationCode = () => {
+  //   resendEmailVerificationCode(
+  //     emailValue, 
+  //     setIsSendingEmailCode,
+  //     isEmailVerificationEnabled
+  //   );
+  // };
 
-  const handleSubmitEmailVerificationCode = () => {
-    submitEmailVerificationCode(
-      emailValue, 
-      emailVerificationCode,
-      handleCloseEmailVerifyDialog,
-      isEmailVerificationEnabled
-    );
-  };
+  // const handleSubmitEmailVerificationCode = () => {
+  //   submitEmailVerificationCode(
+  //     emailValue, 
+  //     emailVerificationCode,
+  //     handleCloseEmailVerifyDialog,
+  //     isEmailVerificationEnabled
+  //   );
+  // };
 
   const handleSendPhoneVerificationCode = () => {
     sendPhoneVerificationCode(
@@ -331,17 +333,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         onSubmit={onSubmitPhone}
         isSmsVerificationEnabled={isSmsVerificationEnabled}
         isLoading={isLoadingPhone}
-      />
-      
-      <VerificationDialog
-        type="email"
-        open={isEmailVerifyDialogOpen}
-        onClose={handleCloseEmailVerifyDialog}
-        verificationCode={emailVerificationCode}
-        onCodeChange={setEmailVerificationCode}
-        onResend={handleResendEmailVerificationCode}
-        onSubmit={handleSubmitEmailVerificationCode}
-        isSending={isSendingEmailCode}
       />
       
       <VerificationDialog
