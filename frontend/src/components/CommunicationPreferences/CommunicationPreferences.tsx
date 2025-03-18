@@ -117,16 +117,23 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   // Check if redirected from successful verification
   useEffect(() => {
     const verified = searchParams.get('verified');
+    
     if (verified === 'true') {
       setShowVerificationSuccess(true);
       showAlertMessage('Email verified successfully!', 'success');
       
-      // Clear the param after showing the message
+      forceUpdateVerificationStatus('email', true);
+        
+        // Refresh family data
+        familyActions.getFamilyUnitQuery.refetch()
+          .catch(err => console.error('Error refreshing family data after verification:', err));
+      }
+      
+      // Clear the params after showing the message and updating state
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.delete('verified');
       window.history.replaceState(null, '', `${window.location.pathname}`);
-    }
-  }, [searchParams, showAlertMessage]);
+  }, [searchParams, showAlertMessage, forceUpdateVerificationStatus, familyActions.getFamilyUnitQuery]);
 
   // Check if guest.auth0Id is valid but doesn't match the current user
   const hasAuthMismatch = guest?.auth0Id && guest.auth0Id !== "" && guest.auth0Id !== user?.sub;
@@ -176,6 +183,8 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const onSubmitEmail = () => {
     console.log('Submitting email with value:', emailValue);
     console.log('Email response:', emailResponse);
+    
+    // First submit the email update
     handleSubmitEmail(
       emailValue, 
       emailResponse, 
@@ -183,6 +192,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       showAlertMessage, 
       handleCloseEmailDialog
     );
+    
+    // Then trigger verification for the new email (after a short delay to ensure patch completes)
+    setTimeout(() => {
+      if (emailValue && isEmailVerificationEnabled) {
+        sendEmailVerificationCode(
+          emailValue,
+          setIsSendingEmailCode,
+          handleOpenEmailVerifyDialog,
+          isEmailVerificationEnabled
+        );
+      }
+    }, 500);
   };
 
   const onSubmitPhone = () => {
