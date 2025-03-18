@@ -62,6 +62,7 @@ export const useVerification = (
   };
 
   // Email verification methods
+  // EMERGENCY FIX: Disabled version to prevent infinite API calls
   const sendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void, 
@@ -73,6 +74,14 @@ export const useVerification = (
       return;
     }
 
+    // EMERGENCY FIX: Block all calls
+    console.log('EMERGENCY FIX: Email verification temporarily disabled');
+    showAlertMessage('Email verification has been temporarily disabled due to maintenance. Please try again later.', 'info');
+    setIsSendingEmailCode(false);
+    return;
+
+    // Original code left commented out for future reference
+    /*
     // Ensure we have an email to verify
     if (!emailValue && !guest?.email?.maskedValue) {
       showAlertMessage('No email address provided', 'error');
@@ -103,8 +112,10 @@ export const useVerification = (
         }
       }
     );
+    */
   };
 
+  // EMERGENCY FIX: Disabled version to prevent infinite API calls
   const resendEmailVerificationCode = (
     emailValue: string | undefined, 
     setIsSendingEmailCode: (value: boolean) => void,
@@ -112,6 +123,13 @@ export const useVerification = (
   ) => {
     if (!isEmailVerificationEnabled) return;
 
+    // EMERGENCY FIX: Block all calls
+    console.log('EMERGENCY FIX: Email verification temporarily disabled');
+    showAlertMessage('Email verification has been temporarily disabled due to maintenance. Please try again later.', 'info');
+    setIsSendingEmailCode(false);
+    return;
+
+    /* Original code commented out
     // Ensure we have an email to verify
     if (!emailValue && !guest?.email?.maskedValue) {
       showAlertMessage('No email address provided', 'error');
@@ -140,6 +158,7 @@ export const useVerification = (
         }
       }
     );
+    */
   };
 
   const submitEmailVerificationCode = (
