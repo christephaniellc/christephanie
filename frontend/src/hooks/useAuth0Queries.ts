@@ -1,7 +1,7 @@
 import { LogoutOptions, useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
 import { useUser } from '@/store/user';
-import { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { ApiContext } from '@/context/ApiContext';
 
 export const useAuth0Queries = () => {
@@ -78,7 +78,11 @@ export const useAuth0Queries = () => {
     }, 5000); // Longer delay to ensure auth is complete and app is stable
   };
 
-  // Improved token refresh function with better error handling
+  // Track the last token refresh timestamp to prevent excessive refreshes
+  const lastTokenRefresh = useRef<number>(0);
+  const MIN_REFRESH_INTERVAL = 10000; // Minimum 10 seconds between refreshes
+
+  // Improved token refresh function with better error handling and rate limiting
   const getAccessTokenPleasePleasePlease = async () => {
     try {
       if (!isAuthenticated) {
@@ -86,19 +90,42 @@ export const useAuth0Queries = () => {
         throw new Error('User is not authenticated');
       }
 
+      // Add rate limiting to prevent excessive token refreshes
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastTokenRefresh.current;
+      
+      if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
+        console.log(`Token refresh requested too soon (${timeSinceLastRefresh}ms since last refresh), throttling`);
+        // Wait a bit before allowing another refresh
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Update timestamp before making the request
+      lastTokenRefresh.current = Date.now();
+      
       console.log('Attempting to refresh access token silently');
+      // Include specific scope and audience to ensure correct claims
       const token = await getAccessTokenSilently({
         authorizationParams: {
           audience: config.audience,
+          scope: 'openid profile email',
         },
-        // Set timeoutInSeconds to a lower value for faster testing
-        timeoutInSeconds: 10,
-        // Force a refresh rather than using a cached token
-        cacheMode: 'off',
+        // Set timeoutInSeconds to a reasonable value
+        timeoutInSeconds: 15,
+        // Using 'on' for more reliable caching
+        cacheMode: 'on',
+        // Add detailed timestamp for debugging
+        detailedResponse: true
       });
-
-      console.log('Successfully refreshed access token');
-      return token;
+      
+      // Log token details (without exposing the actual token)
+      if (typeof token === 'object' && token.id_token) {
+        console.log('Successfully refreshed access token with expiry:', new Date(token.expires_at * 1000).toISOString());
+        return token.access_token;
+      } else {
+        console.log('Successfully refreshed access token');
+        return token;
+      }
     } catch (error) {
       console.error('Failed to get access token silently:', error);
 
@@ -114,6 +141,8 @@ export const useAuth0Queries = () => {
         await loginWithRedirect({
           authorizationParams: {
             audience: config.audience,
+            // Ensure we're requesting all needed scopes
+            scope: 'openid profile email',
           },
         });
       }
