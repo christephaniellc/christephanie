@@ -84,19 +84,6 @@ export default class Api {
   validateEmail(email: string, code?: string, action?: string): Promise<{ success: boolean }> {
     return this.post(`/validate/email`, { email, code, action });
   }
-  
-  /**
-   * Validates an email with a token directly from the verification link
-   * @param token The verification token from the email link
-   * @param email Optional email address
-   */
-  validateEmailToken(token: string, email?: string): Promise<{ success: boolean }> {
-    return this.post(`/validate/email`, { 
-      email: email || '',
-      code: token, 
-      action: 'validate' 
-    });
-  }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
