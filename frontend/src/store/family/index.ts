@@ -87,9 +87,9 @@ export const guestSelector = selectorFamily<GuestViewModel | null, string>({
         return null;
       }
       const matchingGuest = familyUnit.guests.find((g) => g.guestId === guestId) || null;
-      console.log(
-        `updating ${matchingGuest?.firstName} to ${matchingGuest?.rsvp.invitationResponse}`,
-      );
+      // console.log(
+      //   `updating ${matchingGuest?.firstName} to ${matchingGuest?.rsvp.invitationResponse}`,
+      // );
       return matchingGuest || null;
     },
   set:
@@ -104,7 +104,6 @@ export const guestSelector = selectorFamily<GuestViewModel | null, string>({
       if (!familyUnit?.guests) return;
 
       // Overwrite only the changed fields (shallow merge) or do a full replace:
-      console.log('unexpectedly setting guest stuff here');
       const updatedGuests = [...familyUnit.guests].map((guest) => {
         if (guest.guestId === guestId) {
           return {
@@ -288,7 +287,7 @@ export const useFamily = () => {
       if (getFamilyUnitQuery.data.guests && getFamilyUnitQuery.data.guests.length > 0) {
         sortedGuests = reorderArrayByKey([...getFamilyUnitQuery.data.guests], 'auth0Id', auth0User?.sub);
       }
-      console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
+      //console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
       setFamily({
         ...getFamilyUnitQuery.data,
         guests: sortedGuests,
@@ -307,7 +306,7 @@ export const useFamily = () => {
     const attendingGuests = family.guests.filter(
       (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
     );
-    console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
+    //console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
     setSaveTheDateSteps((prev) => ({
       // attendance
       attendance: {

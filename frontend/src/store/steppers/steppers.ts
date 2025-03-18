@@ -22,7 +22,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     attendance: {
       id: 0,
       completed: false,
-      label: 'Are you interested in attending the wedding?',
+      label: 'Is your family interested in attending the wedding?',
       description: '',
       component: null,
       display: true,
@@ -30,7 +30,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     ageGroup: {
       id: 1,
       completed: false,
-      label: 'What kind of person are we catering to?',
+      label: 'What kind of people are we catering to?',
       description: '',
       component: null,
       display: true,
@@ -46,7 +46,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     foodPreferences: {
       id: 3,
       completed: true,
-      label: 'What kind of life is being sacrificed for your meal?',
+      label: 'What kind of life is being sacrificed for your meals?',
       description: '',
       component: null,
       display: true,
@@ -62,7 +62,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     camping: {
       id: 5,
       completed: false,
-      label: 'Where do you plan to stay?',
+      label: 'Where do you all plan to stay?',
       description: '(we have bathrooms!)',
       component: null,
       display: true,

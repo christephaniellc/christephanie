@@ -14,7 +14,7 @@ export const useAuth0Utils = () => {
           guest_id: guestId,
         },
       }).then(()=> {
-        console.log('logged in');
+        console.log('Logged in');
       });
     }, [loginWithRedirect]);
 

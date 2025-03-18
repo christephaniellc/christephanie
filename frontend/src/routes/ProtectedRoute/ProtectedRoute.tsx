@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     const shouldRefetch = isAuthenticated && !userHasAdmin && requireAdmin && !hasCheckedAdminRef.current;
     
     if (shouldRefetch) {
-      console.log('Protected route: Refreshing user data to check for admin role...');
+      //console.log('Protected route: Refreshing user data to check for admin role...');
       // Mark that we've performed the check
       hasCheckedAdminRef.current = true;
       
@@ -40,10 +40,10 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
       
       refetchFunc()
         .then(response => {
-          console.log('ProtectedRoute: User refresh response:', response.data);
+          //console.log('ProtectedRoute: User refresh response:', response.data);
         })
         .catch(err => {
-          console.error('ProtectedRoute: Failed to refresh user data:', err);
+          //console.error('ProtectedRoute: Failed to refresh user data:', err);
         });
     }
     

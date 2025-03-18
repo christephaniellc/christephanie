@@ -85,7 +85,7 @@ export const useCommunicationPreferences = (guestId: string) => {
   };
 
   const handleSubmitEmail = (emailValue: string, emailResponse: any, forceUpdateVerificationStatus: (type: 'email' | 'phone', verified: boolean) => void, showAlertMessage: (message: string, severity: 'success' | 'error' | 'info' | 'warning') => void, handleCloseEmailDialog: () => void) => {
-    console.log('handleSubmitEmail called with:', {emailValue, emailResponse});
+    //console.log('handleSubmitEmail called with:', {emailValue, emailResponse});
     
     if (emailValue) {
       // Check if email is different from current email
@@ -93,10 +93,6 @@ export const useCommunicationPreferences = (guestId: string) => {
         ? emailResponse 
         : (emailResponse?.value || '');
       const emailChanged = currentEmail !== emailValue;
-      
-      console.log('Current email:', currentEmail);
-      console.log('New email:', emailValue);
-      console.log('Email changed:', emailChanged);
       
       // Update the email
       familyActions.updateFamilyGuestEmail(guestId, emailValue);

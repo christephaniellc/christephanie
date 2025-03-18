@@ -255,7 +255,7 @@ export const InvitationCodeInputs = () => {
                     ? logOutFromAuth0()
                     : user.guestId
                       ? signInWithAuth0(user.guestId)
-                      : console.log('no guestId');
+                      : console.log('No GuestId found.');
                 }}
                 aria-label={auth0User ? 'Logout from your account' : 'Login with your existing account'}
               >

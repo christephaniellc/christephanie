@@ -79,8 +79,8 @@ const LoadingBox = ({ isError = false, errorMessage = "An error occurred. Please
       }
     }
     
-    // If this is an error state, insert the error message around the 4th row
-    if (isError && rows.length > 4) {
+    // If this is an error state, insert the error message around the 1st row
+    if (isError && rows.length > 1) {
       // Create an error message row with proper padding
       const errorMessageRow = (
         <Box 
