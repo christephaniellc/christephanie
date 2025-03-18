@@ -6,6 +6,7 @@ namespace Wedding.Lambdas.Validate.Email.Requests
     {
         public string? Email { get; set; }
         public string? Code { get; set; }
+        public string? Token { get; set; }
         public VerifyEnum? Action { get; set; }
     }
 }

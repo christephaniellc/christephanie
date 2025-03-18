@@ -6,6 +6,7 @@ const { SSMClient, DeleteParameterCommand, PutParameterCommand } = require('@aws
 
 export interface ParamStackProps extends EnvStackProps {
     apiUrl: string;
+    fullDomainName: string;
 }
 
 export class ParamsStack extends cdk.Stack {
@@ -36,7 +37,9 @@ export class ParamsStack extends cdk.Stack {
             name: "/config/application/properties", 
             value: JSON.stringify({
                 "ApplicationName": `${applicationName}`,
-                "MailFromAddress": `${props.env.mailFromAddress}`
+                "MailFromAddress": `${props.env.mailFromAddress}`,
+                "DomainName": `${props.apiUrl}`,
+                "EncryptionKey": `${props.env.encryptionKey}`
                 }) 
         },
         { 
