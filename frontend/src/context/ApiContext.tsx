@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -91,26 +91,46 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   const { getAccessTokenPleasePleasePlease } = useAuth0Queries();
 
+  // Reference to track if token refresh is in progress
+  const tokenRefreshInProgress = useRef(false);
+  const tokenRefreshPromise = useRef<Promise<string | null> | null>(null);
+
   // Helper function to handle token expiration with retry logic
-  const handleTokenExpiration = useCallback((failureCount: number, error: ApiError) => {
+  const handleTokenExpiration = useCallback((failureCount: number, error: any) => {
     console.log(`API error occurred (attempt ${failureCount}):`, error);
     
-    // If we have a 401 Unauthorized error (token expired)
-    if (error.status === 401) {
-      console.log('Token expired or authentication error detected, attempting to refresh...');
+    // Check if it's an authentication or authorization error (401 or 403)
+    if (error.status === 401 || error.status === 403) {
+      console.log(`${error.status} error detected, attempting to refresh token...`);
       
       // On first retry, try to refresh the token
       if (failureCount <= 1) {
-        // Schedule token refresh as a side effect
-        getAccessTokenPleasePleasePlease()
-          .catch(refreshError => {
-            console.error('Failed to refresh token:', refreshError);
-            // If refresh fails and we've tried multiple times, log out
-            if (failureCount > 1) {
-              logout();
-            }
-          });
-        return true; // Retry the request
+        // Implement a single refresh promise pattern to avoid multiple refreshes
+        if (!tokenRefreshInProgress.current) {
+          tokenRefreshInProgress.current = true;
+          
+          // Create a token refresh promise that can be reused by concurrent requests
+          tokenRefreshPromise.current = getAccessTokenPleasePleasePlease()
+            .then(token => {
+              console.log('Token refresh completed successfully');
+              tokenRefreshInProgress.current = false;
+              return token;
+            })
+            .catch(refreshError => {
+              console.error('Failed to refresh token:', refreshError);
+              tokenRefreshInProgress.current = false;
+              
+              // If refresh fails and we've tried multiple times, log out
+              if (failureCount > 1) {
+                logout();
+              }
+              return null;
+            });
+        } else {
+          console.log('Token refresh already in progress, waiting for it to complete');
+        }
+        
+        return true; // Retry the request after token refresh
       } else {
         // After multiple failures, log out the user
         console.error('Multiple authentication failures, logging out');
@@ -132,9 +152,38 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   const getFamilyUnitQuery = useQuery<FamilyUnitViewModel, ApiError>({
     queryKey: [`getFamilyUnit`],
-    queryFn: () => apiRef.current!.getFamilyUnit(),
+    queryFn: async () => {
+      try {
+        // Add detailed logging for this particular endpoint
+        console.log('Making getFamilyUnit request');
+        const result = await apiRef.current!.getFamilyUnit();
+        console.log('getFamilyUnit request succeeded');
+        return result;
+      } catch (error: any) {
+        console.error('getFamilyUnit request failed:', error);
+        
+        // If we get a 403, we should try to refresh the token and retry once
+        if (error.status === 403 && !tokenRefreshInProgress.current) {
+          console.log('Got 403 from getFamilyUnit, attempting token refresh');
+          try {
+            // Force a token refresh
+            await getAccessTokenPleasePleasePlease();
+            // After refresh, retry the request once
+            console.log('Token refreshed, retrying getFamilyUnit request');
+            return await apiRef.current!.getFamilyUnit();
+          } catch (refreshError) {
+            console.error('Token refresh failed, cannot retry getFamilyUnit:', refreshError);
+            throw error; // Throw the original error
+          }
+        }
+        
+        throw error;
+      }
+    },
     retry: handleTokenExpiration,
     enabled: !!auth0User,
+    // Add a small staleTime to prevent excessive refetching
+    staleTime: 30000, // 30 seconds
   }) as UseQueryResult<FamilyUnitViewModel, ApiError>;
 
   const patchFamilyGuestMutation = useMutation<
@@ -228,7 +277,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
 
   // EMERGENCY DISABLED VERSION
   // Rate limiting cache for email validation
-  const emailRequestCache = React.useRef<Record<string, number>>({});
+  const emailRequestCache = useRef<Record<string, number>>({});
   
   const validateEmailMutation = useMutation<
     { success: boolean },
