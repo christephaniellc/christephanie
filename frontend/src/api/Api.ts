@@ -97,12 +97,6 @@ export default class Api {
     return this.post(`/validate/email`, { email, token, action });
   }
 
-  // Public method to clear token cache
-  clearTokenCache() {
-    console.log('Clearing token cache');
-    this.tokenCache = { token: null, expiresAt: 0 };
-  }
-
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
       case 200:
