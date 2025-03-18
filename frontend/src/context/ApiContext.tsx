@@ -227,6 +227,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   });
 
   // EMERGENCY DISABLED VERSION
+  // Rate limiting cache for email validation
+  const emailRequestCache = React.useRef<Record<string, number>>({});
+  
   const validateEmailMutation = useMutation<
     { success: boolean },
     ApiError,
@@ -239,29 +242,48 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     // Add gcTime (formerly cacheTime) to prevent duplicates
     gcTime: 60000, // 1 minute cache
     mutationFn: ({ email, token, action }) => {
-      // EMERGENCY FIX: Only allow token validation, block registration calls
-      if (action === 'register') {
-        console.log('EMERGENCY FIX: Blocking email registration call to prevent API abuse');
-        return Promise.resolve({ success: true }); // Return fake success
-      }
-      if (action === 'validate') {
-        console.log('EMERGENCY FIX: Blocking email validate call to prevent API abuse');
-        return Promise.resolve({ success: true }); // Return fake success
-      }
-      // Log the mutation parameters for debugging
-      console.log(`Email validation request: email=${email}, action=${action}, has token=${!!token}`);
-      // Only proceed if email is provided
+      // Validate inputs
       if (!email) {
         console.error("Cannot validate email: No email provided");
         return Promise.reject(new Error("No email provided"));
       }
+      
+      // Create a rate-limiting implementation with proper cache
+      if (action === 'register') {
+        const now = Date.now();
+        const cacheKey = `${email}:${action}`;
+        const lastCallTime = emailRequestCache.current[cacheKey] || 0;
+        const timeSinceLastCall = now - lastCallTime;
+        
+        // Only allow one call per email every 5 minutes (300,000ms)
+        if (timeSinceLastCall < 300000) {
+          console.log(`Rate limiting email registration call for ${email}, last called ${Math.round(timeSinceLastCall/1000)}s ago`);
+          // Return fake success to avoid breaking UI, but don't make the actual API call
+          return Promise.resolve({ success: true });
+        }
+        
+        // Update timestamp for this email+action
+        emailRequestCache.current[cacheKey] = now;
+        console.log(`Allowing email registration call for ${email}`);
+      }
+      
+      // For token validation with actual tokens, always proceed
+      if (action === 'validate' && token) {
+        console.log(`Processing token validation for ${email}`);
+        return apiRef.current.validateEmail(email, token, action);
+      } else if (action === 'validate' && !token) {
+        // Prevent validate calls without tokens
+        console.warn('Attempted to validate email without a token');
+        return Promise.reject(new Error("No validation token provided"));
+      }
+      
+      // If rate limiting passed, proceed with the actual API call
       return apiRef.current.validateEmail(email, token, action);
     },
     onSuccess: (data) => {
       console.log('Email validation successful', data);
-      // Refresh the family data to show updated verification status
+      // Refresh the family data after a delay to avoid race conditions
       setTimeout(() => {
-        // Use a small delay to avoid race conditions
         getFamilyUnitQuery.refetch();
       }, 1000);
     },
