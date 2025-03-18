@@ -347,7 +347,7 @@ function StepperIcon(props: StepIconProps) {
   const theme = useTheme();
   
   // Log the props to help debug
-  console.log('StepperIcon props:', { active, completed });
+  //console.log('StepperIcon props:', { active, completed });
   
   // Use explicit Material-UI icons for better distinction
   return (
