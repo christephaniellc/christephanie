@@ -21,7 +21,8 @@ import {
   FeatureDisabledPlaceholder,
   PhoneDialog,
   PreferencesCard,
-  PreferencesHeader
+  PreferencesHeader,
+  VerificationDialog
 } from './components';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
@@ -88,6 +89,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
   const {
     isEmailDialogOpen,
     isPhoneDialogOpen,
+    isPhoneVerifyDialogOpen,
     handleOpenEmailDialog,
     handleCloseEmailDialog,
     handleOpenPhoneDialog,
