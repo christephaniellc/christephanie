@@ -85,10 +85,18 @@ export const useCommunicationPreferences = (guestId: string) => {
   };
 
   const handleSubmitEmail = (emailValue: string, emailResponse: any, forceUpdateVerificationStatus: (type: 'email' | 'phone', verified: boolean) => void, showAlertMessage: (message: string, severity: 'success' | 'error' | 'info' | 'warning') => void, handleCloseEmailDialog: () => void) => {
+    console.log('handleSubmitEmail called with:', {emailValue, emailResponse});
+    
     if (emailValue) {
       // Check if email is different from current email
-      const currentEmail = emailResponse?.value || '';
+      const currentEmail = typeof emailResponse === 'string' 
+        ? emailResponse 
+        : (emailResponse?.value || '');
       const emailChanged = currentEmail !== emailValue;
+      
+      console.log('Current email:', currentEmail);
+      console.log('New email:', emailValue);
+      console.log('Email changed:', emailChanged);
       
       // Update the email
       familyActions.updateFamilyGuestEmail(guestId, emailValue);
@@ -100,6 +108,10 @@ export const useCommunicationPreferences = (guestId: string) => {
       } else {
         showAlertMessage('Email updated successfully', 'success');
       }
+    } else {
+      console.warn('No email value provided for update');
+      showAlertMessage('Please enter an email address', 'warning');
+      return; // Don't close the dialog
     }
     handleCloseEmailDialog();
   };

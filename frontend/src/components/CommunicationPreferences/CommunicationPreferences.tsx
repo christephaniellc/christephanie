@@ -72,7 +72,11 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setShowAlert,
     alertMessage,
     alertSeverity,
+    isLoadingEmail,
+    isLoadingPhone,
     fetchMaskedValue,
+    fetchUnmaskedEmailValue,
+    fetchUnmaskedPhoneValue,
     showAlertMessage
   } = useContactInformation(guestId);
 
@@ -124,25 +128,33 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
 
   // Open dialog handlers with API calls
   const handleEmailDialogOpen = async () => {
+    // Reset value first to avoid showing old value
     setEmailValue('');
-    const data = await fetchMaskedValue('email');
-    if (data && data.value) {
-      setEmailValue(data.value);
-    }
+    
+    // Then open the dialog (will show loading state)
     handleOpenEmailDialog();
+    
+    // Fetch the unmasked value from API
+    console.log('Opening email dialog and fetching email');
+    fetchUnmaskedEmailValue();
   };
 
   const handlePhoneDialogOpen = async () => {
+    // Reset value first to avoid showing old value
     setPhoneValue('');
-    const data = await fetchMaskedValue('text');
-    if (data && data.value) {
-      setPhoneValue(data.value);
-    }
+    
+    // Then open the dialog (will show loading state)
     handleOpenPhoneDialog();
+    
+    // Fetch the unmasked value from API
+    console.log('Opening phone dialog and fetching phone');
+    fetchUnmaskedPhoneValue();
   };
 
   // Submit handlers for email and phone
   const onSubmitEmail = () => {
+    console.log('Submitting email with value:', emailValue);
+    console.log('Email response:', emailResponse);
     handleSubmitEmail(
       emailValue, 
       emailResponse, 
@@ -289,6 +301,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         defaultValue={emailValue}
         onChange={setEmailValue}
         onSubmit={onSubmitEmail}
+        isLoading={isLoadingEmail}
       />
       
       <PhoneDialog
@@ -298,6 +311,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         onChange={setPhoneValue}
         onSubmit={onSubmitPhone}
         isSmsVerificationEnabled={isSmsVerificationEnabled}
+        isLoading={isLoadingPhone}
       />
       
       <VerificationDialog
