@@ -22,11 +22,11 @@ namespace Wedding.Common.Helpers
             <body>
                 <h1>{config.ApplicationName} Email Verification</h1>
                 <p>Thank you for registering! Please verify your email address by clicking the link below:</p>
-                <p><a href=""{tokenVerifyLink}"">Verify Email</a></p>
+                <p>[ <a href=""{tokenVerifyLink}"">Verify Email</a> ]</p>
                 <p>&nbsp;</p>
                 <p>(If this link doesn't work, copy and paste the following URL into your browser:)</p>
                 <p>{tokenVerifyLink}</p>
-                <p>Didn't request this? Ignore this email!</p>
+                <p><i>Didn't request this? Ignore this email!</i></p>
             </body>
             </html>";
 
