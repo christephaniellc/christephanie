@@ -38,6 +38,11 @@ const routes: Routes = {
     title: 'Admin',
     icon: AdminPanelSettingsIcon,
   },
+  [Pages.VerifyEmail]: {
+    component: asyncComponentLoader(() => import('@/pages/VerifyEmail')),
+    path: '/verify-email',
+    title: 'Verify Email',
+  },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
     path: '*',
