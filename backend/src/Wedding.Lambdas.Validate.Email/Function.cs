@@ -39,7 +39,8 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<EmailValidationHandler>();
-        
+        serviceCollection.AddScoped<AwsParameterCacheProvider>();
+
         serviceCollection.AddSingleton<Lazy<Task<IAwsSesHelper>>>(sp =>
         {
             return new Lazy<Task<IAwsSesHelper>>(async () =>
