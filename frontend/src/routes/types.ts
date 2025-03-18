@@ -9,6 +9,7 @@ enum Pages {
   Profile,
   Bureaucracy,
   Admin,
+  VerifyEmail,
   NotFound
 }
 

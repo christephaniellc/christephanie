@@ -21,6 +21,8 @@ export const useContactInformation = (guestId: string) => {
   const [emailResponse, setEmailResponse] = useState<any>(null);
 
   // Loading states
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+  const [isLoadingPhone, setIsLoadingPhone] = useState(false);
   const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
 
@@ -41,7 +43,7 @@ export const useContactInformation = (guestId: string) => {
       
       // Determine masked value type from enum
       const maskedValueType = type === 'email' ? NotificationPreferenceEnum.Email : NotificationPreferenceEnum.Text;
-      
+          
       // Make the API call
       const url = `${getConfig().webserviceUrl}/guest/maskedvalues?guestId=${encodeURIComponent(guestId)}&maskedValueType=${encodeURIComponent(maskedValueType)}`;
       
@@ -53,19 +55,26 @@ export const useContactInformation = (guestId: string) => {
       });
       
       if (!response.ok) {
+        console.error(`API error getting ${type}: ${response.status} ${response.statusText}`);
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
 
+      // Handle response that might be just a string instead of an object
+      const responseData = typeof data === 'string' 
+        ? { value: data, verified: false } 
+        : data;
+      
       // Store response
       if (type === 'email') {
-        setEmailResponse(data);
+        setEmailResponse(responseData);
       } else {
-        setPhoneResponse(data);
+        setPhoneResponse(responseData);
       }
 
-      return data;
+      // Return the response data, ensuring it has the expected format
+      return typeof data === 'string' ? { value: data, verified: false } : data;
     } catch (error) {
       console.error(`Error fetching ${type}:`, error);
       return null;
@@ -77,6 +86,48 @@ export const useContactInformation = (guestId: string) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
     setShowAlert(true);
+  };
+
+  // Enhanced fetch methods that also update state
+  const fetchUnmaskedEmailValue = async () => {
+    setIsLoadingEmail(true);
+    try {
+      const result = await fetchMaskedValue('email');
+      if (result) {
+        // Handle both string and object responses
+        const emailVal = typeof result === 'string' ? result : result.value;
+        setEmailValue(emailVal);
+      } else {
+        console.error('No email value returned from API');
+      }
+    } catch (error) {
+      console.error('Error fetching email:', error);
+      showAlertMessage('Could not load email address. Please try again.', 'error');
+    } finally {
+      setIsLoadingEmail(false);
+    }
+  };
+  
+  const fetchUnmaskedPhoneValue = async () => {
+    setIsLoadingPhone(true);
+    try {
+      console.log('Fetching unmasked phone value');
+      const result = await fetchMaskedValue('text');
+      console.log('Fetch phone result:', result);
+      if (result) {
+        // Handle both string and object responses
+        const phoneVal = typeof result === 'string' ? result : result.value;
+        console.log('Setting phone value directly to:', phoneVal);
+        setPhoneValue(phoneVal);
+      } else {
+        console.error('No phone value returned from API');
+      }
+    } catch (error) {
+      console.error('Error fetching phone:', error);
+      showAlertMessage('Could not load phone number. Please try again.', 'error');
+    } finally {
+      setIsLoadingPhone(false);
+    }
   };
 
   return {
@@ -100,8 +151,14 @@ export const useContactInformation = (guestId: string) => {
     alertMessage,
     alertSeverity,
     
+    // Query states
+    isLoadingEmail,
+    isLoadingPhone,
+    
     // Methods
     fetchMaskedValue,
+    fetchUnmaskedEmailValue,
+    fetchUnmaskedPhoneValue,
     showAlertMessage
   };
 };

@@ -3,7 +3,9 @@
  * Redesigned for better mobile experience and modern MUI design
  * Only displays for the current logged-in user (with matching auth0Id)
  */
+import { useEffect, useState, useRef } from 'react';
 import { Snackbar, Alert, Stack, Box, Paper, Container } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import { NotificationPreferenceEnum } from '@/types/api';
 import { 
   useCommunicationPreferences, 
@@ -24,6 +26,9 @@ import {
 } from './components';
 
 const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
+  const [searchParams] = useSearchParams();
+  const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+  
   // Custom hooks for component state and logic
   const {
     guest,
@@ -58,6 +63,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setEmailValue,
     phoneValue,
     setPhoneValue,
+    // We're still destructuring these but not using them directly
     phoneVerificationCode,
     setPhoneVerificationCode,
     emailVerificationCode,
@@ -72,21 +78,25 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     setShowAlert,
     alertMessage,
     alertSeverity,
+    isLoadingEmail,
+    isLoadingPhone,
     fetchMaskedValue,
+    fetchUnmaskedEmailValue,
+    fetchUnmaskedPhoneValue,
     showAlertMessage
   } = useContactInformation(guestId);
 
   const {
     isEmailDialogOpen,
     isPhoneDialogOpen,
-    isEmailVerifyDialogOpen,
     isPhoneVerifyDialogOpen,
     handleOpenEmailDialog,
     handleCloseEmailDialog,
-    handleOpenEmailVerifyDialog,
-    handleCloseEmailVerifyDialog,
     handleOpenPhoneDialog,
     handleClosePhoneDialog,
+    // We're keeping the references but not using them
+    handleOpenEmailVerifyDialog,
+    handleCloseEmailVerifyDialog,
     handleOpenPhoneVerifyDialog,
     handleClosePhoneVerifyDialog
   } = useDialogState();
@@ -95,13 +105,47 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     forceEmailVerified,
     forcePhoneVerified,
     sendEmailVerificationCode,
-    resendEmailVerificationCode,
-    submitEmailVerificationCode,
     sendPhoneVerificationCode,
     resendPhoneVerificationCode,
     submitPhoneVerificationCode,
     forceUpdateVerificationStatus
+    // No longer using these since verification is now done via email link
+    // resendEmailVerificationCode,
+    // submitEmailVerificationCode,
   } = useVerification(guest, guestId, showAlertMessage);
+
+  // Check if redirected from successful verification - use a ref to prevent multiple executions
+  const processedVerificationRef = useRef(false);
+  
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    
+    // Only process verification parameter once to prevent multiple API calls
+    if (verified === 'true' && !processedVerificationRef.current) {
+      // Mark as processed immediately
+      processedVerificationRef.current = true;
+      
+      // Update UI
+      setShowVerificationSuccess(true);
+      showAlertMessage('Email verified successfully!', 'success');
+      
+      // Force update the verification status in the UI
+      forceUpdateVerificationStatus('email', true);
+      
+      // Clear the params after showing the message and updating state
+      window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/[&?]verified=true/, ''));
+      
+      // Refresh family data exactly once with 500ms delay to ensure UI updates first
+      const timeoutId = setTimeout(() => {
+        console.log('Refreshing family data after verification...');
+        familyActions.getFamilyUnitQuery.refetch()
+          .catch(err => console.error('Error refreshing family data after verification:', err));
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  // Empty dependency array - this effect should run exactly once after mount
+  }, []);
 
   // Check if guest.auth0Id is valid but doesn't match the current user
   const hasAuthMismatch = guest?.auth0Id && guest.auth0Id !== "" && guest.auth0Id !== user?.sub;
@@ -124,25 +168,32 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
 
   // Open dialog handlers with API calls
   const handleEmailDialogOpen = async () => {
+    // Reset value first to avoid showing old value
     setEmailValue('');
-    const data = await fetchMaskedValue('email');
-    if (data && data.value) {
-      setEmailValue(data.value);
-    }
+    
+    // Then open the dialog (will show loading state)
     handleOpenEmailDialog();
+    
+    // Fetch the unmasked value from API
+    console.log('Opening email dialog and fetching email');
+    fetchUnmaskedEmailValue();
   };
 
   const handlePhoneDialogOpen = async () => {
+    // Reset value first to avoid showing old value
     setPhoneValue('');
-    const data = await fetchMaskedValue('text');
-    if (data && data.value) {
-      setPhoneValue(data.value);
-    }
+    
+    // Then open the dialog (will show loading state)
     handleOpenPhoneDialog();
+    
+    // Fetch the unmasked value from API
+    //console.log('Opening phone dialog and fetching phone');
+    fetchUnmaskedPhoneValue();
   };
 
   // Submit handlers for email and phone
-  const onSubmitEmail = () => {
+  const onSubmitEmail = () => {    
+    // First submit the email update
     handleSubmitEmail(
       emailValue, 
       emailResponse, 
@@ -150,6 +201,18 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       showAlertMessage, 
       handleCloseEmailDialog
     );
+    
+    // Then trigger verification for the new email (after a short delay to ensure patch completes)
+    setTimeout(() => {
+      if (emailValue && isEmailVerificationEnabled) {
+        sendEmailVerificationCode(
+          emailValue,
+          setIsSendingEmailCode,
+          handleOpenEmailVerifyDialog,
+          isEmailVerificationEnabled
+        );
+      }
+    }, 500);
   };
 
   const onSubmitPhone = () => {
@@ -162,8 +225,25 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     );
   };
 
+  // Reference to track last click time to prevent double-clicks
+  const lastClickTimeRef = useRef<number>(0);
+  
   // Verification handlers
   const handleSendEmailVerificationCode = () => {
+    // Throttle UI-triggered email verification to prevent accidental rapid clicks
+    const now = Date.now();
+    
+    // Don't allow more than one click every 3 seconds
+    if (now - lastClickTimeRef.current < 3000) {
+      console.log('Ignoring rapid email verification button clicks');
+      showAlertMessage('Please wait before requesting another email', 'info');
+      return;
+    }
+    
+    // Update last click time
+    lastClickTimeRef.current = now;
+    
+    // Process the verification request
     sendEmailVerificationCode(
       emailValue, 
       setIsSendingEmailCode, 
@@ -172,22 +252,24 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     );
   };
 
-  const handleResendEmailVerificationCode = () => {
-    resendEmailVerificationCode(
-      emailValue, 
-      setIsSendingEmailCode,
-      isEmailVerificationEnabled
-    );
-  };
+  // These handlers are no longer used with the dialog-free verification approach
+  
+  // const handleResendEmailVerificationCode = () => {
+  //   resendEmailVerificationCode(
+  //     emailValue, 
+  //     setIsSendingEmailCode,
+  //     isEmailVerificationEnabled
+  //   );
+  // };
 
-  const handleSubmitEmailVerificationCode = () => {
-    submitEmailVerificationCode(
-      emailValue, 
-      emailVerificationCode,
-      handleCloseEmailVerifyDialog,
-      isEmailVerificationEnabled
-    );
-  };
+  // const handleSubmitEmailVerificationCode = () => {
+  //   submitEmailVerificationCode(
+  //     emailValue, 
+  //     emailVerificationCode,
+  //     handleCloseEmailVerifyDialog,
+  //     isEmailVerificationEnabled
+  //   );
+  // };
 
   const handleSendPhoneVerificationCode = () => {
     sendPhoneVerificationCode(
@@ -289,6 +371,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         defaultValue={emailValue}
         onChange={setEmailValue}
         onSubmit={onSubmitEmail}
+        isLoading={isLoadingEmail}
       />
       
       <PhoneDialog
@@ -298,17 +381,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
         onChange={setPhoneValue}
         onSubmit={onSubmitPhone}
         isSmsVerificationEnabled={isSmsVerificationEnabled}
-      />
-      
-      <VerificationDialog
-        type="email"
-        open={isEmailVerifyDialogOpen}
-        onClose={handleCloseEmailVerifyDialog}
-        verificationCode={emailVerificationCode}
-        onCodeChange={setEmailVerificationCode}
-        onResend={handleResendEmailVerificationCode}
-        onSubmit={handleSubmitEmailVerificationCode}
-        isSending={isSendingEmailCode}
+        isLoading={isLoadingPhone}
       />
       
       <VerificationDialog

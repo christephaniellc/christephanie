@@ -130,7 +130,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
               }}
             >
               {!isMobile &&
-                `Click to update your response. You have ${daysUntilDeadline} days left to respond.`}
+                `Click to update this response. You have ${daysUntilDeadline} days left to respond.`}
             </Typography>
           </Paper>
         )}

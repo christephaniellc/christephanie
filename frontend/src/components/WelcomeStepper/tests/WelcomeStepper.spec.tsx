@@ -43,7 +43,7 @@ jest.mock('@/store/steppers/steppers', () => ({
       attendance: {
         id: 0,
         completed: false,
-        label: 'Are you interested in attending?',
+        label: 'Is your family interested in attending?',
         description: '',
         component: null,
         display: true,
@@ -219,7 +219,7 @@ describe('WelcomeStepper component [wip]', () => {
         attendance: {
           id: 0,
           completed: true,
-          label: 'Are you interested in attending?',
+          label: 'Is your family interested in attending?',
           description: '',
           component: null,
           display: true,
@@ -227,7 +227,7 @@ describe('WelcomeStepper component [wip]', () => {
         ageGroup: {
           id: 1,
           completed: false,
-          label: 'What kind of person are we catering to?',
+          label: 'What kind of people are we catering to?',
           description: '',
           component: null,
           display: true,
@@ -338,7 +338,7 @@ describe('WelcomeStepper component [wip]', () => {
         attendance: {
           id: 0,
           completed: true,
-          label: 'Are you interested in attending?',
+          label: 'Is your family interested in attending?',
           description: '',
           component: null,
           display: true,
@@ -346,7 +346,7 @@ describe('WelcomeStepper component [wip]', () => {
         ageGroup: {
           id: 1,
           completed: false, // Not needed for declined users
-          label: 'What kind of person are we catering to?',
+          label: 'What kind of people are we catering to?',
           description: '',
           component: null,
           display: true,
@@ -449,7 +449,7 @@ describe('WelcomeStepper component [wip]', () => {
         attendance: {
           id: 0,
           completed: true,
-          label: 'Are you interested in attending?',
+          label: 'Is your family interested in attending?',
           description: '',
           component: null,
           display: true,
@@ -457,7 +457,7 @@ describe('WelcomeStepper component [wip]', () => {
         ageGroup: {
           id: 1,
           completed: false, // Not needed for declined users
-          label: 'What kind of person are we catering to?',
+          label: 'What kind of people are we catering to?',
           description: '',
           component: null,
           display: true,

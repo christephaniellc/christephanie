@@ -45,7 +45,7 @@ export const BottomNav = () => {
   }, [stdStepper.currentStep]);
 
   useEffect(() => {
-    console.log(stdStepper.currentStep[0])
+    //console.log(`Current step: ${stdStepper.currentStep[0]}`)
   }, [stdStepper.currentStep]);
 
   return (

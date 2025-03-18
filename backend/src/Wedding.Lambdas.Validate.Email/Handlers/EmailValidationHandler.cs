@@ -1,14 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleSystemsManagement.Model;
 using AutoMapper;
+using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Abstractions;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Helpers;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Requests;
 using Wedding.Lambdas.Validate.Email.Validation;
@@ -25,15 +32,19 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
         private readonly IDynamoDBProvider _dynamoDbProvider;
         private readonly IMapper _mapper;
         private readonly IAwsSesHelper _awsSesHelper;
+        private readonly IAwsParameterCacheProvider _awsParameterCacheProvider;
 
         public EmailValidationHandler(ILogger<EmailValidationHandler> logger,
             IDynamoDBProvider dynamoDbProvider,
-            IMapper mapper, IAwsSesHelper awsSesHelper)
+            IMapper mapper, 
+            IAwsSesHelper awsSesHelper, 
+            IAwsParameterCacheProvider awsParameterCacheProvider)
         {
             _logger = logger;
             _dynamoDbProvider = dynamoDbProvider;
             _mapper = mapper;
             _awsSesHelper = awsSesHelper;
+            _awsParameterCacheProvider = awsParameterCacheProvider;
         }
 
         public async Task<ValidateEmailResponse> ExecuteAsync(RegisterEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
@@ -115,7 +126,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
             await _dynamoDbProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
 
-            var result = await _awsSesHelper.SendVerificationCode(verifyEmail, cancellationToken);
+            var result = await _awsSesHelper.SendValidationEmail(command.AuthContext, verifyEmail, cancellationToken);
 
             return new ValidateEmailResponse
             {
@@ -148,6 +159,32 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
 
             var register = new RegisterEmailCommand(command.AuthContext, email);
             return await ExecuteAsync(register, cancellationToken);
+        }
+
+        public async Task<ValidateEmailResponse> ExecuteAsync(ValidateEmailTokenCommand command,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            _logger.LogInformation($"Validate Email Token Raw Query: {JsonSerializer.Serialize(command)}");
+            _logger.LogInformation($"Validate Email Token: {command.Token}");
+
+            var config = await _awsParameterCacheProvider.GetConfigAsync<ApplicationConfiguration>();
+            var decryptedToken = ValidationTokenProvider.DecodeJwtToken(command.Token, config.EncryptionKey);
+
+            var invitationCode = decryptedToken?.Claims.FirstOrDefault(c => c.Type == "invitationCode")?.Value;
+            var guestId = decryptedToken?.Claims.FirstOrDefault(c => c.Type == "guestId")?.Value;
+            var code = decryptedToken?.Claims.FirstOrDefault(c => c.Type == "code")?.Value;
+            var audience = decryptedToken?.Claims.FirstOrDefault(c => c.Type == "jwtAudience")?.Value;
+
+            var authContext = new AuthContext
+            {
+                Audience = audience,
+                InvitationCode = invitationCode,
+                GuestId = guestId,
+                Roles = string.Join(',', new List<RoleEnum> { RoleEnum.Guest }),
+                IpAddress = string.Empty
+            };
+            
+            return await ExecuteAsync(new ValidateEmailCommand(authContext, code), cancellationToken);
         }
 
         public async Task<ValidateEmailResponse> ExecuteAsync(ValidateEmailCommand command, CancellationToken cancellationToken = default(CancellationToken))
