@@ -195,17 +195,31 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     );
   };
 
+  // Reference to track last click time to prevent double-clicks
+  const lastClickTimeRef = useRef<number>(0);
+  
   // Verification handlers
   const handleSendEmailVerificationCode = () => {
-    // TEMPORARILY DISABLED DUE TO API CALL LOOP
-    showAlertMessage('Email verification has been temporarily disabled. Please try again later.', 'info');
-    // Uncommenting this was causing excessive API calls
-    // sendEmailVerificationCode(
-    //   emailValue, 
-    //   setIsSendingEmailCode, 
-    //   handleOpenEmailVerifyDialog,
-    //   isEmailVerificationEnabled
-    // );
+    // Throttle UI-triggered email verification to prevent accidental rapid clicks
+    const now = Date.now();
+    
+    // Don't allow more than one click every 3 seconds
+    if (now - lastClickTimeRef.current < 3000) {
+      console.log('Ignoring rapid email verification button clicks');
+      showAlertMessage('Please wait before requesting another email', 'info');
+      return;
+    }
+    
+    // Update last click time
+    lastClickTimeRef.current = now;
+    
+    // Process the verification request
+    sendEmailVerificationCode(
+      emailValue, 
+      setIsSendingEmailCode, 
+      handleOpenEmailVerifyDialog,
+      isEmailVerificationEnabled
+    );
   };
 
   // These handlers are no longer used with the dialog-free verification approach
