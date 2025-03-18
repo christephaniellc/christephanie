@@ -81,8 +81,8 @@ export default class Api {
     return this.post(`/validate/phone`, { phoneNumber, code, action });
   }
 
-  validateEmail(email: string, code?: string, action?: string): Promise<{ success: boolean }> {
-    return this.post(`/validate/email`, { email, code, action });
+  validateEmail(email: string, token?: string, action?: string): Promise<{ success: boolean }> {
+    return this.post(`/validate/email`, { email, token, action });
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {

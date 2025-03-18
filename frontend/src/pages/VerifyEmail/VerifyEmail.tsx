@@ -49,7 +49,7 @@ const VerifyEmail = () => {
         // Call the API to validate the email with the token
         await validateEmailMutation.mutateAsync({
           email,
-          code: token,
+          token: token,
           action: 'validate'
         });
         
