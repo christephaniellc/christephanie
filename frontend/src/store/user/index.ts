@@ -50,7 +50,7 @@ export const useUser = () => {
   useEffect(() => {
     if (findUserIdQuery?.error) {
       setUserIdQuery(findUserIdQuery);
-      console.log(findUserIdQuery?.error);
+      console.error(findUserIdQuery?.error);
     }
   }, [findUserIdQuery?.error, setUserIdQuery]);
 
@@ -68,7 +68,7 @@ export const useUser = () => {
 
   useEffect(() => {
     if (auth0User && !getMeQuery?.data && !getMeQuery?.isLoading) {
-      console.log('refetching me due to auth0User change')
+      console.log('Refetching user due to auth0User change')
       getMeQuery?.refetch()
         .then((res) => {
           if (res.data) {

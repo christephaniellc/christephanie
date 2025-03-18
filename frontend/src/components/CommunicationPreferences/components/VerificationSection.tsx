@@ -79,7 +79,7 @@ export const VerificationSection = ({
             lineHeight: 1.4
           }}
         >
-          To ensure delivery to the correct address, we'll send a verification code to:
+          To ensure delivery to the correct address, we sent a verification code to:
           <Box 
             component="span" 
             sx={{ 
@@ -108,7 +108,7 @@ export const VerificationSection = ({
             fontWeight: 500
           }}
         >
-          {isSending ? "Sending code..." : `Send verification code`}
+          {isSending ? "Sending verification link..." : `Resend verification link`}
         </Button>
         
         {/* Terms note */}
@@ -122,8 +122,8 @@ export const VerificationSection = ({
           }}
         >
           {type === 'email' 
-            ? "By verifying, you agree to receive occasional updates about the wedding. You can opt out at any time."
-            : "By verifying, you agree to receive occasional texts about the wedding (max 10/month). Msg & data rates may apply. Reply STOP to opt out."}
+            ? "By verifying your email, you agree to receive occasional updates about the wedding. You can opt out at any time."
+            : "By verifying your phone number, you agree to receive occasional texts about the wedding (max 10/month). Msg & data rates may apply. Reply STOP to opt out."}
         </Typography>
       </Paper>
     </Box>
