@@ -3,7 +3,7 @@
  * Redesigned for better mobile experience and modern MUI design
  * Only displays for the current logged-in user (with matching auth0Id)
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Snackbar, Alert, Stack, Box, Paper, Container } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { NotificationPreferenceEnum } from '@/types/api';
@@ -197,12 +197,15 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
 
   // Verification handlers
   const handleSendEmailVerificationCode = () => {
-    sendEmailVerificationCode(
-      emailValue, 
-      setIsSendingEmailCode, 
-      handleOpenEmailVerifyDialog,
-      isEmailVerificationEnabled
-    );
+    // TEMPORARILY DISABLED DUE TO API CALL LOOP
+    showAlertMessage('Email verification has been temporarily disabled. Please try again later.', 'info');
+    // Uncommenting this was causing excessive API calls
+    // sendEmailVerificationCode(
+    //   emailValue, 
+    //   setIsSendingEmailCode, 
+    //   handleOpenEmailVerifyDialog,
+    //   isEmailVerificationEnabled
+    // );
   };
 
   // These handlers are no longer used with the dialog-free verification approach

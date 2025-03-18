@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Container, 
@@ -31,11 +31,21 @@ const VerifyEmail = () => {
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Use ref to ensure we only run the verification once
+  const hasRunRef = useRef(false);
+  
   useEffect(() => {
     // Skip rerunning verification if we already completed it
     if (!isVerifying && (verificationSuccess || errorMessage)) {
       return;
     }
+    
+    // EMERGENCY FIX: Use ref to ensure this only runs once per component lifecycle
+    if (hasRunRef.current) {
+      console.log('Verification already attempted, skipping');
+      return;
+    }
+    hasRunRef.current = true;
     
     const token = searchParams.get('token');
     const email = searchParams.get('email') || '';
