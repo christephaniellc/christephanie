@@ -1,4 +1,4 @@
-import { Box, Paper, Typography, Chip, Stack, useTheme } from '@mui/material';
+import { Box, Paper, Typography, Chip, Stack, useTheme, Tooltip } from '@mui/material';
 import { rgba } from 'polished';
 import FaceIcon from '@mui/icons-material/Face';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -6,8 +6,11 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import AllergyIcon from '@mui/icons-material/HealthAndSafety';
 import HotelIcon from '@mui/icons-material/Hotel';
 import DevicesIcon from '@mui/icons-material/Devices';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import EmailIcon from '@mui/icons-material/Email';
 
-import { AgeGroupEnum, ClientInfoDto, GuestViewModel } from '@/types/api';
+import { AgeGroupEnum, ClientInfoDto, GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { getFoodPreferenceDetails, getSleepPreferenceDetails, getRandomNarrative } from './AdminHelpers';
 
@@ -135,19 +138,38 @@ const GuestDetailCard = ({ guest, flipped, flipAxis }: GuestDetailCardProps) => 
             
             {/* Communication Preference */}
             {guest.preferences?.notificationPreference && guest.preferences.notificationPreference.length > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                 <CampaignIcon fontSize="small" color="action" />
                 <Box>
                   <Typography variant="caption" color="text.secondary">Communication</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                    {guest.preferences.notificationPreference.map((pref: string, index: number) => (
-                      <Chip 
-                        key={index}
-                        size="small" 
-                        label={pref} 
-                        sx={{ backgroundColor: 'info.light', color: 'info.contrastText' }} 
-                      />
-                    ))}
+                    {guest.preferences.notificationPreference.map((pref: string, index: number) => {
+                      const isEmail = pref === NotificationPreferenceEnum.Email;
+                      const isText = pref === NotificationPreferenceEnum.Text;
+                      const isEmailVerified = isEmail && guest.email?.verified;
+                      const isPhoneVerified = isText && guest.phone?.verified;
+                      const isVerified = isEmailVerified || isPhoneVerified;
+                      
+                      return (
+                        <Tooltip 
+                          key={index}
+                          title={isVerified ? `Verified ${pref.toLowerCase()}` : `Unverified ${pref.toLowerCase()}`}
+                        >
+                          <Chip 
+                            size="small" 
+                            label={pref} 
+                            icon={isVerified ? <VerifiedIcon fontSize="small" /> : undefined}
+                            sx={{ 
+                              backgroundColor: isVerified ? 'success.light' : 'info.light', 
+                              color: isVerified ? 'success.contrastText' : 'info.contrastText',
+                              '& .MuiChip-icon': {
+                                color: 'inherit',
+                              }
+                            }} 
+                          />
+                        </Tooltip>
+                      );
+                    })}
                   </Box>
                 </Box>
               </Box>
