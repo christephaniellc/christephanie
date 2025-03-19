@@ -3,6 +3,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import HomeIcon from '@mui/icons-material/Home';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PrintIcon from '@mui/icons-material/Print';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -49,6 +50,12 @@ const routes: Routes = {
     path: '/printed-rsvp',
     title: 'Printed RSVP',
     icon: PrintIcon,
+  },
+  [Pages.GetMe]: {
+    component: asyncComponentLoader(() => import('@/pages/Profile')),
+    path: '/getme',
+    title: 'GetMe',
+    icon: PersonSearchIcon,
   },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),

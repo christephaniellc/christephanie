@@ -11,6 +11,7 @@ enum Pages {
   Admin,
   VerifyEmail,
   PrintedRsvp,
+  GetMe,
   NotFound
 }
 
