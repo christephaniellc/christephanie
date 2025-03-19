@@ -253,6 +253,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['validateFamilyAddress', JSON.stringify(address)],
     mutationFn: (newAddress: AddressDto) => apiRef.current!.validateAddress(newAddress),
     onSuccess: (data) => {
+      alert('oh fuck yes');
       patchFamilyMutation.mutate({
         updatedFamily: { mailingAddress: { ...data, uspsVerified: true } },
       });
