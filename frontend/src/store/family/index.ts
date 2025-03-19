@@ -355,15 +355,16 @@ export const useFamily = () => {
           (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
         ),
         completed: attendingGuests.every(
-          (guest) =>
-            guest?.preferences?.sleepPreference ??
-            SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
+          (guest) => 
+            guest?.preferences?.sleepPreference !== undefined && 
+            guest?.preferences?.sleepPreference !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
         ...prev.mailingAddress,
         display: true, // Always show mailing address step
-        completed: !!family.mailingAddress,
+        completed: !!family.mailingAddress?.addressLine1 && !!family.mailingAddress?.city &&
+                   !!family.mailingAddress?.state && !!family.mailingAddress?.postalCode,
       },
       comments: {
         ...prev.comments,

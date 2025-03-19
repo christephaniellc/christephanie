@@ -147,7 +147,7 @@ const WelcomeStepper = () => {
 
   // Handle primary action button click
   const handleActionButtonClick = () => {
-    if ((attendanceState.atLeastOneAttending  && allStepsCompleted) || 
+    if ((attendanceState?.atLeastOneAttending && allStepsCompleted) || 
         (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
          stdSteps['attendance']?.completed && 
          stdSteps['mailingAddress']?.completed)) {
@@ -157,7 +157,11 @@ const WelcomeStepper = () => {
       navigate(routes[Pages.SaveTheDate].path);
     } else if (firstIncompleteStep) {
       // If there are incomplete steps, navigate to the first incomplete step
-      navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
+      // Direct navigation with query parameter
+      const targetPage = routes[Pages.SaveTheDate].path;
+      
+      // Force a hard navigation to make sure the step parameter is recognized
+      window.location.href = `${window.location.origin}${targetPage}?step=${firstIncompleteStep}`;
     } else {
       // Fallback to the main SaveTheDate page
       navigate(routes[Pages.SaveTheDate].path);
