@@ -6,7 +6,7 @@ import ShieldIcon from '@mui/icons-material/Security';
 import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import PrintIcon from '@mui/icons-material/Print';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -114,14 +114,14 @@ export const BottomNav = () => {
               icon={<AdminPanelSettingsIcon />}
               aria-label="Go to admin dashboard"
             />
-            <Tooltip title="View user data from getMe API endpoint" placement="top">
+            <Tooltip title="View Printed RSVP" placement="top">
               <BottomNavigationAction
-                label="GetMe"
+                label="Printed RSVP"
                 component={Link}
                 showLabel={true}
-                to={routes[Pages.GetMe].path!}
-                icon={<PersonSearchIcon />}
-                aria-label="View getMe data"
+                to={routes[Pages.PrintedRsvp].path!}
+                icon={<PrintIcon />}
+                aria-label="View Printed RSVP"
               />
             </Tooltip>
           </>
