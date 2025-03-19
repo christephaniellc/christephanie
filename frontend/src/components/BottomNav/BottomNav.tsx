@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, useContext } from 'react';
-import { BottomNavigation, BottomNavigationAction, Box, useTheme } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Box, useTheme, Tooltip } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import ShieldIcon from '@mui/icons-material/Security';
 import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PrintIcon from '@mui/icons-material/Print';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -104,14 +105,26 @@ export const BottomNav = () => {
           aria-label="View legal information and bureaucracy pages"
         />
         {userIsAdmin && (
-          <BottomNavigationAction
-            label="Admin"
-            component={Link}
-            showLabel={true}
-            to={routes[Pages.Admin].path!}
-            icon={<AdminPanelSettingsIcon />}
-            aria-label="Go to admin dashboard"
-          />
+          <>
+            <BottomNavigationAction
+              label="Admin"
+              component={Link}
+              showLabel={true}
+              to={routes[Pages.Admin].path!}
+              icon={<AdminPanelSettingsIcon />}
+              aria-label="Go to admin dashboard"
+            />
+            <Tooltip title="View Printed RSVP" placement="top">
+              <BottomNavigationAction
+                label="Printed RSVP"
+                component={Link}
+                showLabel={true}
+                to={routes[Pages.PrintedRsvp].path!}
+                icon={<PrintIcon />}
+                aria-label="View Printed RSVP"
+              />
+            </Tooltip>
+          </>
         )}
         <BottomNavigationAction
           label={auth0User ? 'Logout' : 'Login'}

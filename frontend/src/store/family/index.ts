@@ -39,12 +39,13 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
     const nobodyComing = guests.every(
       (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined,
     );
-    
-    let everyoneIsLame = familyUnit.guests?.every(
-      (guest) =>
-        guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
-        guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
-    ) ?? true;
+
+    let everyoneIsLame =
+      familyUnit.guests?.every(
+        (guest) =>
+          guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
+          guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
+      ) ?? true;
     const atLeastOneAttending = !everyoneIsLame;
 
     const attendingLastNames = guests
@@ -133,7 +134,7 @@ export const attendanceState = selector({
         guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
     );
     const atLeastOneAttending = !everyoneIsLame;
-    return {atLeastOneAttending};
+    return { atLeastOneAttending };
   },
 });
 
@@ -141,7 +142,9 @@ const somethingFamilySelector = selector({
   key: 'somethingFamilySelector',
   get: ({ get }) => {
     const family = get(familyState);
-    const ageIsSelected = family?.guests?.every((guest: GuestViewModel) => guest.ageGroup !== undefined);
+    const ageIsSelected = family?.guests?.every(
+      (guest: GuestViewModel) => guest.ageGroup !== undefined,
+    );
     const foodPreferencesAreSelected = family?.guests?.every(
       (guest: GuestViewModel) => guest.preferences.foodPreference !== null,
     );
@@ -167,7 +170,7 @@ const somethingFamilySelector = selector({
 export function reorderArrayByKey(array, key, matchValue) {
   // Create a copy of the array to avoid mutating the original
   const arrayCopy = [...array];
-  
+
   // Find the index of the element where the property matches the provided value
   const index = arrayCopy.findIndex((item) => item[key] === matchValue);
 
@@ -221,24 +224,18 @@ export const useFamily = () => {
     },
     [],
   );
-  
-  const updateFamilyGuestEmail = useCallback(
-    (guestId: string, email: string) => {
-      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, email } });
-    },
-    [],
-  );
-  
-  const updateFamilyGuestPhone = useCallback(
-    (guestId: string, phone: string) => {
-      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, phone } });
-    },
-    [],
-  );
+
+  const updateFamilyGuestEmail = useCallback((guestId: string, email: string) => {
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, email } });
+  }, []);
+
+  const updateFamilyGuestPhone = useCallback((guestId: string, phone: string) => {
+    patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, phone } });
+  }, []);
 
   const updateFamilyGuestBetaTestOptIn = useCallback(
     (guestId: string, allowBetaScreenRecordings: boolean) => {
-      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, allowBetaScreenRecordings}})
+      patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, allowBetaScreenRecordings } });
     },
     [],
   );
@@ -273,7 +270,9 @@ export const useFamily = () => {
   }, []);
 
   const updateFamilyAddress = useCallback((mailingAddress: AddressDto) => {
-    patchFamilyMutation.mutate({ updatedFamily: { mailingAddress } });
+    patchFamilyMutation.mutate({
+      updatedFamily: { mailingAddress: { ...mailingAddress, uspsVerified: false } },
+    });
   }, []);
 
   const updateFamilyComment = useCallback((comment: string) => {
@@ -285,7 +284,11 @@ export const useFamily = () => {
       console.log('setting family from getFamilyUnitQuery');
       let sortedGuests = [];
       if (getFamilyUnitQuery.data.guests && getFamilyUnitQuery.data.guests.length > 0) {
-        sortedGuests = reorderArrayByKey([...getFamilyUnitQuery.data.guests], 'auth0Id', auth0User?.sub);
+        sortedGuests = reorderArrayByKey(
+          [...getFamilyUnitQuery.data.guests],
+          'auth0Id',
+          auth0User?.sub,
+        );
       }
       //console.log('sorted guests by auth0Id', user.auth0Id, sortedGuests);
       setFamily({
@@ -304,7 +307,7 @@ export const useFamily = () => {
   useEffect(() => {
     if (!family || !family.guests || !saveTheDateSteps) return;
     const attendingGuests = family.guests.filter(
-      (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+      (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested,
     );
     //console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
     setSaveTheDateSteps((prev) => ({
@@ -312,35 +315,49 @@ export const useFamily = () => {
       attendance: {
         ...prev.attendance,
         display: true,
-        completed: !family.guests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending),
+        completed: !family.guests.some(
+          (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending,
+        ),
       },
       ageGroup: {
         ...prev.ageGroup,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
+        ),
         completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
       },
       communicationPreference: {
         ...prev.communicationPreference,
-          display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
-          completed: attendingGuests.some((value) => value?.phone?.verified || value?.email?.verified),
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
+        ),
+        completed: attendingGuests.some(
+          (value) => value?.phone?.verified || value?.email?.verified,
+        ),
       },
       foodPreferences: {
         ...prev.foodPreferences,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
-        completed: attendingGuests.every(
-          (guest) => guest.preferences.foodPreference !== null,
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
         ),
+        completed: attendingGuests.every((guest) => guest.preferences.foodPreference !== null),
       },
       foodAllergies: {
         ...prev.foodAllergies,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
+        ),
         completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
       },
       camping: {
         ...prev.camping,
-        display: attendingGuests.some((guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined),
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
+        ),
         completed: attendingGuests.every(
-          (guest) => guest?.preferences?.sleepPreference ?? SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
+          (guest) =>
+            guest?.preferences?.sleepPreference ??
+            SleepPreferenceEnum.Unknown !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
@@ -357,7 +374,7 @@ export const useFamily = () => {
         ...prev.summary,
         display: true,
         completed: true,
-      }
+      },
     }));
   }, [family]);
 
