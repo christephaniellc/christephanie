@@ -1,10 +1,24 @@
-import { Box, Avatar, Typography, Chip, useTheme } from '@mui/material';
-import { InvitationResponseEnum } from '@/types/api';
+import { Box, Avatar, Typography, Chip, useTheme, Tooltip } from '@mui/material';
+import { InvitationResponseEnum, NotificationPreferenceEnum } from '@/types/api';
 import { getInvitationStatusColor, getInvitationStatusIcon } from './AdminHelpers';
 import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
+import EmailIcon from '@mui/icons-material/Email';
 
 interface GuestStatusItemProps {
-  guest: any;
+  guest: {
+    guestId: string;
+    firstName?: string;
+    lastName?: string;
+    rsvp?: {
+      invitationResponse?: InvitationResponseEnum;
+    };
+    email?: {
+      verified?: boolean;
+    };
+    preferences?: {
+      notificationPreference?: NotificationPreferenceEnum[];
+    };
+  };
   onClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
   compact?: boolean; // Added for the compact avatar-only view
 }
@@ -86,6 +100,29 @@ const GuestStatusItem = ({ guest, onClick, compact = false }: GuestStatusItemPro
         </Typography>
       </Box>
       <Box sx={{ display: 'flex', gap: 0.5 }}>
+        {/* Email verification icon */}
+        {guest.email?.verified && guest.preferences?.notificationPreference?.includes(NotificationPreferenceEnum.Email) && (
+          <Tooltip title="Verified email">
+            <Chip
+              size="small"
+              icon={<EmailIcon fontSize="small" />}
+              sx={{
+                backgroundColor: theme.palette.success.light,
+                color: theme.palette.success.contrastText,
+                '& .MuiChip-icon': {
+                  color: 'inherit',
+                  marginLeft: '5px',
+                  marginRight: '-8px'
+                },
+                minWidth: 0,
+                width: 'auto',
+                px: 0.5
+              }}
+            />
+          </Tooltip>
+        )}
+        
+        {/* Status chip */}
         <Chip 
           size="small"
           label="Status"
