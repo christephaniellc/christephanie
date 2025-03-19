@@ -9,7 +9,7 @@ import {
   Paper,
   Fade,
 } from '@mui/material';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { guestSelector, useFamily, familyGuestsStates } from '@/store/family';
 import {
   addressState,
@@ -24,6 +24,9 @@ import Button from '@mui/material/Button';
 import { rem } from 'polished';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import LoadingBox from '@/components/LoadingBox';
+import StickFigureIcon from '@/components/StickFigureIcon';
+import { CheckCircleOutline, ErrorOutline } from '@mui/icons-material';
 
 const AddressEnvelope: React.FC = () => {
   const [familyUnit, familyActions] = useFamily();
@@ -38,7 +41,6 @@ const AddressEnvelope: React.FC = () => {
 
   // State for announcement preference (for declined/pending users)
   const [wantsAnnouncement, setWantsAnnouncement] = useState<boolean | null>(null);
-
   const theme = useTheme();
   const gradientBorder = `
     repeating-linear-gradient(
@@ -51,6 +53,7 @@ const AddressEnvelope: React.FC = () => {
       ${theme.palette.secondary.main} 15%
     )
   `;
+  const { callByLastNames } = useRecoilValue(familyGuestsStates);
 
   useEffect(() => {
     if (familyUnit && familyUnit.mailingAddress) {
@@ -70,19 +73,24 @@ const AddressEnvelope: React.FC = () => {
   }, [familyUnit, attendanceState]);
 
   const saveAddressState = useMemo(() => {
-    return familyActions.validateFamilyAddress.status;
+    return familyActions.patchFamilyMutation.status;
   }, [familyActions.patchFamilyMutation]);
+
+  const statusIcon = familyUnit.mailingAddress.uspsVerified ? (
+    <Box sx={{ color: 'success.main', display: 'flex', alignItems: 'center' }}>
+      <CheckCircleOutline sx={{ mr: 1 }} fontSize="small" color="success" /> Verified
+    </Box>
+  ) : (
+    <Box sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}>
+      <ErrorOutline fontSize="small" color="error" sx={{ mr: 1 }} /> Validate Address
+    </Box>
+  );
 
   const disabled = useMemo(
     () =>
       familyActions.patchFamilyMutation.status === 'pending' ||
-      familyActions.getFamilyUnitQuery.isFetching ||
-      familyActions.validateFamilyAddress.status === 'pending',
-    [
-      familyActions.patchFamilyMutation.status,
       familyActions.getFamilyUnitQuery.isFetching,
-      familyActions.validateFamilyAddress.status,
-    ],
+    [familyActions.patchFamilyMutation, familyActions.getFamilyUnitQuery],
   );
 
   // Function to handle announcement preference selection
@@ -96,10 +104,10 @@ const AddressEnvelope: React.FC = () => {
   };
 
   return (
-    <Box 
-      display="flex" 
-      flexDirection="column" 
-      alignItems="center" 
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
       sx={{
         overflowY: 'auto',
       }}
@@ -124,8 +132,8 @@ const AddressEnvelope: React.FC = () => {
               color="secondary"
               sx={{ mb: 2, fontFamily: 'Snowstorm, sans-serif' }}
             >
-              Would you like to receive a wedding announcement in the mail celebrating how great 
-              and perfect our lives are in every way, with pictures of us laughing in different 
+              Would you like to receive a wedding announcement in the mail celebrating how great and
+              perfect our lives are in every way, with pictures of us laughing in different
               directions at real life amazing stuff?
             </Typography>
 
@@ -192,7 +200,7 @@ const AddressEnvelope: React.FC = () => {
           }}
         >
           <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-            {/*The {callByLastNames}*/}
+            The {callByLastNames}
           </Typography>
           <Box
             component={FormGroup}
@@ -212,7 +220,13 @@ const AddressEnvelope: React.FC = () => {
               onChange={(e) => {
                 setStreetAddress(e.target.value);
               }}
-              error={!!familyActions.validateFamilyAddress.error}
+              onBlur={() =>
+                familyActions.updateFamilyAddress({
+                  ...address,
+                  streetAddress: address.streetAddress,
+                })
+              }
+              error={!!familyActions.patchFamilyMutation.error}
               size="small"
             />
             <TextField
@@ -223,6 +237,12 @@ const AddressEnvelope: React.FC = () => {
               variant="standard"
               fullWidth
               size="small"
+              onBlur={() =>
+                familyActions.updateFamilyAddress({
+                  ...address,
+                  secondaryAddress: address.secondaryAddress,
+                })
+              }
               onChange={(e) => setSecondaryAddress(e.target.value)}
             />
             <TextField
@@ -233,9 +253,15 @@ const AddressEnvelope: React.FC = () => {
               variant="standard"
               fullWidth
               size="small"
+              onBlur={() =>
+                familyActions.updateFamilyAddress({
+                  ...address,
+                  city: address.city,
+                })
+              }
               onChange={(e) => setCity(e.target.value)}
             />
-            <Box width="100%" textAlign="start" mb={3}>
+            <Box width="100%" textAlign="start" mb={1}>
               <TextField
                 disabled={disabled}
                 value={address?.state}
@@ -248,6 +274,12 @@ const AddressEnvelope: React.FC = () => {
                   const value = e.target.value.toUpperCase().slice(0, 2);
                   setState(value);
                 }}
+                onBlur={() =>
+                  familyActions.updateFamilyAddress({
+                    ...address,
+                    state: address.state,
+                  })
+                }
               />
               <TextField
                 disabled={disabled}
@@ -257,6 +289,12 @@ const AddressEnvelope: React.FC = () => {
                 label="Zip Code"
                 variant="standard"
                 size="small"
+                onBlur={() =>
+                  familyActions.updateFamilyAddress({
+                    ...address,
+                    zipCode: address.zipCode,
+                  })
+                }
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 5);
                   setZipCode(value);
@@ -264,17 +302,20 @@ const AddressEnvelope: React.FC = () => {
               />
             </Box>
             <Button
-              disabled={disabled}
-              variant="contained"
+              disabled={
+                familyUnit.mailingAddress.uspsVerified ||
+                familyActions.patchFamilyMutation.isPending
+              }
+              variant={familyUnit.mailingAddress.uspsVerified ? 'text' : 'outlined'}
+
               color="secondary"
               onClick={() => {
                 if (address !== null) familyActions.validateFamilyAddress.mutate(address);
               }}
+              sx={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(20px)' }}
             >
-              {saveAddressState === 'idle' && 'Save'}
-              {saveAddressState === 'pending' && 'Saving...'}
-              {saveAddressState === 'success' && 'Saved'}
-              {saveAddressState === 'error' && 'Please enter a valid address'}
+              {statusIcon}
+              {saveAddressState === 'error' && familyActions.patchFamilyMutation.error.description}
             </Button>
           </Box>
         </Box>
@@ -293,11 +334,7 @@ const AddressEnvelope: React.FC = () => {
             maxWidth: rem(500),
           }}
         >
-          <StephsActualFavoriteTypography
-            variant="h5"
-          >
-            Your loss.
-          </StephsActualFavoriteTypography>
+          <StephsActualFavoriteTypography variant="h5">Your loss.</StephsActualFavoriteTypography>
           <Typography sx={{ mt: 2 }}>
             We'll miss having you at our wedding, but we appreciate you letting us know.
           </Typography>

@@ -10,6 +10,7 @@ enum Pages {
   Bureaucracy,
   Admin,
   VerifyEmail,
+  PrintedRsvp,
   NotFound
 }
 
