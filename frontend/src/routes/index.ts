@@ -51,12 +51,6 @@ const routes: Routes = {
     title: 'Printed RSVP',
     icon: PrintIcon,
   },
-  [Pages.GetMe]: {
-    component: asyncComponentLoader(() => import('@/pages/Profile')),
-    path: '/getme',
-    title: 'GetMe',
-    icon: PersonSearchIcon,
-  },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
     path: '*',
