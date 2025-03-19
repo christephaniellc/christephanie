@@ -16,8 +16,8 @@ function Pages() {
           {Object.entries(routes).map(([pageKey, { path, component: Component }]) => {
             const page = parseInt(pageKey) as PageEnum;
             
-            // Wrap Admin page with ProtectedRoute
-            if (page === PageEnum.Admin) {
+            // Wrap Admin and PrintedRsvp pages with ProtectedRoute
+            if (page === PageEnum.Admin || page === PageEnum.PrintedRsvp) {
               return (
                 <Route 
                   key={path} 
