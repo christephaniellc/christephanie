@@ -2,6 +2,7 @@ import AddTaskIcon from '@mui/icons-material/AddTask';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HomeIcon from '@mui/icons-material/Home';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PrintIcon from '@mui/icons-material/Print';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -42,6 +43,12 @@ const routes: Routes = {
     component: asyncComponentLoader(() => import('@/pages/VerifyEmail')),
     path: '/verify-email',
     title: 'Verify Email',
+  },
+  [Pages.PrintedRsvp]: {
+    component: asyncComponentLoader(() => import('@/pages/PrintedRsvp')),
+    path: '/printed-rsvp',
+    title: 'Printed RSVP',
+    icon: PrintIcon,
   },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
