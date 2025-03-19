@@ -56,9 +56,9 @@ import { useFamily } from '@/store/family';
 import { FamilyUnitDto, FoodPreferenceEnum, SleepPreferenceEnum, InvitationResponseEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 
-// Card dimensions in inches (A2 size)
-const CARD_WIDTH_INCHES = 5.5;
-const CARD_HEIGHT_INCHES = 4.25;
+// Card dimensions in inches (standard 4x6 postcard size)
+const CARD_WIDTH_INCHES = 6.0;
+const CARD_HEIGHT_INCHES = 4.0;
 
 type CardSide = 'front' | 'back';
 type SortOption = 'name' | 'invitationCode' | 'guestCount' | 'responseStatus' | 'completionStatus';
@@ -361,7 +361,7 @@ const PrintedRsvp: React.FC = () => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print Save-the-Date Card - ${selectedFamily?.unitName || 'Family'}</title>
+          <title>Print RSVP Card - ${selectedFamily?.unitName || 'Family'}</title>
           <style>
             @page {
               size: ${CARD_WIDTH_INCHES}in ${CARD_HEIGHT_INCHES}in;
@@ -467,7 +467,7 @@ const PrintedRsvp: React.FC = () => {
   // Handle family selection
   const handleFamilySelect = (family: FamilyUnitDto) => {
     setSelectedFamily(family);
-    setCardSide('back'); // Switch to back side to show save-the-date info
+    setCardSide('back'); // Switch to back side to show RSVP info
   };
   
   // Handle search input change
@@ -482,8 +482,8 @@ const PrintedRsvp: React.FC = () => {
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com/save-the-date?invitationCode=${selectedFamily.invitationCode}`
-    : "https://christephanie.com/save-the-date?invitationCode=DEMO";
+    ? `https://christephanie.com/rsvp?invitationCode=${selectedFamily.invitationCode}`
+    : "https://christephanie.com/rsvp?invitationCode=DEMO";
 
   // RSVP Front (Address Side with Artistic Elements)
   const renderFrontSide = () => {
@@ -571,7 +571,7 @@ const PrintedRsvp: React.FC = () => {
               mb: 0.5
             }}
           >
-            SAVE THE DATE
+            RSVP
           </StephsActualFavoriteTypography>
           
           {/* Decorative divider */}
@@ -666,7 +666,7 @@ const PrintedRsvp: React.FC = () => {
           {/* Individual guest names if available */}
           {hasIndividualGuests && (
             <Box sx={{ mb: 0.75 }}>
-              {selectedFamily?.guests?.slice(0, 4).map((guest, index) => (
+              {selectedFamily?.guests?.map((guest, index) => (
                 <Typography 
                   key={guest.guestId || index}
                   variant="body2" 
@@ -675,26 +675,14 @@ const PrintedRsvp: React.FC = () => {
                     fontFamily: 'Snowstorm, serif', 
                     fontSize: '0.8rem',
                     color: '#ddd',
-                    mr: 0.5
+                    mr: 0.5,
+                    display: 'inline-block'
                   }}
                 >
                   {guest.firstName} {guest.lastName}
-                  {index < Math.min(3, (selectedFamily?.guests?.length || 1) - 1) && ', '}
+                  {index < (selectedFamily?.guests?.length || 1) - 1 && ', '}
                 </Typography>
               ))}
-              {selectedFamily?.guests && selectedFamily.guests.length > 4 && (
-                <Typography 
-                  variant="body2"
-                  component="span" 
-                  sx={{ 
-                    fontFamily: 'Snowstorm, serif', 
-                    fontSize: '0.8rem',
-                    color: '#ddd'
-                  }}
-                >
-                  , and others
-                </Typography>
-              )}
             </Box>
           )}
           
@@ -711,9 +699,21 @@ const PrintedRsvp: React.FC = () => {
                 }}
               >
                 {selectedFamily.mailingAddress.streetAddress}
-                {selectedFamily.mailingAddress.secondaryAddress && 
-                  `, ${selectedFamily.mailingAddress.secondaryAddress}`}
               </Typography>
+              
+              {selectedFamily.mailingAddress.secondaryAddress && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: 'Snowstorm, serif', 
+                    lineHeight: 1.3,
+                    mb: 0.25,
+                    color: 'rgba(255,255,255,0.85)'
+                  }}
+                >
+                  {selectedFamily.mailingAddress.secondaryAddress}
+                </Typography>
+              )}
               
               {/* City, State ZIP */}
               <Typography 
@@ -744,14 +744,14 @@ const PrintedRsvp: React.FC = () => {
           )}
         </Box>
         
-        {/* QR code stamp */}
+        {/* QR code stamp - now in stamp position */}
         <Box 
           sx={{ 
             position: 'absolute', 
-            top: 55, 
+            top: 15, 
             right: 15, 
-            width: '50px', 
-            height: '50px', 
+            width: '80px', 
+            height: '80px', 
             border: `1px solid ${theme.palette.secondary.main}`,
             borderRadius: '4px',
             display: 'flex',
@@ -760,28 +760,44 @@ const PrintedRsvp: React.FC = () => {
             flexDirection: 'column',
             color: theme.palette.secondary.main,
             backgroundColor: 'rgba(0,0,0,0.7)',
-            transform: 'rotate(5deg)',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+            transform: 'rotate(3deg)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+            p: 0.5
           }}
         >
-          <Box 
-            component="img" 
-            src="/favicon_big_art_transparent.png" 
-            alt="Logo" 
-            sx={{ 
-              width: '30px', 
-              height: '30px', 
-              objectFit: 'contain',
-              mb: 0.25,
-              filter: 'brightness(1.2)'
-            }} 
+          <QRCodeSVG 
+            value={qrCodeUrl}
+            size={50}
+            level="M"
+            includeMargin={false}
+            bgColor="rgba(0,0,0,0.5)"
+            fgColor={theme.palette.primary.main}
+            style={{
+              borderRadius: '2px',
+              padding: '2px',
+              marginBottom: '2px'
+            }}
           />
-          <Typography variant="caption" sx={{ fontSize: '0.5rem', textAlign: 'center' }}>
-            SCAN BACK
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.25 }}>
+            <Box 
+              component="img" 
+              src="/favicon_big_art_transparent.png" 
+              alt="Logo" 
+              sx={{ 
+                width: '16px', 
+                height: '16px', 
+                objectFit: 'contain',
+                mr: 0.5,
+                filter: 'brightness(1.2)'
+              }} 
+            />
+            <Typography variant="caption" sx={{ fontSize: '0.45rem', textAlign: 'center' }}>
+              SCAN ME
+            </Typography>
+          </Box>
         </Box>
         
-        {/* Decorative Save the Date Circular Seal */}
+        {/* Decorative RSVP Circular Seal */}
         <Box 
           sx={{
             position: 'absolute',
@@ -841,7 +857,7 @@ const PrintedRsvp: React.FC = () => {
                 mb: 0.5
               }}
             >
-              Save the Date
+              RSVP
             </Typography>
             
             <Typography 
@@ -983,7 +999,7 @@ const PrintedRsvp: React.FC = () => {
             fontStretch: 'expanded',
           }}
         >
-          SAVE THE DATE
+          RSVP
         </StephsActualFavoriteTypography>
         
         <Typography 
@@ -998,7 +1014,7 @@ const PrintedRsvp: React.FC = () => {
         </Typography>
       </Box>
       
-      {/* Content - QR code focused with save-the-date choices */}
+      {/* Content - QR code focused with RSVP choices */}
       <Box sx={{ 
         p: 1.5, 
         flexGrow: 1, 
@@ -1021,17 +1037,17 @@ const PrintedRsvp: React.FC = () => {
               boxShadow: `0 0 10px ${theme.palette.primary.dark}`,
               border: `1px solid ${theme.palette.primary.main}`,
             }}>
-              <QRCodeSVG 
-                value={qrCodeUrl}
-                size={70}
-                level="M"
-                includeMargin={false}
-                bgColor={theme.palette.background.default}
-                fgColor={theme.palette.primary.main}
-                style={{
-                  borderRadius: '4px',
-                  padding: '2px',
-                }}
+              <Box 
+                component="img" 
+                src="/favicon_big_art_transparent.png" 
+                alt="Logo" 
+                sx={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  objectFit: 'contain',
+                  mb: 0.5,
+                  filter: 'brightness(1.2)'
+                }} 
               />
               <Typography 
                 variant="caption" 
@@ -1049,12 +1065,12 @@ const PrintedRsvp: React.FC = () => {
             </Box>
           </Grid>
           
-          {/* Right side - Multiple columns */}
+          {/* Right side - Detailed guest information */}
           <Grid item xs={9}>
             <Box>
               {/* Family header */}
               <Box sx={{ 
-                mb: 1, 
+                mb: 0.75, 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between'
@@ -1065,392 +1081,413 @@ const PrintedRsvp: React.FC = () => {
                     fontWeight: 600,
                     color: theme.palette.primary.main,
                     textShadow: '1px 1px 1px rgba(0,0,0,0.7)',
-                    fontSize: '0.7rem'
+                    fontSize: '0.75rem'
                   }}
                 >
                   {selectedFamily?.unitName || 'The Demo Family'} &bull; {selectedFamily?.guests?.length || '0'} {selectedFamily?.guests?.length === 1 ? 'guest' : 'guests'}
                 </Typography>
                 
-                {/* Chip showing interested status */}
-                {selectedFamily?.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested) && (
-                  <Chip
-                    icon={<FavoriteIcon sx={{ fontSize: '0.7rem' }} />}
-                    label="Interested"
-                    color="success"
-                    size="small"
-                    sx={{ 
-                      height: 20,
-                      fontSize: '0.6rem',
-                      bgcolor: 'rgba(76, 175, 80, 0.15)',
-                      '& .MuiChip-icon': { color: theme.palette.secondary.main }
-                    }}
-                  />
-                )}
+                {/* Family status */}
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  {selectedFamily?.invitationResponseNotes && (
+                    <Chip
+                      icon={<CommentIcon sx={{ fontSize: '0.7rem' }} />}
+                      label="Has Comments"
+                      size="small"
+                      sx={{ 
+                        height: 18,
+                        fontSize: '0.55rem',
+                        bgcolor: 'rgba(156, 39, 176, 0.15)',
+                        '& .MuiChip-icon': { color: theme.palette.secondary.light }
+                      }}
+                    />
+                  )}
+                </Box>
               </Box>
               
-              {/* Multi-column content layout */}
-              <Grid container spacing={0.5} sx={{ mb: 0.5 }}>
-                {/* Column 1: Guest Responses */}
-                <Grid item xs={4}>
-                  <Box sx={{ height: '100%' }}>
+              {/* Guest information in two columns if more than 3 guests */}
+              <Box sx={{ 
+                bgcolor: 'rgba(0,0,0,0.3)', 
+                borderRadius: 1, 
+                p: 0.75, 
+                mb: 0.75 
+              }}>
+                <Typography variant="body2" sx={{ 
+                  color: theme.palette.secondary.main, 
+                  fontWeight: 'bold', 
+                  mb: 0.5,
+                  fontSize: '0.65rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  pb: 0.25
+                }}>
+                  <FavoriteIcon sx={{ fontSize: '0.7rem', mr: 0.5 }} />
+                  Guest Details:
+                </Typography>
+                
+                <Grid container spacing={1}>
+                  {/* Determine if we should use 2 columns based on guest count */}
+                  {(() => {
+                    const useDoubleColumn = (selectedFamily?.guests?.length || 0) > 2;
+                    const columnSize = useDoubleColumn ? 6 : 12;
+                    
+                    if (!selectedFamily?.guests || selectedFamily.guests.length === 0) {
+                      return (
+                        <Grid item xs={12}>
+                          <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.7rem', fontStyle: 'italic', textAlign: 'center', py: 1 }}>
+                            No guests found
+                          </Typography>
+                        </Grid>
+                      );
+                    }
+                    
+                    // Create an array for each column
+                    const leftColumnGuests = useDoubleColumn ? 
+                      selectedFamily.guests.slice(0, Math.ceil(selectedFamily.guests.length / 2)) : 
+                      selectedFamily.guests;
+                      
+                    const rightColumnGuests = useDoubleColumn ? 
+                      selectedFamily.guests.slice(Math.ceil(selectedFamily.guests.length / 2)) : 
+                      [];
+                      
+                    return (
+                      <>
+                        {/* Left column */}
+                        <Grid item xs={columnSize}>
+                          {leftColumnGuests.map((guest, index) => (
+                            <Box 
+                              key={guest.guestId || index} 
+                              sx={{ 
+                                mb: 0.75, 
+                                pb: index < leftColumnGuests.length - 1 ? 0.5 : 0,
+                                borderBottom: index < leftColumnGuests.length - 1 ? 
+                                  `1px dashed ${theme.palette.divider}` : 'none'
+                              }}
+                            >
+                              {/* Guest name and response status */}
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.25, flexWrap: 'wrap' }}>
+                                <Box 
+                                  sx={{ 
+                                    width: 6, 
+                                    height: 6, 
+                                    borderRadius: '50%',
+                                    mr: 0.5,
+                                    flexShrink: 0,
+                                    mt: '4px',
+                                    bgcolor: guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                      ? 'success.main' 
+                                      : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                      ? 'error.main'
+                                      : 'warning.main'
+                                  }} 
+                                />
+                                <Typography 
+                                  variant="body1" 
+                                  sx={{ 
+                                    fontWeight: 600,
+                                    fontSize: '0.7rem',
+                                    color: 'white',
+                                    mr: 0.5
+                                  }}
+                                >
+                                  {guest.firstName} {guest.lastName}
+                                </Typography>
+                                
+                                {/* Age group and status in a more compact form */}
+                                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                  {guest.ageGroup && (
+                                    <Chip 
+                                      label={guest.ageGroup}
+                                      size="small"
+                                      sx={{ 
+                                        height: 16, 
+                                        fontSize: '0.5rem',
+                                        bgcolor: 'rgba(255,255,255,0.1)'
+                                      }}
+                                    />
+                                  )}
+                                  <Chip 
+                                    label={
+                                      guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                        ? "Attending" 
+                                        : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                        ? "Declined"
+                                        : "Pending"
+                                    }
+                                    size="small"
+                                    color={
+                                      guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                        ? "success" 
+                                        : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                        ? "error"
+                                        : "warning"
+                                    }
+                                    sx={{ 
+                                      height: 16,
+                                      fontSize: '0.5rem'
+                                    }}
+                                  />
+                                </Box>
+                              </Box>
+                              
+                              {/* Guest preferences in a more compact form */}
+                              <Box sx={{ ml: 1.75, fontSize: '0.6rem', color: '#ddd' }}>
+                                {/* Food preference & allergies combined */}
+                                {(guest.preferences?.foodPreference || 
+                                 (guest.preferences?.foodAllergies && guest.preferences.foodAllergies.length > 0)) && (
+                                  <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.25 }}>
+                                    <RestaurantIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.primary.light }} />
+                                    <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                      {guest.preferences?.foodPreference || ''}
+                                      {guest.preferences?.foodPreference && guest.preferences?.foodAllergies?.length ? ', ' : ''}
+                                      {guest.preferences?.foodAllergies?.length ? 
+                                        <>Allergies: {guest.preferences.foodAllergies.join(', ')}</> : 
+                                        ''}
+                                    </Typography>
+                                  </Box>
+                                )}
+                                
+                                {/* Sleep preference */}
+                                {guest.preferences?.sleepPreference && (
+                                  <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.25 }}>
+                                    <HotelIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.primary.light }} />
+                                    <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                      {guest.preferences.sleepPreference === SleepPreferenceEnum.Camping ? 'Camping' :
+                                       guest.preferences.sleepPreference === SleepPreferenceEnum.Manor ? 'Manor' :
+                                       guest.preferences.sleepPreference === SleepPreferenceEnum.Hotel ? 'Hotel' : 'Other'}
+                                    </Typography>
+                                  </Box>
+                                )}
+                                
+                                {/* Notification preference */}
+                                {guest.preferences?.notificationPreference?.length > 0 && (
+                                  <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                                    <NotificationsIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.secondary.light }} />
+                                    <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                      {guest.preferences.notificationPreference.join(', ')}
+                                    </Typography>
+                                  </Box>
+                                )}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Grid>
+                        
+                        {/* Right column if needed */}
+                        {useDoubleColumn && rightColumnGuests.length > 0 && (
+                          <Grid item xs={columnSize}>
+                            {rightColumnGuests.map((guest, index) => (
+                              <Box 
+                                key={guest.guestId || index} 
+                                sx={{ 
+                                  mb: 0.75, 
+                                  pb: index < rightColumnGuests.length - 1 ? 0.5 : 0,
+                                  borderBottom: index < rightColumnGuests.length - 1 ? 
+                                    `1px dashed ${theme.palette.divider}` : 'none'
+                                }}
+                              >
+                                {/* Guest name and response status */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.25, flexWrap: 'wrap' }}>
+                                  <Box 
+                                    sx={{ 
+                                      width: 6, 
+                                      height: 6, 
+                                      borderRadius: '50%',
+                                      mr: 0.5,
+                                      flexShrink: 0,
+                                      mt: '4px',
+                                      bgcolor: guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                        ? 'success.main' 
+                                        : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                        ? 'error.main'
+                                        : 'warning.main'
+                                    }} 
+                                  />
+                                  <Typography 
+                                    variant="body1" 
+                                    sx={{ 
+                                      fontWeight: 600,
+                                      fontSize: '0.7rem',
+                                      color: 'white',
+                                      mr: 0.5
+                                    }}
+                                  >
+                                    {guest.firstName} {guest.lastName}
+                                  </Typography>
+                                  
+                                  {/* Age group and status in a more compact form */}
+                                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                    {guest.ageGroup && (
+                                      <Chip 
+                                        label={guest.ageGroup}
+                                        size="small"
+                                        sx={{ 
+                                          height: 16, 
+                                          fontSize: '0.5rem',
+                                          bgcolor: 'rgba(255,255,255,0.1)'
+                                        }}
+                                      />
+                                    )}
+                                    <Chip 
+                                      label={
+                                        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                          ? "Attending" 
+                                          : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                          ? "Declined"
+                                          : "Pending"
+                                      }
+                                      size="small"
+                                      color={
+                                        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                                          ? "success" 
+                                          : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                                          ? "error"
+                                          : "warning"
+                                      }
+                                      sx={{ 
+                                        height: 16,
+                                        fontSize: '0.5rem'
+                                      }}
+                                    />
+                                  </Box>
+                                </Box>
+                                
+                                {/* Guest preferences in a more compact form */}
+                                <Box sx={{ ml: 1.75, fontSize: '0.6rem', color: '#ddd' }}>
+                                  {/* Food preference & allergies combined */}
+                                  {(guest.preferences?.foodPreference || 
+                                   (guest.preferences?.foodAllergies && guest.preferences.foodAllergies.length > 0)) && (
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.25 }}>
+                                      <RestaurantIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.primary.light }} />
+                                      <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                        {guest.preferences?.foodPreference || ''}
+                                        {guest.preferences?.foodPreference && guest.preferences?.foodAllergies?.length ? ', ' : ''}
+                                        {guest.preferences?.foodAllergies?.length ? 
+                                          <>Allergies: {guest.preferences.foodAllergies.join(', ')}</> : 
+                                          ''}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  
+                                  {/* Sleep preference */}
+                                  {guest.preferences?.sleepPreference && (
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.25 }}>
+                                      <HotelIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.primary.light }} />
+                                      <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                        {guest.preferences.sleepPreference === SleepPreferenceEnum.Camping ? 'Camping' :
+                                         guest.preferences.sleepPreference === SleepPreferenceEnum.Manor ? 'Manor' :
+                                         guest.preferences.sleepPreference === SleepPreferenceEnum.Hotel ? 'Hotel' : 'Other'}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  
+                                  {/* Notification preference */}
+                                  {guest.preferences?.notificationPreference?.length > 0 && (
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                                      <NotificationsIcon sx={{ fontSize: '0.6rem', mr: 0.25, mt: '2px', color: theme.palette.secondary.light }} />
+                                      <Typography variant="body2" sx={{ fontSize: '0.6rem', color: '#ddd', lineHeight: 1.2 }}>
+                                        {guest.preferences.notificationPreference.join(', ')}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                </Box>
+                              </Box>
+                            ))}
+                          </Grid>
+                        )}
+                      </>
+                    );
+                  })()}
+                </Grid>
+              </Box>
+              
+              {/* Address and comments */}
+              <Grid container spacing={1}>
+                {/* Mailing Address */}
+                <Grid item xs={6}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(0,0,0,0.3)', 
+                    borderRadius: 1, 
+                    p: 0.75,
+                    height: '100%'
+                  }}>
                     <Typography variant="body2" sx={{ 
                       color: theme.palette.secondary.main, 
                       fontWeight: 'bold', 
-                      mb: 0.5,
+                      mb: 0.25,
                       fontSize: '0.65rem',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                      pb: 0.25
                     }}>
-                      <FavoriteIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                      Guest Responses:
+                      <HomeIcon sx={{ fontSize: '0.7rem', mr: 0.5 }} />
+                      Mailing Address:
                     </Typography>
                     
-                    <Box sx={{ 
-                      ml: 1.5, 
-                      pr: 0.5,
-                      height: '90px'
-                    }}>
-                      {/* Show only first 5 guests, display a "+X more" chip if there are more */}
-                      {selectedFamily?.guests?.slice(0, 5).map((guest, index) => (
-                        <Box key={guest.guestId || index} sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          mb: 0.25,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          <Box 
-                            sx={{ 
-                              width: 6, 
-                              height: 6, 
-                              borderRadius: '50%', 
-                              mr: 0.5,
-                              flexShrink: 0,
-                              bgcolor: guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
-                                ? 'success.main' 
-                                : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                                ? 'error.main'
-                                : 'warning.main'
-                            }} 
-                          />
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              color: '#ddd', 
-                              fontSize: '0.65rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}
-                          >
-                            {guest.firstName} {guest.lastName}
-                          </Typography>
-                        </Box>
-                      ))}
-                      
-                      {/* Show +X more if more than 5 guests */}
-                      {selectedFamily?.guests && selectedFamily.guests.length > 5 && (
-                        <Chip 
-                          label={`+${selectedFamily.guests.length - 5} more`}
-                          size="small"
-                          sx={{ 
-                            height: 16, 
-                            fontSize: '0.6rem', 
-                            mt: 0.5,
-                            bgcolor: 'rgba(255,255,255,0.08)'
-                          }}
-                        />
-                      )}
-                      
-                      {(!selectedFamily?.guests || selectedFamily.guests.length === 0) && (
-                        <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                          No guests found
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Grid>
-                
-                {/* Column 2: Food & Age */}
-                <Grid item xs={4}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.secondary.main, 
-                      fontWeight: 'bold', 
-                      mb: 0.25,
-                      fontSize: '0.65rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <RestaurantIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                      Food & Diet:
-                    </Typography>
-                    <Box sx={{ ml: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
-                      {(() => {
-                        const prefs = new Set<string>();
-                        selectedFamily?.guests?.forEach(guest => {
-                          if (guest.preferences?.foodPreference) {
-                            prefs.add(guest.preferences.foodPreference);
-                          }
-                        });
-                        
-                        return Array.from(prefs).map(pref => (
-                          <Chip 
-                            key={pref}
-                            size="small"
-                            label={pref}
-                            sx={{ height: 16, fontSize: '0.55rem', bgcolor: 'rgba(255,255,255,0.1)' }}
-                          />
-                        ));
-                      })()}
-                      
-                      {/* Allergies indicator */}
-                      {selectedFamily?.guests?.some(guest => guest.preferences?.foodAllergies?.length > 0) && (
-                        <Chip 
-                          label="Has Allergies" 
-                          size="small" 
-                          sx={{ height: 16, fontSize: '0.55rem', bgcolor: 'rgba(255,0,0,0.15)' }}
-                        />
-                      )}
-                      
-                      {!selectedFamily?.guests?.some(g => g.preferences?.foodPreference) && 
-                       !selectedFamily?.guests?.some(g => g.preferences?.foodAllergies?.length) && (
-                        <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                          No food info
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                  
-                  <Box>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.secondary.main, 
-                      fontWeight: 'bold', 
-                      mb: 0.25,
-                      fontSize: '0.65rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <FaceIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                      Age Groups:
-                    </Typography>
-                    <Box sx={{ ml: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
-                      {(() => {
-                        const ageGroups: Record<string, number> = {};
-                        selectedFamily?.guests?.forEach(guest => {
-                          if (guest.ageGroup) {
-                            ageGroups[guest.ageGroup] = (ageGroups[guest.ageGroup] || 0) + 1;
-                          }
-                        });
-                        
-                        return Object.entries(ageGroups).map(([group, count]) => (
-                          <Chip 
-                            key={group}
-                            size="small"
-                            label={`${count} ${group}`}
-                            sx={{ height: 16, fontSize: '0.55rem', bgcolor: 'rgba(255,255,255,0.1)' }}
-                          />
-                        ));
-                      })()}
-                      {!selectedFamily?.guests?.some(g => g.ageGroup) && (
-                        <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                          No age info
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Grid>
-                
-                {/* Column 3: Accommodation & Address */}
-                <Grid item xs={4}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.secondary.main, 
-                      fontWeight: 'bold', 
-                      mb: 0.25,
-                      fontSize: '0.65rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <HotelIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                      Accommodation:
-                    </Typography>
-                    <Box sx={{ ml: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
-                      {(() => {
-                        const sleepPrefs: Record<string, number> = {};
-                        selectedFamily?.guests?.forEach(guest => {
-                          if (guest.preferences?.sleepPreference) {
-                            sleepPrefs[guest.preferences.sleepPreference] = 
-                              (sleepPrefs[guest.preferences.sleepPreference] || 0) + 1;
-                          }
-                        });
-                        
-                        return Object.entries(sleepPrefs).map(([pref, count]) => {
-                          let label = 'Other';
-                          if (pref === SleepPreferenceEnum.Camping) label = 'Camping';
-                          else if (pref === SleepPreferenceEnum.Manor) label = 'Manor';
-                          else if (pref === SleepPreferenceEnum.Hotel) label = 'Hotel';
-                          
-                          return (
-                            <Chip 
-                              key={pref}
-                              size="small"
-                              label={`${count} ${label}`}
-                              sx={{ height: 16, fontSize: '0.55rem', bgcolor: 'rgba(255,255,255,0.1)' }}
-                            />
-                          );
-                        });
-                      })()}
-                      {!selectedFamily?.guests?.some(g => g.preferences?.sleepPreference) && (
-                        <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                          No preference set
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                  
-                  <Box>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.secondary.main, 
-                      fontWeight: 'bold', 
-                      mb: 0.25,
-                      fontSize: '0.65rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <HomeIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                      Address:
-                    </Typography>
-                    <Box sx={{ 
-                      ml: 1.5,
-                      maxHeight: '40px', 
-                      overflow: 'hidden'
-                    }}>
-                      {selectedFamily?.mailingAddress ? (
+                    {selectedFamily?.mailingAddress ? (
+                      <Box sx={{ ml: 0.5 }}>
                         <Typography variant="body2" sx={{ 
                           color: '#ddd', 
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           lineHeight: 1.2
                         }}>
-                          {selectedFamily.mailingAddress.streetAddress?.substring(0, 25)}
-                          {selectedFamily.mailingAddress.streetAddress?.length > 25 ? '...' : ''}
+                          {selectedFamily.mailingAddress.streetAddress}
+                          {selectedFamily.mailingAddress.secondaryAddress && (
+                            <><br />{selectedFamily.mailingAddress.secondaryAddress}</>
+                          )}
                           <br />
                           {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
                         </Typography>
-                      ) : (
-                        <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                          No address
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Grid>
-              </Grid>
-              
-              {/* Bottom Row: Comments, Notification + Complete RSVP */}
-              <Grid container spacing={0.5}>
-                {/* Notification Preferences */}
-                <Grid item xs={4}>
-                  <Typography variant="body2" sx={{ 
-                    color: theme.palette.secondary.main, 
-                    fontWeight: 'bold', 
-                    mb: 0.25,
-                    fontSize: '0.65rem',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <NotificationsIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                    Notification:
-                  </Typography>
-                  <Box sx={{ ml: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
-                    {(() => {
-                      const prefs = new Set<string>();
-                      selectedFamily?.guests?.forEach(guest => {
-                        guest.preferences?.notificationPreference?.forEach(pref => {
-                          prefs.add(pref);
-                        });
-                      });
-                      
-                      return Array.from(prefs).map(pref => (
-                        <Chip 
-                          key={pref}
-                          size="small"
-                          label={pref === 'Email' ? 'Email' : 'SMS'}
-                          sx={{ height: 16, fontSize: '0.55rem', bgcolor: 'rgba(255,255,255,0.1)' }}
-                        />
-                      ));
-                    })()}
-                    {!selectedFamily?.guests?.some(g => g.preferences?.notificationPreference?.length) && (
-                      <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.65rem', fontStyle: 'italic' }}>
-                        None set
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.6rem', fontStyle: 'italic', py: 0.5, textAlign: 'center' }}>
+                        No mailing address provided
                       </Typography>
                     )}
                   </Box>
                 </Grid>
                 
-                {/* Comments (if any) */}
-                <Grid item xs={8}>
-                  {selectedFamily?.invitationResponseNotes ? (
-                    <Box>
-                      <Typography variant="body2" sx={{ 
-                        color: theme.palette.secondary.main, 
-                        fontWeight: 'bold', 
-                        mb: 0.25,
-                        fontSize: '0.65rem',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}>
-                        <CommentIcon sx={{ fontSize: '0.75rem', mr: 0.25 }} />
-                        Comments:
-                      </Typography>
-                      <Box sx={{ 
-                        ml: 1.5,
-                        height: '40px'
-                      }}>
+                {/* Comments */}
+                <Grid item xs={6}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(0,0,0,0.3)', 
+                    borderRadius: 1, 
+                    p: 0.75,
+                    height: '100%'
+                  }}>
+                    <Typography variant="body2" sx={{ 
+                      color: theme.palette.secondary.main, 
+                      fontWeight: 'bold', 
+                      mb: 0.25,
+                      fontSize: '0.65rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                      pb: 0.25
+                    }}>
+                      <CommentIcon sx={{ fontSize: '0.7rem', mr: 0.5 }} />
+                      Comments:
+                    </Typography>
+                    
+                    {selectedFamily?.invitationResponseNotes ? (
+                      <Box sx={{ ml: 0.5 }}>
                         <Typography variant="body2" sx={{ 
                           color: '#ddd', 
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           fontStyle: 'italic',
-                          overflow: 'hidden',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
+                          lineHeight: 1.2
                         }}>
-                          "{selectedFamily.invitationResponseNotes?.substring(0, 60)}
-                          {selectedFamily.invitationResponseNotes && selectedFamily.invitationResponseNotes.length > 60 ? '...' : ''}"
+                          "{selectedFamily.invitationResponseNotes}"
                         </Typography>
                       </Box>
-                    </Box>
-                  ) : (
-                    <Box sx={{ 
-                      mt: 0,
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 1,
-                      p: 0.75,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center'
-                    }}>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          color: theme.palette.primary.main, 
-                          display: 'flex',
-                          alignItems: 'center',
-                          fontWeight: 'bold',
-                          fontSize: '0.7rem'
-                        }}
-                      >
-                        <ReplyIcon sx={{ mr: 0.25, fontSize: '0.75rem' }} />
-                        Complete RSVP online
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#aaa', fontSize: '0.6rem', fontStyle: 'italic', py: 0.5, textAlign: 'center' }}>
+                        No comments provided
                       </Typography>
-                      <Typography variant="caption" sx={{ color: '#aaa', display: 'block', fontSize: '0.6rem' }}>
-                        Scan QR code by July 4, 2025
-                      </Typography>
-                    </Box>
-                  )}
+                    )}
+                  </Box>
                 </Grid>
               </Grid>
             </Box>
@@ -1473,7 +1510,7 @@ const PrintedRsvp: React.FC = () => {
             fontSize: '0.65rem'
           }}
         >
-          You've saved the date! Complete your RSVP by May 31, 2025 at christephanie.com
+          Complete your RSVP by May 31, 2025 at christephanie.com
         </Typography>
       </Box>
       
@@ -1559,7 +1596,7 @@ const PrintedRsvp: React.FC = () => {
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <StephsActualFavoriteTypography variant="h3" sx={{ flexGrow: 1 }}>
-          Printed Save-the-Date Card Preview
+          Printed RSVP Card Preview
         </StephsActualFavoriteTypography>
         
         {/* Action buttons */}
@@ -1875,7 +1912,7 @@ const PrintedRsvp: React.FC = () => {
               </ToggleButton>
               <ToggleButton value="back">
                 <EmailIcon sx={{ mr: 1 }} />
-                Save-the-Date Side
+                RSVP Side
               </ToggleButton>
             </ToggleButtonGroup>
             
@@ -1979,7 +2016,7 @@ const PrintedRsvp: React.FC = () => {
                   <InfoIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
                   <Typography gutterBottom>Select a family to preview their card</Typography>
                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                    Choose a family from the list on the left to see their save-the-date card
+                    Choose a family from the list on the left to see their RSVP card
                   </Typography>
                 </Box>
               )}
