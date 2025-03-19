@@ -257,10 +257,10 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         }
         
         // Count by age group
-        if (guest.ageGroup === AgeGroupEnum.Baby) babyGuests++;
-        else if (guest.ageGroup === AgeGroupEnum.Under13) under13Guests++;
-        else if (guest.ageGroup === AgeGroupEnum.Under21) under21Guests++;
-        else if (guest.ageGroup === AgeGroupEnum.Adult) adultGuests++;
+        if (guest.ageGroup === AgeGroupEnum.Baby && guest.rsvp.invitationResponse === 'Interested') babyGuests++;
+        else if (guest.ageGroup === AgeGroupEnum.Under13 && guest.rsvp.invitationResponse === 'Interested') under13Guests++;
+        else if (guest.ageGroup === AgeGroupEnum.Under21 && guest.rsvp.invitationResponse === 'Interested') under21Guests++;
+        else if (guest.ageGroup === AgeGroupEnum.Adult && guest.rsvp.invitationResponse === 'Interested') adultGuests++;
         
         // Count by food preference
         if (guest.preferences?.foodPreference === FoodPreferenceEnum.Omnivore) omnivoreGuests++;

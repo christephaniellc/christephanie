@@ -177,6 +177,26 @@ export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
   return 'grey.200';
 };
 
+export function getLatestActivityAndGuest(family: FamilyUnitViewModel): { 
+  firstName: string | null; lastActivity: Date | null } {
+  // Filter out guests without a valid LastActivity
+  const validGuests = family.guests.filter(guest => guest.lastActivity !== null);
+  
+  // If no valid guest found, return null values
+  if (validGuests.length === 0) {
+    return { firstName: null, lastActivity: null };
+  }
+  
+  // Find the guest with the latest LastActivity using reduce
+  const latestGuest = validGuests.reduce((prev, current) => {
+    const prevDate = new Date(prev.lastActivity!);
+    const currentDate = new Date(current.lastActivity!);
+    return prevDate > currentDate ? prev : current;
+  });
+  
+  return { firstName: latestGuest.firstName, lastActivity: new Date(latestGuest.lastActivity!) };
+}
+
 // Generate fun quotes for the guest narrative
 export const getRandomNarrative = (guest: any) => {
   const narratives = [

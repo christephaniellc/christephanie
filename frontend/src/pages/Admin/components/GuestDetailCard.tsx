@@ -4,14 +4,15 @@ import FaceIcon from '@mui/icons-material/Face';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import AllergyIcon from '@mui/icons-material/HealthAndSafety';
-import CampingIcon from '@mui/icons-material/Campaign';
+import HotelIcon from '@mui/icons-material/Hotel';
+import DevicesIcon from '@mui/icons-material/Devices';
 
-import { AgeGroupEnum } from '@/types/api';
+import { AgeGroupEnum, ClientInfoDto, GuestViewModel } from '@/types/api';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { getFoodPreferenceDetails, getSleepPreferenceDetails, getRandomNarrative } from './AdminHelpers';
 
 interface GuestDetailCardProps {
-  guest: any;
+  guest: GuestViewModel & { clientInfos?: ClientInfoDto[] };
   flipped: boolean;
   flipAxis: string;
 }
@@ -117,7 +118,7 @@ const GuestDetailCard = ({ guest, flipped, flipAxis }: GuestDetailCardProps) => 
             
             {/* Sleep Preference */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CampingIcon fontSize="small" color="action" />
+              <HotelIcon fontSize="small" color="action" />
               <Box>
                 <Typography variant="caption" color="text.secondary">Accommodation</Typography>
                 <Chip 
@@ -146,6 +147,99 @@ const GuestDetailCard = ({ guest, flipped, flipAxis }: GuestDetailCardProps) => 
                         label={pref} 
                         sx={{ backgroundColor: 'info.light', color: 'info.contrastText' }} 
                       />
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            )}
+
+            {/* Client Infos */}
+            {guest.clientInfos && guest.clientInfos.length > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <DevicesIcon fontSize="small" color="action" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Client Info ({guest.clientInfos.length} session{guest.clientInfos.length > 1 ? 's' : ''})</Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                    {guest.clientInfos.map((clientInfo, index) => (
+                      <Box key={index} sx={{ 
+                        backgroundColor: `rgba(25, 118, 210, 0.08)`, 
+                        borderRadius: 1, 
+                        p: 1, 
+                        mb: 0.5,
+                        fontSize: '0.8rem'
+                      }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                          {/* Device Info */}
+                          {clientInfo.device && (
+                            <Chip
+                              size="small"
+                              label={`${clientInfo.device.type || 'Unknown device'}${clientInfo.os ? ` (${clientInfo.os})` : ''}`}
+                              sx={{ backgroundColor: 'info.light', color: 'info.contrastText' }}
+                            />
+                          )}
+                          
+                          {/* Browser Info */}
+                          {clientInfo.browser && (
+                            <Chip
+                              size="small"
+                              label={`${clientInfo.browser.name || 'Unknown'} ${clientInfo.browser.version || ''}`}
+                              sx={{ backgroundColor: 'secondary.light', color: 'secondary.contrastText' }}
+                            />
+                          )}
+                          
+                          {/* Date Info */}
+                          {clientInfo.dateRecorded && (
+                            <Chip
+                              size="small"
+                              label={new Date(clientInfo.dateRecorded).toLocaleDateString()}
+                              sx={{ backgroundColor: 'success.light', color: 'success.contrastText' }}
+                            />
+                          )}
+                        </Box>
+                        
+                        {/* Additional Details */}
+                        <Box sx={{ mt: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {/* IP & Location */}
+                            {clientInfo.ipAddress && (
+                              <Typography variant="caption">
+                                IP: {clientInfo.ipAddress}
+                              </Typography>
+                            )}
+                            
+                            {/* Screen Info */}
+                            {clientInfo.screen && clientInfo.screen.width && clientInfo.screen.height && (
+                              <Typography variant="caption">
+                                Screen: {clientInfo.screen.width}×{clientInfo.screen.height}
+                              </Typography>
+                            )}
+                            
+                            {/* Language & Timezone */}
+                            {(clientInfo.language || clientInfo.timeZone) && (
+                              <Typography variant="caption">
+                                {clientInfo.language && `Lang: ${clientInfo.language}`}
+                                {clientInfo.language && clientInfo.timeZone && ' | '}
+                                {clientInfo.timeZone && `TZ: ${clientInfo.timeZone}`}
+                              </Typography>
+                            )}
+                          </Box>
+                          
+                          {/* Geolocation if available */}
+                          {clientInfo.geolocation && clientInfo.geolocation.latitude && clientInfo.geolocation.longitude && (
+                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                              Location: {clientInfo.geolocation.latitude.toFixed(2)}, {clientInfo.geolocation.longitude.toFixed(2)}
+                            </Typography>
+                          )}
+                          
+                          {/* Connection Info */}
+                          {clientInfo.connection && clientInfo.connection.effectiveType && (
+                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                              Connection: {clientInfo.connection.effectiveType}
+                              {clientInfo.connection.downlink && ` (${clientInfo.connection.downlink} Mbps)`}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
                     ))}
                   </Box>
                 </Box>

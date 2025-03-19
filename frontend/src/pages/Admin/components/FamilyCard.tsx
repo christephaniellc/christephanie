@@ -12,7 +12,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import PeopleIcon from '@mui/icons-material/People';
 
 import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
-import { getFamilyStatusColor } from './AdminHelpers';
+import { getFamilyStatusColor, getLatestActivityAndGuest } from './AdminHelpers';
 import GuestStatusItem from './GuestStatusItem';
 import TierSquare from './TierSquare';
 
@@ -25,6 +25,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
   const theme = useTheme();
   const statusColor = getFamilyStatusColor(family);
   const [expanded, setExpanded] = useState(false);
+  const lastGuestActivity = getLatestActivityAndGuest(family);
   
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -222,13 +223,13 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                 </Typography>
                 <Typography variant="body2">
                   {family.familyUnitLastLogin 
-                    ? new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
+                    ? `${new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
-                      })
+                    })} by ${lastGuestActivity.firstName}`
                     : 'Never logged in'}
                 </Typography>
               </Box>
