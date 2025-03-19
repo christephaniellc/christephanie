@@ -15,13 +15,13 @@ import FamilyCard from './components/FamilyCard';
 import AdminDashboardCharts from '@/components/AdminDashboardCharts';
 
 // Define sort options
-type SortOption = 'default' | 'lastUpdated' | 'invitationStatus';
+type SortOption = 'lastUpdated' | 'invitationStatus' | 'default';
 
 function Admin() {
   const [families, setFamilies] = useState<FamilyUnitDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortOption, setSortOption] = useState<SortOption>('default');
+  const [sortOption, setSortOption] = useState<SortOption>('lastUpdated');
   const { getAllFamiliesQuery } = useAdminQueries();
   
   // State for guest detail popper
@@ -284,9 +284,9 @@ function Admin() {
             label="Sort by"
             onChange={handleSortChange}
           >
-            <MenuItem value="default">Default (Tier, Name)</MenuItem>
             <MenuItem value="lastUpdated">Last Updated (Recent First)</MenuItem>
             <MenuItem value="invitationStatus">Interest Status (Declined First)</MenuItem>
+            <MenuItem value="default">Tier (Tier, Name)</MenuItem>
           </Select>
         </FormControl>
       </Box>
