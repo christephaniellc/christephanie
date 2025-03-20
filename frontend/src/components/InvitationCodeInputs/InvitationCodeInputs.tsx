@@ -83,7 +83,12 @@ export const InvitationCodeInputs = () => {
     const result = await userActions.findUserIdQuery?.refetch();
     if (result && result.data && result.data.auth0Id) {
       userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
-      signInWithAuth0(result.data.guestId, result.data.auth0Id);
+      
+      // Small delay to ensure state is updated before proceeding
+      // This helps prevent iOS touch event issues
+      setTimeout(() => {
+        signInWithAuth0(result.data.guestId, result.data.auth0Id);
+      }, 50);
     }
   };
 
@@ -202,7 +207,17 @@ export const InvitationCodeInputs = () => {
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
             <Button
-              sx={{ width: '100%', mb: 2 }}
+              sx={{ 
+                width: '100%', 
+                mb: 2,
+                // Improve iOS touch handling
+                WebkitAppearance: 'none',
+                position: 'relative',
+                zIndex: 10,
+                '&:active': {
+                  opacity: 0.8 // Visual feedback on iOS touch
+                }
+              }}
               disabled={!user?.firstName || !user?.invitationCode}
               fullWidth
               variant="contained"
