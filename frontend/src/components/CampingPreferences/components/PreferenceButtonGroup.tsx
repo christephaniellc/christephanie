@@ -74,7 +74,12 @@ const PreferenceButtonGroup: React.FC<PreferenceButtonGroupProps> = ({
                 flexWrap="wrap"
                 position="relative"
               >
-                <Typography alignContent={'center'} width="100%" fontWeight={'bold'}>
+                <Typography 
+                  alignContent={'center'} 
+                  width="100%" 
+                  fontWeight={'bold'}
+                  sx={{ textOverflow: 'unset', overflowWrap: 'break-word' }}
+                >
                   {value === 'Unknown' ? '' : `${value}${value === 'Manor'? '*' : ''}`}
                 </Typography>
               </Box>

@@ -257,12 +257,15 @@ function Admin() {
 
   return (
     <Box sx={{ 
-      p: 3, 
+      p: { xs: 1, sm: 2, md: 3 }, 
       maxWidth: '100%',
       maxHeight: '100vh',
       overflow: 'auto'
     }}>
-      <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ mb: 4 }}>
+      <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ 
+        mb: 4,
+        fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' }
+      }}>
         Admin Dashboard
       </StephsActualFavoriteTypography>
 
@@ -270,12 +273,24 @@ function Admin() {
       <AdminDashboardCharts families={families} loading={loading} />
       
       {/* Family Cards */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ mb: 0 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' }, 
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'flex-start', sm: 'center' }, 
+        gap: { xs: 2, sm: 0 },
+        mb: 4 
+      }}>
+        <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ 
+          mb: 0,
+          fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
+        }}>
           All Families
         </StephsActualFavoriteTypography>
         
-        <FormControl sx={{ minWidth: 200 }}>
+        <FormControl sx={{ 
+          minWidth: { xs: '100%', sm: 200 }
+        }}>
           <InputLabel id="sort-select-label">Sort by</InputLabel>
           <Select
             labelId="sort-select-label"
@@ -283,6 +298,11 @@ function Admin() {
             value={sortOption}
             label="Sort by"
             onChange={handleSortChange}
+            sx={{ 
+              '& .MuiSelect-select': {
+                whiteSpace: 'normal'
+              }
+            }}
           >
             <MenuItem value="lastUpdated">Last Updated (Recent First)</MenuItem>
             <MenuItem value="invitationStatus">Interest Status (Declined First)</MenuItem>

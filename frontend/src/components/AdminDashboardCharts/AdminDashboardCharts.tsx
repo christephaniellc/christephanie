@@ -243,6 +243,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
       
       // Process each guest in the family
       family.guests?.forEach(guest => {
+        // Always count everyone in the totals for the pixel representation
         totalGuests++;
         
         // Count by invitationResponse status
@@ -256,30 +257,35 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           pendingGuests++;
         }
         
-        // Count by age group
-        if (guest.ageGroup === AgeGroupEnum.Baby && guest.rsvp.invitationResponse === 'Interested') babyGuests++;
-        else if (guest.ageGroup === AgeGroupEnum.Under13 && guest.rsvp.invitationResponse === 'Interested') under13Guests++;
-        else if (guest.ageGroup === AgeGroupEnum.Under21 && guest.rsvp.invitationResponse === 'Interested') under21Guests++;
-        else if (guest.ageGroup === AgeGroupEnum.Adult && guest.rsvp.invitationResponse === 'Interested') adultGuests++;
+        // Only count statistics for guests who are not pending
+        if (guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending) {
+          // Count by age group
+          if (guest.ageGroup === AgeGroupEnum.Baby) babyGuests++;
+          else if (guest.ageGroup === AgeGroupEnum.Under13) under13Guests++;
+          else if (guest.ageGroup === AgeGroupEnum.Under21) under21Guests++;
+          else if (guest.ageGroup === AgeGroupEnum.Adult) adultGuests++;
+          
+          // Count by food preference
+          if (guest.preferences?.foodPreference === FoodPreferenceEnum.Omnivore) omnivoreGuests++;
+          else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegetarian) vegetarianGuests++;
+          else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegan) veganGuests++;
+          
+          // Count by accommodation preference
+          if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Manor) manorGuests++;
+          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Camping) campingGuests++;
+          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Hotel) hotelGuests++;
+          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Other) otherAccommodationGuests++;
+          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Unknown) unknownAccommodationGuests++;
+        }
         
-        // Count by food preference
-        if (guest.preferences?.foodPreference === FoodPreferenceEnum.Omnivore) omnivoreGuests++;
-        else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegetarian) vegetarianGuests++;
-        else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegan) veganGuests++;
+        // Count allergies (only if guest is not pending)
+        if (guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending) {
+          guest.preferences?.foodAllergies?.forEach(allergy => {
+            allergiesCount[allergy] = (allergiesCount[allergy] || 0) + 1;
+          });
+        }
         
-        // Count by accommodation preference
-        if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Manor) manorGuests++;
-        else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Camping) campingGuests++;
-        else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Hotel) hotelGuests++;
-        else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Other) otherAccommodationGuests++;
-        else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Unknown) unknownAccommodationGuests++;
-        
-        // Count allergies
-        guest.preferences?.foodAllergies?.forEach(allergy => {
-          allergiesCount[allergy] = (allergiesCount[allergy] || 0) + 1;
-        });
-        
-        // Process client info if available (cast to GuestDto as this property exists only in that type)
+        // Process client info for ALL guests, including pending
         const guestWithClientInfo = guest as unknown as GuestDto;
         if (guestWithClientInfo.clientInfos && guestWithClientInfo.clientInfos.length > 0) {
           guestWithClientInfo.clientInfos.forEach(clientInfo => {
@@ -345,10 +351,14 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
       { name: 'Adults', value: adultGuests, color: '#2196F3' }
     ];
     
+    // Calculate total guests who have responded (for meat-a-tarian count)
+    const totalRespondedGuests = attendingGuests + declinedGuests;
+    
     const foodData = [
       { name: 'Omnivore', value: omnivoreGuests, color: '#FF9800' },
       { name: 'Vegetarian', value: vegetarianGuests, color: '#8BC34A' },
-      { name: 'Vegan', value: veganGuests, color: '#4CAF50' }
+      { name: 'Vegan', value: veganGuests, color: '#4CAF50' },
+      { name: 'Meat-a-tarian', value: totalRespondedGuests - omnivoreGuests - vegetarianGuests - veganGuests, color: '#9C27B0' }
     ];
     
     const accommodationData = [
@@ -469,39 +479,51 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
 
   return (
     <Box sx={{ mb: 4 }}>
-      <Box sx={{ backgroundColor: 'rgba(0,0,0,0.7)', p: 3, borderRadius: 2, mb: 4 }}>
-        <StephsActualFavoriteTypography variant="h2" sx={{ mb: 3, textAlign: 'center' }}>
+      <Box sx={{ backgroundColor: 'rgba(0,0,0,0.7)', p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: 2, mb: 4 }}>
+        <StephsActualFavoriteTypography variant="h2" sx={{ mb: 3, textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
           Wedding Dashboard
         </StephsActualFavoriteTypography>
         
+        <Typography
+          variant="body2"
+          sx={{
+            mb: 2,
+            textAlign: 'center',
+            color: 'white',
+            fontFamily: 'monospace',
+            opacity: 0.8
+          }}
+        >
+          Note: All statistics exclude pending guests (except client info, which shows all visits)
+        </Typography>
+        
         {/* Stats at the top as pixel art counters */}
         <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
-          <Grid item xs={6} sm={3}>
-            <AnimatedCounter 
-              value={metrics.totalGuests} 
-              label="Total Guests" 
-              color="#E9950C" 
-            />
-          </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} sm={4}>
             <AnimatedCounter 
               value={metrics.attendingGuests} 
               label="Interested" 
               color="#4CAF50" 
             />
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} sm={4}>
             <AnimatedCounter 
               value={metrics.declinedGuests} 
               label="Declined" 
               color="#F44336" 
             />
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={12} sm={4}>
             <AnimatedCounter 
               value={metrics.pendingGuests} 
               label="Pending" 
-              color="#FFC107" 
+              color={
+                metrics.pendingGuests + metrics.attendingGuests > 250 
+                  ? "#F44336" // Red if pending + interested > 250
+                  : (metrics.pendingGuests + metrics.attendingGuests + 10) <= 250 
+                    ? "#4CAF50" // Green if (pending + interested + 10) <= 250
+                    : "#FFC107" // Yellow otherwise
+              }
             />
           </Grid>
         </Grid>
@@ -515,7 +537,9 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               color: 'white',
               fontFamily: 'monospace',
               textTransform: 'uppercase',
-              letterSpacing: '0.1em'
+              letterSpacing: '0.1em',
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+              overflowWrap: 'break-word'
             }}
           >
             Guest Visualization
@@ -535,7 +559,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               opacity: 0.7
             }}
           >
-            Each pixel represents one guest (green = attending, red = declined, yellow = pending)
+            Each pixel represents one guest (green = interested, red = declined, yellow = pending - not included in statistics)
           </Typography>
         </Box>
         
@@ -544,7 +568,9 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           <Tabs 
             value={activeTab} 
             onChange={(_, newValue) => setActiveTab(newValue)}
-            variant="fullWidth"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': {
                 color: 'white',
@@ -553,11 +579,20 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                 letterSpacing: '0.05em',
                 '&.Mui-selected': {
                   color: '#E9950C',
-                }
+                },
+                minWidth: { xs: '120px', sm: '160px' },
+                px: { xs: 1, sm: 2 },
+                whiteSpace: 'normal'
               },
               '& .MuiTabs-indicator': {
                 backgroundColor: '#E9950C',
                 height: 3
+              },
+              '& .MuiTabs-scrollButtons': {
+                color: 'white',
+                '&.Mui-disabled': {
+                  opacity: 0.3,
+                }
               }
             }}
           >
@@ -574,17 +609,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 2, 
-                    color: 'white',
-                    fontFamily: 'monospace',
-                    textAlign: 'center'
-                  }}
-                >
-                  Interest Status
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                      overflowWrap: 'break-word'
+                    }}
+                  >
+                    Interest Status
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      opacity: 0.8
+                    }}
+                  >
+                    Total: {metrics.attendingGuests + metrics.declinedGuests} of {metrics.totalGuests} guests ({metrics.pendingGuests} pending)
+                  </Typography>
+                </Box>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -608,17 +659,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
             </Grid>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 2, 
-                    color: 'white',
-                    fontFamily: 'monospace',
-                    textAlign: 'center'
-                  }}
-                >
-                  Age Groups
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                      overflowWrap: 'break-word'
+                    }}
+                  >
+                    Age Groups
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      opacity: 0.8
+                    }}
+                  >
+                    Total: {metrics.ageData.reduce((sum, item) => sum + item.value, 0)} of {metrics.attendingGuests + metrics.declinedGuests} responded guests
+                  </Typography>
+                </Box>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={metrics.ageData}
@@ -656,17 +723,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 2, 
-                    color: 'white',
-                    fontFamily: 'monospace',
-                    textAlign: 'center'
-                  }}
-                >
-                  Dietary Preferences
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                      overflowWrap: 'break-word'
+                    }}
+                  >
+                    Dietary Preferences
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      opacity: 0.8
+                    }}
+                  >
+                    Total: {metrics.foodData.reduce((sum, item) => sum + item.value, 0)} of {metrics.attendingGuests + metrics.declinedGuests} responded guests
+                  </Typography>
+                </Box>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -690,17 +773,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
             </Grid>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 2, 
-                    color: 'white',
-                    fontFamily: 'monospace',
-                    textAlign: 'center'
-                  }}
-                >
-                  Food Allergies
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                      overflowWrap: 'break-word'
+                    }}
+                  >
+                    Food Allergies
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      opacity: 0.8
+                    }}
+                  >
+                    Total: {metrics.allergiesData.reduce((sum, item) => sum + item.value, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
+                  </Typography>
+                </Box>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={metrics.allergiesData.slice(0, 5)}
@@ -718,6 +817,8 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                       type="category" 
                       tick={{ fill: 'white' }}
                       axisLine={{ stroke: 'white' }}
+                      width={100}
+                      tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="value" fill="#F44336" radius={[0, 4, 4, 0]} />
@@ -730,17 +831,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         
         {activeTab === 'accommodation' && (
           <Box sx={{ height: 400 }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: 2, 
-                color: 'white',
-                fontFamily: 'monospace',
-                textAlign: 'center'
-              }}
-            >
-              Sleeping Arrangements
-            </Typography>
+            <Box>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: 1, 
+                  color: 'white',
+                  fontFamily: 'monospace',
+                  textAlign: 'center',
+                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                  overflowWrap: 'break-word'
+                }}
+              >
+                Sleeping Arrangements
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 2, 
+                  color: 'white',
+                  fontFamily: 'monospace',
+                  textAlign: 'center',
+                  opacity: 0.8
+                }}
+              >
+                Total: {metrics.accommodationData.reduce((sum, item) => sum + item.value, 0)} of {metrics.attendingGuests + metrics.declinedGuests} responded guests
+              </Typography>
+            </Box>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="80%" data={metrics.accommodationData}>
                 <PolarGrid stroke="rgba(255,255,255,0.3)" />
@@ -763,17 +880,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Box sx={{ height: 300 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 2, 
-                    color: 'white',
-                    fontFamily: 'monospace',
-                    textAlign: 'center'
-                  }}
-                >
-                  Family Unit Interest Status
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                      overflowWrap: 'break-word'
+                    }}
+                  >
+                    Family Unit Interest Status
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mb: 2, 
+                      color: 'white',
+                      fontFamily: 'monospace',
+                      textAlign: 'center',
+                      opacity: 0.8
+                    }}
+                  >
+                    Total: {metrics.attendingFamilies + metrics.declinedFamilies} of {metrics.totalFamilies} families ({metrics.pendingFamilies} pending)
+                  </Typography>
+                </Box>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -863,7 +996,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                     opacity: 0.7
                   }}
                 >
-                  {metrics.totalGuests - (metrics.attendingGuests + metrics.declinedGuests)} guests still need to respond
+                  {metrics.pendingGuests} guests still need to respond (only counting responded guests in statistics)
                 </Typography>
                 
                 <Typography 
@@ -885,6 +1018,19 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         
         {activeTab === 'client-info' && (
           <>
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 3,
+                textAlign: 'center',
+                color: 'white',
+                fontFamily: 'monospace',
+                opacity: 0.8
+              }}
+            >
+              Note: Client info section includes ALL guests (including pending)
+            </Typography>
+            
             {/* Client info summary */}
             <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
               <Grid item xs={6} sm={3}>
@@ -921,17 +1067,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               {/* Device Types Chart */}
               <Grid item xs={12} md={6}>
                 <Box sx={{ height: 300 }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      mb: 2, 
-                      color: 'white',
-                      fontFamily: 'monospace',
-                      textAlign: 'center'
-                    }}
-                  >
-                    Device Types
-                  </Typography>
+                  <Box>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 1, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                        overflowWrap: 'break-word'
+                      }}
+                    >
+                      Device Types
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mb: 2, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        opacity: 0.8
+                      }}
+                    >
+                      Total: {metrics.clientInfo.deviceTypes.reduce((sum, item) => sum + item.value, 0)} devices from all guests (including pending)
+                    </Typography>
+                  </Box>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -957,17 +1119,33 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               {/* Browsers Chart */}
               <Grid item xs={12} md={6}>
                 <Box sx={{ height: 300 }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      mb: 2, 
-                      color: 'white',
-                      fontFamily: 'monospace',
-                      textAlign: 'center'
-                    }}
-                  >
-                    Browsers
-                  </Typography>
+                  <Box>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 1, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
+                        overflowWrap: 'break-word'
+                      }}
+                    >
+                      Browsers
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mb: 2, 
+                        color: 'white',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        opacity: 0.8
+                      }}
+                    >
+                      Total: {metrics.clientInfo.browsers.reduce((sum, item) => sum + item.value, 0)} browser sessions (including pending guests)
+                    </Typography>
+                  </Box>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={metrics.clientInfo.browsers.slice(0, 5)}
@@ -1076,6 +1254,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                         tick={{ fill: 'white' }}
                         axisLine={{ stroke: 'white' }}
                         width={100}
+                        tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="value" radius={[0, 4, 4, 0]}>
