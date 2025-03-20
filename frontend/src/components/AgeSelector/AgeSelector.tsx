@@ -11,6 +11,7 @@ import Stepper from '@mui/material/Stepper';
 import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/steppers';
 import Paper from '@mui/material/Paper';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
+import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 
 interface AttendanceButtonProps {
   guestId: string;
@@ -141,14 +142,14 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
         maxWidth: '250px', // Set a maximum width to prevent it from getting too wide
       }}
     >
-      <Typography 
+      <StephsActualFavoriteTypographyNoDrop 
         variant="body1" 
         width={'100%'} 
         color='secondary' 
         sx={{ textAlign: 'center' }}
       >
-        Someone who's
-      </Typography>
+        {guest.firstName} is...
+      </StephsActualFavoriteTypographyNoDrop>
       <Button
         component={Paper}
         elevation={10}
@@ -209,16 +210,6 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
           />
         </Box>
       </Button>
-      <Typography 
-        variant="caption" 
-        color='secondary'
-        sx={{ 
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        ...That's who.
-      </Typography>
     </Box>
   );
 };

@@ -8,7 +8,7 @@ import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { useNavigate } from 'react-router-dom';
 import { useFamily, familyGuestsStates } from '@/store/family';
 import { userCommentState } from '@/store/userComment/userComment';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { darken } from '@mui/system';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { AgeGroupEnum, GuestViewModel } from '@/types/api';
@@ -305,11 +305,11 @@ const SummaryView: React.FC = () => {
           </Typography> 
           {attendanceState.atLeastOneAttending && 
           <>
-          
-          <br/>
-          <Typography variant='caption' sx={{
-            color: theme.palette.secondary.main,
-          }}>See you July 5!</Typography>
+            <StephsActualFavoriteTypographyNoDrop variant='caption' sx={{
+              color: theme.palette.secondary.main,
+            }}>
+              See you July 5 at 6:00pm!
+            </StephsActualFavoriteTypographyNoDrop>
           </>
           }
           
