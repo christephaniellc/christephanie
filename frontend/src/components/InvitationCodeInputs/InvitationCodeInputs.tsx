@@ -207,17 +207,7 @@ export const InvitationCodeInputs = () => {
         <CardActions>
           <Box display="flex" flexDirection="column" width="100%" px={1}>
             <Button
-              sx={{ 
-                width: '100%', 
-                mb: 2,
-                // Improve iOS touch handling
-                WebkitAppearance: 'none',
-                position: 'relative',
-                zIndex: 10,
-                '&:active': {
-                  opacity: 0.8 // Visual feedback on iOS touch
-                }
-              }}
+              sx={{ width: '100%', mb: 2 }}
               disabled={!user?.firstName || !user?.invitationCode}
               fullWidth
               variant="contained"
