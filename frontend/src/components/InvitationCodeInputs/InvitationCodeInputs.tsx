@@ -83,7 +83,12 @@ export const InvitationCodeInputs = () => {
     const result = await userActions.findUserIdQuery?.refetch();
     if (result && result.data && result.data.auth0Id) {
       userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
-      signInWithAuth0(result.data.guestId, result.data.auth0Id);
+      
+      // Small delay to ensure state is updated before proceeding
+      // This helps prevent iOS touch event issues
+      setTimeout(() => {
+        signInWithAuth0(result.data.guestId, result.data.auth0Id);
+      }, 50);
     }
   };
 
