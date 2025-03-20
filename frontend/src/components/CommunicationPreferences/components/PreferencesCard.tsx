@@ -3,6 +3,7 @@ import { ContactPreferenceItem } from './ContactPreferenceItem';
 import { VerificationSection } from './VerificationSection';
 import { ComingSoonBanner } from './ComingSoonBanner';
 import { NotificationPreferenceEnum } from '@/types/api';
+import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 
 interface PreferencesCardProps {
   contactPreferences: string[];
@@ -65,14 +66,17 @@ export const PreferencesCard = ({
       aria-label="Communication preferences"
     >
       <Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <Typography 
-          variant="subtitle1" 
+        <StephsActualFavoriteTypographyNoDrop 
+          //variant="h6" 
           fontWeight="500" 
           color="secondary"
           id="communication-preferences-heading"
+          sx={{
+            fontSize: '1.3rem'
+          }}
         >
           How would you like to hear from us?
-        </Typography>
+        </StephsActualFavoriteTypographyNoDrop>
       </Box>
       
       <List 
