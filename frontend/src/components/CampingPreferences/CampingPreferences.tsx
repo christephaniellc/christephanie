@@ -61,7 +61,7 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           <Typography 
             variant="subtitle1" 
             fontWeight="500" 
-            color="primary"
+            color="secondary"
             id="camping-preferences-heading"
           >
             Click options for details!
