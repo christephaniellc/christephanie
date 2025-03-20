@@ -40,7 +40,7 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
       (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined,
     );
 
-    let everyoneIsLame =
+    const everyoneIsLame =
       familyUnit.guests?.every(
         (guest) =>
           guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
@@ -128,7 +128,7 @@ export const attendanceState = selector({
     const familyUnit = get(familyState);
     if (!familyUnit?.guests) return false;
 
-    let everyoneIsLame = familyUnit.guests.every(
+    const everyoneIsLame = familyUnit.guests.every(
       (guest) =>
         guest.rsvp.invitationResponse === InvitationResponseEnum.Declined ||
         guest.rsvp.invitationResponse === InvitationResponseEnum.Pending,
@@ -270,7 +270,7 @@ export const useFamily = () => {
   }, []);
 
   const updateFamilyAddress = useCallback((mailingAddress: AddressDto) => {
-    let updatedAddress = mailingAddress;
+    const updatedAddress = mailingAddress;
     if (!mailingAddress.zipCode) {
       updatedAddress.zipPlus4 = null;
       updatedAddress.zipCode = null;

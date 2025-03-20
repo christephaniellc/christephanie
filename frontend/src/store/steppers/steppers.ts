@@ -54,7 +54,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     foodAllergies: {
       id: 4,
       completed: true,
-      label: 'Which of these things will kill you if you eat them?',
+      label: 'Which of these things will cause great distress if you eat them?',
       description: '',
       component: null,
       display: true,
@@ -62,7 +62,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     camping: {
       id: 5,
       completed: false,
-      label: 'Where do you all plan to stay?',
+      label: 'Camping? Hotel? Tell us what you\'re thinking!',
       description: '(we have bathrooms!)',
       component: null,
       display: true,

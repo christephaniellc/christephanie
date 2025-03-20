@@ -267,7 +267,7 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                       }
                     }}
                   >
-                    July 5, 2025
+                    July 5, 2025 at 6:00pm
                   </DateText>
                 </Box>
               </Link>

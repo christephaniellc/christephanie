@@ -15,7 +15,7 @@ export default class Api {
     expiresAt: 0 
   };
   
-  // eslint-disable-next-line no-unused-vars
+   
   constructor(private readonly getAccessTokenSilently: () => Promise<string | null>) {
   }
   

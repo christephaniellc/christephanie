@@ -219,17 +219,17 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
     let hotelGuests = 0;
     let otherAccommodationGuests = 0;
     let unknownAccommodationGuests = 0;
-    let allergiesCount: Record<string, number> = {};
+    const allergiesCount: Record<string, number> = {};
 
     // Client info metrics
-    let deviceTypesCount: Record<string, number> = {};
-    let browsersCount: Record<string, number> = {};
-    let operatingSystemsCount: Record<string, number> = {};
-    let screenSizesCount: Record<string, number> = {};
-    let languagesCount: Record<string, number> = {};
-    let connectionTypesCount: Record<string, number> = {};
+    const deviceTypesCount: Record<string, number> = {};
+    const browsersCount: Record<string, number> = {};
+    const operatingSystemsCount: Record<string, number> = {};
+    const screenSizesCount: Record<string, number> = {};
+    const languagesCount: Record<string, number> = {};
+    const connectionTypesCount: Record<string, number> = {};
     let totalClientInfos = 0;
-    let deviceIds = new Set<string>(); // To count unique devices (approximation using browser+os+screen)
+    const deviceIds = new Set<string>(); // To count unique devices (approximation using browser+os+screen)
 
     // Count families by response type
     let attendingFamilies = 0;

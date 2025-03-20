@@ -95,8 +95,8 @@ const TalkingFaceComponent = React.forwardRef<{ animateMouth: () => void }, Talk
         onClick={onToggleEmojis}
         sx={{ 
           animation: showEmojis ? `${glowEffect} 2s infinite` : 'none',
-          width: 40,
-          height: 40,
+          width: 56,
+          height: 56,
           position: 'relative',
         }}
       >

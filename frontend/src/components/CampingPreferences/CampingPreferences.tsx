@@ -8,7 +8,8 @@ import {
   PreferenceButtonGroup, 
   PreferenceDescription 
 } from './components';
-import theme from '@/store/theme';
+import theme from '@/store/theme'; 
+import {StephsActualFavoriteTypographyNoDrop} from '@/components/AttendanceButton/AttendanceButton';
 
 const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
@@ -58,14 +59,14 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
           background: alpha(theme.palette.background.paper, 0.9),
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
         }}>
-          <Typography 
-            variant="subtitle1" 
+          <StephsActualFavoriteTypographyNoDrop 
+            variant="h6" 
             fontWeight="500" 
             color="secondary"
             id="camping-preferences-heading"
           >
-            Click options for details!
-          </Typography>
+            Accommodation options: click each for more info.
+          </StephsActualFavoriteTypographyNoDrop>
         </Box>    
         {/* Selection buttons */}
         <PreferenceButtonGroup

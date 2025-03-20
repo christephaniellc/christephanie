@@ -10,8 +10,8 @@ export const useAppLayout = () => {
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      let screenWidth = window.innerWidth;
-      let newHeightBasedOnZoom = window.innerHeight;
+      const screenWidth = window.innerWidth;
+      const newHeightBasedOnZoom = window.innerHeight;
       // if (screenWidth < theme.breakpoints.values.md) {
       //   const zoomLevel = screenWidth / 500;
       //   console.log('setting new zoomLevel', zoomLevel);

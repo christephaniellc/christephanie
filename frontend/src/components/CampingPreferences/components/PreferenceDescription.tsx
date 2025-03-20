@@ -35,7 +35,11 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
           fontWeight="medium"
           data-testid="camping-description"
         >
-          Camp with Steph and Topher at our venue! We have some campsite space for you and your gear. (RV hookups not available, unfortunately).
+          <ul>
+            <li>Camp with Steph and Topher at our venue!</li>
+            <li>We have some campsite space for you and your gear.</li>
+            <li>(RV hookups not available, unfortunately)</li>
+          </ul>
         </Typography>
       </Box>
     );
@@ -47,11 +51,16 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
         <Typography 
           color="white" 
           fontWeight="medium"
-          fontSize="0.9rem"
+          //fontSize="0.9rem"
           data-testid="manor-description"
         >
-          * You have been chosen to stay in the Manor House!<br/><br/>As an honored Manor guest, you'll have access to a private room in the
-          historic house at our venue.<br/><br/>Breakfasts and good times are included.
+          * You have been chosen to stay in the Manor House!
+          <ul>
+            <li>As an honored Manor guest, you'll have access to a private room in the
+            historic house at our venue.</li>
+            <li>Breakfasts are included.</li>
+            <li>Good times are included.</li>
+          </ul>
         </Typography>
       </Box>
     );
@@ -66,8 +75,14 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
           fontWeight="medium"
           gutterBottom
           data-testid="hotel-description"
+          sx={{            
+            textAlign: 'left'
+          }}
         >
-          We've partnered with hotels in the area to provide you with convenient options.
+         <ul>
+            <li>Book soon! Hotels may fill up for the holiday weekend.</li>
+            <li>We've partnered with hotels in the area to provide you with convenient options. Click to view details:</li>
+        </ul>
         </Typography>
         
         <Button 
@@ -79,7 +94,7 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
             mt: 2,
             fontWeight: 'bold',
             borderRadius: 2,
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           View Hotel Options
