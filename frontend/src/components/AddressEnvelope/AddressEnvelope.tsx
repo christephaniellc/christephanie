@@ -22,7 +22,7 @@ import {
 import { InvitationResponseEnum } from '@/types/api';
 import Button from '@mui/material/Button';
 import { rem } from 'polished';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import LoadingBox from '@/components/LoadingBox';
 import StickFigureIcon from '@/components/StickFigureIcon';
@@ -211,9 +211,13 @@ const AddressEnvelope: React.FC = () => {
             backdropFilter: 'blur(16px)',
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: '16px' }}>
+          <StephsActualFavoriteTypographyNoDrop variant="h6" 
+            sx={{ 
+              marginBottom: '1rem',
+              lineHeight: '1.3rem' 
+              }}>
             The {callByLastNames}
-          </Typography>
+          </StephsActualFavoriteTypographyNoDrop>
           <Box
             component={FormGroup}
             sx={{
