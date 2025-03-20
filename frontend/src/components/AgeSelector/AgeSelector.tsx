@@ -146,7 +146,10 @@ export const AgeSelector = ({ guestId }: AttendanceButtonProps) => {
         variant="body1" 
         width={'100%'} 
         color='secondary' 
-        sx={{ textAlign: 'center' }}
+        sx={{ 
+          textAlign: 'center',
+          lineHeight: '2.5rem'
+         }}
       >
         {guest.firstName} is...
       </StephsActualFavoriteTypographyNoDrop>
