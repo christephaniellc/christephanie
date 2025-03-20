@@ -6,7 +6,7 @@ import EmailIcon from '@mui/icons-material/Email';
 
 interface GuestStatusItemProps {
   guest: {
-    guestId: string;
+    guestId?: string;  // Making this optional to match GuestDto
     firstName?: string;
     lastName?: string;
     rsvp?: {
