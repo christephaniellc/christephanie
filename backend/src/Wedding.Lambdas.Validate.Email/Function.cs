@@ -70,7 +70,7 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            context.Logger.LogInformation($"Raw Input: {request}");
 
             // Check for null body
             if (string.IsNullOrEmpty(request.Body))

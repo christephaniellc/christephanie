@@ -80,7 +80,7 @@ const PreferenceButtonGroup: React.FC<PreferenceButtonGroupProps> = ({
                   fontWeight={'bold'}
                   sx={{ textOverflow: 'unset', overflowWrap: 'break-word' }}
                 >
-                  {value === 'Unknown' ? '' : `${value}${value === 'Manor'? '*' : ''}`}
+                  {value === 'Unknown' ? '' : `${value === 'Other'? 'Not sure yet' : value}${value === 'Manor'? '*' : ''}`}
                 </Typography>
               </Box>
             </Box>

@@ -180,21 +180,46 @@ export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
 export function getLatestActivityAndGuest(family: FamilyUnitViewModel): { 
   firstName: string | null; lastActivity: Date | null } {
   // Filter out guests without a valid LastActivity
-  const validGuests = family.guests.filter(guest => guest.lastActivity !== null);
+  // Make sure to handle undefined as well as null values
+  const validGuests = family.guests.filter(guest => 
+    guest.lastActivity !== null && 
+    guest.lastActivity !== undefined &&
+    guest.lastActivity !== ""
+  );
   
   // If no valid guest found, return null values
   if (validGuests.length === 0) {
     return { firstName: null, lastActivity: null };
   }
   
-  // Find the guest with the latest LastActivity using reduce
+  // Find the guest with the latest LastActivity using reduce with a safer comparison
   const latestGuest = validGuests.reduce((prev, current) => {
-    const prevDate = new Date(prev.lastActivity!);
-    const currentDate = new Date(current.lastActivity!);
-    return prevDate > currentDate ? prev : current;
+    // Handle potential invalid dates
+    try {
+      const prevDate = new Date(prev.lastActivity!);
+      const currentDate = new Date(current.lastActivity!);
+      
+      // Check if dates are valid before comparing
+      if (isNaN(prevDate.getTime())) return current;
+      if (isNaN(currentDate.getTime())) return prev;
+      
+      return prevDate > currentDate ? prev : current;
+    } catch (e) {
+      // If there's any error parsing dates, prefer the current item as a fallback
+      console.warn('Error comparing dates', e);
+      return current;
+    }
   });
   
-  return { firstName: latestGuest.firstName, lastActivity: new Date(latestGuest.lastActivity!) };
+  try {
+    return { 
+      firstName: latestGuest.firstName, 
+      lastActivity: new Date(latestGuest.lastActivity!) 
+    };
+  } catch (e) {
+    console.warn('Error creating date object', e);
+    return { firstName: latestGuest.firstName, lastActivity: null };
+  }
 }
 
 // Generate fun quotes for the guest narrative
