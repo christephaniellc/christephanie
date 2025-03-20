@@ -308,7 +308,7 @@ const SummaryView: React.FC = () => {
             <StephsActualFavoriteTypographyNoDrop variant='caption' sx={{
               color: theme.palette.secondary.main,
             }}>
-              See you July 5 at 6:00pm!
+              See you July 5 at 6:00pm
             </StephsActualFavoriteTypographyNoDrop>
           </>
           }
