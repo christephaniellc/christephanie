@@ -287,9 +287,23 @@ export default class Api {
       const requestId = Math.random().toString(36).substring(2, 10);
       
       try {
-        const response = await promise;
-        // Log response details for debugging
-        console.log(`API ${requestId} - ${response.status} ${response.url} (${Date.now() - requestStartTime}ms)`);
+        console.log(`API ${requestId} - Starting request (${new Date().toISOString()})`);
+        
+        // Add timeout to detect hanging requests
+        const timeoutPromise = new Promise<Response>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`API request timeout after 15000ms (${requestId})`));
+          }, 15000);
+        });
+        
+        const response = await Promise.race([promise, timeoutPromise]);
+        
+        // More detailed response logging
+        console.log(`API ${requestId} - ${response.status} ${response.url} (${Date.now() - requestStartTime}ms)`, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers.entries()].reduce((obj, [key, val]) => ({...obj, [key]: val}), {}),
+        });
         
         let result = await this.handleResponse<Awaited<T>>(response);
         if (callback) {
@@ -297,9 +311,28 @@ export default class Api {
         }
         return result;
       } catch (error) {
-        // Add structured error logging
+        // Enhanced error logging
         if (error instanceof Response) {
-          console.error(`API ${requestId} - Error ${error.status} ${error.url} (${Date.now() - requestStartTime}ms)`);
+          console.error(`API ${requestId} - Error ${error.status} ${error.url} (${Date.now() - requestStartTime}ms)`, {
+            status: error.status,
+            statusText: error.statusText,
+            headers: [...error.headers.entries()].reduce((obj, [key, val]) => ({...obj, [key]: val}), {}),
+          });
+          
+          // Try to get error body for more details
+          try {
+            const errorText = await error.text();
+            console.error(`API ${requestId} - Error body:`, errorText);
+          } catch (e) {
+            console.error(`API ${requestId} - Could not read error body:`, e);
+          }
+        } else if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+          // Network error - likely CORS or connectivity issue
+          console.error(`API ${requestId} - Network Error (${Date.now() - requestStartTime}ms): ${error.message}`, {
+            error,
+            online: typeof navigator !== 'undefined' ? navigator.onLine : 'unknown',
+            type: 'network_error'
+          });
         } else {
           console.error(`API ${requestId} - Error (${Date.now() - requestStartTime}ms):`, error);
         }
