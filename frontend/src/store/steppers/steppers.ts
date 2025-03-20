@@ -62,7 +62,7 @@ export const saveTheDateStepsState = atom<Record<string, SaveTheDateStep>>({
     camping: {
       id: 5,
       completed: false,
-      label: 'Where do you all plan to stay?',
+      label: 'Camping? Hotel? Tell us what you\'re thinking!',
       description: '(we have bathrooms!)',
       component: null,
       display: true,

@@ -50,8 +50,9 @@ const steps: { [step: string]: Step } = {
     id: 0,
     label: 'Save the Date Survey',
     description: `We're getting married on the 5th of July in Lovettsville, VA. For now,
-    we are gathering survey data for planning purposes. Official RSVP's to come: we will notify you.
-    We'll send out the official invitations once we get your interest and mailing address!`,
+    we are gathering survey data for planning purposes.
+    We'll send out official paper invitations once we get your interest and mailing address! 
+    Official RSVP phase coming soon.`,
     lastDate: new Date('2025-04-16'),
     stepCompleted: false,
     stepUrl: routes[Pages.SaveTheDate].path,
@@ -60,7 +61,7 @@ const steps: { [step: string]: Step } = {
     id: 1,
     label: 'RSVP (coming soon)!',
     description:
-      'Finalize your RSVP by letting us know if you can make it, and if you have any dietary restrictions.',
+      'Finalize your RSVP by letting us know if you can make it, along with your final accomodation and food choices.',
     lastDate: new Date('2025-05-20'),
     stepCompleted: true,
     stepUrl: '/',
