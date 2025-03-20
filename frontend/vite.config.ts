@@ -52,7 +52,22 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html}', '**/*.{svg,png,jpg,gif}'],
+        // Don't cache based on revision by default
+        dontCacheBustURLsMatching: /\.\w{8}\./,
+        // Skip waiting so updates are applied immediately
+        skipWaiting: true,
+        // Enable clients claim to take control immediately
+        clientsClaim: true,
+        // Clean old caches
+        cleanupOutdatedCaches: true,
       },
+      registerType: 'autoUpdate',
+      // Check for updates more frequently
+      injectRegister: 'auto',
+      // Set a shorter interval (every 10 minutes = 10 * 60 * 1000)
+      registerWebManifestOptions: {
+        updateInterval: 10 * 60 * 1000,
+      }
     }),
     injectProductionScripts(),
   ],
