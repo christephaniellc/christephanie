@@ -363,7 +363,7 @@ export const useFamily = () => {
       mailingAddress: {
         ...prev.mailingAddress,
         display: true, // Always show mailing address step
-        completed: !!family.mailingAddress?.addressLine1 && !!family.mailingAddress?.city &&
+        completed: !!family.mailingAddress?.streetAddress && !!family.mailingAddress?.city &&
                    !!family.mailingAddress?.state && !!family.mailingAddress?.postalCode,
       },
       comments: {

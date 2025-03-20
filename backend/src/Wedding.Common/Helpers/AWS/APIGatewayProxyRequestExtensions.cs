@@ -22,6 +22,22 @@ namespace Wedding.Common.Helpers.AWS
 
         public static AuthContext GetAuthContext(this APIGatewayProxyRequest request)
         {
+            // If the request context is null (e.g., when called from email verification link),
+            // create a minimal auth context
+            if (request.RequestContext == null || request.RequestContext.Authorizer == null)
+            {
+                Console.WriteLine("Creating empty auth context (no request context or authorizer)");
+                return new AuthContext
+                {
+                    Audience = string.Empty,
+                    InvitationCode = string.Empty,
+                    GuestId = string.Empty,
+                    Name = string.Empty,
+                    Roles = string.Empty,
+                    IpAddress = string.Empty
+                };
+            }
+            
             return new AuthContext
             {
                 Audience = request.GetAudienceFromAuthContext() ?? string.Empty,
@@ -76,10 +92,23 @@ namespace Wedding.Common.Helpers.AWS
         {
             try
             {
+                // Safely access request context - return null if any part is null
+                if (request.RequestContext == null)
+                {
+                    Console.WriteLine("RequestContext is null");
+                    return null;
+                }
+                
                 var authorizerContext = request.RequestContext.Authorizer;
+                if (authorizerContext == null)
+                {
+                    Console.WriteLine("Authorizer context is null");
+                    return null;
+                }
+                
                 Console.WriteLine($"authorizerContext: {JsonSerializer.Serialize(authorizerContext)}");
 
-                if (authorizerContext != null && authorizerContext.TryGetValue("lambda", out var lambdaContext))
+                if (authorizerContext.TryGetValue("lambda", out var lambdaContext))
                 {
                     Console.WriteLine($"lambdaContext: {JsonSerializer.Serialize(lambdaContext)}");
 
@@ -103,8 +132,9 @@ namespace Wedding.Common.Helpers.AWS
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                throw new UnauthorizedAccessException("Unauthorized access exception.");
+                Console.WriteLine($"Error in RequestLambdaData: {ex.ToString()}");
+                // Return null instead of throwing an exception - this is safer for the token verification flow
+                return null;
             }
 
             return null;
