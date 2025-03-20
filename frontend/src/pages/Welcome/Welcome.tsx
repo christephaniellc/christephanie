@@ -113,18 +113,13 @@ const Welcome: React.FC = () => {
     const handleTouchStart = (e: TouchEvent) => {
       // Store initial touch position
       startY = e.touches[0].clientY;
-      isTouching = true;
     };
     
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isTouching) return;
       
       const currentY = e.touches[0].clientY;
       const diff = startY - currentY;
-      
-      // Only process vertical scrolling, not small finger movements
-      if (Math.abs(diff) < 10) return;
-      
+          
       if (diff > 30) {
         // Scrolling down - only show modal if content doesn't fit
         if (contentNeedsModal) {
@@ -135,26 +130,17 @@ const Welcome: React.FC = () => {
         setIsModalVisible(false);
       }
     };
-    
-    const handleTouchEnd = () => {
-      // Reset touch state when touch ends
-      isTouching = false;
-    };
-    
+        
     const container = containerRef.current;
     if (container) {
       container.addEventListener('wheel', handleWheel, { passive: true });
       container.addEventListener('touchstart', handleTouchStart, { passive: true });
       container.addEventListener('touchmove', handleTouchMove, { passive: true });
-      container.addEventListener('touchend', handleTouchEnd, { passive: true });
-      container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
       
       return () => {
         container.removeEventListener('wheel', handleWheel);
         container.removeEventListener('touchstart', handleTouchStart);
         container.removeEventListener('touchmove', handleTouchMove);
-        container.removeEventListener('touchend', handleTouchEnd);
-        container.removeEventListener('touchcancel', handleTouchEnd);
       };
     }
   }, [isModalVisible, contentNeedsModal]);
