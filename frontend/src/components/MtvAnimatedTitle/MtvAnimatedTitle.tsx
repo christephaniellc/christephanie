@@ -70,7 +70,7 @@ const MtvAnimatedTitle = () => {
       const delay = cycleDuration / steps;
 
       // Build a sequence of rotation values starting with startValue and ending with endValue.
-      let sequence = [startValue];
+      const sequence = [startValue];
       for (let i = 1; i < steps - 1; i++) {
         let randomVal;
         do {

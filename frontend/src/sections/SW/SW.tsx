@@ -69,15 +69,15 @@ function SW() {
               caches.delete(cacheName);
             });
             // Now force reload
-            window.location.reload();
+            (window as Window).location.reload();
           });
         } else {
-          window.location.reload();
+          (window as Window).location.reload();
         }
       }, 1500);
     } catch (error) {
       console.error('Error updating service worker, forcing reload:', error);
-      window.location.reload();
+      (window as Window).location.reload();
     }
   }, [close, updateServiceWorker]);
 
