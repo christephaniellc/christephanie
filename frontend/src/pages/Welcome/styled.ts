@@ -240,8 +240,11 @@ const StepperModal = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   display: 'flex',
   flexDirection: 'column',
+  // Hardware acceleration helps prevent issues with mobile keyboard
+  WebkitTransform: 'translate3d(0,100%,0)',
   '&.visible': {
     transform: 'translateY(0)',
+    WebkitTransform: 'translate3d(0,0,0)',
   },
 }));
 

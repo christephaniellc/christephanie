@@ -53,15 +53,27 @@ const AddressEnvelope: React.FC = () => {
       ${theme.palette.secondary.main} 15%
     )
   `;
-  const { callByLastNames } = useRecoilValue(familyGuestsStates);
+  
+  // Helper to safely compare values treating empty strings as null
+  const areEquivalent = (a: string | null | undefined, b: string | null | undefined): boolean => {
+    // If both values are empty-ish (null, undefined, or empty string), treat them as equal
+    if ((a === null || a === '' || a === undefined) && (b === null || b === '' || b === undefined)) {
+      return true;
+    }
+    return a === b;
+  };
+  const familyStates = useRecoilValue(familyGuestsStates);
+  const callByLastNames = familyStates?.callByLastNames || 'Family';
 
   useEffect(() => {
     if (familyUnit && familyUnit.mailingAddress) {
-      setStreetAddress(familyUnit.mailingAddress.streetAddress || '');
-      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress || '');
-      setCity(familyUnit.mailingAddress.city || '');
-      setState(familyUnit.mailingAddress.state || '');
-      setZipCode(familyUnit.mailingAddress.zipCode || '');
+      // Use nullish coalescing operator to only convert undefined to empty string,
+      // but keep null values as null
+      setStreetAddress(familyUnit.mailingAddress.streetAddress ?? null);
+      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress ?? null);
+      setCity(familyUnit.mailingAddress.city ?? null);
+      setState(familyUnit.mailingAddress.state ?? null);
+      setZipCode(familyUnit.mailingAddress.zipCode ?? null);
 
       // If they already have a mailing address, that implies
       // they want an announcement
@@ -216,88 +228,151 @@ const AddressEnvelope: React.FC = () => {
               disabled={disabled}
               variant="standard"
               fullWidth
-              value={address.streetAddress}
-              onChange={(e) => {
-                setStreetAddress(e.target.value);
+              InputLabelProps={{
+                shrink: address.streetAddress !== null && address.streetAddress !== '',
               }}
-              onBlur={() =>
-                familyActions.updateFamilyAddress({
-                  ...address,
-                  streetAddress: address.streetAddress,
-                })
-              }
+              value={address.streetAddress || ''}
+              onChange={(e) => {
+                // Empty string becomes null
+                setStreetAddress(e.target.value || null);
+              }}
+              onBlur={(e) => {
+                // Use the safe comparison helper
+                const inputValue = e.target.value.trim();
+                const currentValue = familyUnit?.mailingAddress?.streetAddress;
+                
+                // Only update if the values are truly different
+                if (!areEquivalent(inputValue, currentValue)) {
+                  familyActions.updateFamilyAddress({
+                    ...address,
+                    streetAddress: inputValue === '' ? null : inputValue,
+                  });
+                }
+              }}
               error={!!familyActions.patchFamilyMutation.error}
               size="small"
             />
             <TextField
               disabled={disabled}
-              value={address.secondaryAddress}
+              value={address.secondaryAddress || ''}
               color="secondary"
               label="Apt/Unit"
               variant="standard"
               fullWidth
               size="small"
-              onBlur={() =>
-                familyActions.updateFamilyAddress({
-                  ...address,
-                  secondaryAddress: address.secondaryAddress,
-                })
-              }
-              onChange={(e) => setSecondaryAddress(e.target.value)}
+              InputLabelProps={{
+                shrink: address.secondaryAddress !== null && address.secondaryAddress !== '',
+              }}
+              onBlur={(e) => {
+                // Use the safe comparison helper
+                const inputValue = e.target.value.trim();
+                const currentValue = familyUnit?.mailingAddress?.secondaryAddress;
+                
+                // Only update if the values are truly different
+                if (!areEquivalent(inputValue, currentValue)) {
+                  console.log('Updating secondaryAddress', { 
+                    inputValue, 
+                    currentValue,
+                    areTheyEquivalent: areEquivalent(inputValue, currentValue)
+                  });
+                  
+                  familyActions.updateFamilyAddress({
+                    ...address,
+                    secondaryAddress: inputValue === '' ? null : inputValue,
+                  });
+                } else {
+                  console.log('NOT updating secondaryAddress - values equivalent', { 
+                    inputValue, 
+                    currentValue,
+                    areTheyEquivalent: areEquivalent(inputValue, currentValue)
+                  });
+                }
+              }}
+              onChange={(e) => setSecondaryAddress(e.target.value || null)}
             />
             <TextField
               disabled={disabled}
-              value={address.city}
+              value={address.city || ''}
               color="secondary"
               label="City"
               variant="standard"
               fullWidth
               size="small"
-              onBlur={() =>
-                familyActions.updateFamilyAddress({
-                  ...address,
-                  city: address.city,
-                })
-              }
-              onChange={(e) => setCity(e.target.value)}
+              InputLabelProps={{
+                shrink: address.city !== null && address.city !== '',
+              }}
+              onBlur={(e) => {
+                // Use the safe comparison helper
+                const inputValue = e.target.value.trim();
+                const currentValue = familyUnit?.mailingAddress?.city;
+                
+                // Only update if the values are truly different
+                if (!areEquivalent(inputValue, currentValue)) {
+                  familyActions.updateFamilyAddress({
+                    ...address,
+                    city: inputValue === '' ? null : inputValue,
+                  });
+                }
+              }}
+              onChange={(e) => setCity(e.target.value || null)}
             />
             <Box width="100%" textAlign="start" mb={1}>
               <TextField
                 disabled={disabled}
-                value={address?.state}
+                value={address?.state || ''}
                 sx={{ width: '100px', display: 'inline-flex' }}
                 color="secondary"
                 label="State"
                 variant="standard"
                 size="small"
+                InputLabelProps={{
+                  shrink: address.state !== null && address.state !== '',
+                }}
                 onChange={(e) => {
                   const value = e.target.value.toUpperCase().slice(0, 2);
-                  setState(value);
+                  setState(value || null);
                 }}
-                onBlur={() =>
-                  familyActions.updateFamilyAddress({
-                    ...address,
-                    state: address.state,
-                  })
-                }
+                onBlur={(e) => {
+                  // Use the safe comparison helper
+                  const inputValue = e.target.value.trim();
+                  const currentValue = familyUnit?.mailingAddress?.state;
+                  
+                  // Only update if the values are truly different
+                  if (!areEquivalent(inputValue, currentValue)) {
+                    familyActions.updateFamilyAddress({
+                      ...address,
+                      state: inputValue === '' ? null : inputValue,
+                    });
+                  }
+                }}
               />
               <TextField
                 disabled={disabled}
                 sx={{ width: '100px', display: 'inline-flex' }}
-                value={address.zipCode}
+                value={address.zipCode || ''}
                 color="secondary"
                 label="Zip Code"
                 variant="standard"
                 size="small"
-                onBlur={() =>
-                  familyActions.updateFamilyAddress({
-                    ...address,
-                    zipCode: address.zipCode,
-                  })
-                }
+                InputLabelProps={{
+                  shrink: address.zipCode !== null && address.zipCode !== '',
+                }}
+                onBlur={(e) => {
+                  // Use the safe comparison helper
+                  const inputValue = e.target.value.trim();
+                  const currentValue = familyUnit?.mailingAddress?.zipCode;
+                  
+                  // Only update if the values are truly different
+                  if (!areEquivalent(inputValue, currentValue)) {
+                    familyActions.updateFamilyAddress({
+                      ...address,
+                      zipCode: inputValue === '' ? null : inputValue,
+                    });
+                  }
+                }}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-                  setZipCode(value);
+                  setZipCode(value || null);
                 }}
               />
             </Box>
