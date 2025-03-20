@@ -299,7 +299,7 @@ export default function AutosizedTextArea() {
             onToggleEmojis={() => setShowEmojis(!showEmojis)}
             tooltipTitle="Add emoji"
             color="secondary"
-            iconSize={24}
+            iconSize={36}
           />
         </Box>
         
