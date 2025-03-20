@@ -108,15 +108,18 @@ const Welcome: React.FC = () => {
     
     // Handle touch events for mobile
     let startY = 0;
+    let isTouching = false;
     
     const handleTouchStart = (e: TouchEvent) => {
+      // Store initial touch position
       startY = e.touches[0].clientY;
     };
     
     const handleTouchMove = (e: TouchEvent) => {
+      
       const currentY = e.touches[0].clientY;
       const diff = startY - currentY;
-      
+          
       if (diff > 30) {
         // Scrolling down - only show modal if content doesn't fit
         if (contentNeedsModal) {
@@ -127,7 +130,7 @@ const Welcome: React.FC = () => {
         setIsModalVisible(false);
       }
     };
-    
+        
     const container = containerRef.current;
     if (container) {
       container.addEventListener('wheel', handleWheel, { passive: true });

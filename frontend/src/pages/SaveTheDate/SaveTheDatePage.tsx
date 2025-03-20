@@ -223,9 +223,7 @@ function SaveTheDatePage() {
                 backgroundColor: 'rgba(0,0,0,.8)',
                 display: tabIndex < stdStepper.totalTabs ? 'inherit' : 'none',
               }}
-              onClick={() => {
-                familyActions.getFamily();
-
+              onClick={async () => {
                 // If we're at the last tab, navigate home
                 if (tabIndex >= stdStepper.totalTabs - 1) {
                   navigate('/');
@@ -242,12 +240,18 @@ function SaveTheDatePage() {
                 } else {
                   // Otherwise find next visible step
                   const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
-                  const atLeastOneAttending = family?.guests?.some(
+                                    
+                  // Force a refresh of family data first to ensure we have latest state
+                  // especially important after changing from Pending to Interested
+                  await familyActions.getFamily();
+                  
+                  // Re-check attendance status with fresh data
+                  const refreshedAtLeastOneAttendingState = family?.guests?.some(
                     guest => guest.rsvp?.invitationResponse === 'Interested'
                   ) ?? false;
                   
-                  // Filter steps based on attendance
-                  const visibleSteps = atLeastOneAttending
+                  // Filter steps based on UPDATED attendance status
+                  const visibleSteps = refreshedAtLeastOneAttendingState
                     ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
                     : Object.entries(saveTheDateSteps).filter(
                         ([key, step]) => basicSteps.includes(key) && step.display

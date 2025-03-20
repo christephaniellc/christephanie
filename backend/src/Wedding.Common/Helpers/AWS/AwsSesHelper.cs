@@ -31,7 +31,7 @@ namespace Wedding.Common.Helpers.AWS
             var bodies = EmailTemplateHelper.SendVerificationCodeTemplate(_config, email, token, cancellationToken);
 
             var result = await SendEmail(toAddresses: new List<string> { email.Value },
-                subject: "Email Verification Code",
+                subject: "Email Verification Link",
                 textBody: bodies.textBody,
                 htmlBody: bodies.htmlBody,
                 cancellationToken);
