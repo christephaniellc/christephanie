@@ -119,8 +119,8 @@ export const getFoodPreferenceDetails = (preference?: FoodPreferenceEnum) => {
       };
     default:
       return { 
-        label: 'Unknown', 
-        color: '#9e9e9e' // grey
+        label: 'Meat-a-tarian', 
+        color: '#9C27B0' // purple
       };
   }
 };
