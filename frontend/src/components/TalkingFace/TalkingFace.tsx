@@ -19,12 +19,22 @@ const glowEffect = keyframes`
   }
 `;
 
+// Animation for the error shake effect
+const shakeEffect = keyframes`
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+`;
+
 interface TalkingFaceProps {
   onToggleEmojis?: () => void;
   showEmojis?: boolean;
   tooltipTitle?: string;
   color?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
   iconSize?: number;
+  isError?: boolean;
 }
 
 const TalkingFaceComponent = React.forwardRef<{ animateMouth: () => void }, TalkingFaceProps>(({
@@ -32,9 +42,10 @@ const TalkingFaceComponent = React.forwardRef<{ animateMouth: () => void }, Talk
   showEmojis = false,
   tooltipTitle = "Emoji picker",
   color = "secondary",
-  iconSize = 24
+  iconSize = 24,
+  isError = false
 }, ref) => {
-  const mouthOpenIcons = [SentimentVerySatisfiedIcon, MoodBad, SentimentDissatisfied];
+  const mouthOpenIcons = [SentimentVerySatisfiedIcon, SentimentDissatisfied];
   const RandomIcon = mouthOpenIcons[Math.floor(Math.random() * mouthOpenIcons.length)];
   const [showOpenMouth, setShowOpenMouth] = useState(false);
   const mouthToggleRef = useRef<number[]>([]);
@@ -91,10 +102,14 @@ const TalkingFaceComponent = React.forwardRef<{ animateMouth: () => void }, Talk
     <Tooltip title={tooltipTitle}>
       <IconButton 
         size="small" 
-        color={color}
+        color={isError ? "error" : color}
         onClick={onToggleEmojis}
         sx={{ 
-          animation: showEmojis ? `${glowEffect} 2s infinite` : 'none',
+          animation: isError 
+            ? `${shakeEffect} 0.5s ease-in-out`
+            : showEmojis 
+              ? `${glowEffect} 2s infinite` 
+              : 'none',
           width: 56,
           height: 56,
           position: 'relative',
@@ -105,7 +120,12 @@ const TalkingFaceComponent = React.forwardRef<{ animateMouth: () => void }, Talk
           alignItems: 'center', 
           justifyContent: 'center',
         }}>
-          {showOpenMouth ? (
+          {isError ? (
+            <MoodBad
+              color="error"
+              sx={{ fontSize: iconSize }}
+            />
+          ) : showOpenMouth ? (
             <RandomIcon
               color={color}
               sx={{ fontSize: iconSize }}
