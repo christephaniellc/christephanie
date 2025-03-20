@@ -57,17 +57,17 @@ const AddressEnvelope: React.FC = () => {
 
   useEffect(() => {
     if (familyUnit && familyUnit.mailingAddress) {
-      setStreetAddress(familyUnit.mailingAddress.streetAddress);
-      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress);
-      setCity(familyUnit.mailingAddress.city);
-      setState(familyUnit.mailingAddress.state);
-      setZipCode(familyUnit.mailingAddress.zipCode);
+      setStreetAddress(familyUnit.mailingAddress.streetAddress || '');
+      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress || '');
+      setCity(familyUnit.mailingAddress.city || '');
+      setState(familyUnit.mailingAddress.state || '');
+      setZipCode(familyUnit.mailingAddress.zipCode || '');
 
       // If they already have a mailing address, that implies
       // they want an announcement
       const areAllGuestsDeclinedOrPending = !attendanceState.atLeastOneAttending;
       if (areAllGuestsDeclinedOrPending) {
-        setWantsAnnouncement(familyUnit.mailingAddress.uspsVerified);
+        setWantsAnnouncement(familyUnit.mailingAddress?.uspsVerified || false);
       }
     }
   }, [familyUnit, attendanceState]);
@@ -76,7 +76,7 @@ const AddressEnvelope: React.FC = () => {
     return familyActions.patchFamilyMutation.status;
   }, [familyActions.patchFamilyMutation]);
 
-  const statusIcon = familyUnit.mailingAddress.uspsVerified ? (
+  const statusIcon = familyUnit?.mailingAddress?.uspsVerified ? (
     <Box sx={{ color: 'success.main', display: 'flex', alignItems: 'center' }}>
       <CheckCircleOutline sx={{ mr: 1 }} fontSize="small" color="success" /> Verified
     </Box>
@@ -112,7 +112,7 @@ const AddressEnvelope: React.FC = () => {
         overflowY: 'auto',
       }}
     >
-      {!attendanceState.atLeastOneAttending && (
+      {!attendanceState?.atLeastOneAttending && (
         <Fade in={true} timeout={500}>
           <Paper
             elevation={3}
@@ -176,7 +176,7 @@ const AddressEnvelope: React.FC = () => {
       )}
 
       {/* Only show the address form if the user wants an announcement or not declined/pending */}
-      {(attendanceState.atLeastOneAttending || wantsAnnouncement === true) && (
+      {(attendanceState?.atLeastOneAttending || wantsAnnouncement === true) && (
         <Box
           sx={{
             minWidth: '100%',
@@ -303,10 +303,10 @@ const AddressEnvelope: React.FC = () => {
             </Box>
             <Button
               disabled={
-                familyUnit.mailingAddress.uspsVerified ||
+                familyUnit?.mailingAddress?.uspsVerified ||
                 familyActions.patchFamilyMutation.isPending
               }
-              variant={familyUnit.mailingAddress.uspsVerified ? 'text' : 'outlined'}
+              variant={familyUnit?.mailingAddress?.uspsVerified ? 'text' : 'outlined'}
 
               color="secondary"
               onClick={() => {
@@ -322,7 +322,7 @@ const AddressEnvelope: React.FC = () => {
       )}
 
       {/* Show a message if they decline the announcement */}
-      {!attendanceState.atLeastOneAttending && wantsAnnouncement === false && (
+      {!attendanceState?.atLeastOneAttending && wantsAnnouncement === false && (
         <Box
           sx={{
             mt: 4,
