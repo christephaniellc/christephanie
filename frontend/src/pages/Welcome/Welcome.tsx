@@ -108,7 +108,7 @@ const Welcome: React.FC = () => {
     
     // Handle touch events for mobile
     let startY = 0;
-    let isTouching = false;
+    const isTouching = false;
     
     const handleTouchStart = (e: TouchEvent) => {
       // Store initial touch position
