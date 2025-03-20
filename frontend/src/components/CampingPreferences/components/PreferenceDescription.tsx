@@ -35,7 +35,7 @@ const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
           fontWeight="medium"
           data-testid="camping-description"
         >
-          Camp with Steph and Topher at the venue! We have a block of campsites reserved for you and your gear.
+          Camp with Steph and Topher at our venue! We have some campsite space for you and your gear. (RV hookups not available, unfortunately).
         </Typography>
       </Box>
     );
