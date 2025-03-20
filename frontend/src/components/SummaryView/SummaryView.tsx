@@ -6,7 +6,7 @@ import {
 import { useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
 import { useNavigate } from 'react-router-dom';
-import { useFamily } from '@/store/family';
+import { useFamily, familyGuestsStates } from '@/store/family';
 import { userCommentState } from '@/store/userComment/userComment';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { darken } from '@mui/system';
@@ -30,6 +30,7 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 const SummaryView: React.FC = () => {
   const [family] = useFamily();
+  const attendanceState = useRecoilValue(familyGuestsStates);
   const theme = useTheme();
   const navigate = useNavigate();
   const comment = useRecoilValue(userCommentState);
@@ -300,8 +301,17 @@ const SummaryView: React.FC = () => {
       >
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Thank you for providing your information. See you on July 5!
-          </Typography>
+            Thank you for providing your information.
+          </Typography> 
+          {attendanceState.atLeastOneAttending && 
+          <>
+          
+          <br/>
+          <Typography variant='caption' sx={{
+            color: theme.palette.secondary.main,
+          }}>See you July 5!</Typography>
+          </>
+          }
           
           <Typography variant="body2" color="text.secondary" paragraph>
             Here's a summary of what you've shared with us. Click on any item to update your information.
