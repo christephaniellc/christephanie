@@ -240,8 +240,6 @@ const StepperModal = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   display: 'flex',
   flexDirection: 'column',
-  // Fix for iOS Safari where elements inside may be unclickable
-  WebkitTransform: 'translateZ(0)',  // Force hardware acceleration
   '&.visible': {
     transform: 'translateY(0)',
   },
