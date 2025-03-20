@@ -33,7 +33,7 @@ export const collectClientInfo = (): ClientInfoDto => {
     }
 
     // Get device info
-    let device: DeviceInfoDto = {
+    const device: DeviceInfoDto = {
       type: /mobile|android|iphone|ipad|ipod/i.test(userAgent) ? 'mobile' : 'desktop',
       touchSupport: 'ontouchstart' in window,
       hardwareConcurrency: navigator.hardwareConcurrency?.toString(),
