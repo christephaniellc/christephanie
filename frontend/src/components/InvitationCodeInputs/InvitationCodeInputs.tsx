@@ -74,10 +74,11 @@ export const InvitationCodeInputs = () => {
   }, [stdStepper.steps]);
 
   useEffect(() => {
-    if (hasAuthed && firstIncompleteStep !== null) {
-      navigate(`${routes[Pages.SaveTheDate].path}?step=${firstIncompleteStep}`);
+    if (hasAuthed) {
+      // Direct users to the Welcome/Home page instead of SaveTheDate step
+      navigate(routes[Pages.Welcome].path);
     }
-  }, [hasAuthed, firstIncompleteStep]);
+  }, [hasAuthed]);
 
   const handleFindUser = async () => {
     const result = await userActions.findUserIdQuery?.refetch();

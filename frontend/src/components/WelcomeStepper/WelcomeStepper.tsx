@@ -48,10 +48,10 @@ export interface Step {
 const steps: { [step: string]: Step } = {
   saveTheDate: {
     id: 0,
-    label: 'Save the Date',
+    label: 'Save the Date Survey',
     description: `We're getting married on the 5th of July in Lovettsville, VA. For now,
-    we just want to get an idea of who's coming and a few details. We'll send out the official invitations
-    once we get your interest and mailing address!`,
+    we are gathering survey data for planning purposes. Official RSVP's to come: we will notify you.
+    We'll send out the official invitations once we get your interest and mailing address!`,
     lastDate: new Date('2025-04-16'),
     stepCompleted: false,
     stepUrl: routes[Pages.SaveTheDate].path,
@@ -174,14 +174,19 @@ const WelcomeStepper = () => {
         (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
          stdSteps['attendance']?.completed && 
          stdSteps['mailingAddress']?.completed)) {
-      return 'Update Response';
-    } else if (firstIncompleteStep) {
-      return `${stdSteps[firstIncompleteStep].label}`;
-    } else if (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
-               user.rsvp?.invitationResponse === InvitationResponseEnum.Pending) {
-      return 'Complete Required Info';
+      return 'Update Survey Response';
+    } 
+    // else if (firstIncompleteStep) {
+    //   return `${stdSteps[firstIncompleteStep].label}`;
+    // } 
+    else if (firstIncompleteStep) {
+      return 'Continue Survey';
     }
-    return 'Respond';
+    else if (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+               user.rsvp?.invitationResponse === InvitationResponseEnum.Pending) {
+      return 'Complete Survey Required Info';
+    }
+    return isMobile ? 'Respond to Survey' : 'Respond to Save the Date Survey';
   }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.invitationResponse]);
 
   React.useEffect(() => {
