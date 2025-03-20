@@ -53,7 +53,8 @@ const AddressEnvelope: React.FC = () => {
       ${theme.palette.secondary.main} 15%
     )
   `;
-  const { callByLastNames } = useRecoilValue(familyGuestsStates);
+  const familyStates = useRecoilValue(familyGuestsStates);
+  const callByLastNames = familyStates?.callByLastNames || 'Family';
 
   useEffect(() => {
     if (familyUnit && familyUnit.mailingAddress) {
