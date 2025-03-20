@@ -68,7 +68,7 @@ export const PreferencesCard = ({
         <Typography 
           variant="subtitle1" 
           fontWeight="500" 
-          color="primary"
+          color="secondary"
           id="communication-preferences-heading"
         >
           How would you like to hear from us?
