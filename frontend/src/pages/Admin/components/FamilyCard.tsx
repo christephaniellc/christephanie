@@ -205,6 +205,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
             </Paper>
             
             {/* Last login */}
+            {/* Shows the most recent family activity and which guest performed it */}
             <Paper 
               elevation={0} 
               sx={{ 
@@ -229,7 +230,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
-                    })} by ${lastGuestActivity.firstName}`
+                    })}${lastGuestActivity.firstName ? ` by ${lastGuestActivity.firstName}` : ''}`
                     : 'Never logged in'}
                 </Typography>
               </Box>

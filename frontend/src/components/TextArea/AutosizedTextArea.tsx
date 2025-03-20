@@ -13,7 +13,7 @@ import { userCommentState } from '@/store/userComment/userComment';
 import { useFamily } from '@/store/family';
 import { FamilyUnitDto } from '@/types/api';
 import { useEffect, useState, useRef } from 'react';
-import { StephsActualFavoriteTypography } from '../AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '../AttendanceButton/AttendanceButton';
 import SendIcon from '@mui/icons-material/Send';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import TvSnow from '@/components/MtvAnimatedTitle/TvSnow';
@@ -270,18 +270,17 @@ export default function AutosizedTextArea() {
         })
       }}
     >
-      <StephsActualFavoriteTypography
+      <StephsActualFavoriteTypographyNoDrop
         variant="h5"
         sx={{
           textAlign: 'center',
           mb: 3,
           color: theme.palette.secondary.main,
-          textShadow: `3px 3px 0 ${darken(theme.palette.secondary.dark, 0.5)}`,
-          animation: `${floatAnimation} 3s infinite ease-in-out`,
+          fontSize: '1.5rem'
         }}
       >
         Share Your Thoughts
-      </StephsActualFavoriteTypography>
+      </StephsActualFavoriteTypographyNoDrop>
       
       <FormControl sx={{ width: '100%' }}>
         <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

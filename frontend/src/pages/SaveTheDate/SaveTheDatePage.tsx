@@ -12,7 +12,7 @@ import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/ste
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import SummaryView from '@/components/SummaryView';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext } from '@/components/AttendanceButton/AttendanceButton';
 import Button from '@mui/material/Button';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Container from '@mui/material/Container';
@@ -196,7 +196,7 @@ function SaveTheDatePage() {
                 }
               }}
             >
-              <StephsActualFavoriteTypography
+              <StephsActualFavoriteTypographyBackNext
                 sx={{
                   textShadow: `3px 3px 0 ${darken(
                     stdStepper.currentStep[1].completed
@@ -208,7 +208,7 @@ function SaveTheDatePage() {
                 }}
               >
                 Wait, go back
-              </StephsActualFavoriteTypography>
+              </StephsActualFavoriteTypographyBackNext>
             </Button>
             <Box id={'spacer'} display={'flex'} width={1}></Box>
             <Button
@@ -275,7 +275,7 @@ function SaveTheDatePage() {
                 }
               }}
             >
-              <StephsActualFavoriteTypography
+              <StephsActualFavoriteTypographyBackNext
                 sx={{
                   textShadow: `3px 3px 0 ${darken(
                     stdStepper.currentStep[1].completed
@@ -287,7 +287,7 @@ function SaveTheDatePage() {
                 }}
               >
                 {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
-              </StephsActualFavoriteTypography>
+              </StephsActualFavoriteTypographyBackNext>
             </Button>
           </Box>
         )}

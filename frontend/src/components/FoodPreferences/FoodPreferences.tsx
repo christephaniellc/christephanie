@@ -13,6 +13,7 @@ import { alpha, Stack } from '@mui/system';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import Paper from '@mui/material/Paper';
 import BabyBottleIcon from '@/components/SharkIcon/BottleIcon';
+import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 
 const FoodPreferences = ({ guestId }: { guestId: string }) => {
   const { screenWidth } = useAppLayout();
@@ -74,22 +75,19 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
         sx={{
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(0,0,0,.1)',
-          filter: `drop-shadow(${calculateShadow()})`,
+          //filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
         <Box sx={{ p: 2, pb: 1, 
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-          <Typography 
+          <StephsActualFavoriteTypographyNoDrop 
             variant="subtitle1" 
             fontWeight="500" 
             color="secondary"
             id="food-preferences-heading"
-            sx={{
-              textShadow: '1px 0px 0 #000000',
-            }}
           >
             These are delicious to me:
-          </Typography>
+          </StephsActualFavoriteTypographyNoDrop>
         </Box>
         {guest.ageGroup !== AgeGroupEnum.Baby && (
           <ButtonGroup
