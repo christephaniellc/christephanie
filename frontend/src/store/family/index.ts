@@ -270,8 +270,13 @@ export const useFamily = () => {
   }, []);
 
   const updateFamilyAddress = useCallback((mailingAddress: AddressDto) => {
+    let updatedAddress = mailingAddress;
+    if (!mailingAddress.zipCode) {
+      updatedAddress.zipPlus4 = null;
+      updatedAddress.zipCode = null;
+    }
     patchFamilyMutation.mutate({
-      updatedFamily: { mailingAddress: { ...mailingAddress, uspsVerified: false } },
+      updatedFamily: { mailingAddress: { ...updatedAddress, uspsVerified: false } },
     });
   }, []);
 
@@ -355,16 +360,19 @@ export const useFamily = () => {
           (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
         ),
         completed: attendingGuests.every(
-          (guest) => 
-            guest?.preferences?.sleepPreference !== undefined && 
+          (guest) =>
+            guest?.preferences?.sleepPreference !== undefined &&
             guest?.preferences?.sleepPreference !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
         ...prev.mailingAddress,
         display: true, // Always show mailing address step
-        completed: !!family.mailingAddress?.streetAddress && !!family.mailingAddress?.city &&
-                   !!family.mailingAddress?.state && !!family.mailingAddress?.postalCode,
+        completed:
+          !!family.mailingAddress?.streetAddress &&
+          !!family.mailingAddress?.city &&
+          !!family.mailingAddress?.state &&
+          !!family.mailingAddress?.postalCode,
       },
       comments: {
         ...prev.comments,

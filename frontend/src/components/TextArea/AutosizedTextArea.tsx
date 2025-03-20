@@ -183,6 +183,12 @@ export default function AutosizedTextArea() {
   const handleModalOpen = () => {
     if (isMobile) {
       setModalOpen(true);
+      // Small delay to ensure the drawer is fully open before focusing
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 100);
     }
   };
   
@@ -347,6 +353,10 @@ export default function AutosizedTextArea() {
           value={comment}
           onChange={handleTyping}
           onFocus={handleModalOpen}
+          onKeyDown={(e) => {
+            // Prevent keyboard events from closing the drawer
+            e.stopPropagation();
+          }}
           disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
         />
         
@@ -479,7 +489,7 @@ export default function AutosizedTextArea() {
         open={modalOpen && isMobile}
         onClose={handleModalClose}
         onOpen={() => {}}
-        disableBackdropTransition={false}
+        disableBackdropTransition={true}
         disableDiscovery={true}
         swipeAreaWidth={0}
         ModalProps={{
