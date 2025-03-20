@@ -105,6 +105,8 @@ export default function AutosizedTextArea() {
   const textareaRef = useRef(null);
   const talkingFaceRef = useRef(null);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  // Add check for very small screens (smaller than iPhone 16 Pro - 852px height)
+  const isVerySmallScreen = useMediaQuery('(max-height:850px)');
 
 
   // Create random emoji positions for celebration
@@ -181,7 +183,7 @@ export default function AutosizedTextArea() {
   
   // Handle modal open/close
   const handleModalOpen = () => {
-    if (isMobile) {
+    if (isMobile && isVerySmallScreen) {
       setModalOpen(true);
       // Small delay to ensure the drawer is fully open before focusing
       setTimeout(() => {
@@ -283,7 +285,7 @@ export default function AutosizedTextArea() {
       </StephsActualFavoriteTypographyNoDrop>
       
       <FormControl sx={{ width: '100%' }}>
-        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
           <Typography
             variant="overline"
             sx={{ 
@@ -294,15 +296,6 @@ export default function AutosizedTextArea() {
           >
             Your message:
           </Typography>
-          
-          <TalkingFace
-            ref={talkingFaceRef}
-            showEmojis={showEmojis}
-            onToggleEmojis={() => setShowEmojis(!showEmojis)}
-            tooltipTitle="Add emoji"
-            color="secondary"
-            iconSize={36}
-          />
         </Box>
         
         {/* Emoji picker */}
@@ -318,6 +311,8 @@ export default function AutosizedTextArea() {
               maxWidth: '100%',
               borderRadius: 2,
               background: theme.palette.background.paper,
+              zIndex: 5,
+              position: 'relative'
             }}
           >
             {WEDDING_EMOJIS.map((emoji, index) => (
@@ -345,21 +340,68 @@ export default function AutosizedTextArea() {
           </Paper>
         </Fade>
         
-        {/* Textarea */}
-        <Textarea
-          ref={textareaRef}
-          aria-label="comment text area"
-          minRows={4}
-          placeholder={family?.invitationResponseNotes || promptSuggestion}
-          value={comment}
-          onChange={handleTyping}
-          onFocus={handleModalOpen}
-          onKeyDown={(e) => {
-            // Prevent keyboard events from closing the drawer
-            e.stopPropagation();
-          }}
-          disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
-        />
+        {/* Talking face and Textarea container */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', mb: 1, mt: 2 }}>
+          <Box sx={{ 
+            mr: 0,
+            position: 'relative',
+            top: '-14px'
+          }}>
+            <TalkingFace
+              ref={talkingFaceRef}
+              showEmojis={showEmojis}
+              onToggleEmojis={() => setShowEmojis(!showEmojis)}
+              tooltipTitle="Add emoji"
+              color="secondary"
+              iconSize={36}
+            />
+          </Box>
+          
+          <Box sx={{ flexGrow: 1, position: 'relative' }}>
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: '10px', 
+                left: '-10px', 
+                width: 0, 
+                height: 0, 
+                borderTop: '10px solid transparent', 
+                borderBottom: '10px solid transparent',
+                borderRight: `10px solid ${theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff'}`,
+                zIndex: 2
+              }} 
+            />
+            {/* Border triangle for speech bubble */}
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: '10px', 
+                left: '-9px', 
+                width: 0, 
+                height: 0, 
+                borderTop: '10px solid transparent', 
+                borderBottom: '10px solid transparent',
+                borderRight: `10px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}`,
+                zIndex: 1
+              }} 
+            />
+            {/* Textarea */}
+            <Textarea
+              ref={textareaRef}
+              aria-label="comment text area"
+              minRows={4}
+              placeholder={family?.invitationResponseNotes || promptSuggestion}
+              value={comment}
+              onChange={handleTyping}
+              onFocus={handleModalOpen}
+              onKeyDown={(e) => {
+                // Prevent keyboard events from closing the drawer
+                e.stopPropagation();
+              }}
+              disabled={isFetching || familyActions.getFamilyUnitQuery.isFetching}
+            />
+          </Box>
+        </Box>
         
         {/* Character counter */}
         <Box sx={{ 
@@ -487,7 +529,7 @@ export default function AutosizedTextArea() {
       {/* Bottom swipeable drawer for mobile devices */}
       <SwipeableDrawer
         anchor="bottom"
-        open={modalOpen && isMobile}
+        open={modalOpen && isMobile && isVerySmallScreen}
         onClose={handleModalClose}
         onOpen={() => {}}
         disableBackdropTransition={true}
@@ -572,6 +614,7 @@ const Textarea = styled(BaseTextareaAutosize)(
     color: ${theme.palette.mode === 'dark' ? '#e0e0e0' : '#333'};
     background: ${theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff'};
     border: 1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
     resize: none;
   
