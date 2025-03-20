@@ -70,8 +70,37 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {JsonSerializer.Serialize(request.Body)}");
+            context.Logger.LogInformation($"Raw Input: {request.Body}");
 
+            // Check for null body
+            if (string.IsNullOrEmpty(request.Body))
+            {
+                // Check if this is a token validation request (coming from a link click)
+                string? token = null;
+                
+                // Try to get token from query parameters
+                if (request.QueryStringParameters != null && 
+                    request.QueryStringParameters.TryGetValue("token", out var tokenFromQuery))
+                {
+                    token = tokenFromQuery;
+                    context.Logger.LogInformation($"Found token in query params: {token}");
+                }
+                
+                // If we found a token, process as a token validation request
+                if (!string.IsNullOrEmpty(token))
+                {
+                    using var tokenScope = _serviceProvider.CreateScope();
+                    var tokenHandler = tokenScope.ServiceProvider.GetRequiredService<EmailValidationHandler>();
+                    
+                    var command = new ValidateEmailTokenCommand(token);
+                    var result = await tokenHandler.ExecuteAsync(command);
+                    return result.OkResponse();
+                }
+                
+                // Otherwise, this is an invalid request
+                throw new ValidationException("Request body cannot be null or empty");
+            }
+            
             var authContext = request.GetAuthContext();
 
             using var scope = _serviceProvider.CreateScope();
