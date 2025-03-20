@@ -284,14 +284,16 @@ export default function AutosizedTextArea() {
       
       <FormControl sx={{ width: '100%' }}>
         <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <FormLabel
+          <Typography
+            variant="overline"
             sx={{ 
               color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark,
               fontWeight: 'bold',
+              fontSize: '1.2rem'
             }}
           >
-            Your message
-          </FormLabel>
+            Your message:
+          </Typography>
           
           <TalkingFace
             ref={talkingFaceRef}
@@ -561,7 +563,7 @@ const Textarea = styled(BaseTextareaAutosize)(
   ({ theme }) => `
     box-sizing: border-box;
     width: 100%;
-    font-family: 'IBM Plex Sans', sans-serif;
+    font-family: sans-serif;
     font-size: ${rem(16)};
     font-weight: 400;
     line-height: 1.5;
@@ -570,10 +572,6 @@ const Textarea = styled(BaseTextareaAutosize)(
     color: ${theme.palette.mode === 'dark' ? '#e0e0e0' : '#333'};
     background: ${theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff'};
     border: 1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'};
-    box-shadow: ${theme.palette.mode === 'dark' 
-      ? '0 2px 8px rgba(0, 0, 0, 0.3) inset' 
-      : '0 2px 8px rgba(0, 0, 0, 0.05) inset'
-    };
     transition: all 0.2s ease;
     resize: none;
   
@@ -583,7 +581,6 @@ const Textarea = styled(BaseTextareaAutosize)(
 
     &:focus {
       border-color: ${theme.palette.secondary.main};
-      box-shadow: 0 0 0 3px ${theme.palette.secondary.main}40;
     }
 
     &:focus-visible {
