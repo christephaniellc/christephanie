@@ -300,7 +300,7 @@ const SummaryView: React.FC = () => {
       >
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Thank you for providing your information!
+            Thank you for providing your information. See you on July 5!
           </Typography>
           
           <Typography variant="body2" color="text.secondary" paragraph>

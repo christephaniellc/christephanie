@@ -240,8 +240,19 @@ const StepperModal = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   display: 'flex',
   flexDirection: 'column',
+  // Fix for iOS Safari where elements inside may be unclickable
+  WebkitTransform: 'translateZ(0)',  // Force hardware acceleration
   '&.visible': {
     transform: 'translateY(0)',
+    // Force layer creation on iOS Safari
+    WebkitBackfaceVisibility: 'hidden',
+    backfaceVisibility: 'hidden',
+    // Fix for iOS Safari touch event issues
+    '-webkit-tap-highlight-color': 'transparent',
+    '& button, & a': {
+      zIndex: 1210,
+      position: 'relative', // Ensure buttons are above modal layer
+    }
   },
 }));
 
