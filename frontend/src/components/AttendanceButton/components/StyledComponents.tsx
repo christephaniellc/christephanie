@@ -33,7 +33,7 @@ export const StephsActualFavoriteTypography = styled(Typography)(({ theme }) => 
   animation: `${floatAnimation} 3s infinite ease-in-out`,
 }));
 
-export const StephsActualFavoriteTypographyBackNext = styled(Typography)(({ theme }) => ({
+export const StephsActualFavoriteTypographyNoDropWhite = styled(Typography)(({ theme }) => ({
   fontFamily: 'Snowstorm, sans-serif',
   color: rgba(255, 255, 255, 0.98),
   textShadow: `3px 3px 0 ${theme.palette.primary.main}`,
@@ -53,6 +53,17 @@ export const StephsActualFavoriteTypographyNoDrop = styled(Typography)(({ theme 
   fontSize: '1.3rem',
   lineHeight: '2.5rem',
   textShadow: `3px 3px 0 ${darken(theme.palette.secondary.dark, 0.5)}`,
+}));
+
+export const StephsActualFavoriteTypographyBackNext = styled(Typography)(({ theme }) => ({
+  fontFamily: 'Snowstorm, sans-serif',
+  color: rgba(255, 255, 255, 0.98),
+  textShadow: `3px 3px 0 ${theme.palette.primary.main}`,
+  fontWeight: 300,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  fontSize: '1.5rem',
+  lineHeight: '2.5rem',
 }));
 
 export const StephsActualFavoriteTypographyAppVersion = styled(Typography)(({ theme }) => ({

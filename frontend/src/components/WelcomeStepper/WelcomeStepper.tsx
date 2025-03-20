@@ -28,7 +28,7 @@ import StickFigureIcon from '@/components/StickFigureIcon';
 import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
 import Countdowns from '@/components/Countdowns';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, Text3dTypography } from '../AttendanceButton/AttendanceButton';
+import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyNoDropWhite, Text3dTypography } from '../AttendanceButton/AttendanceButton';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
 import { familyGuestsStates } from '@/store/family';
@@ -355,7 +355,7 @@ const WelcomeStepper = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                   <Box>
-                    <StephsActualFavoriteTypography
+                    <StephsActualFavoriteTypographyNoDropWhite
                       color="common.white"
                       fontWeight={activeStep === step.id ? 'medium' : 'normal'}
                       sx={{
@@ -364,7 +364,7 @@ const WelcomeStepper = () => {
                       }}
                     >
                       {step.label}
-                    </StephsActualFavoriteTypography>
+                    </StephsActualFavoriteTypographyNoDropWhite>
                     {/* <BlockTextTypography */ }
                     <Typography
                       variant="caption"
