@@ -39,6 +39,12 @@ export const customAllergyIconOptions = [
  * @returns A React component icon from the available options
  */
 export const getIconForCustomAllergy = (allergyName: string): React.ElementType => {
+  // Handle empty strings
+  if (!allergyName || allergyName.length === 0) {
+    // Return a default icon for empty strings
+    return customAllergyIconOptions[0];
+  }
+  
   // Use the first character's code to create a deterministic but seemingly random selection
   const firstChar = allergyName.charAt(0).toLowerCase();
   const charCode = firstChar.charCodeAt(0);

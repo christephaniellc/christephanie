@@ -135,6 +135,10 @@ export const InvitationCodeInputs = () => {
                   e.preventDefault();
                   user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
                 }}
+                onKeyDown={(e) => {
+                  // Prevent keyboard events from closing the drawer
+                  e.stopPropagation();
+                }}
                 aria-label="Invitation details"
               >
                 <TextField
