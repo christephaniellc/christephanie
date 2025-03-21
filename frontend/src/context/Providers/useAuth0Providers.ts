@@ -20,7 +20,7 @@ export const useAuth0Providers = () => {
       // Determine where to redirect
       const targetPath = 
         appState?.returnTo || // First try explicit returnTo from auth flow
-        (parsedState?.returnTo || '/save-the-date'); // Fall back to save-the-date
+        (parsedState?.returnTo || '/'); // Fall back to home/welcome page
         
       console.log("Auth0 redirect callback - navigating to:", targetPath);
       
