@@ -17,12 +17,10 @@ export const useAuth0Providers = () => {
         }
       }
       
-      // Determine where to redirect
-      const targetPath = 
-        appState?.returnTo || // First try explicit returnTo from auth flow
-        (parsedState?.returnTo || '/'); // Fall back to home/welcome page
+      // Always redirect to home page after authentication
+      const targetPath = '/';
         
-      console.log("Auth0 redirect callback - navigating to:", targetPath);
+      console.log("Auth0 redirect callback - navigating to home page");
       
       // Store it and navigate
       sessionStorage.setItem('auth_redirect_to', targetPath);
