@@ -70,7 +70,8 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request}");
+            context.Logger.LogInformation($"Raw Input: {JsonSerializer.Serialize(request)}");
+            context.Logger.LogInformation($"Raw Input QueryStringParameters: {JsonSerializer.Serialize(request.QueryStringParameters)}");
 
             // Check for null body
             if (string.IsNullOrEmpty(request.Body))
