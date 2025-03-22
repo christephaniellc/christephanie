@@ -1,4 +1,4 @@
-﻿namespace Wedding.Lambdas.User.Find
+﻿namespace Wedding.Lambdas.Verify.Email
 {
     public sealed class RegistrationHook
     {
