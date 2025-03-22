@@ -7,6 +7,7 @@ export const useAppLayout = () => {
   const bottomNavHeight = 65;
   const versionRowHeight = 18;
   const [contentHeight, setContentHeight] = React.useState(0);
+  const [contentPadding, setContentPadding] = React.useState(0);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -23,6 +24,15 @@ export const useAppLayout = () => {
       // }
       setScreenWidth(window.innerWidth);
       setContentHeight(newHeightBasedOnZoom - bottomNavHeight - versionRowHeight);
+      
+      // Set appropriate padding for content based on screen width
+      let padding = 16; // Default padding
+      if (window.innerWidth < 400) {
+        padding = 8; // Smaller padding for very small screens
+      } else if (window.innerWidth >= 1200) {
+        padding = 24; // Larger padding for larger screens
+      }
+      setContentPadding(padding);
       //console.log('setting contentHeight', window.innerHeight - bottomNavHeight);
     };
     handleResize();
@@ -35,5 +45,5 @@ export const useAppLayout = () => {
     };
   }, []);
 
-  return {screenWidth, contentHeight};
+  return {screenWidth, contentHeight, contentPadding};
 }

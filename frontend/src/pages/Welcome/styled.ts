@@ -13,7 +13,7 @@ const WelcomeContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'hidden',
+  overflow: 'auto',
 }));
 
 const BackgroundOverlay = styled(Box)(({ theme }) => ({
@@ -31,28 +31,21 @@ const ContentContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
-  height: '100%',
+  minHeight: '100%',
   zIndex: 2,
-  padding: theme.spacing(1),
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(2),
-  },
+  padding: 0,
+  paddingBottom: '80px', // Space for bottom nav
 }));
 
 const WeddingInfoContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  // width: '100%',
+  width: '100%',
   paddingTop: '0px',
   paddingBottom: theme.spacing(1.5),
-  // padding: theme.spacing(1.5),
-  borderRadius: theme.shape.borderRadius,
   marginBottom: theme.spacing(2),
-  //marginTop: theme.spacing(0),
-  // boxShadow: `0 4px 20px ${alpha('#000', 0.2)}`,
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(2),
     marginBottom: theme.spacing(3),
   },
   [theme.breakpoints.up('lg')]: {
@@ -205,13 +198,11 @@ const StepperContainer = styled(Box)(({ theme }) => ({
   marginRight: 'auto',
   marginBottom: theme.spacing(2),
   minHeight: '350px', // Increased to accommodate title
-  borderRadius: theme.shape.borderRadius,
   justifyContent: 'flex-end',
-  boxShadow: `0 4px 30px ${alpha('#000', 0.1)}`,
-  padding: theme.spacing(1.5),
+  boxShadow: 'none',
+  padding: 0,
   overflow: 'visible', // Changed from 'auto' to prevent cutting off content
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(2),
     maxWidth: '500px',
     minHeight: '400px', // Even more space on larger screens
   },
@@ -221,32 +212,7 @@ const StepperContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StepperModal = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: alpha(theme.palette.background.paper, 0.95),
-  backdropFilter: 'blur(10px)',
-  borderTopLeftRadius: theme.shape.borderRadius * 2,
-  borderTopRightRadius: theme.shape.borderRadius * 2,
-  boxShadow: `0 -4px 20px ${alpha('#000', 0.3)}`,
-  transform: 'translateY(100%)',
-  transition: 'transform 0.3s ease-in-out',
-  zIndex: 1200,
-  padding: theme.spacing(1.5),
-  paddingBottom: theme.spacing(2),
-  maxHeight: '85vh',
-  overflow: 'auto',
-  display: 'flex',
-  flexDirection: 'column',
-  // Hardware acceleration helps prevent issues with mobile keyboard
-  WebkitTransform: 'translate3d(0,100%,0)',
-  '&.visible': {
-    transform: 'translateY(0)',
-    WebkitTransform: 'translate3d(0,0,0)',
-  },
-}));
+// Removed StepperModal - now using normal scrolling instead
 
 export {
   Image,
@@ -266,5 +232,4 @@ export {
   QuoteText,
   TitleContainer,
   StepperContainer,
-  StepperModal,
 };

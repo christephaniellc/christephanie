@@ -55,7 +55,7 @@ export const BottomNav = () => {
       position="fixed" 
       bottom={0} 
       width="100%" 
-      sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65}} 
+      sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }} 
       component={Paper} 
       elevation={5}
       role="navigation"
@@ -68,10 +68,24 @@ export const BottomNav = () => {
           borderTop: '4px solid rgba(255,255,255,.1)', 
           height: 65,
           boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
+          borderRadius: 0,
           "& .MuiBottomNavigationAction-root.Mui-selected": {
             backgroundColor: "primary.main",
             color: "common.white",
           },
+          "& .MuiBottomNavigationAction-root": {
+            minWidth: '52px',
+            padding: '0 0',
+            fontSize: '0.65rem',
+            '@media (min-width: 400px)': {
+              minWidth: '68px',
+              padding: '0 2px'
+            },
+            '@media (min-width: 600px)': {
+              minWidth: '80px',
+              padding: '0 4px'
+            }
+          }
         }}
         value={navValue}
         onChange={(event, newValue) => setNavValue(newValue)}
@@ -131,6 +145,7 @@ export const BottomNav = () => {
           label={auth0User ? 'Logout' : 'Login'}
           showLabel={true}
           icon={<ProfileIcon />}
+          sx={{ paddingLeft: 0, paddingRight: 0 }}
           onClick={() => {
             if (auth0User) {
               logOutFromAuth0();

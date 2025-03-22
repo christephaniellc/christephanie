@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 
 import routes from '..';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
@@ -8,10 +9,19 @@ import ProtectedRoute from '@/routes/ProtectedRoute';
 import AppVersionFooter from '@/components/VersionHash';
 
 function Pages() {
-  const { contentHeight } = useAppLayout();
+  const { contentHeight, contentPadding } = useAppLayout();
+  const theme = useTheme();
+
   return (
     <Box>
-      <Box sx={{ height: contentHeight, overflow: 'hidden' }}>
+      <Box 
+        sx={{ 
+          height: 'auto', 
+          overflow: 'auto',
+          padding: 0,
+          paddingBottom: theme.spacing(8)
+        }}
+      >
         <Routes>
           {Object.entries(routes).map(([pageKey, { path, component: Component }]) => {
             const page = parseInt(pageKey) as PageEnum;

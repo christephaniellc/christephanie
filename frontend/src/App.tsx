@@ -9,7 +9,6 @@ import Pages from '@/routes/Pages';
 import HotKeys from '@/sections/HotKeys';
 import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
-import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
 import './assets/styles/fonts.css';
@@ -43,7 +42,6 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
-      <Sidebar />
       <Suspense fallback={<Loading />}>
         <Pages />
       </Suspense>
