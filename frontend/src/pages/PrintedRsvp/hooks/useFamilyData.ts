@@ -72,8 +72,9 @@ export const useFamilyData = () => {
           return calculateCompletionPercentage(b) - calculateCompletionPercentage(a);
         case 'lastUpdated':
           // Sort by last updated, most recent first
-          const aTimestamp = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
-          const bTimestamp = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
+          // Safely access lastUpdated property which might not exist on the type
+          const aTimestamp = (a as any).lastUpdated ? new Date((a as any).lastUpdated).getTime() : 0;
+          const bTimestamp = (b as any).lastUpdated ? new Date((b as any).lastUpdated).getTime() : 0;
           return bTimestamp - aTimestamp;
         default:
           return 0;

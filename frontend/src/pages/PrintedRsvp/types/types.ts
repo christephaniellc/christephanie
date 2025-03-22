@@ -23,3 +23,19 @@ export interface FamilyStats {
   declinedPercentage: number;
   pendingPercentage: number;
 }
+
+export interface PhotoGridItem {
+  id: number;
+  photoSrc: string;
+  position: [number, number]; // [row, column]
+  isLocked: boolean;
+  objectFit?: string;
+  objectPosition?: string;
+}
+
+export type PhotoVariant = {
+  id: string;
+  name: string;
+  description?: string;
+  layout: PhotoGridItem[];
+}

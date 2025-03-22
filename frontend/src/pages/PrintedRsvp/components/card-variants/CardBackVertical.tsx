@@ -1,9 +1,6 @@
 import React from 'react';
 import { Box, Paper, Typography, useTheme } from '@mui/material';
-import EngagementPhoto1 from '@/assets/engagement-photos/topher_and_steph_rsvp1.jpg';
-import EngagementPhoto2 from '@/assets/engagement-photos/topher_and_steph_rsvp2.jpg';
-import EngagementPhoto3 from '@/assets/engagement-photos/topher_and_steph_rsvp3.jpg';
-import EngagementPhoto4 from '@/assets/engagement-photos/topher_and_steph_rsvp8.jpg';
+import { PhotoGrid } from '../PhotoGrid';
 
 export const CardBackVertical: React.FC = () => {
   const theme = useTheme();
@@ -22,69 +19,7 @@ export const CardBackVertical: React.FC = () => {
       }}
     >
       {/* Grid layout for photos - rearranged for vertical format */}
-      <Box sx={{ 
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: '1fr 1fr 1fr',
-        gap: '4px',
-        width: '100%',
-        height: '100%',
-        padding: '4px',
-        boxSizing: 'border-box'
-      }}>
-        {/* Top area: Large main photo */}
-        <Box 
-          component="img" 
-          src={EngagementPhoto2}
-          alt="Engagement Photo 2" 
-          sx={{ 
-            gridColumn: '1',
-            gridRow: '1 / span 2',
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover',
-            objectPosition: 'center 30%',
-            borderRadius: '4px'
-          }} 
-        />
-        
-        {/* Bottom area: Two smaller photos side by side */}
-        <Box sx={{ 
-          gridColumn: '1',
-          gridRow: '3',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '4px'
-        }}>
-          {/* Bottom left */}
-          <Box 
-            component="img" 
-            src={EngagementPhoto3}
-            alt="Engagement Photo 3" 
-            sx={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              objectPosition: 'center',
-              borderRadius: '4px'
-            }} 
-          />
-          
-          {/* Bottom right */}
-          <Box 
-            component="img" 
-            src={EngagementPhoto4}
-            alt="Engagement Photo 4" 
-            sx={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              objectPosition: 'center',
-              borderRadius: '4px'
-            }} 
-          />
-        </Box>
-      </Box>
+      <PhotoGrid orientation="vertical" />
       
       {/* Subtle branding overlay */}
       <Box sx={{
