@@ -1,4 +1,4 @@
-import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest } from '@/types/api';
+import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, VerifyEmailResponse } from '@/types/api';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -95,6 +95,10 @@ export default class Api {
 
   validateEmail(email: string, token?: string, action?: string): Promise<{ success: boolean }> {
     return this.post(`/validate/email`, { email, token, action });
+  }
+
+  verifyEmail(token?: string): Promise<{ response: VerifyEmailResponse }> {
+    return this.post(`/verify/email?token=${token}` );
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {

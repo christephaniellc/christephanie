@@ -177,6 +177,8 @@ Update NPM packages:
 	yarn run dev	
 	
 Update API calls from swagger:
+- Create controller
+- Add registration hooks to Startup.cs
 - Run swagger update (backend)
 - npm run generate:types
 -----------------------
