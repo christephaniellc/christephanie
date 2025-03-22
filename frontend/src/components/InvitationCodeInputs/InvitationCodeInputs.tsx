@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { stdStepperState } from '@/store/steppers/steppers';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
+import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 
 // Dialog component for editing invitation code
 interface InvitationCodeDialogProps {
@@ -72,7 +73,7 @@ const InvitationCodeDialog = ({
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="xs"
+      maxWidth="sm"
       slotProps={{
         backdrop: {
           sx: {
@@ -89,21 +90,68 @@ const InvitationCodeDialog = ({
           border: `1px solid ${theme.palette.secondary.main}`,
           borderRadius: 2,
           boxShadow: `0 8px 32px rgba(0,0,0,0.5)`,
+          overflow: 'hidden',
+          position: 'relative',
         },
       }}
     >
       <DialogTitle sx={{ 
         borderBottom: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
         pb: 2,
+        position: 'relative',
+        zIndex: 1,
       }}>
-        <Box display="flex" alignItems="center">
-          <KeyOutlined sx={{ mr: 1, color: theme.palette.secondary.main }} />
-          <Typography variant="h6" color="secondary.main">
-            {invitationCode ? 'Edit' : 'Add'} Invitation Code
-          </Typography>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center">
+            <KeyOutlined sx={{ mr: 1, color: theme.palette.secondary.main }} />
+            <Typography variant="h6" color="secondary.main">
+              {invitationCode ? 'Edit' : 'Add'} Invitation Code
+            </Typography>
+          </Box>
+          
+          <Box display="flex" alignItems="center" gap={1}>
+            {code && (
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'white',
+                  p: 0.5,
+                  borderRadius: 1,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+                  height: 36,
+                  width: 36,
+                }}
+              >
+                <Box 
+                  component="img"
+                  alt="QR Code"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=30x30&data=https://christephanie.com?inviteCode=${encodeURIComponent(code)}`}
+                  sx={{ 
+                    width: 30,
+                    height: 30,
+                  }}
+                />
+              </Box>
+            )}
+            <Box 
+              component="img"
+              src={ElPulpo}
+              alt="El Pulpo"
+              sx={{
+                height: 36,
+                width: 36,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.4)}`,
+              }}
+            />
+          </Box>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ py: 4, mt: 1 }}>
+      <DialogContent sx={{ py: 4, position: 'relative', zIndex: 1 }}>
         <TextField
           autoFocus
           margin="dense"
@@ -113,9 +161,8 @@ const InvitationCodeDialog = ({
           value={code || ''}
           onChange={(e) => setCode(e.target.value)}
           onKeyDown={handleKeyDown}
-          helperText="Enter the invitation code from your wedding invitation"
           sx={{
-            mt: 1,
+            mt: 3,
             '& .MuiInputBase-input': {
               fontSize: 'h5.fontSize',
               textAlign: 'center',
@@ -149,8 +196,20 @@ const InvitationCodeDialog = ({
             ),
           }}
         />
+        
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mt: 2, 
+            textAlign: 'center',
+            fontSize: '0.85rem'
+          }}
+        >
+          Find your invitation code on the bottom left of your printed invitation
+        </Typography>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 3, position: 'relative', zIndex: 1 }}>
         <Button 
           onClick={onClose} 
           variant="outlined" 
@@ -180,6 +239,48 @@ const InvitationCodeDialog = ({
           Save
         </Button>
       </DialogActions>
+
+      {/* Decorative corner elements */}
+      <Box sx={{ 
+        position: 'absolute', 
+        top: 10, 
+        left: 10, 
+        width: 15, 
+        height: 15, 
+        borderTop: `1px solid ${theme.palette.primary.main}`, 
+        borderLeft: `1px solid ${theme.palette.primary.main}`,
+        zIndex: 1
+      }} />
+      <Box sx={{ 
+        position: 'absolute', 
+        top: 10, 
+        right: 10, 
+        width: 15, 
+        height: 15, 
+        borderTop: `1px solid ${theme.palette.primary.main}`, 
+        borderRight: `1px solid ${theme.palette.primary.main}`,
+        zIndex: 1
+      }} />
+      <Box sx={{ 
+        position: 'absolute', 
+        bottom: 10, 
+        left: 10, 
+        width: 15, 
+        height: 15, 
+        borderBottom: `1px solid ${theme.palette.primary.main}`, 
+        borderLeft: `1px solid ${theme.palette.primary.main}`,
+        zIndex: 1
+      }} />
+      <Box sx={{ 
+        position: 'absolute', 
+        bottom: 10, 
+        right: 10, 
+        width: 15, 
+        height: 15, 
+        borderBottom: `1px solid ${theme.palette.primary.main}`, 
+        borderRight: `1px solid ${theme.palette.primary.main}`,
+        zIndex: 1
+      }} />
     </Dialog>
   );
 };
