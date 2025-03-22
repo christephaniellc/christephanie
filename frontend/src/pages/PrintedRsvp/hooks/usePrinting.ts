@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { FamilyUnitDto } from '@/types/api';
-import { CardSide } from '../types/types';
+import { CardSide, CardOrientation } from '../types/types';
 import { CARD_WIDTH_INCHES, CARD_HEIGHT_INCHES } from './useCardDimensions';
 
 export const usePrinting = () => {
   const [isPrinting, setIsPrinting] = useState(false);
 
   // Handle print button click
-  const handlePrint = (selectedFamily: FamilyUnitDto | null, cardSide: CardSide) => {
+  const handlePrint = (
+    selectedFamily: FamilyUnitDto | null, 
+    cardSide: CardSide,
+    orientation: CardOrientation
+  ) => {
     if (!selectedFamily) return;
     
     setIsPrinting(true);
@@ -22,7 +26,7 @@ export const usePrinting = () => {
     
     // Get the card element
     const cardElement = document.querySelector(
-      cardSide === 'front' ? '.front-card' : '.back-card'
+      `.card-${cardSide}-${orientation}`
     );
     
     if (!cardElement) {
@@ -31,6 +35,10 @@ export const usePrinting = () => {
       return;
     }
     
+    // Set page dimensions based on orientation
+    const pageWidth = orientation === 'horizontal' ? CARD_WIDTH_INCHES : CARD_HEIGHT_INCHES;
+    const pageHeight = orientation === 'horizontal' ? CARD_HEIGHT_INCHES : CARD_WIDTH_INCHES;
+    
     // Set up the print window content
     printWindow.document.write(`
       <html>
@@ -38,7 +46,7 @@ export const usePrinting = () => {
           <title>Print RSVP Card - ${selectedFamily?.unitName || 'Family'}</title>
           <style>
             @page {
-              size: ${CARD_WIDTH_INCHES}in ${CARD_HEIGHT_INCHES}in;
+              size: ${pageWidth}in ${pageHeight}in;
               margin: 0;
             }
             body {
@@ -47,12 +55,15 @@ export const usePrinting = () => {
               background-color: white;
             }
             .card-container {
-              width: ${CARD_WIDTH_INCHES}in;
-              height: ${CARD_HEIGHT_INCHES}in;
+              width: ${pageWidth}in;
+              height: ${pageHeight}in;
               overflow: hidden;
+              display: flex;
+              justify-content: center;
+              align-items: center;
             }
             .card-content {
-              transform-origin: top left;
+              transform-origin: center;
               transform: scale(1);
             }
           </style>

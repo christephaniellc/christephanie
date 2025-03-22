@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -7,11 +7,13 @@ import {
   Chip, 
   ToggleButtonGroup, 
   ToggleButton,
-  Fade,
   Tooltip,
   IconButton,
   Button,
-  LinearProgress
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import isMobile from '@/utils/is-mobile';
@@ -21,23 +23,34 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import PrintIcon from '@mui/icons-material/Print';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InfoIcon from '@mui/icons-material/Info';
-import { CardSide } from './types/types';
+import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { CardSide, CardOrientation } from './types/types';
 import { useCardDimensions, useFamilyData, usePrinting } from './hooks';
-import { CardFrontSide, CardBackSide, FamilyList, RulerMarks, MobileView } from './components';
+import { 
+  CardFrontHorizontal, 
+  CardFrontVertical,
+  CardBackHorizontal,
+  CardBackVertical,
+  FamilyList, 
+  MobileView,
+  CardModal
+} from './components';
 
 const PrintedRsvp: React.FC = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Card state
   const [cardSide, setCardSide] = useState<CardSide>('front');
+  const [frontOrientation, setFrontOrientation] = useState<CardOrientation>('horizontal');
+  const [backOrientation, setBackOrientation] = useState<CardOrientation>('horizontal');
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Hooks
-  const { 
-    actualCardWidth, 
-    actualCardHeight, 
-    cardScale, 
-    pixelsPerInch 
-  } = useCardDimensions(containerRef);
+  const { cardWidth, cardHeight } = useCardDimensions(
+    cardSide === 'front' ? frontOrientation : backOrientation
+  );
   
   const { 
     filteredFamilies,
@@ -49,9 +62,7 @@ const PrintedRsvp: React.FC = () => {
     sortOption,
     sortAnchorEl,
     familyStats,
-    calculateCompletionStatus,
     calculateCompletionPercentage,
-    calculateLastNames,
     handleSortClick,
     handleSortClose,
     handleFamilySelect,
@@ -72,16 +83,28 @@ const PrintedRsvp: React.FC = () => {
     }
   };
   
-  // QR code URL for the selected family's invitation code
-  const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com/rsvp?invitationCode=${selectedFamily.invitationCode}`
-    : "https://christephanie.com/rsvp?invitationCode=DEMO";
-
+  // Handle orientation toggle
+  const handleOrientationToggle = () => {
+    if (cardSide === 'front') {
+      setFrontOrientation(prev => prev === 'horizontal' ? 'vertical' : 'horizontal');
+    } else {
+      setBackOrientation(prev => prev === 'horizontal' ? 'vertical' : 'horizontal');
+    }
+  };
+  
+  // Handle card click to open modal
+  const handleCardClick = () => {
+    setModalOpen(true);
+  };
+  
   // Mobile view message
   if (isMobile && isSmallScreen) {
     return <MobileView />;
   }
 
+  // Get current orientation based on current side
+  const currentOrientation = cardSide === 'front' ? frontOrientation : backOrientation;
+  
   // Main view
   return (
     <Box 
@@ -93,7 +116,6 @@ const PrintedRsvp: React.FC = () => {
         bgcolor: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(8px)'
       }}
-      ref={containerRef}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <StephsActualFavoriteTypography variant="h3" sx={{ flexGrow: 1 }}>
@@ -116,7 +138,7 @@ const PrintedRsvp: React.FC = () => {
             <span>
               <IconButton 
                 color="primary"
-                onClick={() => handlePrint(selectedFamily, cardSide)}
+                onClick={() => handlePrint(selectedFamily, cardSide, currentOrientation)}
                 disabled={!selectedFamily || isPrinting}
               >
                 <PrintIcon />
@@ -126,7 +148,7 @@ const PrintedRsvp: React.FC = () => {
         </Box>
       </Box>
       
-      {/* Simplified info bar */}
+      {/* Info bar */}
       <Box 
         sx={{ 
           mb: 2, 
@@ -186,14 +208,16 @@ const PrintedRsvp: React.FC = () => {
           height: '100%',
           overflow: 'hidden'
         }}>
-          {/* Toggle between front and back of the card */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, gap: 2 }}>
+          {/* Toggle controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            {/* Side toggle */}
             <ToggleButtonGroup
               value={cardSide}
               exclusive
               onChange={handleCardSideToggle}
               aria-label="Card side"
               color="primary"
+              size="small"
             >
               <ToggleButton value="front">
                 <MailOutlineIcon sx={{ mr: 1 }} />
@@ -205,141 +229,112 @@ const PrintedRsvp: React.FC = () => {
               </ToggleButton>
             </ToggleButtonGroup>
             
-            <Button
-              variant="contained"
-              startIcon={<PrintIcon />}
-              disabled={!selectedFamily || isPrinting}
-              onClick={() => handlePrint(selectedFamily, cardSide)}
-              color="secondary"
-              sx={{ ml: 2 }}
-            >
-              Print Card
-            </Button>
+            {/* Orientation and action buttons */}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Tooltip title={`Switch to ${currentOrientation === 'horizontal' ? 'vertical' : 'horizontal'} orientation`}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ScreenRotationIcon />}
+                  onClick={handleOrientationToggle}
+                >
+                  {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'}
+                </Button>
+              </Tooltip>
+              
+              <Tooltip title="Open in full screen">
+                <span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<OpenInFullIcon />}
+                    onClick={handleCardClick}
+                    disabled={!selectedFamily}
+                  >
+                    Expand
+                  </Button>
+                </span>
+              </Tooltip>
+              
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<PrintIcon />}
+                disabled={!selectedFamily || isPrinting}
+                onClick={() => handlePrint(selectedFamily, cardSide, currentOrientation)}
+                color="secondary"
+              >
+                Print
+              </Button>
+            </Box>
           </Box>
           
-          {/* Card with rulers */}
+          {/* Card preview */}
           <Box 
             sx={{ 
               position: 'relative', 
               flexGrow: 1,
               display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'flex-start',
-              p: 4,
-              ml: 5, 
-              mt: 5,
+              alignItems: 'center',
+              justifyContent: 'center',
               overflow: 'auto',
-              maxHeight: 'calc(100vh - 350px)'
+              maxHeight: 'calc(100vh - 350px)',
+              cursor: selectedFamily ? 'pointer' : 'default'
             }}
+            onClick={selectedFamily ? handleCardClick : undefined}
           >
-            {/* Horizontal ruler at the top */}
-            <Box sx={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 40, 
-              width: `${actualCardWidth + 20}px`, 
-              height: 40, 
-              display: 'flex',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              borderRadius: '4px 4px 0 0'
-            }}>
-              <RulerMarks size={actualCardWidth + 20} horizontal={true} pixelsPerInch={pixelsPerInch} />
-            </Box>
-            
-            {/* Vertical ruler on the left */}
-            <Box sx={{ 
-              position: 'absolute', 
-              top: 40, 
-              left: 0, 
-              width: 40, 
-              height: `${actualCardHeight + 20}px`, 
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              borderRadius: '0 0 0 4px'
-            }}>
-              <RulerMarks size={actualCardHeight + 20} horizontal={false} pixelsPerInch={pixelsPerInch} />
-            </Box>
-            
-            {/* Card content with fade transition */}
-            <Box sx={{ mt: 4, ml: 4 }}>
-              {selectedFamily ? (
-                <Fade key={`${cardSide}-${selectedFamily.invitationCode}`} in={true} timeout={500}>
-                  <Box>
-                    {cardSide === 'front' ? (
-                      <CardFrontSide 
-                        actualCardWidth={actualCardWidth}
-                        actualCardHeight={actualCardHeight}
-                        cardScale={cardScale}
-                        selectedFamily={selectedFamily}
-                        calculateLastNames={calculateLastNames}
-                        qrCodeUrl={qrCodeUrl}
-                      />
-                    ) : (
-                      <CardBackSide 
-                        actualCardWidth={actualCardWidth}
-                        actualCardHeight={actualCardHeight}
-                        cardScale={cardScale}
-                      />
-                    )}
-                    
-                    {/* Optional: Add a simple completion percentage */}
-                    <Box sx={{ 
-                      mt: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 1
-                    }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        Form completion: {calculateCompletionPercentage(selectedFamily)}%
-                      </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={calculateCompletionPercentage(selectedFamily)}
-                        sx={{ 
-                          width: 100,
-                          height: 4,
-                          borderRadius: 1
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </Fade>
-              ) : (
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center', 
-                  height: '200px',
-                  width: `${actualCardWidth}px`,
-                  color: 'text.secondary',
-                  bgcolor: 'rgba(0,0,0,0.3)',
-                  borderRadius: 2,
-                  p: 3
-                }}>
-                  <InfoIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
-                  <Typography gutterBottom>Select a family to preview their card</Typography>
-                  <Typography variant="body2" color="text.secondary" textAlign="center">
-                    Choose a family from the list on the left to see their RSVP card
-                  </Typography>
-                </Box>
-              )}
-              
-              {/* Display physical dimensions below the card */}
-              {selectedFamily && (
-                <>
-                  <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'gray' }}>
-                    Actual card dimensions: 6.0" × 4.0"
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', color: 'gray' }}>
-                    Scale: {(cardScale * 100).toFixed(0)}% of actual size
-                  </Typography>
-                </>
-              )}
-            </Box>
+            {selectedFamily ? (
+              <Box>
+                {cardSide === 'front' && frontOrientation === 'horizontal' && (
+                  <CardFrontHorizontal selectedFamily={selectedFamily} />
+                )}
+                {cardSide === 'front' && frontOrientation === 'vertical' && (
+                  <CardFrontVertical selectedFamily={selectedFamily} />
+                )}
+                {cardSide === 'back' && backOrientation === 'horizontal' && (
+                  <CardBackHorizontal />
+                )}
+                {cardSide === 'back' && backOrientation === 'vertical' && (
+                  <CardBackVertical />
+                )}
+                
+                {/* Caption */}
+                <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: 'gray' }}>
+                  Click card to enlarge • {cardSide === 'front' ? 'Address' : 'Picture'} side • {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'} orientation
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center', 
+                height: '200px',
+                width: '400px',
+                color: 'text.secondary',
+                bgcolor: 'rgba(0,0,0,0.3)',
+                borderRadius: 2,
+                p: 3
+              }}>
+                <InfoIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                <Typography gutterBottom>Select a family to preview their card</Typography>
+                <Typography variant="body2" color="text.secondary" textAlign="center">
+                  Choose a family from the list on the left to see their RSVP card
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>
+      
+      {/* Modal for enlarged card view */}
+      <CardModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        family={selectedFamily}
+        cardSide={cardSide}
+        orientation={currentOrientation}
+      />
     </Box>
   );
 };

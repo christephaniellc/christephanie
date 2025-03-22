@@ -1,7 +1,8 @@
 import { FamilyUnitDto } from '@/types/api';
 
 export type CardSide = 'front' | 'back';
-export type SortOption = 'name' | 'invitationCode' | 'guestCount' | 'responseStatus' | 'completionStatus';
+export type CardOrientation = 'horizontal' | 'vertical';
+export type SortOption = 'name' | 'invitationCode' | 'guestCount' | 'responseStatus' | 'completionStatus' | 'lastUpdated';
 export type StepCompletion = {
   hasGuests: boolean;
   hasAgeGroups: boolean;
