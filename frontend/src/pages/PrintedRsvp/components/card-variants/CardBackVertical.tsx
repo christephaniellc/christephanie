@@ -2,7 +2,11 @@ import React from 'react';
 import { Box, Paper, Typography, useTheme } from '@mui/material';
 import { PhotoGrid } from '../PhotoGrid';
 
-export const CardBackVertical: React.FC = () => {
+interface CardBackVerticalProps {
+  previewOnly?: boolean;
+}
+
+export const CardBackVertical: React.FC<CardBackVerticalProps> = ({ previewOnly = false }) => {
   const theme = useTheme();
 
   return (
@@ -19,7 +23,11 @@ export const CardBackVertical: React.FC = () => {
       }}
     >
       {/* Grid layout for photos - rearranged for vertical format */}
-      <PhotoGrid orientation="vertical" />
+      <PhotoGrid 
+        orientation="vertical" 
+        showControls={false}
+        interactivePreview={false}
+      />
       
       {/* Subtle branding overlay */}
       <Box sx={{

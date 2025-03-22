@@ -21,12 +21,13 @@ import EmailIcon from '@mui/icons-material/Email';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import PrintIcon from '@mui/icons-material/Print';
+import ImageIcon from '@mui/icons-material/Image';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InfoIcon from '@mui/icons-material/Info';
 import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { CardSide, CardOrientation } from './types/types';
-import { useCardDimensions, useFamilyData, usePrinting } from './hooks';
+import { useCardDimensions, useFamilyData, usePrinting, useExportToPng } from './hooks';
 import { 
   CardFrontHorizontal, 
   CardFrontVertical,
@@ -72,6 +73,7 @@ const PrintedRsvp: React.FC = () => {
   } = useFamilyData();
 
   const { isPrinting, handlePrint } = usePrinting();
+  const { isExporting, handleExportAsPng } = useExportToPng();
 
   // Handle card side toggle
   const handleCardSideToggle = (
@@ -134,14 +136,14 @@ const PrintedRsvp: React.FC = () => {
             </IconButton>
           </Tooltip>
           
-          <Tooltip title="Print current card">
+          <Tooltip title="Export as PNG (300 DPI)">
             <span>
               <IconButton 
                 color="primary"
-                onClick={() => handlePrint(selectedFamily, cardSide, currentOrientation)}
-                disabled={!selectedFamily || isPrinting}
+                onClick={() => handleExportAsPng(selectedFamily, cardSide, currentOrientation)}
+                disabled={!selectedFamily || isExporting}
               >
-                <PrintIcon />
+                <ImageIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -259,12 +261,12 @@ const PrintedRsvp: React.FC = () => {
               <Button
                 variant="contained"
                 size="small"
-                startIcon={<PrintIcon />}
-                disabled={!selectedFamily || isPrinting}
-                onClick={() => handlePrint(selectedFamily, cardSide, currentOrientation)}
+                startIcon={<ImageIcon />}
+                disabled={!selectedFamily || isExporting}
+                onClick={() => handleExportAsPng(selectedFamily, cardSide, currentOrientation)}
                 color="secondary"
               >
-                Print
+                Export PNG (300 DPI)
               </Button>
             </Box>
           </Box>
@@ -292,10 +294,10 @@ const PrintedRsvp: React.FC = () => {
                   <CardFrontVertical selectedFamily={selectedFamily} />
                 )}
                 {cardSide === 'back' && backOrientation === 'horizontal' && (
-                  <CardBackHorizontal />
+                  <CardBackHorizontal previewOnly={true} />
                 )}
                 {cardSide === 'back' && backOrientation === 'vertical' && (
-                  <CardBackVertical />
+                  <CardBackVertical previewOnly={true} />
                 )}
                 
                 {/* Caption */}

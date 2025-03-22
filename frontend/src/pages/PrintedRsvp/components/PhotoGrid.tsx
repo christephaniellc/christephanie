@@ -33,7 +33,7 @@ import { PhotoGridItem, CardOrientation, PhotoVariant } from '../types/types';
 
 interface PhotoGridProps {
   orientation: CardOrientation;
-  editorOnly?: boolean;        // When true, only shows layout options
+  editorOnly?: boolean;        // When true, hides layout options and just shows photos
   showControls?: boolean;      // When false, hides all control buttons
   interactivePreview?: boolean; // When true, makes photos clickable for editing
   layoutUpdatesPreview?: boolean; // When true, selecting a layout immediately updates the preview
@@ -44,7 +44,7 @@ interface PhotoGridProps {
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({ 
   orientation,
-  editorOnly = false,
+  editorOnly = false, // When true, show only the photo grid without any layout options
   showControls = true,
   interactivePreview = false,
   layoutUpdatesPreview = false,
@@ -294,15 +294,15 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         gap: 1
       }}
     >
-      {/* Layout presets buttons - only shown in editor mode */}
-      {!interactivePreview && (
+      {/* Layout presets buttons - shown in editor mode when showControls is true */}
+      {showControls && (
         <Box sx={{ 
           mb: editorOnly ? 0 : 2, 
           display: 'flex', 
           flexDirection: 'column',
           gap: 1
         }}>
-          {!editorOnly && showControls && (
+          {!editorOnly && (
             <Typography variant="subtitle2" sx={{ color: 'white', opacity: 0.9 }}>
               Layout Presets:
             </Typography>
@@ -384,7 +384,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             ))}
           </Grid>
           
-          {!editorOnly && showControls && (
+          {!editorOnly && (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
               <Tooltip title="Randomize photo arrangement">
                 <Button 

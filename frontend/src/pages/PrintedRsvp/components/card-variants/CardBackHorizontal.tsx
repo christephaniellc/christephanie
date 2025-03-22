@@ -2,7 +2,11 @@ import React from 'react';
 import { Box, Paper, Typography, useTheme } from '@mui/material';
 import { PhotoGrid } from '../PhotoGrid';
 
-export const CardBackHorizontal: React.FC = () => {
+interface CardBackHorizontalProps {
+  previewOnly?: boolean;
+}
+
+export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewOnly = false }) => {
   const theme = useTheme();
 
   return (
@@ -19,7 +23,11 @@ export const CardBackHorizontal: React.FC = () => {
       }}
     >
       {/* Grid layout for photos */}
-      <PhotoGrid orientation="horizontal" />
+      <PhotoGrid 
+        orientation="horizontal" 
+        showControls={false}
+        interactivePreview={false}
+      />
       
       {/* Subtle branding overlay */}
       <Box sx={{
