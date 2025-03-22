@@ -181,6 +181,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         position: 'relative',
         mx: 'auto',
         mt: 2,
+        mb: 3,
         width: '85%',
         p: 2,
         pt: 1.5,
@@ -290,184 +291,241 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         )}
       </Box>
       
-      {/* QR code stamp */}
-      <Box 
-        sx={{ 
-          position: 'absolute', 
-          top: 20, 
-          right: 20, 
-          width: '100px', 
-          height: '100px', 
-          border: `1px solid ${theme.palette.secondary.main}`,
-          borderRadius: '4px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-          color: theme.palette.secondary.main,
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          transform: 'rotate(3deg)',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-          p: 0.5
-        }}
-      >
-        <QRCodeSVG 
-          value={qrCodeUrl}
-          size={60}
-          level="M"
-          includeMargin={false}
-          bgColor="rgba(0,0,0,0.5)"
-          fgColor={theme.palette.common.white}
-          style={{
-            borderRadius: '2px',
-            padding: '2px',
-            marginBottom: '2px'
-          }}
-        />
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.25 }}>
-          <Box 
-            component="img" 
-            src="/favicon_big_art_transparent.png" 
-            alt="Logo" 
-            sx={{ 
-              width: '16px', 
-              height: '16px', 
-              objectFit: 'contain',
-              mr: 0.5,
-              filter: 'brightness(1.2)'
-            }} 
-          />
-          <Typography variant="caption" sx={{ fontSize: '0.45rem', textAlign: 'center' }}>
-            SCAN ME
-          </Typography>
-        </Box>
-      </Box>
-      
-      {/* RSVP Circular Seal */}
-      <Box 
+      {/* RSVP Circular Seal and website content in a single flex row */}
+      <Box
         sx={{
-          position: 'absolute',
-          bottom: 50,
-          right: 30,
-          transform: 'translateX(-50%) rotate(-3deg)',
-          width: 150,
-          height: 150,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          px: 3,
+          position: 'relative',
+          mb: 6,
           zIndex: 1
         }}
       >
-        {/* Outer ring */}
-        <Box 
+        {/* Website Info with QR */}
+        <Box
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            background: 'transparent',
-            border: `2px dashed ${theme.palette.secondary.main}`,
-            opacity: 0.7
-          }}
-        />
-        
-        {/* Middle ring with text */}
-        <Box 
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
             width: '85%',
-            height: '85%',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            border: `2px solid ${theme.palette.primary.main}`,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: '12px',
+            borderRadius: '6px',
+            border: `2px solid ${theme.palette.primary.main}40`,
+            textAlign: 'center',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column'
+            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+            mb: 4
           }}
         >
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontFamily: 'Snowstorm, serif',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              color: theme.palette.secondary.main,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              textAlign: 'center',
-              lineHeight: 1.2,
+          <Typography
+            sx={{
+              color: theme.palette.common.white,
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              fontFamily: 'sans-serif',
               mb: 0.5
             }}
           >
-            RSVP
+            Please visit our website:
           </Typography>
-          
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              fontFamily: 'Snowstorm, serif',
+          <Typography
+            sx={{
+              color: theme.palette.secondary.light,
               fontSize: '0.8rem',
-              color: '#FFFFFF',
-              textAlign: 'center'
+              fontWeight: 600,
+              fontFamily: 'sans-serif'
             }}
           >
-            by May 19, 2025
+            https://christephanie.com
           </Typography>
+          
+          <Box sx={{ 
+            mt: 1.5, 
+            mb: 1.5,
+            pt: 1, 
+            width: '100%', 
+            borderTop: `1px dashed ${theme.palette.primary.main}30` 
+          }}>
+            <Typography
+              sx={{
+                color: theme.palette.primary.light,
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                fontFamily: 'sans-serif'
+              }}
+            >
+              Your invite code:
+            </Typography>
+            <Typography
+              sx={{
+                color: '#fff',
+                fontSize: '1rem',
+                fontWeight: 600,
+                fontFamily: 'sans-serif',
+                letterSpacing: '0.05em'
+              }}
+            >
+              {selectedFamily?.invitationCode || 'DEMO'}
+            </Typography>
+          </Box>
+          
+          {/* QR code */}
+          <Box 
+            sx={{ 
+              width: '80px', 
+              height: '80px', 
+              border: `1px solid ${theme.palette.secondary.main}`,
+              borderRadius: '4px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              color: theme.palette.secondary.main,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              p: 0.5,
+              mb: 0.5
+            }}
+          >
+            <QRCodeSVG 
+              value={qrCodeUrl}
+              size={55}
+              level="M"
+              includeMargin={false}
+              bgColor="rgba(0,0,0,0.5)"
+              fgColor={theme.palette.common.white}
+              style={{
+                borderRadius: '2px',
+                padding: '2px',
+                marginBottom: '2px'
+              }}
+            />
+            <Typography variant="caption" sx={{ fontSize: '0.45rem', textAlign: 'center', color: theme.palette.common.white }}>
+              SCAN ME
+            </Typography>
+          </Box>
         </Box>
         
-        {/* Inner decorative element */}
+        {/* RSVP Seal */}
         <Box 
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '40%',
-            height: '40%',
-            borderRadius: '50%',
-            border: `1px solid ${theme.palette.primary.main}`,
-            opacity: 0.5
-          }}
-        />
-      </Box>
-      
-      {/* Octopus image - positioned for vertical layout */}
-      <Box
-        component={'img'}
-        src={ElPulpo} 
-        sx={{
-          position: 'absolute',
-          bottom: -50,
-          left: -50,
-          width: 180,
-          height: 180,
-          objectFit: 'contain',
-          opacity: 0.7,
-          transform: 'rotate(-15deg)'
-        }}
-      />
-
-      {/* URL Info */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 15,
-          left: 15,
-          filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.5))'
-        }}
-      >
-        <Typography
-          sx={{
-            color: theme.palette.secondary.main,
-            fontSize: '0.7rem',
-            fontFamily: 'sans-serif'
+            width: 130,
+            height: 130,
+            position: 'relative',
+            transform: 'rotate(-3deg)',
+            mb: 3
           }}
         >
-          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}
-        </Typography>
+          {/* Outer ring */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: 'transparent',
+              border: `2px dashed ${theme.palette.secondary.main}`,
+              opacity: 0.7
+            }}
+          />
+          
+          {/* Middle ring with text */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '85%',
+              height: '85%',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              border: `2px solid ${theme.palette.primary.main}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column'
+            }}
+          >
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontFamily: 'Snowstorm, serif',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                color: theme.palette.secondary.main,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                textAlign: 'center',
+                lineHeight: 1.2,
+                mb: 0.5
+              }}
+            >
+              RSVP
+            </Typography>
+            
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontFamily: 'Snowstorm, serif',
+                fontSize: '0.8rem',
+                color: '#FFFFFF',
+                textAlign: 'center'
+              }}
+            >
+              by May 19, 2025
+            </Typography>
+          </Box>
+          
+          {/* Inner decorative element */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '40%',
+              height: '40%',
+              borderRadius: '50%',
+              border: `1px solid ${theme.palette.primary.main}`,
+              opacity: 0.5
+            }}
+          />
+        </Box>
+      </Box>
+      
+      {/* Spacer to push El Pulpo to bottom */}
+      <Box sx={{ flexGrow: 1 }} />
+
+      {/* Octopus image - full width with proper sizing */}
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          height: 150,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+          overflow: 'hidden',
+          mt: 'auto', 
+          zIndex: 1
+        }}
+      >
+        <Box
+          component={'img'}
+          src={ElPulpo} 
+          sx={{
+            width: '100%',
+            minWidth: 400,
+            objectFit: 'cover',
+            objectPosition: 'center bottom',
+            opacity: 0.9,
+            transform: 'translateY(30px)'
+          }}
+        />
       </Box>
       
       {/* Decorative corner elements */}
