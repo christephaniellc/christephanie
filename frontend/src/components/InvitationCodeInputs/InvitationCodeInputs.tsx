@@ -8,13 +8,21 @@ import {
   Link,
   TextField,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Box,
+  alpha,
+  useTheme,
+  Chip,
 } from '@mui/material';
+import { KeyOutlined, Edit } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 import { invitationButtonSelectorState } from '@/store/invitationInputs';
 import { useUser } from '@/store/user';
 import { useApiContext } from '@/context/ApiContext';
 import { useAuth0 } from '@auth0/auth0-react';
-import Box from '@mui/material/Box';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import { StephsFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
@@ -23,6 +31,158 @@ import { useNavigate } from 'react-router-dom';
 import { stdStepperState } from '@/store/steppers/steppers';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
+
+// Dialog component for editing invitation code
+interface InvitationCodeDialogProps {
+  open: boolean;
+  onClose: () => void;
+  invitationCode: string;
+  onSave: (invitationCode: string) => void;
+}
+
+const InvitationCodeDialog = ({
+  open,
+  onClose,
+  invitationCode,
+  onSave,
+}: InvitationCodeDialogProps) => {
+  const theme = useTheme();
+  const [code, setCode] = useState(invitationCode);
+
+  // Reset code state when dialog opens with new invitationCode
+  useEffect(() => {
+    if (open) {
+      setCode(invitationCode);
+    }
+  }, [open, invitationCode]);
+
+  const handleSave = () => {
+    onSave(code);
+    onClose();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && code) {
+      handleSave();
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xs"
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          }
+        }
+      }}
+      PaperProps={{
+        sx: {
+          backgroundColor: 'rgba(20, 20, 25, 0.75)',
+          backdropFilter: 'blur(30px)',
+          background: 'rgba(0,0,0,0.6)',
+          border: `1px solid ${theme.palette.secondary.main}`,
+          borderRadius: 2,
+          boxShadow: `0 8px 32px rgba(0,0,0,0.5)`,
+        },
+      }}
+    >
+      <DialogTitle sx={{ 
+        borderBottom: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        pb: 2,
+      }}>
+        <Box display="flex" alignItems="center">
+          <KeyOutlined sx={{ mr: 1, color: theme.palette.secondary.main }} />
+          <Typography variant="h6" color="secondary.main">
+            {invitationCode ? 'Edit' : 'Add'} Invitation Code
+          </Typography>
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{ py: 4, mt: 1 }}>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Invitation Code"
+          fullWidth
+          variant="outlined"
+          value={code || ''}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={handleKeyDown}
+          helperText="Enter the invitation code from your wedding invitation"
+          sx={{
+            mt: 1,
+            '& .MuiInputBase-input': {
+              fontSize: 'h5.fontSize',
+              textAlign: 'center',
+            },
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              backdropFilter: 'blur(15px)',
+              borderRadius: 1.5,
+              '&.Mui-focused': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 2,
+                }
+              },
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.25)',
+              }
+            },
+            '& .MuiFormLabel-root': {
+              color: alpha(theme.palette.secondary.main, 0.8),
+            },
+            '& .MuiFormHelperText-root': {
+              color: alpha(theme.palette.common.white, 0.7),
+              fontSize: '0.85rem',
+              mt: 1.5
+            }
+          }}
+          InputProps={{
+            startAdornment: (
+              <KeyOutlined color="secondary" sx={{ mr: 1, opacity: 0.8 }} />
+            ),
+          }}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button 
+          onClick={onClose} 
+          variant="outlined" 
+          color="secondary"
+          sx={{
+            borderRadius: 2,
+            px: 3
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          disabled={!code}
+          color="secondary"
+          variant="contained"
+          sx={{
+            borderRadius: 2,
+            px: 4,
+            fontWeight: 'bold',
+            '&:disabled': {
+              backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+              color: alpha(theme.palette.common.white, 0.4)
+            }
+          }}
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 export const InvitationCodeInputs = () => {
   const api = useApiContext();
@@ -36,13 +196,13 @@ export const InvitationCodeInputs = () => {
   // Store the access token in state so we don't trigger errors during render.
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [hasAuthed, setHasAuthed] = useState(false);
+  const [invitationCodeDialogOpen, setInvitationCodeDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!!auth0User && !hasAuthed) {
       setHasAuthed(true);
     }
   }, [auth0User]);
-
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -84,7 +244,7 @@ export const InvitationCodeInputs = () => {
     const result = await userActions.findUserIdQuery?.refetch();
     if (result && result.data && result.data.auth0Id) {
       userActions.setUser({ ...user, auth0Id: result.data.auth0Id, guestId: result.data.guestId });
-      
+
       // Small delay to ensure state is updated before proceeding
       // This helps prevent iOS touch event issues
       setTimeout(() => {
@@ -93,13 +253,21 @@ export const InvitationCodeInputs = () => {
     }
   };
 
+  const handleUpdateInvitationCode = (newCode: string) => {
+    if (user) {
+      userActions.setUser({ ...user, invitationCode: newCode });
+    }
+  };
+
   if (!user) return null;
 
+  const hasInvitationCode = Boolean(user?.invitationCode);
+
   return (
-    <Box 
-      display="flex" 
-      flexWrap="wrap" 
-      height={400} 
+    <Box
+      display="flex"
+      flexWrap="wrap"
+      height={400}
       onMouseMove={boxShadow.handleMouseMove}
       role="region"
       aria-label="Invitation code entry form"
@@ -118,7 +286,7 @@ export const InvitationCodeInputs = () => {
         <CardHeader
           title={
             !user?.guestId
-              ? 'Please enter your invitation to get started.'
+              ? 'Please enter your information to get started.'
               : `Welcome back ${user?.firstName}!`
           }
           subheader={
@@ -131,7 +299,7 @@ export const InvitationCodeInputs = () => {
         <CardContent>
           <>
             {!user?.auth0Id && (
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
@@ -142,38 +310,6 @@ export const InvitationCodeInputs = () => {
                 }}
                 aria-label="Invitation details"
               >
-                <TextField
-                  autoComplete={'off'}
-                  disabled={false}
-                  fullWidth
-                  value={user?.invitationCode || ''}
-                  label="Enter your Invitation Code"
-                  onChange={(e) => userActions.setUser({ ...user, invitationCode: e.target.value })}
-                  variant="outlined"
-                  id="invitation-code-input"
-                  aria-required="true"
-                  aria-describedby="invitation-code-description"
-                  inputProps={{
-                    'aria-label': 'Invitation Code',
-                  }}
-                  sx={{
-                    mb: 2,
-                    '& .MuiInputBase-input': {
-                      fontSize: 'h4.fontSize',
-                      textAlign: 'center',
-                      color: 'text.secondary !important',
-                    },
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
-                    }
-                  }}
-                />
-                <Typography id="invitation-code-description" sx={{ position: 'absolute', height: 1, width: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
-                  Enter the invitation code from your wedding invitation
-                </Typography>
-
                 <TextField
                   fullWidth
                   disabled={false}
@@ -198,12 +334,93 @@ export const InvitationCodeInputs = () => {
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser();
+                      user?.guestId
+                        ? signInWithAuth0(user.guestId, user.auth0Id)
+                        : handleFindUser();
                     }
                   }}
+                  autoFocus
                 />
-                <Typography id="firstname-description" sx={{ position: 'absolute', height: 1, width: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+                <Typography
+                  id="firstname-description"
+                  sx={{
+                    position: 'absolute',
+                    height: 1,
+                    width: 1,
+                    overflow: 'hidden',
+                    clip: 'rect(0 0 0 0)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   Enter your first name as it appears on your invitation
+                </Typography>
+
+{hasInvitationCode ? (
+                  <Box 
+                    onClick={() => setInvitationCodeDialogOpen(true)}
+                    sx={{ 
+                      mb: 2, 
+                      width: '100%',
+                      cursor: 'pointer',
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Edit invitation code"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setInvitationCodeDialogOpen(true);
+                      }
+                    }}
+                  >
+                    <Chip
+                      label={user.invitationCode}
+                      color="secondary"
+                      variant="outlined"
+                      icon={<KeyOutlined />}
+                      deleteIcon={<Edit />}
+                      onDelete={(e) => {
+                        e.stopPropagation();
+                        setInvitationCodeDialogOpen(true);
+                      }}
+                      sx={{
+                        fontSize: '1.1rem',
+                        py: 2.5,
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        '& .MuiChip-label': {
+                          px: 2,
+                          flexGrow: 1,
+                          textAlign: 'center',
+                        },
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    fullWidth
+                    startIcon={<KeyOutlined />}
+                    endIcon={<Edit />}
+                    onClick={() => setInvitationCodeDialogOpen(true)}
+                    sx={{ mb: 2, py: 1.5 }}
+                    aria-label="Add invitation code"
+                  >
+                    Click to add invitation code
+                  </Button>
+                )}
+                <Typography
+                  id="invitation-code-description"
+                  sx={{
+                    position: 'absolute',
+                    height: 1,
+                    width: 1,
+                    overflow: 'hidden',
+                    clip: 'rect(0 0 0 0)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Enter the invitation code from your wedding invitation
                 </Typography>
               </form>
             )}
@@ -216,9 +433,9 @@ export const InvitationCodeInputs = () => {
               disabled={!user?.firstName || !user?.invitationCode}
               fullWidth
               variant="contained"
-              onClick={() => (user?.guestId 
-                ? signInWithAuth0(user.guestId, user.auth0Id) 
-                : handleFindUser())}
+              onClick={() =>
+                user?.guestId ? signInWithAuth0(user.guestId, user.auth0Id) : handleFindUser()
+              }
               aria-label={user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             >
               {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
@@ -251,12 +468,11 @@ export const InvitationCodeInputs = () => {
       </Card>
       {accessToken && user.guestId && (
         <>
-          <StephsFavoriteTypography mx="auto" aria-hidden="true">OR</StephsFavoriteTypography>
+          <StephsFavoriteTypography mx="auto" aria-hidden="true">
+            OR
+          </StephsFavoriteTypography>
           <Card sx={{ width: '100%', mt: 2, pb: 2 }}>
-            <CardHeader 
-              subheader="Login with your existing account" 
-              aria-live="polite"
-            />
+            <CardHeader subheader="Login with your existing account" aria-live="polite" />
             <CardActions>
               <Button
                 fullWidth
@@ -269,7 +485,9 @@ export const InvitationCodeInputs = () => {
                       ? signInWithAuth0(user.guestId, user.auth0Id)
                       : console.log('No GuestId found.');
                 }}
-                aria-label={auth0User ? 'Logout from your account' : 'Login with your existing account'}
+                aria-label={
+                  auth0User ? 'Logout from your account' : 'Login with your existing account'
+                }
               >
                 {auth0User ? 'Logout' : 'Login'}
               </Button>
@@ -277,6 +495,14 @@ export const InvitationCodeInputs = () => {
           </Card>
         </>
       )}
+
+      {/* Dialog for editing invitation code */}
+      <InvitationCodeDialog
+        open={invitationCodeDialogOpen}
+        onClose={() => setInvitationCodeDialogOpen(false)}
+        invitationCode={user?.invitationCode || ''}
+        onSave={handleUpdateInvitationCode}
+      />
     </Box>
   );
 };
