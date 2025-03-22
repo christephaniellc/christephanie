@@ -69,6 +69,7 @@ const VerifyEmail = () => {
       
       try {
         // Call the API to validate the email with the token - only once!
+        // Using the new verifyEmail endpoint through validateEmailMutation
         const result = await validateEmailMutation.mutateAsync({
           email,
           token: token,

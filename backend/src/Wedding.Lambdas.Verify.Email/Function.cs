@@ -11,7 +11,6 @@ using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Multitenancy;
-using Wedding.Lambdas.User.Find;
 using Wedding.Lambdas.Verify.Email.Commands;
 using Wedding.Lambdas.Verify.Email.Handlers;
 
