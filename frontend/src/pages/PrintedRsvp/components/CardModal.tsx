@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
+import ImageIcon from '@mui/icons-material/Image';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
@@ -44,7 +45,7 @@ import { CardFrontHorizontal } from './card-variants/CardFrontHorizontal';
 import { CardFrontVertical } from './card-variants/CardFrontVertical';
 import { CardBackHorizontal } from './card-variants/CardBackHorizontal';
 import { CardBackVertical } from './card-variants/CardBackVertical';
-import { usePrinting, usePhotoVariants } from '../hooks';
+import { usePrinting, usePhotoVariants, useExportToPng } from '../hooks';
 import { PhotoGrid } from './PhotoGrid';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import EmailIcon from '@mui/icons-material/Email';
@@ -74,6 +75,7 @@ const CardModal: React.FC<CardModalProps> = ({
   orientation: initialOrientation
 }) => {
   const { isPrinting, handlePrint } = usePrinting();
+  const { isExporting, handleExportAsPng } = useExportToPng();
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -224,10 +226,10 @@ const CardModal: React.FC<CardModalProps> = ({
           {!isSmall && (
             <Button 
               color="inherit"
-              variant={isPrinting ? "outlined" : "contained"}
-              onClick={() => family && handlePrint(family, cardSide, orientation)}
-              disabled={!family || isPrinting}
-              startIcon={<PrintIcon />}
+              variant={isExporting ? "outlined" : "contained"}
+              onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+              disabled={!family || isExporting}
+              startIcon={<ImageIcon />}
               sx={{
                 bgcolor: 'rgba(255,255,255,0.15)',
                 '&:hover': {
@@ -235,7 +237,7 @@ const CardModal: React.FC<CardModalProps> = ({
                 }
               }}
             >
-              {isPrinting ? "Printing..." : "Print Card"}
+              {isExporting ? "Exporting..." : "Export PNG (300 DPI)"}
             </Button>
           )}
         </Toolbar>
@@ -341,81 +343,11 @@ const CardModal: React.FC<CardModalProps> = ({
                 
                 {/* Back sides - using editable components */}
                 {cardSide === 'back' && orientation === 'horizontal' && (
-                  <Box
-                    sx={{
-                      width: 576, // 6 inches @ 96ppi
-                      height: 384, // 4 inches @ 96ppi
-                      backgroundColor: '#121212',
-                      overflow: 'hidden',
-                      position: 'relative',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {/* Grid layout for photos - interactive version */}
-                    <PhotoGrid 
-                      orientation="horizontal" 
-                      showControls={false} 
-                      interactivePreview={true}
-                      enableDragInteraction={true}
-                      onPhotoSelected={handlePhotoSelected}
-                    />
-                    
-                    {/* Wedding date overlay */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: 15,
-                        right: 15,
-                        color: theme.palette.secondary.main,
-                        fontSize: '1.2rem',
-                        filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.7))',
-                        opacity: 0.8,
-                        fontFamily: 'Snowstorm, serif',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      July 5, 2025
-                    </Box>
-                  </Box>
+                  <CardBackHorizontal />
                 )}
                 
                 {cardSide === 'back' && orientation === 'vertical' && (
-                  <Box
-                    sx={{
-                      width: 384, // 4 inches @ 96ppi
-                      height: 576, // 6 inches @ 96ppi
-                      backgroundColor: '#121212',
-                      overflow: 'hidden',
-                      position: 'relative',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {/* Grid layout for photos - interactive version */}
-                    <PhotoGrid 
-                      orientation="vertical" 
-                      showControls={false} 
-                      interactivePreview={true}
-                      enableDragInteraction={true}
-                      onPhotoSelected={handlePhotoSelected}
-                    />
-                    
-                    {/* Wedding date overlay */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: 15,
-                        right: 15,
-                        color: theme.palette.secondary.main,
-                        fontSize: '1.2rem',
-                        filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.7))',
-                        opacity: 0.8,
-                        fontFamily: 'Snowstorm, serif',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      July 5, 2025
-                    </Box>
-                  </Box>
+                  <CardBackVertical />
                 )}
               </Box>
             </Paper>
@@ -425,16 +357,16 @@ const CardModal: React.FC<CardModalProps> = ({
                 Card dimensions: 6" × 4" ({orientation === 'horizontal' ? 'landscape' : 'portrait'})
               </Typography>
               
-              <Tooltip title="Ready to print on standard 6×4 photo paper">
+              <Tooltip title="Export as PNG at 300 DPI for high-quality printing">
                 <Button 
                   variant="contained" 
                   color="primary" 
                   size="small" 
-                  startIcon={<PrintIcon />}
-                  onClick={() => family && handlePrint(family, cardSide, orientation)}
-                  disabled={!family || isPrinting}
+                  startIcon={<ImageIcon />}
+                  onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+                  disabled={!family || isExporting}
                 >
-                  Print Card
+                  Export PNG (300 DPI)
                 </Button>
               </Tooltip>
             </Box>
@@ -493,7 +425,7 @@ const CardModal: React.FC<CardModalProps> = ({
                   <Box>
                     <PhotoGrid 
                       orientation={orientation} 
-                      editorOnly={true} 
+                      showControls={true}
                       layoutUpdatesPreview={true} // Enable immediate updates to preview
                       onPhotoClick={() => {}} // No-op in editor mode
                     />
