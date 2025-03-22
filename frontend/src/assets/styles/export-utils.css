@@ -1,0 +1,50 @@
+/* Export utilities for printed RSVP cards */
+
+/* Ensure images display properly during PNG export */
+.export-mode,
+.photo-grid-image.export-mode {
+  object-fit: cover !important;
+  border: none !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Special class for the export container */
+.clean-export {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure clean rendering of the card in export mode */
+.card-front-horizontal.clean-export,
+.card-front-vertical.clean-export,
+.card-back-horizontal.clean-export,
+.card-back-vertical.clean-export {
+  border: 10px solid transparent !important;
+  box-shadow: none !important;
+}
+
+/* Hide any edit controls during export */
+.card-back-horizontal .MuiIconButton-root,
+.card-back-vertical .MuiIconButton-root,
+.card-front-horizontal .MuiIconButton-root, 
+.card-front-vertical .MuiIconButton-root {
+  display: none !important;
+}
+
+/* Hide interactive overlays during export */
+[data-interactive="true"] {
+  display: none !important;
+}
+
+/* Override any hover effects during export */
+.card-back-horizontal img:hover,
+.card-back-vertical img:hover,
+.card-front-horizontal img:hover,
+.card-front-vertical img:hover {
+  filter: none !important;
+  transform: none !important;
+}

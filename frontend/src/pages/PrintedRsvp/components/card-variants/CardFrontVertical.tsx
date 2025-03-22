@@ -12,10 +12,12 @@ import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 
 interface CardFrontVerticalProps {
   selectedFamily: FamilyUnitDto | null;
+  exportMode?: boolean;
 }
 
 export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
-  selectedFamily
+  selectedFamily,
+  exportMode = false
 }) => {
   const theme = useTheme();
 
@@ -48,8 +50,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com?invitationCode=${selectedFamily.invitationCode}`
-    : "https://christephanie.com?invitationCode=DEMO";
+    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}`
+    : "https://christephanie.com?inviteCode=DEMO";
   
   return (
     <Paper 
@@ -145,7 +147,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             letterSpacing: '0.05em'
           }}
         >
-          Christopher & Stephanie
+          Topher & Steph
         </Typography>
         
         <Typography 
@@ -464,7 +466,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontFamily: 'sans-serif'
           }}
         >
-          https://christephanie.com?invitationCode={selectedFamily?.invitationCode || 'DEMO'}
+          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}
         </Typography>
       </Box>
       

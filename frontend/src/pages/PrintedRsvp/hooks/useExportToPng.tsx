@@ -3,6 +3,9 @@ import { FamilyUnitDto } from '@/types/api';
 import { CardSide, CardOrientation } from '../types/types';
 import html2canvas from 'html2canvas';
 
+/**
+ * Hook for exporting card to high-quality 300 DPI PNG
+ */
 export const useExportToPng = () => {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -17,7 +20,7 @@ export const useExportToPng = () => {
     setIsExporting(true);
     
     try {
-      // Get the card element
+      // Find the card element
       const cardElement = document.querySelector(
         `.card-${cardSide}-${orientation}`
       ) as HTMLElement;
@@ -52,7 +55,34 @@ export const useExportToPng = () => {
         backgroundColor: null,
         logging: false,
         useCORS: true,
-        allowTaint: true
+        allowTaint: true,
+        onclone: (clonedDoc) => {
+          // Additional cleanup on the cloned document before rendering
+          const clonedElement = clonedDoc.querySelector(`.card-${cardSide}-${orientation}`) as HTMLElement;
+          if (clonedElement) {
+            clonedElement.classList.add('clean-export');
+            
+            // Make sure all images have proper rendering
+            const images = clonedElement.querySelectorAll('img');
+            images.forEach(img => {
+              img.classList.add('export-mode');
+              img.style.objectFit = 'cover';
+              img.style.border = 'none';
+            });
+            
+            // Hide all controls
+            const controls = clonedElement.querySelectorAll('.MuiIconButton-root, [role="button"], .edit-control');
+            controls.forEach(control => {
+              (control as HTMLElement).style.display = 'none';
+            });
+            
+            // Hide interactive elements
+            const interactive = clonedElement.querySelectorAll('[data-interactive="true"]');
+            interactive.forEach(el => {
+              (el as HTMLElement).style.display = 'none';
+            });
+          }
+        }
       });
       
       // Convert the canvas to a data URL and download

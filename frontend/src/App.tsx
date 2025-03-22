@@ -13,6 +13,7 @@ import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
 import './assets/styles/fonts.css';
+import './assets/styles/export-utils.css';
 
 function App() {
   const navigate = useNavigate();
