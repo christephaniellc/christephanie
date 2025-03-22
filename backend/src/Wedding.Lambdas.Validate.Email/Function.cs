@@ -10,7 +10,6 @@ using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Helpers.JwtClaim;
 using Wedding.Common.Serialization;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Handlers;
