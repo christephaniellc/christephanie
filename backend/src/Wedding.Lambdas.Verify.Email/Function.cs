@@ -62,7 +62,7 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
+            context.Logger.LogInformation($"Raw VerifyEmail Input: {JsonSerializer.Serialize(request)}");
             context.Logger.LogInformation($"Raw QueryString Input: {JsonSerializer.Serialize(request.QueryStringParameters)}");
             context.Logger.LogInformation($"Raw Input Body: {JsonSerializer.Serialize(request.Body)}");
 
