@@ -48,8 +48,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com/rsvp?invitationCode=${selectedFamily.invitationCode}`
-    : "https://christephanie.com/rsvp?invitationCode=DEMO";
+    ? `https://christephanie.com?invitationCode=${selectedFamily.invitationCode}`
+    : "https://christephanie.com?invitationCode=DEMO";
   
   return (
     <Paper 
@@ -464,7 +464,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontFamily: 'sans-serif'
           }}
         >
-          christephanie.com?code={selectedFamily?.invitationCode || 'DEMO'}
+          https://christephanie.com?invitationCode={selectedFamily?.invitationCode || 'DEMO'}
         </Typography>
       </Box>
       
