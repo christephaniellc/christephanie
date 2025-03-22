@@ -246,7 +246,7 @@ export const useVerification = (
     validateEmailMutation.mutate(
       { email: emailValue || guest?.email?.maskedValue, token: emailVerificationToken, action: 'validate' },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
           // Force update UI immediately to show verified status
           forceUpdateVerificationStatus('email', true);
           

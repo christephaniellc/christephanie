@@ -14,6 +14,7 @@ import {
   NotificationPreferenceEnum,
   PatchFamilyUnitRequest,
   PatchGuestRequest,
+  VerifyEmailResponse,
 } from '@/types/api';
 import { collectClientInfo } from '@/utils/utils';
 import { familyState, reorderArrayByKey } from '@/store/family';
@@ -46,7 +47,7 @@ interface ApiContextProps {
     unknown
   >;
   validateEmailMutation: UseMutationResult<
-    { success: boolean },
+    { success: boolean } | { response: VerifyEmailResponse },
     ApiError,
     { email: string, token?: string, action?: string },
     unknown
@@ -277,12 +278,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     onError: (error) => console.error('Failed to validate phone', error),
   });
 
-  // EMERGENCY DISABLED VERSION
   // Rate limiting cache for email validation
   const emailRequestCache = useRef<Record<string, number>>({});
   
   const validateEmailMutation = useMutation<
-    { success: boolean },
+    { success: boolean } | { response: VerifyEmailResponse },
     ApiError,
     { email: string, token?: string, action?: string },
     unknown
@@ -295,12 +295,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationFn: ({ email, token, action }) => {    
       
       // Create a rate-limiting implementation with proper cache
-      if (action === 'register') {
+      if (action === 'register' || action === 'resendcode') {
         // Validate inputs
         if (!email) {
-        console.error("Cannot validate email: No email provided");
-        return Promise.reject(new Error("No email provided"));
-      }
+          console.error("Cannot validate email: No email provided");
+          return Promise.reject(new Error("No email provided"));
+        }
         const now = Date.now();
         const cacheKey = `${email}:${action}`;
         const lastCallTime = emailRequestCache.current[cacheKey] || 0;
@@ -316,9 +316,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         // Update timestamp for this email+action
         emailRequestCache.current[cacheKey] = now;
         console.log(`Allowing email registration call for ${email}`);
+        
+        // These actions still use the validateEmail endpoint
+        return apiRef.current.validateEmail(email, token, action);
       }
       
-      // For token validation, implement deduplication to prevent multiple identical validations
+      // For token validation, use the new verifyEmail endpoint
       if (action === 'validate') {
         // Require a token for validation
         if (!token) {
@@ -344,11 +347,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         emailRequestCache.current[validationCacheKey] = now;
         console.log(`Processing token validation for ${email}`);
         
-        // Make the actual API call
-        return apiRef.current.validateEmail(email, token, action);
+        // Make the actual API call to the new verifyEmail endpoint
+        return apiRef.current.verifyEmail(token);
       }
       
-      // If rate limiting passed, proceed with the actual API call
+      // Default case - this should not happen in normal operation
+      console.warn(`Unknown email action: ${action}, falling back to validateEmail`);
       return apiRef.current.validateEmail(email, token, action);
     },
     onSuccess: (data) => {
