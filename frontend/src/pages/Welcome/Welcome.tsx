@@ -9,13 +9,12 @@ import WelcomeBg2 from '@/assets/WelcomeBg2.jpg';
 import WelcomeBg3 from '@/assets/WelcomeBg3.jpg';
 import WelcomeBg4 from '@/assets/WelcomeBg4.jpg';
 import WelcomeBg5 from '@/assets/WelcomeBg5.jpg';
-import { WelcomeContainer, BackgroundOverlay, ContentContainer, StepperModal } from './styled';
+import { WelcomeContainer, BackgroundOverlay, ContentContainer } from './styled';
 import BackgroundImage from './components/BackgroundImage';
 import TitleSection from './components/TitleSection';
 import WeddingInfoSection from './components/WeddingInfoSection';
 import StepperSection from './components/StepperSection';
-import { IconButton, Box } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box } from '@mui/material';
 import { useRecoilValue } from 'recoil';
 import { randomWeddingEuphemismState } from '@/store/welcome';
 
@@ -50,44 +49,13 @@ const Welcome: React.FC = () => {
     }
   }, [user, family, familyActions, auth0User]);
 
-  // Check if content needs the modal (only if it doesn't fit in the viewport)
+  // Always allow scrolling rather than using modal
   useLayoutEffect(() => {
-    const checkContentFit = () => {
-      if (contentRef.current && containerRef.current) {
-        // Calculate the total height of all content
-        const titleSection = contentRef.current.querySelector('[data-section="title"]');
-        const weddingInfoSection = contentRef.current.querySelector('[data-section="wedding-info"]');
-        const stepperSection = contentRef.current.querySelector('[data-section="stepper"]');
-        
-        let totalContentHeight = 0;
-        if (titleSection) totalContentHeight += titleSection.getBoundingClientRect().height;
-        if (weddingInfoSection) totalContentHeight += weddingInfoSection.getBoundingClientRect().height;
-        if (stepperSection) totalContentHeight += stepperSection.getBoundingClientRect().height;
-        
-        // Add some margin between sections
-        totalContentHeight += 40; // Approximate margins between sections
-        
-        // Compare with available container height
-        const containerHeight = containerRef.current.getBoundingClientRect().height;
-        
-        // Set state based on whether content fits
-        setContentNeedsModal(totalContentHeight > containerHeight);
-      }
-    };
+    // Force content to be scrollable by setting modal to false
+    setContentNeedsModal(false);
     
-    // Check on mount and when auth0User changes (which might change content)
-    checkContentFit();
-    
-    // Also add a resize observer to check when window size changes
-    const resizeObserver = new ResizeObserver(checkContentFit);
-    if (contentRef.current) {
-      resizeObserver.observe(contentRef.current);
-    }
-    
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [auth0User, contentHeight]);
+    // No need for resize observer since we're always allowing scrolling
+  }, []);
   
   // Handle scroll detection
   useEffect(() => {
@@ -162,30 +130,11 @@ const Welcome: React.FC = () => {
           />
         </Box>
 
-        {/* Only show stepper directly if it fits or modal is not visible */}
-        {(!contentNeedsModal || !isModalVisible) && (
-          <Box data-section="stepper">
-            <StepperSection auth0User={auth0User} />
-          </Box>
-        )}
-      </ContentContainer>
-      
-      {/* Stepper section in modal - only when content doesn't fit */}
-      {contentNeedsModal && (
-        <StepperModal className={isModalVisible ? 'visible' : ''}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-            <IconButton 
-              onClick={() => setIsModalVisible(false)}
-              size="small"
-              aria-label="close"
-              sx={{ color: 'text.secondary' }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
+        {/* Always show stepper directly */}
+        <Box data-section="stepper">
           <StepperSection auth0User={auth0User} />
-        </StepperModal>
-      )}
+        </Box>
+      </ContentContainer>
     </WelcomeContainer>
   );
 };
