@@ -45,7 +45,7 @@ interface FamilyListProps {
   isFetching: boolean;
 }
 
-export const FamilyList: React.FC<FamilyListProps> = ({
+const FamilyList: React.FC<FamilyListProps> = ({
   familyStats,
   filteredFamilies,
   allFamilies,
@@ -140,6 +140,12 @@ export const FamilyList: React.FC<FamilyListProps> = ({
             >
               Sort by Completion Status
             </MenuItem>
+            <MenuItem 
+              onClick={() => handleSortClose('lastUpdated')}
+              selected={sortOption === 'lastUpdated'}
+            >
+              Sort by Last Updated
+            </MenuItem>
           </Menu>
         </Box>
         
@@ -149,7 +155,8 @@ export const FamilyList: React.FC<FamilyListProps> = ({
              sortOption === 'invitationCode' ? 'Invitation Code' :
              sortOption === 'guestCount' ? 'Guest Count' :
              sortOption === 'responseStatus' ? 'Response Status' :
-             'Completion Status'}
+             sortOption === 'completionStatus' ? 'Completion Status' :
+             'Last Updated'}
           </strong>
         </Typography>
       </Box>
@@ -293,3 +300,5 @@ export const FamilyList: React.FC<FamilyListProps> = ({
     </Box>
   );
 };
+
+export default FamilyList;

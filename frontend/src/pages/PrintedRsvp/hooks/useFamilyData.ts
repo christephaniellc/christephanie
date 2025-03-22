@@ -12,7 +12,7 @@ export const useFamilyData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('name');
+  const [sortOption, setSortOption] = useState<SortOption>('lastUpdated');
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   
   // Calculate completion status for a family
@@ -70,6 +70,11 @@ export const useFamilyData = () => {
           return bInterested - aInterested;
         case 'completionStatus':
           return calculateCompletionPercentage(b) - calculateCompletionPercentage(a);
+        case 'lastUpdated':
+          // Sort by last updated, most recent first
+          const aTimestamp = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
+          const bTimestamp = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
+          return bTimestamp - aTimestamp;
         default:
           return 0;
       }
