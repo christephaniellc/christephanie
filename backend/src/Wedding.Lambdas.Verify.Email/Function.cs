@@ -48,6 +48,7 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<VerifyEmailHandler>();
+        serviceCollection.AddScoped<IAwsParameterCacheProvider, AwsParameterCacheProvider>();
 
         return serviceCollection.BuildServiceProvider();
     }
