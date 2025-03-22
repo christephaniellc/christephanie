@@ -4,9 +4,10 @@ import { PhotoGrid } from '../PhotoGrid';
 
 interface CardBackHorizontalProps {
   previewOnly?: boolean;
+  exportMode?: boolean;
 }
 
-export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewOnly = false }) => {
+export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewOnly = false, exportMode = false }) => {
   const theme = useTheme();
 
   return (
@@ -25,8 +26,9 @@ export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewO
       {/* Grid layout for photos */}
       <PhotoGrid 
         orientation="horizontal" 
-        showControls={false}
+        showControls={previewOnly ? false : false}
         interactivePreview={false}
+        exportMode={exportMode}
       />
       
       {/* Subtle branding overlay */}
@@ -69,7 +71,7 @@ export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewO
           textShadow: '1px 1px 3px rgba(0,0,0,0.8)'
         }}
       >
-        Christopher & Stephanie
+        Topher & Steph
       </Typography>
     </Paper>
   );

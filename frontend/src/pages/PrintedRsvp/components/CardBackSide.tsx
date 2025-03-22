@@ -157,7 +157,7 @@ export const CardBackSide: React.FC<CardBackSideProps> = ({
           textShadow: '1px 1px 3px rgba(0,0,0,0.8)'
         }}
       >
-        Christopher & Stephanie
+        Topher & Steph
       </Typography>
     </Paper>
   );

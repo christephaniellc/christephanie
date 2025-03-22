@@ -141,7 +141,7 @@ export const CardFrontSide: React.FC<CardFrontSideProps> = ({
             letterSpacing: '0.05em'
           }}
         >
-          Christopher & Stephanie
+          Topher & Steph
         </Typography>
         
         <Typography 

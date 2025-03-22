@@ -38,6 +38,7 @@ interface PhotoGridProps {
   interactivePreview?: boolean; // When true, makes photos clickable for editing
   layoutUpdatesPreview?: boolean; // When true, selecting a layout immediately updates the preview
   enableDragInteraction?: boolean; // When true, enables photo position dragging
+  exportMode?: boolean;        // When true, optimizes for high-quality PNG export
   onPhotoClick?: (photoId: number) => void; // Callback for photo click in interactive mode
   onPhotoSelected?: (photoId: number) => void; // Callback when a photo is selected
 }
@@ -49,6 +50,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   interactivePreview = false,
   layoutUpdatesPreview = false,
   enableDragInteraction = false,
+  exportMode = false,
   onPhotoClick,
   onPhotoSelected
 }) => {
@@ -294,8 +296,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         gap: 1
       }}
     >
-      {/* Layout presets buttons - shown in editor mode when showControls is true */}
-      {showControls && (
+      {/* Layout presets buttons - shown in editor mode when showControls is true and not in export mode */}
+      {showControls && !exportMode && (
         <Box sx={{ 
           mb: editorOnly ? 0 : 2, 
           display: 'flex', 
@@ -418,10 +420,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         <Box sx={{ 
           display: 'grid',
           ...getGridTemplateString(),
-          gap: '4px',
+          gap: exportMode ? '0px' : '4px',
           width: '100%',
           height: '100%',
-          padding: '4px',
+          padding: exportMode ? '0px' : '4px',
           boxSizing: 'border-box',
           flexGrow: 1
         }}>
@@ -456,22 +458,27 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                   component="img" 
                   src={item.photoSrc}
                   alt={`Photo ${item.id}`} 
+                  className={`photo-grid-image ${exportMode ? 'export-mode' : ''}`}
                   sx={{ 
                     width: '100%', 
                     height: '100%', 
                     objectFit: item.objectFit || 'cover',
                     objectPosition: item.objectPosition || 'center',
-                    transition: 'all 0.3s ease',
-                    filter: interactivePreview 
-                      ? (selectedPhotoId === item.id ? 'brightness(1.15)' : 'none') 
-                      : (item.isLocked ? 'brightness(1.05)' : 'none'),
-                    border: interactivePreview
-                      ? (selectedPhotoId === item.id ? '2px solid rgba(25, 118, 210, 0.9)' : '2px solid transparent')
-                      : (item.isLocked ? '2px solid rgba(255,255,255,0.7)' : '2px solid transparent'),
+                    transition: exportMode ? 'none' : 'all 0.3s ease',
+                    filter: exportMode 
+                      ? 'none'  
+                      : (interactivePreview 
+                          ? (selectedPhotoId === item.id ? 'brightness(1.15)' : 'none') 
+                          : (item.isLocked ? 'brightness(1.05)' : 'none')),
+                    border: exportMode
+                      ? 'none'
+                      : (interactivePreview
+                          ? (selectedPhotoId === item.id ? '2px solid rgba(25, 118, 210, 0.9)' : '2px solid transparent')
+                          : (item.isLocked ? '2px solid rgba(255,255,255,0.7)' : '2px solid transparent')),
                     boxSizing: 'border-box',
-                    cursor: enableDragInteraction && interactivePreview ? 'move' : 'pointer',
+                    cursor: exportMode ? 'default' : (enableDragInteraction && interactivePreview ? 'move' : 'pointer'),
                     '&:hover': {
-                      filter: 'brightness(1.1)',
+                      filter: exportMode ? 'none' : 'brightness(1.1)',
                     }
                   }}
                   onMouseDown={enableDragInteraction && interactivePreview
@@ -509,6 +516,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                       <Tooltip title="Edit photo position">
                         <IconButton
                           size="small"
+                          className="edit-control"
                           onClick={(e) => handleEditOpen(e, item.id)}
                           sx={{
                             position: 'absolute',
@@ -533,6 +541,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                 {/* Special highlight for interactive mode */}
                 {interactivePreview && (
                   <Box
+                    data-interactive="true"
                     sx={{
                       position: 'absolute',
                       inset: 0,

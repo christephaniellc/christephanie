@@ -271,6 +271,7 @@ const PrintedRsvp: React.FC = () => {
             </Box>
           </Box>
           
+          
           {/* Card preview */}
           <Box 
             sx={{ 
