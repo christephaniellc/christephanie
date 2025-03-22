@@ -16,8 +16,8 @@ function Pages() {
           {Object.entries(routes).map(([pageKey, { path, component: Component }]) => {
             const page = parseInt(pageKey) as PageEnum;
             
-            // Wrap Admin and PrintedRsvp pages with ProtectedRoute
-            if (page === PageEnum.Admin || page === PageEnum.PrintedRsvp) {
+            // PrintedRsvp page requires admin role
+            if (page === PageEnum.PrintedRsvp) {
               return (
                 <Route 
                   key={path} 
@@ -27,6 +27,19 @@ function Pages() {
                       <Component />
                     </ProtectedRoute>
                   } 
+                />
+              );
+            }
+            
+            // Stats page (formerly Admin) requires only authentication
+            if (page === PageEnum.Admin) {
+              return (
+                <Route 
+                  key={path} 
+                  path={path} 
+                  element={
+                      <Component />
+                  }
                 />
               );
             }

@@ -7,6 +7,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PrintIcon from '@mui/icons-material/Print';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -97,23 +98,23 @@ export const BottomNav = () => {
         />
         <BottomNavigationAction
           color={activeLegalButtons}
-          sx={{ height: '100%', marginLeft: 'auto', backgroundColor: 'rgba(255, 255, 255, .1)' }}
+          sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, .1)' }}
           label="Bureaucracy"
           showLabel={true}
           icon={<GavelIcon color={activeLegalButtons} />}
           onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
           aria-label="View legal information and bureaucracy pages"
         />
+        <BottomNavigationAction
+          label="Stats"
+          component={Link}
+          showLabel={true}
+          to={routes[Pages.Admin].path!}
+          icon={<BarChartIcon />}
+          aria-label="View wedding statistics"
+        />
         {userIsAdmin && (
           <>
-            <BottomNavigationAction
-              label="Admin"
-              component={Link}
-              showLabel={true}
-              to={routes[Pages.Admin].path!}
-              icon={<AdminPanelSettingsIcon />}
-              aria-label="Go to admin dashboard"
-            />
             <Tooltip title="View Printed RSVP" placement="top">
               <BottomNavigationAction
                 label="Printed RSVP"

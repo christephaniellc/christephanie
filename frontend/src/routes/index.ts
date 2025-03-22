@@ -4,6 +4,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PrintIcon from '@mui/icons-material/Print';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -36,9 +37,9 @@ const routes: Routes = {
   },
   [Pages.Admin]: {
     component: asyncComponentLoader(() => import('@/pages/Admin')),
-    path: '/admin',
-    title: 'Admin',
-    icon: AdminPanelSettingsIcon,
+    path: '/stats',
+    title: 'Wedding Stats',
+    icon: BarChartIcon,
   },
   [Pages.VerifyEmail]: {
     component: asyncComponentLoader(() => import('@/pages/VerifyEmail')),

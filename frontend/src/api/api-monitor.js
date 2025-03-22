@@ -361,64 +361,15 @@
   
   // Create UI controls to help with monitoring
   const createMonitoringTools = () => {
-    // Create toolbar to control monitoring
-    const toolbar = document.createElement('div');
-    toolbar.style.cssText = `
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 8px;
-      border-radius: 8px 0 0 0;
-      font-family: sans-serif;
-      font-size: 12px;
-      z-index: 10000;
-      display: flex;
-      gap: 8px;
-    `;
-    
-    // Add buttons
-    const createButton = (text, action) => {
-      const btn = document.createElement('button');
-      btn.textContent = text;
-      btn.style.cssText = `
-        padding: 4px 8px;
-        border: none;
-        border-radius: 4px;
-        background: #3f51b5;
-        color: white;
-        cursor: pointer;
-        font-size: 12px;
-      `;
-      btn.addEventListener('click', action);
-      return btn;
-    };
-    
-    // Add buttons to toolbar
-    toolbar.append(
-      createButton('Run Checks', runAllChecks),
-      createButton('Check Auth', checkAuth0),
-      createButton('Check CORS', checkCORS),
-      createButton('Clear Cache', () => {
-        if (apiInstance && apiInstance.clearTokenCache) {
-          apiInstance.clearTokenCache();
-          console.log('✅ API token cache cleared!');
-        } else {
-          console.log('❌ Could not clear token cache - API instance not found');
-        }
-      })
-    );
-    
-    // Add to page
-    document.body.appendChild(toolbar);
+    // Debug toolbar disabled
+    return;
   };
   
-  // Run initial checks
-  setTimeout(runAllChecks, 1000);
+  // Run initial checks - disabled
+  // setTimeout(runAllChecks, 1000);
   
-  // Add the monitoring UI
-  setTimeout(createMonitoringTools, 2000);
+  // Add the monitoring UI - disabled
+  // setTimeout(createMonitoringTools, 2000);
   
   // Expose API monitor to global scope
   window.apiMonitor = {
