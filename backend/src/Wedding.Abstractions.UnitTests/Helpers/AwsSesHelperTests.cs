@@ -6,6 +6,9 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Utility.Testing.TestChain;
+using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Lambdas.UnitTests.TestData;
+using Microsoft.Extensions.Configuration;
 
 namespace Wedding.Abstractions.UnitTests.Helpers
 {
@@ -31,14 +34,32 @@ namespace Wedding.Abstractions.UnitTests.Helpers
     {
         private ApplicationConfiguration _config;
         private Mock<IAmazonSimpleEmailService> _sesClientMock;
+        private AuthContext? _fakeAuthContext;
+        private TestTokenHelper? _testTokenHelper;
         private TestableAwsSesHelper _awsSesHelper;
 
         [SetUp]
         public void SetUp()
         {
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+            _testTokenHelper = new TestTokenHelper(configuration);
+
             _config = new ApplicationConfiguration
             {
                 MailFromAddress = "no-reply@yourdomain.com"
+            };
+
+            _fakeAuthContext = new AuthContext
+            {
+                Audience = _testTokenHelper.JwtAudience,
+                GuestId = TestDataHelper.GUEST_JOHN.GuestId,
+                InvitationCode = TestDataHelper.GUEST_JOHN.InvitationCode,
+                Roles = string.Join(",", TestDataHelper.GUEST_JOHN.Roles),
+                Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName,
+                IpAddress = "127.0.0.1"
             };
 
             _sesClientMock = new Mock<IAmazonSimpleEmailService>();
@@ -60,7 +81,7 @@ namespace Wedding.Abstractions.UnitTests.Helpers
                 .ReturnsAsync(fakeResponse);
 
             // Act
-            var result = await _awsSesHelper.SendEmail(toAddresses, subject, body, CancellationToken.None);
+            var result = await _awsSesHelper.SendEmail(toAddresses, subject, body, body,CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -90,7 +111,7 @@ namespace Wedding.Abstractions.UnitTests.Helpers
                 .ReturnsAsync(fakeResponse);
 
             // Act
-            var result = await _awsSesHelper.SendVerificationCode(verifiedDto, CancellationToken.None);
+            var result = await _awsSesHelper.SendValidationEmail(_fakeAuthContext, verifiedDto, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();

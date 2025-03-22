@@ -196,6 +196,11 @@ namespace Wedding.Common.Helpers.AWS
             return GetCaseInsensitiveParam(request, "firstName");
         }
 
+        public static string? GetVerifyTokenFromParams(this APIGatewayProxyRequest request)
+        {
+            return GetCaseInsensitiveParam(request, "token");
+        }
+
         public static AuthContext? ParseAuthContext(string? json)
         {
             if (json == null)
