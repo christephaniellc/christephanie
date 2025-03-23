@@ -59,16 +59,6 @@ const InvitationCodeDialog = ({
   const theme = useTheme();
   const [code, setCode] = useState(invitationCode);
   
-  // Helper function to create QR code URL
-  const getQrCodeUrl = () => {
-    const params: Record<string, string | undefined> = {
-      inviteCode: code || undefined,
-      firstName: currentUser?.firstName,
-    };
-    
-    return generateQRCodeUrl('https://christephanie.com', params);
-  };
-
   // Reset code state when dialog opens with new invitationCode
   useEffect(() => {
     if (open) {
