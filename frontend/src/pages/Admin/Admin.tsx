@@ -44,8 +44,8 @@ function Stats() {
     flipAxis: 'Y'
   });
 
-  // Sort families based on selected sort option (generic version for both data types)
-  const sortFamilies = <T extends FamilyUnitViewModel>(families: T[], sortOption: SortOption): T[] => {
+  // Sort families based on selected sort option - specific for FamilyUnitDto arrays
+  const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption): FamilyUnitDto[] => {
     const filteredFamilies = [...families];
     
     switch(sortOption) {
@@ -107,7 +107,7 @@ function Stats() {
         // Sort by invitation status (declined first, then interested, then pending), then tier, then last name
         return filteredFamilies.sort((a, b) => {
           // Get invitation status priority (1: Declined, 2: Interested, 3: Pending)
-          const getStatusPriority = (family: FamilyUnitViewModel): number => {
+          const getStatusPriority = (family: FamilyUnitDto): number => {
             if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined)) {
               return 1; // Declined has highest priority
             } else if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested)) {
