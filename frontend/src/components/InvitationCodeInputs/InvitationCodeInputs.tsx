@@ -36,10 +36,9 @@ import { useNavigate } from 'react-router-dom';
 import { stdStepperState } from '@/store/steppers/steppers';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
-import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
+import ElPulpo from '@/assets/favicon_big_art_transparent.png';
 import Countdowns from '@/components/Countdowns';
 import { InvitationResponseEnum } from '@/types/api';
-import { StyledQRCode, generateQRCodeUrl } from '@/utils/qrcode';
 
 // Dialog component for editing invitation code
 interface InvitationCodeDialogProps {
@@ -133,16 +132,6 @@ const InvitationCodeDialog = ({
               {invitationCode ? 'Edit' : 'Add'} Invitation Code
             </Typography>
           </Box>
-
-          <Box display="flex" alignItems="center" gap={2}>
-            {/* Always show QR code icon, use transparent code if no data */}
-            <StyledQRCode
-              value={code || currentUser?.firstName ? getQrCodeUrl() : "https://christephanie.com"}
-              size={{ xs: 40, sm: 48 }}
-              style="circular"
-              showCorners={false}
-            />
-          </Box>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: { xs: 4, md: 5 }, position: 'relative', zIndex: 1 }}>
@@ -212,7 +201,7 @@ const InvitationCodeDialog = ({
                 px: 1,
               }}
             >
-              Find your invitation code on the bottom left of your printed invitation
+              Find your invitation code on your printed wedding invitation, or contact your hosts.
             </Typography>
           </Box>
           
@@ -275,7 +264,7 @@ const InvitationCodeDialog = ({
               },
             }}
           >
-            Save Code
+            Submit
           </Button>
         </Box>
       </DialogActions>
@@ -342,16 +331,6 @@ export const InvitationCodeInputs = () => {
   const { signInWithAuth0, logOutFromAuth0 } = useAuth0Queries();
   const boxShadow = useBoxShadow();
   const theme = useTheme();
-  
-  // Helper function to create QR code URL
-  const getQrCodeUrl = () => {
-    const params: Record<string, string | undefined> = {
-      inviteCode: user?.invitationCode,
-      firstName: user?.firstName,
-    };
-    
-    return generateQRCodeUrl('https://christephanie.com', params);
-  };
 
   // Store the access token in state so we don't trigger errors during render.
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -521,24 +500,6 @@ export const InvitationCodeInputs = () => {
             gap: { xs: 1, sm: 2 },
           }}
         >
-          {(user?.invitationCode || user?.firstName) && (
-            <Box
-              sx={{
-                display: { xs: 'none', sm: 'flex' }, // Hide QR on smallest screens
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: { xs: 32, sm: 40 },
-                width: { xs: 32, sm: 40 },
-              }}
-            >
-              <StyledQRCode
-                value={getQrCodeUrl()}
-                size={32}
-                style="circular"
-                showCorners={false}
-              />
-            </Box>
-          )}
           <Box
             component="img"
             src={ElPulpo}
@@ -584,14 +545,10 @@ export const InvitationCodeInputs = () => {
         <CardHeader
           title={
             !user?.guestId
-              ? 'Please enter your information to get started.'
+              ? '' //'Please enter your information to get started.'
               : `Welcome back ${user?.firstName}!`
           }
-          subheader={
-            !accessToken && !user?.guestId
-              ? `...or click Login below, if you've already created an account`
-              : ''
-          }
+          subheader={''}
           aria-live="polite"
           sx={{
             textAlign: 'center',
@@ -734,7 +691,7 @@ export const InvitationCodeInputs = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Enter your first name as it appears on your invitation
+                  Enter your first name
                 </Typography>
 
                 {/* Invitation code section - mobile optimized */}
@@ -900,13 +857,13 @@ export const InvitationCodeInputs = () => {
             position: { xs: 'sticky', sm: 'static' },
             bottom: { xs: 0, sm: 'auto' },
             zIndex: { xs: 2, sm: 'auto' },
-            bgcolor: 'rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(3px)',
+            backgroundColor: 'transparent', // Match card background
+            backdropFilter: 'none', // Remove blur effect
             pb: { xs: 2, sm: 2 },
             pt: { xs: 1.5, sm: 0 },
             px: { xs: 1.5, sm: 2 },
-            // Use a simple shadow
-            boxShadow: '0 -5px 0px rgba(0,0,0,0.1)',
+            //boxShadow: 'none', // Remove any shadow
+            boxShadow: '0 -3px 0px rgba(0,0,0,0.1)',
             mt: { xs: 'auto', sm: 0 }, // Push to bottom when there's space
           }}
         >
@@ -918,12 +875,19 @@ export const InvitationCodeInputs = () => {
                 py: { xs: 1, sm: 1.2 }, // Smaller on mobile
                 borderRadius: '8px',
                 textTransform: 'none',
-                boxShadow: boxShadow.boxShadow,
+                backgroundColor: theme.palette.primary.main, // Ensure button has proper background
+                //boxShadow: 'none', // Remove any shadow that might cause dark areas
+		boxShadow: boxShadow.boxShadow,
                 transition: 'all 0.3s ease',
                 '&:hover:not(:disabled)': {
                   transform: 'translateY(-2px)',
-                  boxShadow: boxShadow.boxShadow,
+		  boxShadow: boxShadow.boxShadow,
+                  backgroundColor: theme.palette.primary.dark, // Darker on hover
                 },
+                '&:disabled': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.5), // Lighter when disabled
+                  color: alpha(theme.palette.common.white, 0.7)
+                }
               }}
               disabled={!user?.firstName || !user?.invitationCode}
               fullWidth
@@ -933,15 +897,16 @@ export const InvitationCodeInputs = () => {
               }
               aria-label={user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             >
-              <StephsActualFavoriteTypography sx={{ 
+              <Typography sx={{ 
                 fontSize: { xs: '1rem', sm: '1.1rem' },
                 lineHeight: { xs: '1.2rem', sm: '1.3rem' },
                 textTransform: 'uppercase',
-                fontWeight: 400,
-                animation: 'none'  // Remove the floating animation
+                fontWeight: 800,
+                animation: 'none',  // Remove the floating animation
+                backgroundColor: 'transparent' // Ensure text background is transparent
               }}>
                 {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
-              </StephsActualFavoriteTypography>
+              </Typography>
             </Button>
             {user.firstName && user.auth0Id && (
               <Typography

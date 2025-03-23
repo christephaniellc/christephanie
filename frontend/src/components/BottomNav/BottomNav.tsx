@@ -46,128 +46,159 @@ export const BottomNav = () => {
     return stdStepper.currentStep[0] === 'communicationPreference' || stdStepper.currentStep[0] === 'mailingAddress' ? 'secondary' : 'inherit' as 'secondary' | 'inherit'
   }, [stdStepper.currentStep]);
 
+  const activeLoginButton = useMemo(() => {
+    console.log(`activeloginbutton ${auth0User} ${currentUser}`)
+    return !!auth0User ? 'secondary' : 'inherit' as 'secondary' | 'inherit';
+  }, [currentUser, auth0User]);
+
   useEffect(() => {
     //console.log(`Current step: ${stdStepper.currentStep[0]}`)
   }, [stdStepper.currentStep]);
 
   return (
-    <Box 
-      position="fixed" 
-      bottom={0} 
-      width="100%" 
-      sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }} 
-      component={Paper} 
-      elevation={5}
-      role="navigation"
-      aria-label="Main navigation"
-    >
-      <BottomNavigation
+    <Box>
+      {/* AppVersionFooter positioned above the BottomNav */}
+      <Box 
         sx={{ 
-          backgroundColor: 'rgba(0,0,0,.7)', 
-          backdropFilter: 'blur(20px)', 
-          borderTop: '4px solid rgba(255,255,255,.1)', 
-          height: 65,
-          boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
-          borderRadius: 0,
-          "& .MuiBottomNavigationAction-root.Mui-selected": {
-            backgroundColor: "primary.main",
-            color: "common.white",
-          },
-          "& .MuiBottomNavigationAction-root": {
-            minWidth: '52px',
-            padding: '0 0',
-            fontSize: '0.65rem',
-            '@media (min-width: 400px)': {
-              minWidth: '68px',
-              padding: '0 2px'
-            },
-            '@media (min-width: 600px)': {
-              minWidth: '80px',
-              padding: '0 4px'
-            }
-          }
+          position: 'fixed',
+          bottom: '65px',  // Position right above the BottomNav height
+          width: '100%',
+          zIndex: 999,     // Just below BottomNav zIndex
+          padding: '0px 8px 2px 0px',  // Slight adjustment to padding
+          background: 'transparent',
+          display: 'flex',
+          justifyContent: 'flex-end' // Ensure alignment to right side
         }}
-        value={navValue}
-        onChange={(event, newValue) => setNavValue(newValue)}
       >
-        <BottomNavigationAction
-          label="Home"
-          component={Link}
-          sx={{ lineHeight: 1}}
-          showLabel={true}
-          to={routes[Pages.Welcome].path!}
-          icon={<HomeIcon />}
-          aria-label="Go to home page"
-        />
-        <BottomNavigationAction
-          disabled={!auth0User}
-          label="Survey"
-          sx={{ textAlign: 'center' }}
-          component={Link}
-          showLabel={true}
-          to={routes[Pages.SaveTheDate].path!}
-          icon={<ConnectWithoutContactIcon />}
-          aria-label="Go to Save the Date Survey page"
-          aria-disabled={!auth0User}
-        />
-        <BottomNavigationAction
-          color={activeLegalButtons}
-          sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-          label="Bureaucracy"
-          showLabel={true}
-          icon={<GavelIcon color={activeLegalButtons} />}
-          onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
-          aria-label="View legal information and bureaucracy pages"
-        />
-        <BottomNavigationAction
-          disabled={!auth0User}
-          label="Stats"
-          component={Link}
-          showLabel={true}
-          to={routes[Pages.Admin].path!}
-          icon={<BarChartIcon />}
-          aria-label="View wedding statistics"
-          aria-disabled={!auth0User}
-        />
-        {userIsAdmin && (
-          <>
-            <Tooltip title="View Printed RSVP" placement="top">
-              <BottomNavigationAction
-                label="Printed RSVP"
-                component={Link}
-                showLabel={true}
-                to={routes[Pages.PrintedRsvp].path!}
-                icon={<PrintIcon />}
-                aria-label="View Printed RSVP"
-              />
-            </Tooltip>
-          </>
-        )}
-        <BottomNavigationAction
-          label={auth0User ? 'Logout' : 'Login'}
-          showLabel={true}
-          icon={<ProfileIcon />}
-          sx={{ paddingLeft: 0, paddingRight: 0 }}
-          onClick={() => {
-            if (auth0User) {
-              logOutFromAuth0();
-            } else {
-              // Force clean login by clearing any potentially cached data first
-              localStorage.removeItem('user');
-              // Use explicit parameters to ensure proper redirect
-              loginWithRedirect({
-                authorizationParams: {
-                  prompt: 'login', // Force login screen even if user has active session
-                  screen_hint: 'login',
-                  redirect_uri: window.location.origin,
-                }
-              });
+        <AppVersionFooter />
+      </Box>
+      
+      <Box 
+        position="fixed" 
+        bottom={0} 
+        width="100%" 
+        sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }} 
+        component={Paper} 
+        elevation={5}
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        <BottomNavigation
+          sx={{ 
+            backgroundColor: 'rgba(0,0,0,.7)', 
+            backdropFilter: 'blur(20px)', 
+            borderTop: '4px solid rgba(255,255,255,.1)', 
+            height: 65,
+            boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
+            borderRadius: 0,
+            "& .MuiBottomNavigationAction-root.Mui-selected": {
+              backgroundColor: "primary.main",
+              color: "common.white",
+            },
+            "& .MuiBottomNavigationAction-root": {
+              minWidth: '52px',
+              padding: '0 0',
+              fontSize: '0.65rem',
+              '@media (min-width: 400px)': {
+                minWidth: '68px',
+                padding: '0 2px'
+              },
+              '@media (min-width: 600px)': {
+                minWidth: '80px',
+                padding: '0 4px'
+              }
             }
           }}
-          aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
-        />
-      </BottomNavigation>
-      <AppVersionFooter />
+          value={navValue}
+          onChange={(event, newValue) => setNavValue(newValue)}
+        >
+          <BottomNavigationAction
+            label="Home"
+            component={Link}
+            sx={{ lineHeight: 1}}
+            showLabel={true}
+            to={routes[Pages.Welcome].path!}
+            icon={<HomeIcon />}
+            aria-label="Go to home page"
+          />
+          {auth0User && (
+            <>
+              <BottomNavigationAction
+                disabled={!auth0User}
+                label="Survey"
+                sx={{ textAlign: 'center' }}
+                component={Link}
+                showLabel={true}
+                to={routes[Pages.SaveTheDate].path!}
+                icon={<ConnectWithoutContactIcon />}
+                aria-label="Go to Save the Date Survey page"
+                aria-disabled={!auth0User}
+              />
+            </>
+          )}
+          <BottomNavigationAction
+            color={activeLegalButtons}
+            sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, .1)' }}
+            label="Bureaucracy"
+            showLabel={true}
+            icon={<GavelIcon color={activeLegalButtons} />}
+            onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
+            aria-label="View legal information and bureaucracy pages"
+          />
+          {auth0User && (
+            <>
+              <BottomNavigationAction
+                disabled={!auth0User}
+                label="Stats"
+                component={Link}
+                showLabel={true}
+                to={routes[Pages.Admin].path!}
+                icon={<BarChartIcon />}
+                aria-label="View wedding statistics"
+                aria-disabled={!auth0User}
+              />
+            </>
+          )}
+          {userIsAdmin && (
+            <>
+              <Tooltip title="View Printed RSVP" placement="top">
+                <BottomNavigationAction
+                  label="Printed RSVP"
+                  component={Link}
+                  showLabel={true}
+                  to={routes[Pages.PrintedRsvp].path!}
+                  icon={<PrintIcon />}
+                  aria-label="View Printed RSVP"
+                />
+              </Tooltip>
+            </>
+          )}
+          <BottomNavigationAction
+            label={auth0User ? 'Logout' : 'Login'}
+            showLabel={true}
+            icon={<ProfileIcon color={auth0User ? 'inherit' : 'secondary'} />}
+            //color={auth0User ? 'inherit' : 'secondary'}
+            sx={{ paddingLeft: 0, paddingRight: 0 }}
+            onClick={() => {
+              if (auth0User) {
+                logOutFromAuth0();
+              } else {
+                // Force clean login by clearing any potentially cached data first
+                localStorage.removeItem('user');
+                // Use explicit parameters to ensure proper redirect
+                loginWithRedirect({
+                  authorizationParams: {
+                    prompt: 'login', // Force login screen even if user has active session
+                    screen_hint: 'login',
+                    redirect_uri: window.location.origin,
+                  }
+                });
+              }
+            }}
+            aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
+          />
+        </BottomNavigation>
+      </Box>
     </Box>
   );
 };
