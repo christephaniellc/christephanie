@@ -89,8 +89,8 @@ function Stats() {
           }
           
           // If same last update date, then sort by tier
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
           if (tierComparison !== 0) {
@@ -128,8 +128,8 @@ function Stats() {
           }
           
           // If same status, sort by tier
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
           if (tierComparison !== 0) {
@@ -145,8 +145,8 @@ function Stats() {
       default: // 'default' - Sort by tier, then family name
         return filteredFamilies.sort((a, b) => {
           // Sort by tier priority
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
           if (tierComparison !== 0) {
