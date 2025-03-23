@@ -54,7 +54,7 @@ const routes: Routes = {
     icon: PrintIcon,
   },
   [Pages.Debug]: {
-    component: asyncComponentLoader(() => import('@/pages/Debug')),
+    component: asyncComponentLoader(() => import('@/pages/Debug/DebugPage')),
     path: '/debug',
     title: 'CORS Debugger',
     // No icon to avoid showing in navigation
