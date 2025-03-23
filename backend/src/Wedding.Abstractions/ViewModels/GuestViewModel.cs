@@ -2,6 +2,7 @@
 using System;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Dtos.ClientInfo;
 
 namespace Wedding.Abstractions.ViewModels
 {
@@ -32,6 +33,8 @@ namespace Wedding.Abstractions.ViewModels
         public RsvpDto? Rsvp { get; set; }
 
         public PreferencesDto? Preferences { get; set; }
+
+        public List<ClientInfoDto>? ClientInfos { get; set; }
 
         /// <summary>
         /// If child

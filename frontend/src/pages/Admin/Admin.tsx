@@ -180,13 +180,13 @@ function Stats() {
       try {
         // Check if we already have cached data
         if (getStatsQuery.data && getStatsQuery.data.length > 0) {
-          console.log('Using cached stats data');
+          //console.log('Using cached stats data');
           setStatsData(getStatsQuery.data);
           setLoading(false);
           return;
         }
         
-        console.log('Fetching stats data from public API');
+        //console.log('Fetching stats data from public API');
         const result = await getStatsQuery.refetch();
         
         if (result.status === 'success' && result.data) {
@@ -220,14 +220,14 @@ function Stats() {
       try {
         // Check if we already have cached data
         if (getAllFamiliesQuery.data && getAllFamiliesQuery.data.length > 0) {
-          console.log('Using cached admin data');
+          //console.log('Using cached admin data');
           const sortedFamilies = sortFamilies(getAllFamiliesQuery.data, sortOption);
           setAdminData(sortedFamilies);
           setAdminLoading(false);
           return;
         }
         
-        console.log('Fetching admin data from private API');
+        //console.log('Fetching admin data from private API');
         const result = await getAllFamiliesQuery.refetch();
         
         if (result.status === 'success' && result.data) {
@@ -302,7 +302,7 @@ function Stats() {
         mb: 4,
         fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' }
       }}>
-        {userIsAdmin ? 'Admin Dashboard' : 'Wedding Stats'}
+        Statistics
       </StephsActualFavoriteTypography>
 
       {/* Dashboard Charts - available to all authenticated users */}
