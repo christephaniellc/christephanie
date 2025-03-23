@@ -159,13 +159,16 @@ const DateText = styled(Typography)(({ theme }) => ({
   color: theme.palette.common.white,
   fontWeight: 'medium',
   fontSize: '1.1rem',
+  lineHeight: '1.2rem', // Only 0.1rem larger than font size
   textAlign: 'center', // Ensure text is centered
   width: '100%', // Take up full width
   [theme.breakpoints.up('md')]: {
     fontSize: '1.2rem',
+    lineHeight: '1.3rem', // Only 0.1rem larger than font size
   },
   [theme.breakpoints.up('lg')]: {
     fontSize: '1.5rem',
+    lineHeight: '1.6rem', // Only 0.1rem larger than font size
   },
 }));
 

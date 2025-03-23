@@ -1,6 +1,6 @@
 import React from 'react';
 import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 
 /**
@@ -26,7 +26,7 @@ export const generateQRCodeUrl = (baseUrl: string, params: Record<string, string
 
 interface StyledQRCodeProps {
   value: string;
-  size?: number;
+  size?: number | { xs: number; sm: number; };
   style?: 'postage' | 'circular' | 'wedding' | 'basic';
   title?: string;
   subtitle?: string;
@@ -47,7 +47,16 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
   showCorners = true,
 }) => {
   const theme = useTheme();
-  const qrSize = Math.floor(size * 0.6);
+  
+  // Handle responsive size
+  const baseSize = typeof size === 'object' ? size.sm : size;
+  const mobileSize = typeof size === 'object' ? size.xs : size;
+  
+  // Use useMediaQuery to apply different sizes based on screen size
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const actualSize = isMobile ? mobileSize : baseSize;
+  
+  const qrSize = Math.floor(actualSize * 0.6);
   const imageSize = Math.floor(qrSize * 0.2);
   
   // Postage stamp style QR code
@@ -294,8 +303,8 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
       <Box
         sx={{
           position: 'relative',
-          width: size,
-          height: size,
+          width: actualSize,
+          height: actualSize,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -306,7 +315,8 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
           padding: '8px',
           overflow: 'hidden',
           borderRadius: '8px',
-          border: `1px solid ${theme.palette.primary.main}`,
+          // Removed border to eliminate any potential gradient issue
+          // border: `1px solid ${theme.palette.primary.main}`,
         }}
       >
         {/* Background enhancement elements */}
@@ -325,8 +335,8 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
           position: 'absolute',
           top: -10,
           right: -10,
-          width: size/3,
-          height: size/3,
+          width: actualSize/3,
+          height: actualSize/3,
           background: `radial-gradient(circle, ${theme.palette.primary.main}30 0%, transparent 70%)`,
           opacity: 0.5,
           zIndex: 0
@@ -342,7 +352,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
               color: theme.palette.secondary.main,
               fontFamily: 'Snowstorm, serif',
               fontWeight: 600,
-              fontSize: Math.max(size/12, 12),
+              fontSize: Math.max(actualSize/12, 12),
               mb: 0.5,
               textAlign: 'center',
             }}
@@ -351,23 +361,13 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
           </Typography>
         )}
         
-        {/* Decorative divider */}
-        <Box sx={{
-          position: 'relative',
-          zIndex: 1,
-          margin: '0 auto',
-          width: '80%',
-          height: '1px',
-          background: `linear-gradient(to right, transparent, ${theme.palette.primary.main}, transparent)`,
-          mb: 1
-        }} />
-        
         {/* QR code with fancy border */}
         <Box
           sx={{
             position: 'relative',
             zIndex: 1,
             padding: '6px',
+            mt: 1, // Add a top margin to replace the divider
             background: 'white',
             borderRadius: '4px',
             display: 'flex',
@@ -395,7 +395,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
               position: 'relative',
               zIndex: 1,
               color: theme.palette.primary.light,
-              fontSize: Math.max(size/18, 10),
+              fontSize: Math.max(actualSize/18, 10),
               mt: 1,
               textAlign: 'center',
               fontFamily: 'Snowstorm, serif',

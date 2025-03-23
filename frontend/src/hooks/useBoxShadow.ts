@@ -13,7 +13,7 @@ export const useBoxShadow = () => {
     const { x, y } = mousePosition.current;
     const shadowX = (x / window.innerWidth) * 10 + 5;
     const shadowY = (y / window.innerHeight) * 10 + 5;
-    return `${shadowX}px ${shadowY}px 0px ${darken(theme.palette.primary.dark, 0.85)}`;
+    return `${shadowX}px ${shadowY}px 5px ${darken(theme.palette.primary.dark, 0.85)}`;
   }, [mousePosition.current, theme.palette.primary.dark]);
 
   return { boxShadow, mousePosition, handleMouseMove };
