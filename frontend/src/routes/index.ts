@@ -5,6 +5,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PrintIcon from '@mui/icons-material/Print';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import BugReportIcon from '@mui/icons-material/BugReport';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -51,6 +52,12 @@ const routes: Routes = {
     path: '/printed-rsvp',
     title: 'Printed RSVP',
     icon: PrintIcon,
+  },
+  [Pages.Debug]: {
+    component: asyncComponentLoader(() => import('@/pages/Debug')),
+    path: '/debug',
+    title: 'CORS Debugger',
+    // No icon to avoid showing in navigation
   },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),
