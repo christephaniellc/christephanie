@@ -26,6 +26,20 @@ namespace Wedding.Lambdas.UnitTests.TestData
             };
         }
 
+        public static APIGatewayProxyRequest RequestAsJohn()
+        {
+            return new APIGatewayProxyRequest
+            {
+                RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+                {
+                    Authorizer = new APIGatewayCustomAuthorizerContext
+                    {
+                        ["lambda"] = JsonSerializer.Serialize(GetAuthContext())
+                    }
+                }
+            };
+        }
+
         public static APIGatewayProxyRequest RequestAsJohn(Dictionary<string, string> queryStringParams)
         {
             return new APIGatewayProxyRequest

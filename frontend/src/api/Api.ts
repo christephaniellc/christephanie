@@ -98,7 +98,8 @@ export default class Api {
   }
 
   verifyEmail(token?: string): Promise<{ response: VerifyEmailResponse }> {
-    return this.post(`/verify/email?token=${token}` );
+    // Use the public endpoint that doesn't require authentication
+    return this.getPublic(`/verify/email?token=${token}` );
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
