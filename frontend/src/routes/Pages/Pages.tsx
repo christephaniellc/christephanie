@@ -59,12 +59,7 @@ function Pages() {
           })}
         </Routes>
       </Box>
-      <Box
-        sx={{        
-          background: "transparent"
-        }}>        
-        {AppVersionFooter()}
-      </Box>
+      {/* Removed AppVersionFooter from here since it's already in BottomNav */}
     </Box>
   );
 }
