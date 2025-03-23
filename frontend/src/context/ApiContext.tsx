@@ -54,6 +54,7 @@ interface ApiContextProps {
   >;
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
+  getStats: () => Promise<FamilyUnitViewModel[]>;
   getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
@@ -376,6 +377,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     });
   };
 
+  // Get stats (public function accessible to any logged-in user)
+  const getStats = async (): Promise<FamilyUnitViewModel[]> => {
+    try {
+      return await apiRef.current.getStats();
+    } catch (error) {
+      console.error('Failed to get wedding stats:', error);
+      throw error;
+    }
+  };
+
   // Get all families (admin function)
   const getAllFamilies = async (): Promise<FamilyUnitViewModel[]> => {
     try {
@@ -427,6 +438,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         patchFamilyMutation,
         patchFamilyGuestMutation,
         getMaskedValueQuery,
+        getStats,
         getAllFamilies,
         updateClientInfo,
         clearTokenCache, // Add the clearTokenCache function

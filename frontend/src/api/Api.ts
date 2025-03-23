@@ -41,6 +41,10 @@ export default class Api {
     return this.get('/familyunit');
   }
   
+  async getStats(): Promise<FamilyUnitViewModel[]> {
+    return this.get('/stats');
+  }
+
   async getAllFamilies(): Promise<FamilyUnitViewModel[]> {
     return this.get('/admin/familyunit/all');
   }

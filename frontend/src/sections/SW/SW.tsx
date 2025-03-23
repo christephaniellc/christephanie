@@ -16,24 +16,7 @@ function SW() {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW({
-    // Immediately check for updates on component mount
-    immediate: true,
-    // Use auto-update strategy
-    onRegisteredSW(swUrl, registration) {
-      console.log('Service worker registered:', swUrl);
-      // Force a check for updates immediately
-      if (registration) {
-        setInterval(() => {
-          console.log('Checking for service worker updates...');
-          registration.update().catch(console.error);
-        }, 10 * 60 * 1000); // Check every 10 minutes
-      }
-    },
-    onRegisterError(error) {
-      console.error('Service worker registration error:', error);
-    }
-  });
+  } = useRegisterSW();
 
   const close = useCallback(() => {
     setOfflineReady(false);
@@ -52,29 +35,13 @@ function SW() {
     try {
       // Force update with skipWaiting to ensure the new service worker takes over immediately
       updateServiceWorker(true);
-      // Add a clear indication in the console for debugging
-      console.log('%cService worker update triggered - reload should happen automatically', 
-        'background:green; color:white; padding:4px 8px; border-radius:4px; font-weight:bold');
-      
+
       // As a fallback, force page reload after a short delay if the updateServiceWorker
       // doesn't trigger a reload by itself
-      setTimeout(() => {
-        console.log('%cForcing page reload as fallback', 
-          'background:orange; color:black; padding:4px 8px; border-radius:4px; font-weight:bold');
-        // Clear caches before reloading as an extra precaution
-        if ('caches' in window) {
-          caches.keys().then(cacheNames => {
-            cacheNames.forEach(cacheName => {
-              console.log('Clearing cache:', cacheName);
-              caches.delete(cacheName);
-            });
-            // Now force reload
-            (window as Window).location.reload();
-          });
-        } else {
-          (window as Window).location.reload();
-        }
-      }, 1500);
+      setTimeout(() => {        
+         console.log('Forcing page reload as fallback');
+         window.location.reload();
+       }, 1000);
     } catch (error) {
       console.error('Error updating service worker, forcing reload:', error);
       (window as Window).location.reload();

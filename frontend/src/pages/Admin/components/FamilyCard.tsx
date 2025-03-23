@@ -235,6 +235,36 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                 </Typography>
               </Box>
             </Paper>
+
+            {/* Family Comments/Notes */}
+            {family.invitationResponseNotes && (
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: rgba(theme.palette.background.paper, 0.8),
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 1,
+                  display: 'flex',
+                  gap: 1,
+                  borderLeft: '4px solid',
+                  borderColor: 'info.main'
+                }}
+              >
+                <Box sx={{ width: '100%' }}>
+                  <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
+                    Comments
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    //fontStyle: 'italic',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  }}>
+                    {family.invitationResponseNotes.trim() === '' ? '(none)' : family.invitationResponseNotes}
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
           </Stack>
         </CardContent>
       </Collapse>

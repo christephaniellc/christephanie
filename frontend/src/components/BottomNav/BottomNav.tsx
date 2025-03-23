@@ -101,13 +101,13 @@ export const BottomNav = () => {
         />
         <BottomNavigationAction
           disabled={!auth0User}
-          label="Save the Date"
+          label="Survey"
           sx={{ textAlign: 'center' }}
           component={Link}
           showLabel={true}
           to={routes[Pages.SaveTheDate].path!}
           icon={<ConnectWithoutContactIcon />}
-          aria-label="Go to Save the Date page"
+          aria-label="Go to Save the Date Survey page"
           aria-disabled={!auth0User}
         />
         <BottomNavigationAction
@@ -120,12 +120,14 @@ export const BottomNav = () => {
           aria-label="View legal information and bureaucracy pages"
         />
         <BottomNavigationAction
+          disabled={!auth0User}
           label="Stats"
           component={Link}
           showLabel={true}
           to={routes[Pages.Admin].path!}
           icon={<BarChartIcon />}
           aria-label="View wedding statistics"
+          aria-disabled={!auth0User}
         />
         {userIsAdmin && (
           <>
