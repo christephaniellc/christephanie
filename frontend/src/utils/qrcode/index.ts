@@ -1,2 +1,2 @@
-// Re-export all components and utilities from the implementation file
-export * from './index.tsx';
+// Re-export specific components and utilities
+export { StyledQRCode, generateQRCodeUrl, QRCodeCanvas, QRCodeSVG } from './index.tsx';
