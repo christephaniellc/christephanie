@@ -50,7 +50,7 @@ export const CardFrontHorizontal: React.FC<CardFrontHorizontalProps> = ({
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}`
+    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}${selectedFamily.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}`
     : "https://christephanie.com?inviteCode=DEMO";
   
   return (
@@ -465,7 +465,7 @@ export const CardFrontHorizontal: React.FC<CardFrontHorizontalProps> = ({
             fontFamily: 'sans-serif'
           }}
         >
-          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}
+          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}{selectedFamily?.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}
         </Typography>
       </Box>
       
