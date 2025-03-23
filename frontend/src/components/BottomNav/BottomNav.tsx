@@ -120,12 +120,14 @@ export const BottomNav = () => {
           aria-label="View legal information and bureaucracy pages"
         />
         <BottomNavigationAction
+          disabled={!auth0User}
           label="Stats"
           component={Link}
           showLabel={true}
           to={routes[Pages.Admin].path!}
           icon={<BarChartIcon />}
           aria-label="View wedding statistics"
+          aria-disabled={!auth0User}
         />
         {userIsAdmin && (
           <>
