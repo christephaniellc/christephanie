@@ -28,6 +28,7 @@ export const lambdaAuthDefaults = {
  export interface LambdaConfig {
     name: string;
     method?: apigateway.HttpMethod;
+    methods?: apigateway.HttpMethod[]; // Allow multiple methods for a single Lambda
     path?: string;
     unauthorized?: boolean;
     keepWarm?: boolean;

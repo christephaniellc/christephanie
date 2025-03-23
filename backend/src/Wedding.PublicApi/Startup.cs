@@ -208,6 +208,7 @@ namespace Wedding.PublicApi
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Stats.Get.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Find.RegistrationHook));
             LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.User.Get.RegistrationHook));
+            LambdaExtensions.LoadHandlers(builder, typeof(Wedding.Lambdas.Health.RegistrationHook));
 
             builder.RegisterModule(new LogicModule());
             builder.RegisterModule(new AwsModule(awsOptions));
