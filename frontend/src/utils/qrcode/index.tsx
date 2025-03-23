@@ -130,7 +130,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
             sx={{ 
               color: theme.palette.secondary.light,
               fontWeight: 600,
-              fontSize: Math.max(size/15, 10),
+              fontSize: Math.max(typeof size === 'number' ? size/15 : 10, 10),
               mb: 0.5,
               textAlign: 'center'
             }}
@@ -170,7 +170,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
             variant="caption" 
             sx={{ 
               color: 'rgba(255,255,255,0.9)',
-              fontSize: Math.max(size/20, 8),
+              fontSize: Math.max(typeof size === 'number' ? size/20 : 8, 8),
               mt: 0.5,
               textAlign: 'center',
               fontWeight: 600,
@@ -243,7 +243,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
             sx={{ 
               color: theme.palette.secondary.main,
               fontWeight: 700,
-              fontSize: Math.max(size/15, 10),
+              fontSize: Math.max(typeof size === 'number' ? size/15 : 10, 10),
               mb: 0.5,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -284,7 +284,7 @@ export const StyledQRCode: React.FC<StyledQRCodeProps> = ({
             variant="caption" 
             sx={{ 
               color: 'rgba(255,255,255,0.9)',
-              fontSize: Math.max(size/20, 8),
+              fontSize: Math.max(typeof size === 'number' ? size/20 : 8, 8),
               mt: 0.7,
               textAlign: 'center',
               fontFamily: 'Snowstorm, serif',
