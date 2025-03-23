@@ -38,7 +38,7 @@ export class ParamsStack extends cdk.Stack {
             value: JSON.stringify({
                 "ApplicationName": `${applicationName}`,
                 "MailFromAddress": `${props.env.mailFromAddress}`,
-                "DomainName": `${props.apiUrl}`,
+                "DomainName": `${props.fullDomainName}`,
                 "EncryptionKey": `${props.env.encryptionKey}`
                 }) 
         },

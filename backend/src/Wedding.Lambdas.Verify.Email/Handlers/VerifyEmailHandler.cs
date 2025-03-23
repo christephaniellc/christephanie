@@ -119,6 +119,8 @@ namespace Wedding.Lambdas.Verify.Email.Handlers
                     };
                     existingGuestEntity.Email = verified.ToString();
 
+                    _logger.LogInformation($"Successful verification! {JsonSerializer.Serialize(existingGuestEntity.Email)}");
+
                     await _dynamoDBProvider.SaveAsync(audience, existingGuestEntity, cancellationToken);
 
                     return new VerifyEmailResponse
