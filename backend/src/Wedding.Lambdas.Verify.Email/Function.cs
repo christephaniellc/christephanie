@@ -70,6 +70,20 @@ public class Function
             var token = request.GetVerifyTokenFromParams();
             var origin = request.GetOriginFromRequest();
             var originAudience = request.GetOriginFromRequest();
+            
+            // Handle OPTIONS preflight request for CORS
+            if (request.HttpMethod?.ToUpper() == "OPTIONS")
+            {
+                context.Logger.LogInformation("Handling OPTIONS preflight request for CORS");
+                
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = 204, // No Content is standard for OPTIONS
+                    Headers = AwsGatewayProxyResponseExtensions.GetCorsHeaders(origin),
+                    Body = string.Empty,
+                    IsBase64Encoded = false
+                };
+            }
 
             _metaData = new Dictionary<string, string>
             {
@@ -84,7 +98,8 @@ public class Function
                 var logError = $"Audience exception: audience empty.";
                 context.Logger.LogError(logError);
 
-                return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
+                // Include origin for CORS headers
+                return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData, origin);
             }
 
             using var scope = _serviceProvider.CreateScope();
@@ -111,7 +126,8 @@ public class Function
             var handler = scope.ServiceProvider.GetRequiredService<VerifyEmailHandler>();
             var result = await handler.GetAsync(command);
 
-            return result.OkResponse();
+            // Pass the origin to ensure proper CORS headers
+            return result.OkResponse(origin);
         }
         catch (ValidationException ex)
         {
@@ -119,7 +135,9 @@ public class Function
             var logError = $"Validation exception: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData);
+            // Get origin from metadata if available
+            string? origin = _metaData?.ContainsKey("origin") == true ? _metaData["origin"] : null;
+            return viewError.ErrorResponse((int)HttpStatusCode.BadRequest, typeof(ValidationException).ToString(), _metaData, origin);
         }
         catch (KeyNotFoundException ex)
         {
@@ -127,7 +145,9 @@ public class Function
             var error = $"KeyNotFoundException exception: {ex.Message}";
             context.Logger.LogError(error);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString(), _metaData);
+            // Get origin from metadata if available
+            string? origin = _metaData?.ContainsKey("origin") == true ? _metaData["origin"] : null;
+            return viewError.ErrorResponse((int)HttpStatusCode.NotFound, typeof(KeyNotFoundException).ToString(), _metaData, origin);
         }
         catch (Exception ex)
         {
@@ -135,7 +155,9 @@ public class Function
             var logError = $"Error occurred: {ex.Message}";
             context.Logger.LogError(logError);
 
-            return viewError.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString(), _metaData);
+            // Get origin from metadata if available
+            string? origin = _metaData?.ContainsKey("origin") == true ? _metaData["origin"] : null;
+            return viewError.ErrorResponse((int)HttpStatusCode.InternalServerError, typeof(Exception).ToString(), _metaData, origin);
         }
     }
 }
