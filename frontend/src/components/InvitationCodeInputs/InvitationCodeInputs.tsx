@@ -27,6 +27,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import {
   StephsFavoriteTypography,
+  StephsActualFavoriteTypography,
   BlockTextTypography,
 } from '@/components/AttendanceButton/AttendanceButton';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
@@ -126,27 +127,20 @@ const InvitationCodeDialog = ({
         }}
       >
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Box display="flex" alignItems="center">
-            <KeyOutlined sx={{ mr: 1.5, color: theme.palette.secondary.main, fontSize: { xs: 24, md: 32 } }} />
-            <Typography variant="h5" color="secondary.main" fontWeight="bold" fontSize={{ xs: '1.25rem', md: '1.75rem' }}>
+          <Box display="flex" alignItems="center" width='100%'>
+            {/*<KeyOutlined sx={{ mr: 1.5, color: theme.palette.secondary.main, fontSize: { xs: 24, md: 32 } }} />*/}
+            <Typography mx='auto' variant="h5" color="secondary.main" fontWeight="bold" fontSize={{ xs: '1.25rem', md: '1.75rem' }}>
               {invitationCode ? 'Edit' : 'Add'} Invitation Code
             </Typography>
           </Box>
 
           <Box display="flex" alignItems="center" gap={2}>
-            <Box
-              component="img"
-              src={ElPulpo}
-              alt="El Pulpo"
-              sx={{
-                height: { xs: 40, md: 56 },
-                width: { xs: 40, md: 56 },
-                borderRadius: '50%',
-                objectFit: 'cover',
-                objectPosition: 'center top',
-                border: `2px solid ${alpha(theme.palette.secondary.main, 0.4)}`,
-                boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-              }}
+            {/* Always show QR code icon, use transparent code if no data */}
+            <StyledQRCode
+              value={code || currentUser?.firstName ? getQrCodeUrl() : "https://christephanie.com"}
+              size={{ xs: 40, sm: 48 }}
+              style="circular"
+              showCorners={false}
             />
           </Box>
         </Box>
@@ -231,19 +225,18 @@ const InvitationCodeDialog = ({
           position: 'relative', 
           zIndex: 1,
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center', // Changed to center since we removed the QR code
           alignItems: 'center',
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 2, sm: 0 }
+          gap: { xs: 2, sm: 2 }
         }}
       >
         {/* Buttons group */}
         <Box sx={{ 
           display: 'flex', 
           gap: 2,
-          order: { xs: 2, sm: 1 }, 
           width: { xs: '100%', sm: 'auto' },
-          justifyContent: { xs: 'center', sm: 'flex-start' }
+          justifyContent: 'center'
         }}>
           <Button
             onClick={onClose}
@@ -285,47 +278,6 @@ const InvitationCodeDialog = ({
             Save Code
           </Button>
         </Box>
-        
-        {/* QR Code - show if either code or firstName is entered */}
-        {(code || currentUser?.firstName) && (
-          <Box 
-            sx={{ 
-              order: { xs: 1, sm: 2 },
-              alignSelf: { xs: 'center', sm: 'flex-end' },
-              mt: { xs: 0, sm: -4 },
-              mb: { xs: -1, sm: 0 },
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'transform 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                  },
-                  maxWidth: { xs: '90px', sm: '110px' }
-                }}
-              >
-                {(code || currentUser?.firstName) && (
-                  <StyledQRCode
-                    value={getQrCodeUrl()}
-                    size={90}
-                    style="wedding"
-                  />
-                )}
-              </Box>
-            </Box>
-          </Box>
-        )}
       </DialogActions>
 
       {/* Decorative corner elements */}
@@ -895,7 +847,7 @@ export const InvitationCodeInputs = () => {
                       mb: 2,
                       py: { xs: 1.2, sm: 1.5 }, // Less padding on mobile
                       borderRadius: '8px',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                      boxShadow: boxShadow.boxShadow,
                       backdropFilter: 'blur(10px)',
                       backgroundColor: 'rgba(0,0,0,0.3)',
                       transition: 'all 0.3s ease',
@@ -903,7 +855,7 @@ export const InvitationCodeInputs = () => {
                       '&:hover': {
                         backgroundColor: 'rgba(0,0,0,0.4)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
+                        boxShadow: boxShadow.boxShadow,
                       },
                     }}
                     aria-label="Add invitation code"
@@ -948,16 +900,13 @@ export const InvitationCodeInputs = () => {
             position: { xs: 'sticky', sm: 'static' },
             bottom: { xs: 0, sm: 'auto' },
             zIndex: { xs: 2, sm: 'auto' },
-            bgcolor: { xs: 'rgba(0,0,0,0.8)', sm: 'transparent' },
-            backdropFilter: { xs: 'blur(10px)', sm: 'none' },
+            bgcolor: 'rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(3px)',
             pb: { xs: 2, sm: 2 },
             pt: { xs: 1.5, sm: 0 },
             px: { xs: 1.5, sm: 2 },
-            // Add subtle shadow to distinguish from content when sticky
-            boxShadow: {
-              xs: '0 -4px 6px rgba(0,0,0,0.2)',
-              sm: 'none',
-            },
+            // Use a simple shadow
+            boxShadow: '0 -5px 0px rgba(0,0,0,0.1)',
             mt: { xs: 'auto', sm: 0 }, // Push to bottom when there's space
           }}
         >
@@ -968,14 +917,12 @@ export const InvitationCodeInputs = () => {
                 mb: { xs: 1, sm: 2 },
                 py: { xs: 1, sm: 1.2 }, // Smaller on mobile
                 borderRadius: '8px',
-                fontWeight: 'bold',
-                fontSize: { xs: '1rem', sm: '1.1rem' }, // Smaller on mobile
                 textTransform: 'none',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                boxShadow: boxShadow.boxShadow,
                 transition: 'all 0.3s ease',
                 '&:hover:not(:disabled)': {
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+                  boxShadow: boxShadow.boxShadow,
                 },
               }}
               disabled={!user?.firstName || !user?.invitationCode}
@@ -986,7 +933,15 @@ export const InvitationCodeInputs = () => {
               }
               aria-label={user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
             >
-              {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
+              <StephsActualFavoriteTypography sx={{ 
+                fontSize: { xs: '1rem', sm: '1.1rem' },
+                lineHeight: { xs: '1.2rem', sm: '1.3rem' },
+                textTransform: 'uppercase',
+                fontWeight: 400,
+                animation: 'none'  // Remove the floating animation
+              }}>
+                {user?.auth0Id ? 'Login With your Existing Account' : invitationButtonText}
+              </StephsActualFavoriteTypography>
             </Button>
             {user.firstName && user.auth0Id && (
               <Typography
