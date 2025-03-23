@@ -69,6 +69,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.User.Patch"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Verify.Email", "Wedding.Lambdas.Verify.Email\Wedding.Lambdas.Verify.Email.csproj", "{34F302AD-BF9B-463A-B86B-1A4F689B5E31}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Stats.Get", "Wedding.Lambdas.Stats.Get\Wedding.Lambdas.Stats.Get.csproj", "{57EE044B-F7FB-41FB-9F50-91D18354E57D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -317,6 +319,14 @@ Global
 		{34F302AD-BF9B-463A-B86B-1A4F689B5E31}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34F302AD-BF9B-463A-B86B-1A4F689B5E31}.Release|x64.ActiveCfg = Release|Any CPU
 		{34F302AD-BF9B-463A-B86B-1A4F689B5E31}.Release|x64.Build.0 = Release|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Debug|x64.Build.0 = Debug|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Release|x64.ActiveCfg = Release|Any CPU
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -348,6 +358,7 @@ Global
 		{67686AFE-FF50-40B0-A882-46D00A1DE1BE} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{1A7FD4A8-49FC-4A6F-A42B-86B7C22AF4E2} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 		{34F302AD-BF9B-463A-B86B-1A4F689B5E31} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
+		{57EE044B-F7FB-41FB-9F50-91D18354E57D} = {E6748537-5658-41F7-88E0-CC4AAADC5E97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE7DC1A-0F17-41CE-B205-8B3751B0072D}

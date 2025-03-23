@@ -12,12 +12,14 @@ import {
 import { EmailOutlined, CheckCircleOutline, ErrorOutline } from '@mui/icons-material';
 import { useApiContext } from '@/context/ApiContext';
 import { useFamily } from '@/store/family';
+import { useAuth0 } from '@auth0/auth0-react';
 
 /**
  * VerifyEmail page component
  * 
  * This page handles email verification via a token received in the URL.
  * It automatically submits the token to the API and shows the verification result.
+ * Works for both authenticated and unauthenticated users.
  */
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -25,6 +27,7 @@ const VerifyEmail = () => {
   const apiContext = useApiContext();
   const { validateEmailMutation } = apiContext;
   const [_, familyActions] = useFamily();
+  const { isAuthenticated, isLoading } = useAuth0();
 
   // State for verification process
   const [isVerifying, setIsVerifying] = useState(true);
@@ -37,6 +40,15 @@ const VerifyEmail = () => {
   // Use another ref to store the verification result to prevent double-processing
   const verificationProcessedRef = useRef(false);
   const tokenRef = useRef<string | null>(null);
+  
+  // Detect if we should automatically redirect to home when not authenticated
+  useEffect(() => {
+    // Wait for Auth0 to finish its loading process
+    if (isLoading) return;
+
+    // If Auth0 is loaded and the user is not authenticated, then we should
+    // process the verification without requiring login
+  }, [isLoading, isAuthenticated]);
   
   useEffect(() => {
     // Only process the token once per page load
@@ -84,13 +96,15 @@ const VerifyEmail = () => {
         // Clear URL parameters to prevent accidental refresh issues
         window.history.replaceState(null, '', window.location.pathname);
         
-        // Refresh family data with a single attempt
-        setTimeout(() => {
-          if (isMounted) {
-            familyActions.getFamilyUnitQuery.refetch()
-              .catch(err => console.error('Error refreshing family data:', err));
-          }
-        }, 1000);
+        // Only refresh family data if the user is authenticated
+        if (isAuthenticated) {
+          setTimeout(() => {
+            if (isMounted) {
+              familyActions.getFamilyUnitQuery.refetch()
+                .catch(err => console.error('Error refreshing family data:', err));
+            }
+          }, 1000);
+        }
       } catch (error) {
         if (!isMounted) return;
         
@@ -107,7 +121,7 @@ const VerifyEmail = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAuthenticated, isLoading]); // Add authentication state as dependencies
 
   // Track if navigation has been triggered to prevent double navigation
   const hasNavigatedRef = useRef(false);
@@ -125,9 +139,16 @@ const VerifyEmail = () => {
     if (validateEmailMutation.isPending) {
       validateEmailMutation.reset();
     }    
+    
     // Navigate back to the main page with a small delay to let UI updates finish
     setTimeout(() => {
-      // Navigate back to the communication preferences page
+      // If user is not authenticated, always go to home page
+      if (!isAuthenticated) {
+        navigate('/');
+        return;
+      }
+      
+      // For authenticated users, go to appropriate page based on verification status
       if (verificationSuccess) {
         // Add verified=true to ensure proper state update
         navigate(`/save-the-date?step=communicationPreference&verified=true`);
@@ -179,7 +200,9 @@ const VerifyEmail = () => {
               Email Verified Successfully!
             </Typography>
             <Typography variant="body1" sx={{ mb: 4 }}>
-              Your email address has been verified. You will now receive updates and notifications about our wedding!
+              Your email address has been verified. {isAuthenticated 
+                ? "You will now receive updates and notifications about our wedding!" 
+                : "You can now return to the wedding site."}
             </Typography>
             <Button 
               variant="contained" 
@@ -188,7 +211,7 @@ const VerifyEmail = () => {
               onClick={handleContinue}
               startIcon={<EmailOutlined />}
             >
-              Continue
+              {isAuthenticated ? "Continue" : "Return to Wedding Site"}
             </Button>
           </Box>
         ) : (
@@ -226,7 +249,7 @@ const VerifyEmail = () => {
               size="large"
               onClick={handleContinue}
             >
-              Return to Wedding Site
+              {isAuthenticated ? "Return to Wedding Site" : "Go to Homepage"}
             </Button>
           </Box>
         )}
