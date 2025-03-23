@@ -1,4 +1,4 @@
-import { Fragment, Suspense, useEffect } from 'react';
+import React, { Fragment, Suspense, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import CssBaseline from '@mui/material/CssBaseline';

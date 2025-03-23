@@ -353,7 +353,6 @@ const WelcomeStepper = () => {
                 sx={{
                   cursor: 'pointer',
                   '&:hover': {
-                    textDecoration: 'underline',
                     backgroundColor: alpha(theme.palette.common.white, 0.1),
                     borderRadius: 1,
                   },

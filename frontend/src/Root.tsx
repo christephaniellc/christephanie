@@ -1,4 +1,4 @@
-import { ComponentType, StrictMode } from 'react';
+import React, { ComponentType, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RecoilRoot } from 'recoil';
 

@@ -50,7 +50,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}`
+    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}${selectedFamily.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}`
     : "https://christephanie.com?inviteCode=DEMO";
   
   return (
