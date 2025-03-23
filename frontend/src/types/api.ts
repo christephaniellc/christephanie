@@ -919,6 +919,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags Stats
+     * @name StatsList
+     * @request GET:/api/stats
+     * @secure
+     */
+    statsList: (params: RequestParams = {}) =>
+      this.request<FamilyUnitViewModel[], ProblemDetails | void>({
+        path: `/api/stats`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags User
      * @name UserFindList
      * @request GET:/api/user/find
