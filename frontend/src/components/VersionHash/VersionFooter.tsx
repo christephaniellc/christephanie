@@ -44,14 +44,28 @@ function AppVersionFooter() {
         position: "relative",
         zIndex: 130,
         pr: 0.5,
-        background: "transparent"
+        background: "transparent",
+        textAlign: 'right', // Ensure text is right-aligned
+        pointerEvents: 'auto', // Make text clickable
+        mr: 1 // Add more margin on the right
       }}
     >
       <Typography 
         variant="caption" 
         component={StephsActualFavoriteTypographyAppVersion} 
         ml='auto'
-        sx={versionStyle}
+        sx={{
+          ...versionStyle,
+          opacity: 0.95, // Increase opacity for better visibility
+          px: 1.5, // Increase horizontal padding
+          py: 0.5, // Add vertical padding
+          borderRadius: 1, // Add border radius
+          // Add subtle background if not in development mode
+          ...(!isDevelopment && {
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(8px)',
+          })
+        }}
       >
         {isDevelopment && branchName ? `Branch: ${displayVersion}` : `Build: ${displayVersion}`}
       </Typography>
