@@ -1,6 +1,5 @@
 import { atom, selector, selectorFamily } from 'recoil';
 import React from 'react';
-import { guestSelector } from '@/store/family';
 
 export interface SaveTheDateStep {
   id: number;

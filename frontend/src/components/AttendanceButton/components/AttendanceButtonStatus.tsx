@@ -88,6 +88,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
                 animation: 'pulse 1.2s infinite ease-in-out',
                 display: { xs: 'none', md: 'block' },
+                transform: 'rotate(270deg)',
                 '@keyframes pulse': {
                   '0%': { opacity: 1, transform: 'translateX(0px) rotate(180deg)' },
                   '50%': { opacity: 0.5, transform: 'translateX(13px) rotate(180deg)' },
@@ -110,7 +111,7 @@ export const AttendanceButtonStatus = ({ guestId }: AttendanceButtonStatusProps)
                 filter: 'drop-shadow(2px 2px 1px rgba(0,0,0,0.5))',
                 animation: 'pulseUp 1.2s infinite ease-in-out',
                 display: { xs: 'block', md: 'none' },
-                transform: 'rotate(270deg)',
+                transform: 'rotate(0deg)',
                 '@keyframes pulseUp': {
                   '0%': { opacity: 1, transform: 'translateY(0px) rotate(270deg)' },
                   '50%': { opacity: 0.5, transform: 'translateY(-13px) rotate(270deg)' },
