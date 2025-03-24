@@ -118,25 +118,50 @@ const MOCK_FAMILIES: FamilyUnitViewModel[] = [
   }
 ];
 
+// Hook for admin queries that require admin permissions
 export const useAdminQueries = () => {
   const apiContext = useContext(ApiContext);
   
   // We need to stabilize the getAllFamilies reference to prevent re-renders
   const getAllFamiliesRef = useRef(apiContext.getAllFamilies);
   
-  // Query to get all families with mock data until API endpoint is ready
+  // Query to get all families (admin only)
   const getAllFamiliesQuery = useQuery<FamilyUnitDto[], ApiError>({
     queryKey: ['getAllFamilies'],
     queryFn: () => getAllFamiliesRef.current(),
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    staleTime: Infinity, // Prevent automatic refetching
-    gcTime: Infinity, // Keep the data cached indefinitely 
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes before considering stale
+    gcTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
     enabled: false, // Don't fetch on component mount, we'll do it manually
   }) as UseQueryResult<FamilyUnitDto[], ApiError>;
 
   return {
     getAllFamiliesQuery,
+  };
+};
+
+// Hook for stats queries accessible to any authenticated user
+export const useStatsQueries = () => {
+  const apiContext = useContext(ApiContext);
+  
+  // We need to stabilize the getStats reference to prevent re-renders
+  const getStatsRef = useRef(apiContext.getStats);
+  
+  // Query to get wedding stats (any authenticated user)
+  const getStatsQuery = useQuery<FamilyUnitViewModel[], ApiError>({
+    queryKey: ['getStats'],
+    queryFn: () => getStatsRef.current(),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes before considering stale
+    gcTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
+    enabled: false, // Don't fetch on component mount, we'll do it manually
+  }) as UseQueryResult<FamilyUnitViewModel[], ApiError>;
+
+  return {
+    getStatsQuery,
   };
 };

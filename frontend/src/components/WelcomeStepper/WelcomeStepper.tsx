@@ -42,6 +42,7 @@ export interface Step {
   stepCompleted: boolean;
   stepUrl: string | undefined;
   component?: React.ReactNode;
+  enabled: boolean;
 }
 
 // Define steps
@@ -56,6 +57,7 @@ const steps: { [step: string]: Step } = {
     lastDate: new Date('2025-04-16'),
     stepCompleted: false,
     stepUrl: routes[Pages.SaveTheDate].path,
+    enabled: true
   },
   rsvp: {
     id: 1,
@@ -65,6 +67,7 @@ const steps: { [step: string]: Step } = {
     lastDate: new Date('2025-05-20'),
     stepCompleted: true,
     stepUrl: '/',
+    enabled: false
   },
   wedding: {
     id: 2,
@@ -76,6 +79,7 @@ const steps: { [step: string]: Step } = {
     lastDate: new Date('2025-07-06'),
     stepCompleted: true,
     stepUrl: routes[Pages.Profile].path,
+    enabled: false
   },
 };
 
@@ -309,9 +313,6 @@ const WelcomeStepper = () => {
       ref={containerRef}
       sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      {/* Action button shows at top when needed */}
-      {buttonAtTop && <ActionButton />}
-
       {/* Stepper section */}
       <Box
         ref={stepperRef}
@@ -353,7 +354,6 @@ const WelcomeStepper = () => {
                 sx={{
                   cursor: 'pointer',
                   '&:hover': {
-                    textDecoration: 'underline',
                     backgroundColor: alpha(theme.palette.common.white, 0.1),
                     borderRadius: 1,
                   },
@@ -445,14 +445,18 @@ const WelcomeStepper = () => {
                 <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
                   {step.description}
                 </BlockTextTypographyLess>
+              
+                {/* Action button shows at top when needed */}
+                {step.enabled && <ActionButton />}
               </StepContent>
+
             </Step>
           ))}
         </Stepper>
       </Box>
 
       {/* Action button shows at bottom by default */}
-      {!buttonAtTop && <ActionButton />}
+      //{/* {!buttonAtTop && <ActionButton />} */}
     </Box>
   );
 };

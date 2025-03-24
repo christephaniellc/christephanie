@@ -30,13 +30,29 @@ export class ApiStack extends cdk.Stack {
     //----------------------------
     // CREATE API PROXY GATEWAY
     //----------------------------
+    // Enhanced CORS configuration that explicitly lists all needed headers and methods
     const corsOptions = props.env.allowOrigins ?
     {
         corsPreflight: {
         allowOrigins: props.env.allowOrigins,
-        allowHeaders: ['authorization', 'content-type'],
-        allowMethods: [apigateway.CorsHttpMethod.ANY], // *
+        allowHeaders: [
+            'authorization', 
+            'content-type', 
+            'x-amz-date',
+            'x-api-key',
+            'x-amz-security-token',
+            'x-requested-with'
+        ],
+        allowMethods: [
+            apigateway.CorsHttpMethod.GET,
+            apigateway.CorsHttpMethod.POST,
+            apigateway.CorsHttpMethod.PUT,
+            apigateway.CorsHttpMethod.PATCH,
+            apigateway.CorsHttpMethod.DELETE,
+            apigateway.CorsHttpMethod.OPTIONS
+        ],
         allowCredentials: true,
+        maxAge: Duration.days(1), // Cache preflight requests for 1 day
         },
     } : {};
 
@@ -63,6 +79,10 @@ export class ApiStack extends cdk.Stack {
     console.log('API Gateway Endpoint + stage:', `${this.apiGateway.apiEndpoint}/${stage.stageName}`,)
 
     const lambdaConfigs: LambdaConfig[] = [
+        // Add a health endpoint with no authorization required - single Lambda for multiple methods
+        { name: 'Wedding.Lambdas.Health', methods: [apigateway.HttpMethod.GET, apigateway.HttpMethod.OPTIONS], path: `/health`, unauthorized: true, keepWarm: true },
+        
+        // Existing endpoints
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Create', method: apigateway.HttpMethod.PUT, path: `/admin/familyunit/create` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit/all` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/admin/familyunit` },
@@ -75,9 +95,11 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.Validate.Address', method: apigateway.HttpMethod.POST, path: `/validate/address`, keepWarm: true },
         { name: 'Wedding.Lambdas.Validate.Phone', method: apigateway.HttpMethod.POST, path: `/validate/phone`, keepWarm: true },
         { name: 'Wedding.Lambdas.Validate.Email', method: apigateway.HttpMethod.POST, path: `/validate/email`, keepWarm: true },
+        { name: 'Wedding.Lambdas.Verify.Email', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.GET, apigateway.HttpMethod.OPTIONS], path: `/verify/email`, unauthorized: true, keepWarm: true },
         { name: 'Wedding.Lambdas.User.Find', method: apigateway.HttpMethod.GET, path: `/user/find`, unauthorized: true, keepWarm: true },
         { name: 'Wedding.Lambdas.User.Get', method: apigateway.HttpMethod.GET, path: `/user/me`, keepWarm: true },
         { name: 'Wedding.Lambdas.User.Patch', method: apigateway.HttpMethod.PATCH, path: `/user`},
+        { name: 'Wedding.Lambdas.Stats.Get', method: apigateway.HttpMethod.GET, path: `/stats`},
         { name: 'Wedding.Lambdas.Helloworld', method: apigateway.HttpMethod.GET, path: `/helloworld`, unauthorized: true },
         { name: 'Wedding.Lambdas.Admin.Setup', method: apigateway.HttpMethod.PUT, path: `/admin/setup`, unauthorized: true },
       ];
@@ -114,7 +136,7 @@ export class ApiStack extends cdk.Stack {
         // Set up API gateway route
         this.apiGateway.addRoutes({
             path: lambdaConfig.path!,
-            methods: [lambdaConfig.method!],
+            methods: lambdaConfig.methods || [lambdaConfig.method!], // Support multiple methods if specified
             integration: new apigatewayintegration.HttpLambdaIntegration(`${lambdaConfig.name.replace(/\./g, '-')}-integration`, lambdaFunction, {
                 payloadFormatVersion: apigateway.PayloadFormatVersion.VERSION_2_0,
             }),

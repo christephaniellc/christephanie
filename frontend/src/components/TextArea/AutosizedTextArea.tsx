@@ -102,7 +102,7 @@ export default function AutosizedTextArea() {
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [activeCelebrationEmojis, setActiveCelebrationEmojis] = useState([]);
   const [showSnow, setShowSnow] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  // Modal state removed
   const textareaRef = useRef(null);
   const talkingFaceRef = useRef(null);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -209,22 +209,7 @@ export default function AutosizedTextArea() {
     }, 0);
   };
   
-  // Handle modal open/close
-  const handleModalOpen = () => {
-    if (isMobile && isVerySmallScreen) {
-      setModalOpen(true);
-      // Small delay to ensure the drawer is fully open before focusing
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-        }
-      }, 100);
-    }
-  };
-  
-  const handleModalClose = () => {
-    setModalOpen(false);
-  };
+  // Removed modal focus handling entirely
 
   const isFetching = mutationState.status === 'pending';
   const isSuccess = mutationState.status === 'success';
@@ -262,7 +247,6 @@ export default function AutosizedTextArea() {
   // Handle textarea state changes
   const handleTextareaFocus = (e) => {
     setTextareaState('focus');
-    handleModalOpen();
   };
   
   const handleTextareaBlur = () => {
@@ -325,52 +309,38 @@ export default function AutosizedTextArea() {
   // Content to be rendered in both regular and modal views
   const renderCardContent = (isModal = false) => (
     <Card 
-      elevation={isModal ? 8 : 4}
+      elevation={4}
       sx={{
-        width: isModal ? '100%' : { xs: '95%', sm: 450, md: 500 },
-        borderRadius: 2,
-        p: 3,
+        width: '100%',
+        borderRadius: 0,
+        py: { xs: 2, sm: 3 },
+        px: { xs: 2, sm: 2.5, md: 4 },
+        mx: { xs: 0, sm: 0},
         background: theme.palette.mode === 'dark' 
           ? 'linear-gradient(135deg, #171717 0%, #262626 100%)' 
           : 'linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%)',
         border: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#e0e0e0'}`,
-        boxShadow: isModal ? undefined : boxShadow,
+        boxShadow: boxShadow,
         overflow: 'hidden',
         transition: 'all 0.3s ease',
         animation: isSuccess ? `${pulseEffect} 1.5s ease-in-out` : 'none',
         position: 'relative',
-        ...(isModal && {
-          maxHeight: '80vh',
-          overflowY: 'auto'
-        })
       }}
     >
       <StephsActualFavoriteTypographyNoDrop
         variant="h5"
         sx={{
           textAlign: 'center',
-          mb: 3,
+          mb: 0,
           color: theme.palette.secondary.main,
-          fontSize: '1.5rem'
+          fontSize: '1.5rem',
+          lineHeight: '1.5rem'
         }}
       >
         Share Your Thoughts
       </StephsActualFavoriteTypographyNoDrop>
       
       <FormControl sx={{ width: '100%' }}>
-        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-          <Typography
-            variant="overline"
-            sx={{ 
-              color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark,
-              fontWeight: 'bold',
-              fontSize: '1.2rem'
-            }}
-          >
-            Your message:
-          </Typography>
-        </Box>
-        
         {/* Emoji picker */}
         <Fade in={showEmojis}>
           <Paper 
@@ -414,7 +384,7 @@ export default function AutosizedTextArea() {
         </Fade>
         
         {/* Talking face and Textarea container */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', mb: 1, mt: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', mt: 2 }}>
           <Box sx={{ 
             ml: -1,
             pr: 1,
@@ -437,7 +407,7 @@ export default function AutosizedTextArea() {
             <Box 
               sx={{ 
                 position: 'absolute', 
-                top: '10px', 
+                top: '10px',
                 left: '-12px', 
                 width: 0, 
                 height: 0, 
@@ -494,6 +464,7 @@ export default function AutosizedTextArea() {
           display: 'flex',
           justifyContent: 'flex-end', 
           mt: 0.5,
+          mb: 3,
           fontSize: rem(12),
           fontStyle: 'italic',
           color: comment.length > 500 ? 'error.main' : 'text.secondary',
@@ -501,23 +472,8 @@ export default function AutosizedTextArea() {
           {comment.length}/500 characters
         </Box>
 
-        {/* Suggestion prompt */}
-        <Fade in={!comment && !family?.invitationResponseNotes}>
-          <Box sx={{ 
-            mt: 1.5, 
-            fontSize: rem(13),
-            fontStyle: 'italic',
-            color: theme.palette.text.secondary,
-            animation: `${pulseEffect} 4s infinite`,
-          }}>
-            <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
-              Need inspiration? How about: "{promptSuggestion}"
-            </Typography>
-          </Box>
-        </Fade>
-
         {/* Row for the send button and any extra info */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
             color="secondary"
@@ -549,7 +505,7 @@ export default function AutosizedTextArea() {
         </Box>
 
         {/* Status messages */}
-        <Box sx={{ mt: 2, minHeight: '40px' }}>
+        <Box sx={{ mt: 2, minHeight: '10px' }}>
           {isFetching && (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <CircularProgress size={20} sx={{ mr: 1 }} color="secondary" />
@@ -621,77 +577,11 @@ export default function AutosizedTextArea() {
       {/* TV snow effect while loading */}
       {showSnow && <TvSnow />}
       
-      {/* Bottom swipeable drawer for mobile devices */}
-      <SwipeableDrawer
-        anchor="bottom"
-        open={modalOpen && isMobile && isVerySmallScreen}
-        onClose={handleModalClose}
-        onOpen={() => {}}
-        disableBackdropTransition={true}
-        disableDiscovery={true}
-        swipeAreaWidth={0}
-        ModalProps={{
-          keepMounted: true,
-        }}
-        PaperProps={{
-          sx: {
-            height: 'auto',
-            maxHeight: '90vh',
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            background: 'transparent',
-            overflow: 'visible',
-          }
-        }}
-      >
-        <Box 
-          sx={{ 
-            width: '100%', 
-            position: 'relative',
-            pt: 1
-          }}
-        >
-          {/* Drag indicator */}
-          <Box 
-            sx={{ 
-              width: 40, 
-              height: 5, 
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)',
-              borderRadius: 2,
-              mx: 'auto',
-              mb: 1
-            }} 
-          />
-          
-          <IconButton
-            onClick={handleModalClose}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 10,
-              color: theme.palette.common.white,
-              backgroundColor: theme.palette.primary.main,
-              '&:hover': {
-                backgroundColor: theme.palette.primary.dark,
-              },
-            }}
-          >
-            <Close />
-          </IconButton>
-          
-          <Box sx={{ p: 2 }}>
-            {renderCardContent(true)}
-          </Box>
-        </Box>
-      </SwipeableDrawer>
-      
-      {/* Normal view for non-mobile */}
-      {!modalOpen && 
-        <Zoom in timeout={800}>
-          {renderCardContent(false)}
-        </Zoom>
-      }
+      {/* Content is always directly rendered */}
+      {/* Always render inline */}
+      <Zoom in timeout={800}>
+        {renderCardContent(false)}
+      </Zoom>
     </Box>
   );
 }

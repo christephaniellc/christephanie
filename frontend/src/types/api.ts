@@ -391,6 +391,10 @@ export interface VerifiedDto {
   verificationCodeExpiration?: string | null;
 }
 
+export interface VerifyEmailResponse {
+  emailVerifyState: VerifiedDto;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
 
@@ -915,6 +919,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags Stats
+     * @name StatsList
+     * @request GET:/api/stats
+     * @secure
+     */
+    statsList: (params: RequestParams = {}) =>
+      this.request<FamilyUnitViewModel[], ProblemDetails | void>({
+        path: `/api/stats`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags User
      * @name UserFindList
      * @request GET:/api/user/find
@@ -1049,6 +1070,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<ValidatePhoneResponse, ProblemDetails | void>({
         path: `/api/validate/phone/resend`,
         method: 'POST',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Verify
+     * @name VerifyEmailCreate
+     * @request POST:/api/verify/email
+     * @secure
+     */
+    verifyEmailCreate: (
+      query?: {
+        token?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<VerifyEmailResponse, ProblemDetails | void>({
+        path: `/api/verify/email`,
+        method: 'POST',
+        query: query,
         secure: true,
         format: 'json',
         ...params,

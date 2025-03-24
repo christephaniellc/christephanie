@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SimpleSystemsManagement.Model;
 using AutoMapper;
-using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;

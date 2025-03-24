@@ -5,9 +5,12 @@ import {
   FormControl, InputLabel, Select, MenuItem, SelectChangeEvent
 } from '@mui/material';
 
-import { FamilyUnitDto, InvitationResponseEnum } from '@/types/api';
-import { useAdminQueries } from '@/hooks/useAdminQueries';
+import { FamilyUnitDto, FamilyUnitViewModel, InvitationResponseEnum } from '@/types/api';
+import { useAdminQueries, useStatsQueries } from '@/hooks/useAdminQueries';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { isAdmin } from '@/utils/roles';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
 
 import { GuestPopperState, getRandomAxis, getTierDetails } from './components/AdminHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
@@ -17,12 +20,20 @@ import AdminDashboardCharts from '@/components/AdminDashboardCharts';
 // Define sort options
 type SortOption = 'lastUpdated' | 'invitationStatus' | 'default';
 
-function Admin() {
-  const [families, setFamilies] = useState<FamilyUnitDto[]>([]);
+function Stats() {
+  const [statsData, setStatsData] = useState<FamilyUnitViewModel[]>([]);
+  const [adminData, setAdminData] = useState<FamilyUnitDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adminLoading, setAdminLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('lastUpdated');
+  
+  // Use both queries - stats for all users and admin data for admin users
+  const { getStatsQuery } = useStatsQueries();
   const { getAllFamiliesQuery } = useAdminQueries();
+  
+  const user = useRecoilValue(userState);
+  const userIsAdmin = isAdmin(user);
   
   // State for guest detail popper
   const [popperState, setPopperState] = useState<GuestPopperState>({
@@ -33,8 +44,8 @@ function Admin() {
     flipAxis: 'Y'
   });
 
-  // Sort families based on selected sort option
-  const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption) => {
+  // Sort families based on selected sort option - specific for FamilyUnitDto arrays
+  const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption): FamilyUnitDto[] => {
     const filteredFamilies = [...families];
     
     switch(sortOption) {
@@ -78,8 +89,8 @@ function Admin() {
           }
           
           // If same last update date, then sort by tier
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
           if (tierComparison !== 0) {
@@ -100,7 +111,7 @@ function Admin() {
             if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined)) {
               return 1; // Declined has highest priority
             } else if (family.guests?.some(guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested)) {
-              return 2; // Interested has medium priority
+              return 2; // Interested has second highest priority
             } else {
               return 3; // Pending has lowest priority
             }
@@ -117,8 +128,8 @@ function Admin() {
           }
           
           // If same status, sort by tier
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
           if (tierComparison !== 0) {
@@ -130,123 +141,148 @@ function Admin() {
           const bName = b.unitName?.toLowerCase() || '';
           return aName.localeCompare(bName);
         });
-        
-      case 'default':
-      default:
-        // Default sort: by tier priority, then alphabetically by family name
+      
+      default: // 'default' - Sort by tier, then family name
         return filteredFamilies.sort((a, b) => {
-          const aTierDetails = getTierDetails(a.tier);
-          const bTierDetails = getTierDetails(b.tier);
-          
-          // First sort by tier priority
+          // Sort by tier priority
+          const aTierDetails = getTierDetails('tier' in a ? a.tier : null);
+          const bTierDetails = getTierDetails('tier' in b ? b.tier : null);
           const tierComparison = aTierDetails.priority - bTierDetails.priority;
           
-          // If same tier, sort alphabetically by family name
-          if (tierComparison === 0) {
-            const aName = a.unitName?.toLowerCase() || '';
-            const bName = b.unitName?.toLowerCase() || '';
-            return aName.localeCompare(bName);
+          if (tierComparison !== 0) {
+            return tierComparison;
           }
           
-          return tierComparison;
+          // If same tier, sort by last name
+          const aName = a.unitName?.toLowerCase() || '';
+          const bName = b.unitName?.toLowerCase() || '';
+          return aName.localeCompare(bName);
         });
     }
   };
 
-  // Handle sort option change
-  const handleSortChange = (event: SelectChangeEvent<string>) => {
+  // Handle sorting selector change
+  const handleSortChange = (event: SelectChangeEvent) => {
     setSortOption(event.target.value as SortOption);
   };
 
-  // Effect to fetch families
+  // Function to sort admin data when the sort option changes
   useEffect(() => {
-    const fetchFamilies = async () => {
+    if (adminData.length > 0) {
+      const sortedFamilies = sortFamilies([...adminData], sortOption);
+      setAdminData(sortedFamilies);
+    }
+  }, [sortOption]); // Only re-sort when the sort option changes
+  
+  // Fetch stats data for all users (public endpoint)
+  useEffect(() => {
+    const fetchStatsData = async () => {
       try {
-        setLoading(true);
+        // Check if we already have cached data
+        if (getStatsQuery.data && getStatsQuery.data.length > 0) {
+          //console.log('Using cached stats data');
+          setStatsData(getStatsQuery.data);
+          setLoading(false);
+          return;
+        }
         
-        // Store the refetch function to a local variable to avoid dependency issues
-        const refetch = getAllFamiliesQuery.refetch;
+        //console.log('Fetching stats data from public API');
+        const result = await getStatsQuery.refetch();
         
-        // Fetch data only once when the component mounts
-        const response = await refetch();
-        if (response.data) {
-          const excludedCodes = ["BAAAD", "BAAAA", "BAAAB"];
-          
-          // Filter out families whose invitationcode is in the excludedCodes array
-          const filteredFamilies = response.data.filter(
-            family => !excludedCodes.includes(family.invitationCode)
-          );
-
-          // Apply the current sort option
-          const sortedFamilies = sortFamilies(filteredFamilies, sortOption);
-
-          setFamilies(sortedFamilies);
-        } else if (response.error) {
-          setError('Failed to fetch families');
+        if (result.status === 'success' && result.data) {
+          setStatsData(result.data);
+          setLoading(false);
+        } else {
+          setError('Failed to load stats data');
+          setLoading(false);
         }
       } catch (err) {
-        setError('An error occurred while fetching families');
-        console.error(err);
-      } finally {
+        console.error('Error fetching stats data:', err);
+        setError('An error occurred while loading the data');
         setLoading(false);
       }
     };
 
-    fetchFamilies();
-    // We're intentionally not including getAllFamiliesQuery in the dependency array
-    // to prevent infinite refreshes
+    fetchStatsData();
+    // Only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Effect to resort families when sort option changes
+  }, [getStatsQuery]);
+  
+  // Fetch admin data (admin-only endpoint) only if user is admin
   useEffect(() => {
-    if (families.length > 0) {
-      setFamilies(sortFamilies([...families], sortOption));
-    }
-  }, [sortOption]);
-  
-  // Find a guest by ID across all families
-  const findGuestById = (guestId: string | null) => {
-    if (!guestId) return null;
-    
-    for (const family of families) {
-      const guest = family.guests?.find(g => g.guestId === guestId);
-      if (guest) return guest;
-    }
-    return null;
-  };
-  
-  // Handle opening the guest detail popper
-  const handleGuestClick = (event: React.MouseEvent<HTMLElement>, guestId: string) => {
-    // Close if clicking the same guest
-    if (popperState.open && popperState.guestId === guestId) {
-      setPopperState({
-        ...popperState,
-        open: false,
-        anchorEl: null,
-        guestId: null
-      });
+    // Only fetch admin data if the user has admin role
+    if (!userIsAdmin) {
+      setAdminLoading(false);
       return;
     }
     
+    const fetchAdminData = async () => {
+      try {
+        // Check if we already have cached data
+        if (getAllFamiliesQuery.data && getAllFamiliesQuery.data.length > 0) {
+          //console.log('Using cached admin data');
+          const sortedFamilies = sortFamilies(getAllFamiliesQuery.data, sortOption);
+          setAdminData(sortedFamilies);
+          setAdminLoading(false);
+          return;
+        }
+        
+        //console.log('Fetching admin data from private API');
+        const result = await getAllFamiliesQuery.refetch();
+        
+        if (result.status === 'success' && result.data) {
+          const sortedFamilies = sortFamilies(result.data, sortOption);
+          setAdminData(sortedFamilies);
+          setAdminLoading(false);
+        } else {
+          console.error('Failed to load admin data');
+          setAdminLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching admin data:', err);
+        setAdminLoading(false);
+      }
+    };
+
+    fetchAdminData();
+    // Only run once on mount if user is admin
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getAllFamiliesQuery, userIsAdmin]);
+
+  // Handle guest click to show detail popper
+  const handleGuestClick = (event: React.MouseEvent<HTMLElement>, guestId: string) => {
+    const flipAxis = getRandomAxis();
     setPopperState({
       open: true,
       anchorEl: event.currentTarget,
-      guestId: guestId,
+      guestId,
       flipped: false,
-      flipAxis: getRandomAxis()
+      flipAxis
     });
   };
-  
+
   // Handle closing the popper
   const handleClosePopper = () => {
     setPopperState({
       ...popperState,
-      open: false,
-      flipped: false
+      open: false
     });
   };
-  
+
+  // Find a guest by ID
+  const findGuestById = (guestId: string) => {
+    let foundGuest = null;
+    
+    for (const family of adminData) {
+      if (family.guests) {
+        foundGuest = family.guests.find(guest => guest.guestId === guestId);
+        if (foundGuest) break;
+      }
+    }
+    
+    return foundGuest;
+  };
+
   // Handle flipping the card
   const handleFlipCard = () => {
     setPopperState({
@@ -266,107 +302,117 @@ function Admin() {
         mb: 4,
         fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' }
       }}>
-        Admin Dashboard
+        Statistics
       </StephsActualFavoriteTypography>
 
-      {/* Dashboard Charts */}
-      <AdminDashboardCharts families={families} loading={loading} />
-      
-      {/* Family Cards */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' }, 
-        justifyContent: 'space-between', 
-        alignItems: { xs: 'flex-start', sm: 'center' }, 
-        gap: { xs: 2, sm: 0 },
-        mb: 4 
-      }}>
-        <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ 
-          mb: 0,
-          fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
-        }}>
-          All Families
-        </StephsActualFavoriteTypography>
-        
-        <FormControl sx={{ 
-          minWidth: { xs: '100%', sm: 200 }
-        }}>
-          <InputLabel id="sort-select-label">Sort by</InputLabel>
-          <Select
-            labelId="sort-select-label"
-            id="sort-select"
-            value={sortOption}
-            label="Sort by"
-            onChange={handleSortChange}
-            sx={{ 
-              '& .MuiSelect-select': {
-                whiteSpace: 'normal'
-              }
-            }}
-          >
-            <MenuItem value="lastUpdated">Last Updated (Recent First)</MenuItem>
-            <MenuItem value="invitationStatus">Interest Status (Declined First)</MenuItem>
-            <MenuItem value="default">Tier (Tier, Name)</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-      
+      {/* Dashboard Charts - available to all authenticated users */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
           <CircularProgress />
         </Box>
       ) : error ? (
-        <Typography color="error">{error}</Typography>
+        <Typography color="error" sx={{ mb: 4 }}>{error}</Typography>
       ) : (
-        <Grid container spacing={3} pb={15}>
-          {families.map((family) => (
-            <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
-              <FamilyCard 
-                family={family} 
-                onGuestClick={handleGuestClick} 
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <AdminDashboardCharts families={statsData} loading={false} />
       )}
       
-      {/* Guest Detail Popper */}
-      <Popper
-        open={popperState.open}
-        anchorEl={popperState.anchorEl}
-        placement="bottom-start"
-        transition
-        style={{ zIndex: 1300, width: 300 }}
-      >
-        {({ TransitionProps }) => (
-          <ClickAwayListener onClickAway={handleClosePopper}>
-            <Grow {...TransitionProps} timeout={350}>
-              <Box 
+      {/* Family Cards - only visible to admins */}
+      {userIsAdmin && (
+        <>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'flex-start', sm: 'center' }, 
+            gap: { xs: 2, sm: 0 },
+            mb: 4 
+          }}>
+            <StephsActualFavoriteTypography variant="h2" gutterBottom sx={{ 
+              mb: 0,
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
+            }}>
+              All Families
+            </StephsActualFavoriteTypography>
+            
+            <FormControl sx={{ 
+              minWidth: { xs: '100%', sm: 200 }
+            }}>
+              <InputLabel id="sort-select-label">Sort by</InputLabel>
+              <Select
+                labelId="sort-select-label"
+                id="sort-select"
+                value={sortOption}
+                label="Sort by"
+                onChange={handleSortChange}
                 sx={{ 
-                  mt: 1,
-                  maxHeight: '80vh',
-                  overflow: 'auto',
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 1,
-                  boxShadow: 3,
-                }} 
-                onClick={handleFlipCard}
+                  '& .MuiSelect-select': {
+                    whiteSpace: 'normal'
+                  }
+                }}
               >
-                {popperState.guestId && (
-                  <GuestDetailCard 
-                    guest={findGuestById(popperState.guestId)} 
-                    flipped={popperState.flipped} 
-                    flipAxis={popperState.flipAxis}
+                <MenuItem value="lastUpdated">Last Updated (Recent First)</MenuItem>
+                <MenuItem value="invitationStatus">Interest Status (Declined First)</MenuItem>
+                <MenuItem value="default">Tier (Tier, Name)</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {adminLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={3} pb={15}>
+              {adminData.map((family) => (
+                <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                  <FamilyCard 
+                    family={family} 
+                    onGuestClick={handleGuestClick} 
                   />
-                )}
-              </Box>
-            </Grow>
-          </ClickAwayListener>
-        )}
-      </Popper>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+          
+          {/* Guest Detail Popper */}
+          <Popper
+            open={popperState.open}
+            anchorEl={popperState.anchorEl}
+            placement="bottom-start"
+            transition
+            style={{ zIndex: 1300, width: 300 }}
+          >
+            {({ TransitionProps }) => (
+              <ClickAwayListener onClickAway={handleClosePopper}>
+                <Grow {...TransitionProps} timeout={350}>
+                  <Box 
+                    sx={{ 
+                      mt: 1,
+                      maxHeight: '80vh',
+                      overflow: 'auto',
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 1,
+                      boxShadow: 3,
+                    }} 
+                    onClick={handleFlipCard}
+                  >
+                    {popperState.guestId && (
+                      <GuestDetailCard 
+                        guest={findGuestById(popperState.guestId)} 
+                        flipped={popperState.flipped} 
+                        flipAxis={popperState.flipAxis}
+                      />
+                    )}
+                  </Box>
+                </Grow>
+              </ClickAwayListener>
+            )}
+          </Popper>
+        </>
+      )}
     </Box>
   );
 }
 
-export default Admin;
+export default Stats;

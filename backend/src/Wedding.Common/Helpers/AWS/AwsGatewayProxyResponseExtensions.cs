@@ -22,30 +22,42 @@ namespace Wedding.Common.Helpers.AWS
                    ?? throw new InvalidOperationException("Deserialization returned null.");
         }
 
-        public static APIGatewayProxyResponse OkResponse<T>(this T data)
+        public static Dictionary<string, string> GetCorsHeaders(string? origin)
+        {
+            // If no origin is provided, use wildcard
+            string resolvedOrigin = origin ?? "*";
+            
+            // Create headers dictionary with CORS headers
+            var headers = new Dictionary<string, string>
+            {
+                { "Content-Type", "application/json" },
+                { "Access-Control-Allow-Origin", resolvedOrigin },
+                { "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Requested-With" },
+                { "Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS" },
+                { "Access-Control-Allow-Credentials", "true" }
+            };
+            
+            return headers;
+        }
+
+        public static APIGatewayProxyResponse OkResponse<T>(this T data, string? origin = null)
         {
             return new APIGatewayProxyResponse
             {
                 StatusCode = (int)HttpStatusCode.OK,
                 IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
+                Headers = GetCorsHeaders(origin),
                 Body = data.ToFrontendResponseBody()
             };
         }
 
-        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType, Dictionary<string, string>? meta = null)
+        public static APIGatewayProxyResponse ErrorResponse(this string errorDescription, int errorStatusCode, string errorType, Dictionary<string, string>? meta = null, string? origin = null)
         {
             return new APIGatewayProxyResponse
             {
                 StatusCode = errorStatusCode,
                 IsBase64Encoded = false,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                },
+                Headers = GetCorsHeaders(origin),
                 Body = new FrontendApiError
                 {
                     Status = errorStatusCode,

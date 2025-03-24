@@ -12,6 +12,7 @@
 
 ## Lint/Format Commands
 - **Frontend**: `yarn prettier:check` (format check), `yarn lint:check` (lint check), `yarn ts:check` (type check)
+- **IMPORTANT**: Never run code formatters (prettier/format) - the user will always handle formatting
 
 ## Code Style Guidelines
 - **Backend**: PascalCase for classes/methods, interfaces with "I" prefix, underscore for private fields

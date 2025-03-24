@@ -32,12 +32,16 @@
     <ProjectReference Include="..\Wedding.Lambdas.FamilyUnit.Update\Wedding.Lambdas.FamilyUnit.Update.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Guest.MaskedValues.Get\Wedding.Lambdas.Guest.MaskedValues.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Health\Wedding.Lambdas.Health.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Stats.Get\Wedding.Lambdas.Stats.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Patch\Wedding.Lambdas.User.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Address\Wedding.Lambdas.Validate.Address.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Validate.Email\Wedding.Lambdas.Validate.Email.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Validate.Phone\Wedding.Lambdas.Validate.Phone.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Verify.Email\Wedding.Lambdas.Verify.Email.csproj" />
   </ItemGroup>
 
 </Project>

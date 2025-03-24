@@ -38,6 +38,7 @@
     "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
+    "html2canvas": "^1.4.1",
     "is-mobile": "^4.0.0",
     "notistack": "^3.0.1",
     "polished": "^4.3.1",

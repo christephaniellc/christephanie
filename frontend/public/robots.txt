@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /debug
+
+# This file instructs web crawlers which parts of the site they are allowed to visit.
+# We allow access to the main site, but explicitly exclude the debugging dashboard.
+
+Sitemap: https://wedding.christephanie.com/sitemap.xml
