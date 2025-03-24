@@ -13,6 +13,7 @@ import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
 import './assets/styles/fonts.css';
 import './assets/styles/export-utils.css';
+import './assets/styles/allow-screenshots.css';
 
 function App() {
   const navigate = useNavigate();
