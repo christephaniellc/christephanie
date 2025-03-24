@@ -535,21 +535,27 @@ export const InvitationCodeInputs = () => {
         <CardHeader
           title={
             !user?.guestId
-              ? '' //'Please enter your information to get started.'
+              ? 'Log in, or enter info:' //'Please enter your information to get started.'
               : `Welcome back ${user?.firstName}!`
           }
           subheader={''}
           aria-live="polite"
           sx={{
-            textAlign: 'center',
-            pb: { sm: 2, md: 3 }, // Less padding on mobile
+            textAlign: 'left',
+            ml: { sm: 1, md: 1 },
+            mt: { sm: 1, md: 1 },
+            pb: { sm: 2, md: 2 }, // Less padding on mobile
             pt: { xs: 2, sm: 2 }, // Adjust top padding for El Pulpo icon space
             '& .MuiCardHeader-title': {
-              fontSize: { xs: '1.25rem', sm: '1.5rem' }, // Smaller title on mobile
+              textTransform: 'uppercase',
+              fontSize: { xs: '1.0rem', sm: '1.25rem' }, // Smaller title on mobile
               width: { xs: '85%', lg: '90%' }, // Full width on mobile
-              fontWeight: 'bold',
+              fontWeight: '900',
               color: theme.palette.secondary.main,
-              textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+              textShadow: `
+                '1px 1px 2px rgba(0,0,0,1.0)',
+                '2px 2px 2px rgba(0,0,0,1.0)'
+              `,
               lineHeight: 1.3, // Better line height for wrapping
               overflowWrap: 'break-word', // Handle long names better
             },

@@ -1,4 +1,4 @@
-import { atom, selector, selectorFamily, useRecoilState } from 'recoil';
+import { atom, selector, selectorFamily, useRecoilState, useRecoilValue } from 'recoil';
 import {
   AddressDto,
   AgeGroupEnum,
@@ -184,6 +184,7 @@ export function reorderArrayByKey(array, key, matchValue) {
 }
 
 export const useFamily = () => {
+  const guestStates = useRecoilValue(familyGuestsStates);
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
   const [saveTheDateSteps, setSaveTheDateSteps] = useRecoilState(saveTheDateStepsState);
@@ -320,6 +321,7 @@ export const useFamily = () => {
       attendance: {
         ...prev.attendance,
         display: true,
+        label: `${guestStates.guests.length > 1 ? 'Is your family' : 'Are you'} interested in attending the wedding?`,
         completed: !family.guests.some(
           (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending,
         ),
@@ -329,6 +331,7 @@ export const useFamily = () => {
         display: attendingGuests.some(
           (guest) => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Declined,
         ),
+        label: `What kind of '${guestStates.guests.length > 1 ? 'people' : 'person'} are we catering to?`,
         completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
       },
       communicationPreference: {
@@ -369,10 +372,12 @@ export const useFamily = () => {
         ...prev.mailingAddress,
         display: true, // Always show mailing address step
         completed:
-          !!family.mailingAddress?.streetAddress &&
-          !!family.mailingAddress?.city &&
-          !!family.mailingAddress?.state &&
-          !!family.mailingAddress?.postalCode,
+          family.mailingAddress?.uspsVerified === true || (
+            !!family.mailingAddress?.streetAddress &&
+            !!family.mailingAddress?.city &&
+            !!family.mailingAddress?.state &&
+            !!family.mailingAddress?.postalCode
+          ),
       },
       comments: {
         ...prev.comments,
