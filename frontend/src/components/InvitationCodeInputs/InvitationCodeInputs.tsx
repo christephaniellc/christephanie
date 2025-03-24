@@ -392,19 +392,6 @@ export const InvitationCodeInputs = () => {
 
   const hasInvitationCode = Boolean(user?.invitationCode);
 
-  // Random quotes for wedding announcement
-  const weddingQuotes = [
-    "We're tying the knot",
-    "We're getting married",
-    'Join us for our wedding',
-    "We're saying 'I do'",
-    'Come celebrate with us',
-  ];
-
-  // Choose a random quote
-  const randomQuoteIndex = useMemo(() => Math.floor(Math.random() * weddingQuotes.length), []);
-  const randomGettingMarriedQuote = weddingQuotes[randomQuoteIndex];
-
   // Generate sparkle animation styles
   const generateSparkleStyles = () => {
     return {
@@ -566,63 +553,6 @@ export const InvitationCodeInputs = () => {
             },
           }}
         />
-
-        {/* Wedding announcement for logged in users */}
-        {user?.auth0Id && (
-          <Box
-            sx={{
-              textAlign: 'center',
-              mb: { xs: 1, sm: 2 },
-              px: 2,
-              mt: { xs: -2, sm: -1 }, // More negative margin on mobile to save space
-              // Scale down on small screens
-              transform: { xs: 'scale(0.95)', sm: 'none' },
-            }}
-          >
-            <BlockTextTypography
-              variant="h6"
-              color="secondary"
-              sx={{
-                fontStyle: 'normal',
-                fontSize: { xs: '1rem', sm: 'h6.fontSize' }, // Smaller on mobile
-              }}
-              shadowcolor={'#000000'}
-              maxpx={2}
-            >
-              {randomGettingMarriedQuote}!
-            </BlockTextTypography>
-
-            {/* Wedding countdown - conditionally shown based on screen size */}
-            <Box
-              sx={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                my: { xs: 0.5, sm: 1 },
-                // On very small screens, hide to save space when keyboard may be visible
-                display: { xs: 'none', sm: 'flex' },
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                color="common.white"
-                sx={{
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
-                  opacity: 0.9,
-                  backdropFilter: 'blur(3px)',
-                  backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                  padding: { xs: '2px 6px', sm: '4px 8px' }, // Less padding on mobile
-                  borderRadius: '4px',
-                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
-                }}
-              >
-                <Countdowns
-                  event="Wedding"
-                  interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-                />
-              </Typography>
-            </Box>
-          </Box>
-        )}
 
         <CardContent sx={{ pt: 0 }}>
           <>
