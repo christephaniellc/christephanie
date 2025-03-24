@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, useTheme } from '@mui/material';
+import { Box, useTheme, CircularProgress, Tooltip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { InvitationResponseEnum } from '@/types/api';
 
@@ -84,17 +84,19 @@ interface AttendanceStatusStepperProps {
   currentStatus: InvitationResponseEnum;
   onStatusChange?: (status: InvitationResponseEnum) => void;
   disabled?: boolean;
+  isLoading?: boolean;
 }
 
 export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = ({ 
   currentStatus,
   onStatusChange,
-  disabled = false
+  disabled = false,
+  isLoading = false
 }) => {
   const theme = useTheme();
   
   const handleStatusClick = (status: InvitationResponseEnum) => {
-    if (disabled || !onStatusChange) return;
+    if (disabled || isLoading || !onStatusChange) return;
     onStatusChange(status);
   };
 
@@ -114,25 +116,28 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
       >
 
         {/* Interested Step - First */}
-        <Box 
-          role="listitem" 
-          aria-label="Interested option"
-          onClick={() => handleStatusClick(InvitationResponseEnum.Interested)}
-          sx={{ 
-            cursor: disabled ? 'default' : 'pointer',
-            opacity: disabled ? 0.7 : 1,
-            transition: 'transform 0.2s',
-            '&:hover': {
-              transform: disabled ? 'none' : 'scale(1.1)'
-            }
-          }}
-        >
-            <StepperCircle
+        <Tooltip title={isLoading && currentStatus === InvitationResponseEnum.Interested ? "Updating..." : ""} arrow>
+          <Box 
+            role="listitem" 
+            aria-label="Interested option"
+            onClick={() => handleStatusClick(InvitationResponseEnum.Interested)}
+            sx={{ 
+              cursor: disabled || isLoading ? 'default' : 'pointer',
+              opacity: disabled ? 0.7 : 1,
+              transition: 'transform 0.2s',
+              position: 'relative',
+              '&:hover': {
+                transform: disabled || isLoading ? 'none' : 'scale(1.1)'
+              }
+            }}
+          >
+              <StepperCircle
                 active={currentStatus === InvitationResponseEnum.Interested}
                 status="interested"
                 filled={currentStatus === InvitationResponseEnum.Interested}
-            />
-        </Box>
+              />
+          </Box>
+        </Tooltip>
         
         <StepperConnector
             active={
@@ -147,25 +152,28 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
         />
       
       {/* Declined Step - Second */}
-      <Box 
-        role="listitem" 
-        aria-label="Declined option"
-        onClick={() => handleStatusClick(InvitationResponseEnum.Declined)}
-        sx={{ 
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled ? 0.7 : 1,
-          transition: 'transform 0.2s',
-          '&:hover': {
-            transform: disabled ? 'none' : 'scale(1.1)'
-          }
-        }}
-      >
-        <StepperCircle
-          active={currentStatus === InvitationResponseEnum.Declined}
-          status="declined"
-          filled={currentStatus === InvitationResponseEnum.Declined}
-        />
-      </Box>
+      <Tooltip title={isLoading && currentStatus === InvitationResponseEnum.Declined ? "Updating..." : ""} arrow>
+        <Box 
+          role="listitem" 
+          aria-label="Declined option"
+          onClick={() => handleStatusClick(InvitationResponseEnum.Declined)}
+          sx={{ 
+            cursor: disabled || isLoading ? 'default' : 'pointer',
+            opacity: disabled ? 0.7 : 1,
+            transition: 'transform 0.2s',
+            position: 'relative',
+            '&:hover': {
+              transform: disabled || isLoading ? 'none' : 'scale(1.1)'
+            }
+          }}
+        >
+            <StepperCircle
+              active={currentStatus === InvitationResponseEnum.Declined}
+              status="declined"
+              filled={currentStatus === InvitationResponseEnum.Declined}
+            />
+        </Box>
+      </Tooltip>
 
           <StepperConnector
               active={
@@ -180,25 +188,28 @@ export const AttendanceStatusStepper: React.FC<AttendanceStatusStepperProps> = (
           />
 
           {/* Pending Step - Last */}
-          <Box 
-            role="listitem" 
-            aria-label="Pending option"
-            onClick={() => handleStatusClick(InvitationResponseEnum.Pending)}
-            sx={{ 
-              cursor: disabled ? 'default' : 'pointer',
-              opacity: disabled ? 0.7 : 1,
-              transition: 'transform 0.2s',
-              '&:hover': {
-                transform: disabled ? 'none' : 'scale(1.1)'
-              }
-            }}
-          >
+          <Tooltip title={isLoading && currentStatus === InvitationResponseEnum.Pending ? "Updating..." : ""} arrow>
+            <Box 
+              role="listitem" 
+              aria-label="Pending option"
+              onClick={() => handleStatusClick(InvitationResponseEnum.Pending)}
+              sx={{ 
+                cursor: disabled || isLoading ? 'default' : 'pointer',
+                opacity: disabled ? 0.7 : 1,
+                transition: 'transform 0.2s',
+                position: 'relative',
+                '&:hover': {
+                  transform: disabled || isLoading ? 'none' : 'scale(1.1)'
+                }
+              }}
+            >
               <StepperCircle
-                  active={currentStatus === InvitationResponseEnum.Pending}
-                  status="pending"
-                  filled={currentStatus === InvitationResponseEnum.Pending}
+                active={currentStatus === InvitationResponseEnum.Pending}
+                status="pending"
+                filled={currentStatus === InvitationResponseEnum.Pending}
               />
-          </Box>
+            </Box>
+          </Tooltip>
     </Box>
   );
 };

@@ -148,13 +148,9 @@ const VerifyEmail = () => {
         return;
       }
       
-      // For authenticated users, go to appropriate page based on verification status
-      if (verificationSuccess) {
-        // Add verified=true to ensure proper state update
-        navigate(`/save-the-date?step=communicationPreference&verified=true`);
-      } else {
-        navigate('/save-the-date');
-      }
+      // For authenticated users, always go to the communicationPreference step
+      // Add verified=true parameter if verification was successful
+      navigate(`/save-the-date?step=communicationPreference${verificationSuccess ? '&verified=true' : ''}`);
     }, 100);
   };
 
@@ -249,7 +245,7 @@ const VerifyEmail = () => {
               size="large"
               onClick={handleContinue}
             >
-              {isAuthenticated ? "Return to Wedding Site" : "Go to Homepage"}
+              {isAuthenticated ? "Continue" : "Go to Homepage"}
             </Button>
           </Box>
         )}
