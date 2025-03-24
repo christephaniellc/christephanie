@@ -1,4 +1,4 @@
-import { Box, Button, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import LargeAttendanceButton from '@/components/AttendanceButton/ClientSideImportedComponents/LargeAttendanceButton';
 import { useAttendanceButtonMain } from '../hooks/useAttendanceButtonMain';
@@ -89,6 +89,7 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
         <Box 
           sx={{ 
             display: 'flex', 
+            flexDirection: 'column',
             alignItems: 'center',
             mr: 3
           }}
@@ -105,7 +106,8 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
                 },
               });
             }}
-            disabled={!familyActions.patchFamilyGuestMutation.isIdle || familyActions.getFamilyUnitQuery.isFetching}
+            disabled={familyActions.getFamilyUnitQuery.isFetching}
+            isLoading={familyActions.patchFamilyGuestMutation.isPending}
           />
         </Box>
       )}
@@ -115,7 +117,7 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
             familyActions.getFamilyUnitQuery.isFetching
           }
           onClick={handleClick}
-          aria-label={getAriaLabel()}
+          aria-label={familyActions.patchFamilyGuestMutation.isPending ? "Updating attendance..." : getAriaLabel()}
           aria-haspopup={!isAttendanceStep}
           aria-expanded={modalOpen}
           aria-busy={!familyActions.patchFamilyGuestMutation.isIdle}
@@ -142,14 +144,86 @@ export const AttendanceButtonMain = ({ guestId }: AttendanceButtonMainProps) => 
             display="flex" 
             alignItems="flex-start" 
             width="100%" 
-            sx={{ height: 'auto', minHeight: '100%' }}
+            sx={{ height: 'auto', minHeight: '100%', position: 'relative' }}
           >
             {guest && (
-              <LargeAttendanceButton
-                guestId={guest.guestId}
-                isPending={familyActions.patchFamilyMutation.isPending}
-                error={familyActions.patchFamilyMutation.error}
-              />
+              <>
+                {familyActions.patchFamilyGuestMutation.isPending && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                      backdropFilter: 'blur(8px)',
+                      zIndex: 10,
+                      borderRadius: 1,
+                      color: 'white',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      animation: 'fadeInOut 1.5s infinite',
+                      '@keyframes fadeInOut': {
+                        '0%': { opacity: 0.7 },
+                        '50%': { opacity: 1 },
+                        '100%': { opacity: 0.7 },
+                      },
+                    }}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <CircularProgress 
+                      size={24} 
+                      thickness={4}
+                      color={
+                        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                          ? "primary" 
+                          : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                            ? "error"
+                            : "secondary"
+                      }
+                      sx={{ 
+                        mb: 3,
+                        filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))'
+                      }}
+                    />
+                    <Box 
+                      component="span" 
+                      sx={{ 
+                        color: guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+                          ? 'primary.main' 
+                          : guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+                            ? 'error.main'
+                            : 'secondary.main',
+                        mb: 1,
+                        fontSize: '1.5rem',
+                        textShadow: '0 0 10px rgba(0,0,0,0.7)'
+                      }}
+                    >
+                      UPDATING
+                    </Box>
+                    <Box component="span" sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      fontSize: '1rem',
+                      opacity: 0.9
+                    }}>
+                      Please wait...
+                    </Box>
+                  </Box>
+                )}
+                <LargeAttendanceButton
+                  guestId={guest.guestId}
+                  isPending={familyActions.patchFamilyMutation.isPending || familyActions.patchFamilyGuestMutation.isPending}
+                  error={familyActions.patchFamilyMutation.error}
+                  rsvpLoading={familyActions.patchFamilyGuestMutation.isPending}
+                />
+              </>
             )}
           </Box>
         </Button>

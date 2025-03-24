@@ -110,7 +110,8 @@ export const useAuth0Queries = () => {
         appState: { 
           invitationFlow: true,
           timestamp: Date.now(), 
-          guestId 
+          guestId,
+          returnTo: '/' // Explicitly set returnTo to the home/welcome page
         }
       });
     },

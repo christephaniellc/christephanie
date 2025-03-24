@@ -128,7 +128,7 @@ describe('BottomNav Component.wip', () => {
     // Assert
     await waitFor(() => {
       expect(screen.getByText('Home')).toBeInTheDocument();
-      expect(screen.getByText('Save the Date')).toBeInTheDocument();
+      expect(screen.getByText('Survey')).toBeInTheDocument();
       expect(screen.getByText('Privacy Policy')).toBeInTheDocument();
       expect(screen.getByText('Terms of Service')).toBeInTheDocument();
       expect(screen.getByText('About Us')).toBeInTheDocument();

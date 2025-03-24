@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using AutoMapper;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.ClientInfo;
 using Wedding.Abstractions.ViewModels;
 
 namespace Wedding.Abstractions.Mapping
@@ -86,6 +89,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Preferences, opt => opt.MapFrom(src => src.Preferences))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
+                    .ForMember(dest => dest.ClientInfos, opt => opt.MapFrom(src => src.ClientInfos))
                     ;
 
                 CreateMap<GuestViewModel, GuestDto>()
@@ -125,6 +129,7 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Preferences, opt => opt.MapFrom(src => src.Preferences))
                     .ForMember(dest => dest.AgeGroup, opt => opt.MapFrom(src => src.AgeGroup))
                     .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity))
+                    .ForMember(dest => dest.ClientInfos, opt => opt.MapFrom(src => src.ClientInfos))
                     ;
             }
         }

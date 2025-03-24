@@ -1,4 +1,4 @@
-import { Fragment, Suspense, useEffect } from 'react';
+import React, { Fragment, Suspense, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,27 +9,10 @@ import Pages from '@/routes/Pages';
 import HotKeys from '@/sections/HotKeys';
 import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
-import Sidebar from '@/sections/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
 import './assets/styles/fonts.css';
-
-// Import the Auth debugger for development mode
-import AuthDebugger from '@/utils/AuthDebugger';
-
-// Import API diagnostics (dev only)
-const isDev = import.meta.env.DEV;
-if (isDev) {
-  // Load API diagnostics
-  Promise.all([
-    import('./api/run-diagnostics.js'),
-    import('./api/api-monitor.js')
-  ]).then(() => {
-    console.log('%cAPI Diagnostics loaded! Monitoring active, check console for details.', 
-      'background:#3f51b5; color:white; padding:4px 8px; border-radius:4px; font-weight:bold');
-    console.log('Commands: window.runApiDiagnostics() and window.apiMonitor');
-  }).catch(e => console.error('Failed to load API diagnostics:', e));
-}
+import './assets/styles/export-utils.css';
 
 function App() {
   const navigate = useNavigate();
@@ -59,9 +42,6 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
-      {false && <AuthDebugger />}
-
-      <Sidebar />
       <Suspense fallback={<Loading />}>
         <Pages />
       </Suspense>

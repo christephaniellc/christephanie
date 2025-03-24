@@ -772,7 +772,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ minHeight: 300 }}>
                 <Box>
                   <Typography 
                     variant="h6" 
@@ -800,30 +800,85 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                     Total: {metrics.allergiesData.reduce((sum, item) => sum + item.value, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
                   </Typography>
                 </Box>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={metrics.allergiesData.slice(0, 5)}
-                    layout="vertical"
-                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis 
-                      type="number" 
-                      tick={{ fill: 'white' }}
-                      axisLine={{ stroke: 'white' }}
-                    />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      tick={{ fill: 'white' }}
-                      axisLine={{ stroke: 'white' }}
-                      width={100}
-                      tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#F44336" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                
+                {/* Allergy Tag Cloud - better visualization for many allergies */}
+                <Box sx={{ 
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: 1,
+                  p: 2,
+                  maxHeight: 400,
+                  overflowY: 'auto',
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  borderRadius: 1,
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                  {metrics.allergiesData.map((allergyItem, index) => {
+                    // Calculate size based on count (more frequent = larger)
+                    const minSize = 0.75;
+                    const maxSize = 1.75;
+                    const maxCount = Math.max(...metrics.allergiesData.map(item => item.value));
+                    const size = minSize + ((allergyItem.value / maxCount) * (maxSize - minSize));
+                    
+                    // Calculate opacity based on count
+                    const minOpacity = 0.7;
+                    const maxOpacity = 1;
+                    const opacity = minOpacity + ((allergyItem.value / maxCount) * (maxOpacity - minOpacity));
+                    
+                    return (
+                      <Box 
+                        key={`allergy-tag-${index}`}
+                        sx={{
+                          backgroundColor: '#F44336',
+                          color: 'white',
+                          px: 1.5,
+                          py: 0.75,
+                          borderRadius: 4,
+                          fontSize: `${size}rem`,
+                          opacity,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          border: '1px solid rgba(0,0,0,0.2)',
+                          '&:hover': {
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+                            transform: 'translateY(-2px)'
+                          },
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <Typography 
+                          component="span" 
+                          sx={{ 
+                            fontFamily: 'monospace',
+                            fontWeight: 'bold',
+                            fontSize: 'inherit'
+                          }}
+                        >
+                          {allergyItem.name}
+                        </Typography>
+                        <Typography 
+                          component="span" 
+                          sx={{
+                            backgroundColor: 'rgba(0,0,0,0.3)', 
+                            borderRadius: '50%',
+                            width: '1.5em',
+                            height: '1.5em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.8em',
+                            ml: 0.5
+                          }}
+                        >
+                          {allergyItem.value}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
               </Box>
             </Grid>
           </Grid>

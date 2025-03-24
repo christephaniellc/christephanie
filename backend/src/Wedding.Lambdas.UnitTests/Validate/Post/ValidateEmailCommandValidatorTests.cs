@@ -2,12 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Wedding.Abstractions.Dtos.Auth;
+using Wedding.Common.Utility.Testing.TestChain;
 using Wedding.Lambdas.UnitTests.TestData;
 using Wedding.Lambdas.Validate.Email.Commands;
 using Wedding.Lambdas.Validate.Email.Validation;
 
 namespace Wedding.Lambdas.UnitTests.Validate.Post
 {
+    [TestFixture]
+    [UnitTestsFor(typeof(Wedding.Lambdas.Validate.Email.Function))]
     public class ValidateEmailCommandValidatorTests
     {
         private TestTokenHelper? _testTokenHelper;

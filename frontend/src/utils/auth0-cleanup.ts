@@ -49,50 +49,8 @@ export function forceAuth0Logout(): void {
  * to perform a nuclear logout when testing auth issues
  */
 export function createDevLoginDebugButton(): void {
-  const env = import.meta.env.VITE_ENV || 'development';
-  if (false && env !== 'prod' && env !== 'production') {
-    const config = getConfig();
-    
-    // Only add in development
-    const button = document.createElement('button');
-    button.textContent = 'Force Auth0 Logout';
-    button.style.position = 'fixed';
-    button.style.bottom = '10px';
-    button.style.right = '10px';
-    button.style.zIndex = '9999';
-    button.style.padding = '8px';
-    button.style.backgroundColor = 'red';
-    button.style.color = 'white';
-    button.style.border = 'none';
-    button.style.borderRadius = '4px';
-    
-    button.onclick = () => {
-      // Perform nuclear cleanup
-      clearAllAuth0Data(config.clientId);
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Navigate directly to Auth0 logout endpoint
-      forceAuth0Logout();
-    };
-    
-    // Add button to the page
-    document.body.appendChild(button);
-    
-    // Also expose a global function for console use
-    (window as any).__forceAuth0Logout = () => {
-      clearAllAuth0Data(config.clientId);
-      localStorage.clear();
-      sessionStorage.clear();
-      forceAuth0Logout();
-    };
-    
-    console.log(
-      'Auth0 Debug Tools available: \n' +
-      'Use the red button in the bottom right or\n' +
-      'call window.__forceAuth0Logout() from console'
-    );
-  }
+  // Debug button disabled - no-op function
+  return;
 }
 
 /**
