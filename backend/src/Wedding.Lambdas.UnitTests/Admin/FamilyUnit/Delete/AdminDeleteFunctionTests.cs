@@ -46,6 +46,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Delete
                     cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                     cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                     cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
                 }
             );
             _mapper = config.CreateMapper();

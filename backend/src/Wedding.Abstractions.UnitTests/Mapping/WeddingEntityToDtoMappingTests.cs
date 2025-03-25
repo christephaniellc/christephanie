@@ -26,6 +26,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                     cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                     cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                     cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
                     cfg.AllowNullCollections = true;
                 }
             );

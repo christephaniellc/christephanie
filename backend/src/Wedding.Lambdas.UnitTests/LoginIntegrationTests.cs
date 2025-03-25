@@ -159,6 +159,7 @@ namespace Wedding.Lambdas.UnitTests
                     cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                     cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                     cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
                 }
             );
             _mapper = config.CreateMapper();
