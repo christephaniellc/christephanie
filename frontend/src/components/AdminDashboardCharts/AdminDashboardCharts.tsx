@@ -806,7 +806,13 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                       opacity: 0.8
                     }}
                   >
-                    Total: {metrics.allergiesData.reduce((sum, item) => sum + item.value, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
+                    Total: {metrics.allergiesData.reduce((sum, item) => {
+                      // Exclude "none" or blank allergies from the total count
+                      if (item.name.toLowerCase() === "none" || item.name.trim() === "") {
+                        return sum;
+                      }
+                      return sum + item.value;
+                    }, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
                   </Typography>
                 </Box>
                 
