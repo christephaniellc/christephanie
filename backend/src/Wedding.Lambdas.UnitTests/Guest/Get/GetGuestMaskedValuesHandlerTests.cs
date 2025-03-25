@@ -35,6 +35,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                 cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                 cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
             });
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
