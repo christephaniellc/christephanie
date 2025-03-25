@@ -8,6 +8,7 @@ namespace Wedding.Common.Helpers.AWS
 {
     public interface IDynamoDBProvider
     {
+        // Guest data
         Task<bool> CheckRateLimitAsync(string audience, string ipAddress, string route, int rateLimit = 3, double rateLimitPerSeconds = 1.0, CancellationToken cancellationToken = default);
         Task<WeddingEntity?> LoadFamilyUnitOnlyAsync(string audience, string invitationCode, CancellationToken cancellationToken = default);
         Task<WeddingEntity?> LoadGuestByGuestIdAsync(string audience, string invitationCode, string guestId, CancellationToken cancellationToken = default);
@@ -16,7 +17,16 @@ namespace Wedding.Common.Helpers.AWS
         Task<List<WeddingEntity>?> FromQueryAsync(string audience, string invitationCode, CancellationToken cancellationToken = default);
         Task<FamilyUnitDto?> GetFamilyUnitAsync(string audience, string invitationCode, CancellationToken cancellationToken = default);
         Task<List<FamilyUnitDto>?> GetFamilyUnitsAsync(string audience, CancellationToken cancellationToken = default);
+
+        // Invitation configuration data
+        Task<DesignConfigurationEntity?> GetPhotoConfigurationAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default);
+        Task<List<DesignConfigurationEntity>?> GetPhotoConfigurationsAsync(string audience, CancellationToken cancellationToken = default);
+
+        // Save and delete data
         Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default);
         Task DeleteAsync(string audience, string invitationCode, string sortKey, CancellationToken cancellationToken = default);
+        Task SaveDesignAsync(string audience, DesignConfigurationEntity entity, CancellationToken cancellationToken = default);
+        Task DeleteDesignAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default);
+
     }
 }
