@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NSubstitute;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Multitenancy;
@@ -34,15 +35,16 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
                     cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                     cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                     cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
                 }
             );
             _mapper = config.CreateMapper();
             _multitenancySettingsProviderMock = new Mock<IMultitenancySettingsProvider>();
 
             // Configure the multitenancy settings provider to return a dummy table name.
-            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, false))
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, DatabaseTableEnum.GuestData))
                 .Returns(_testTableName);
-            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, true))
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, DatabaseTableEnum.RateLimiting))
                 .Returns(_testTableNameRateLimit);
 
             var serviceCollection = new ServiceCollection();
