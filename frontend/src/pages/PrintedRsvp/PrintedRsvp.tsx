@@ -96,7 +96,9 @@ const PrintedRsvp: React.FC = () => {
   
   // Handle card click to open modal
   const handleCardClick = () => {
-    setModalOpen(true);
+    if (selectedFamily) {
+      setModalOpen(true);
+    }
   };
   
   // Mobile view message
@@ -233,16 +235,57 @@ const PrintedRsvp: React.FC = () => {
             
             {/* Orientation and action buttons */}
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title={`Switch to ${currentOrientation === 'horizontal' ? 'vertical' : 'horizontal'} orientation`}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ScreenRotationIcon />}
-                  onClick={handleOrientationToggle}
+              {/* Orientation toggle buttons */}
+              <ToggleButtonGroup
+                value={currentOrientation}
+                exclusive
+                onChange={(e, newOrientation) => {
+                  if (newOrientation !== null) {
+                    if (cardSide === 'front') {
+                      setFrontOrientation(newOrientation);
+                    } else {
+                      setBackOrientation(newOrientation);
+                    }
+                  }
+                }}
+                aria-label="card orientation"
+                size="small"
+              >
+                <ToggleButton 
+                  value="horizontal"
+		  variant="outlined"
+                  sx={{ 
+                    bgcolor: currentOrientation === 'horizontal' ? 'primary.main' : 'dark',
+                    color: currentOrientation === 'horizontal' ? 'white' : 'text.primary',
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: 'primary.dark',
+                      }
+                    }
+                  }}
                 >
-                  {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'}
-                </Button>
-              </Tooltip>
+                  Landscape
+                </ToggleButton>
+                <ToggleButton 
+                  value="vertical"
+		  variant="outlined"
+                  sx={{ 
+                    bgcolor: currentOrientation === 'vertical' ? 'primary.main' : 'dark',
+                    color: currentOrientation === 'vertical' ? 'white' : 'text.primary',
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: 'primary.dark',
+                      }
+                    }
+                  }}
+                >
+                  Portrait
+                </ToggleButton>
+              </ToggleButtonGroup>
               
               <Tooltip title="Open in full screen">
                 <span>
