@@ -61,7 +61,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
         },
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: expanded ? '550px' : '180px', // Adjust height based on expanded state
+        maxHeight: expanded ? '600px' : '180px', // Increased expanded height to accommodate comments
       }}
       data-testid="family-card"
     >
@@ -241,7 +241,8 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: 2,
+                  pb: 3, // Increase bottom padding specifically
                   backgroundColor: rgba(theme.palette.background.paper, 0.8),
                   backdropFilter: 'blur(20px)',
                   borderRadius: 1,
@@ -258,7 +259,8 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                   <Typography variant="body2" sx={{ 
                     //fontStyle: 'italic',
                     whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
+                    paddingBottom: 2 // Add padding at the bottom to prevent text from being cut off
                   }}>
                     {family.invitationResponseNotes.trim() === '' ? '(none)' : family.invitationResponseNotes}
                   </Typography>

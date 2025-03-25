@@ -5,6 +5,231 @@
     "version": "v1"
   },
   "paths": {
+    "/api/admin/configuration/invitation": {
+      "post": {
+        "tags": [
+          "AdminConfiguration"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationDesignDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationDesignDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationDesignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationDesignDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "AdminConfiguration"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationDesignDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "AdminConfiguration"
+        ],
+        "parameters": [
+          {
+            "name": "designId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/admin/configuration/invitation/{designId}": {
+      "get": {
+        "tags": [
+          "AdminConfiguration"
+        ],
+        "parameters": [
+          {
+            "name": "designId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationDesignDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/admin/familyunit/create": {
       "put": {
         "tags": [
@@ -722,6 +947,48 @@
             "Bearer": [ ]
           }
         ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     },
     "/api/helloworld": {
@@ -1870,6 +2137,13 @@
           "preferences": {
             "$ref": "#/components/schemas/PreferencesDto"
           },
+          "clientInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientInfoDto"
+            },
+            "nullable": true
+          },
           "ageGroup": {
             "$ref": "#/components/schemas/AgeGroupEnum"
           },
@@ -1982,6 +2256,52 @@
         },
         "additionalProperties": false
       },
+      "InvitationDesignDto": {
+        "required": [
+          "guestId"
+        ],
+        "type": "object",
+        "properties": {
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "designId": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateCreated": {
+            "$ref": "#/components/schemas/LastUpdateAuditDto"
+          },
+          "dateUpdated": {
+            "$ref": "#/components/schemas/LastUpdateAuditDto"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/OrientationEnum"
+          },
+          "separatorWidth": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "separatorColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "photoGridItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoGridItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "InvitationResponseEnum": {
         "enum": [
           "Pending",
@@ -2024,6 +2344,13 @@
         "enum": [
           "Email",
           "Text"
+        ],
+        "type": "string"
+      },
+      "OrientationEnum": {
+        "enum": [
+          "Portrait",
+          "Landscape"
         ],
         "type": "string"
       },
@@ -2113,6 +2440,39 @@
         "properties": {
           "clientInfo": {
             "$ref": "#/components/schemas/ClientInfoDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PhotoGridItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "photoSrc": {
+            "type": "string",
+            "nullable": true
+          },
+          "rowPosition": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "columnPosition": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isLocked": {
+            "type": "boolean"
+          },
+          "objectFit": {
+            "type": "string",
+            "nullable": true
+          },
+          "objectPosition": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
