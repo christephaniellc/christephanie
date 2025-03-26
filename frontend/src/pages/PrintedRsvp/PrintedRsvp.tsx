@@ -253,7 +253,6 @@ const PrintedRsvp: React.FC = () => {
               >
                 <ToggleButton 
                   value="horizontal"
-		  variant="outlined"
                   sx={{ 
                     bgcolor: currentOrientation === 'horizontal' ? 'primary.main' : 'dark',
                     color: currentOrientation === 'horizontal' ? 'white' : 'text.primary',
@@ -270,7 +269,6 @@ const PrintedRsvp: React.FC = () => {
                 </ToggleButton>
                 <ToggleButton 
                   value="vertical"
-		  variant="outlined"
                   sx={{ 
                     bgcolor: currentOrientation === 'vertical' ? 'primary.main' : 'dark',
                     color: currentOrientation === 'vertical' ? 'white' : 'text.primary',
