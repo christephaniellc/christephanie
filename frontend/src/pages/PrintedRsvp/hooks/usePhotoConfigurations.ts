@@ -8,10 +8,10 @@ import { familyState } from '@/store/family';
 const STORAGE_KEY = 'saved-photo-configurations';
 
 export const usePhotoConfigurations = () => {
-  const { api } = useApiContext();
+  const apiContext = useApiContext();
   const family = useRecoilValue(familyState);
   // Use a placeholder ID if family data isn't available yet
-  const familyUnitId = family?.familyUnitId || 'temp-family-id';
+  const familyUnitId = family?.invitationCode || 'temp-family-id';
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [configName, setConfigName] = useState('');
