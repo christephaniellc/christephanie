@@ -3,6 +3,11 @@
   "short_name": "christephanie",
   "description": "Topher and Steph's wedding website",
   "theme_color": "#000000",
+  "background_color": "#000000",
+  "display": "standalone",
+  "capture_screenshot": true,
+  "screenshots_access": true,
+  "permissions": ["screenshots"],
   "icons": [
     {
       "src": "favicon_big_art_transparent-192x192.png",

@@ -9,6 +9,7 @@ interface DatabaseStackProps extends EnvStackProps {
 
 export class DatabaseStack extends cdk.Stack {
   public readonly guestTable: dynamodb.Table;
+  public readonly designTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, {...props, description: "Creates DynamoDB table with index. (Destroy does not delete table)"});
@@ -34,10 +35,30 @@ export class DatabaseStack extends cdk.Stack {
         projectionType: cdk.aws_dynamodb.ProjectionType.ALL,
     });
 
+    
+    this.designTable = new dynamodb.Table(this, `${applicationName}-design-configuration`, {
+      tableName: `${applicationName}-design-configuration`,
+      partitionKey: { name: 'PartitionKey', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PROVISIONED,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
+    this.designTable.addGlobalSecondaryIndex({
+        indexName: 'AllConfigsIndex',
+        partitionKey: { name: 'ConfigPK', type: dynamodb.AttributeType.STRING }, // ex: CONFIG#invitation#modern
+        sortKey: { name: 'ConfigSK', type: dynamodb.AttributeType.STRING }, // ex: GuestId
+        projectionType: cdk.aws_dynamodb.ProjectionType.ALL,
+    });
+
     // Print outputs
-    new cdk.CfnOutput(this, 'DynamoDBTableArn', {
+    new cdk.CfnOutput(this, 'DynamoDBGuestTableArn', {
         value: `${this.guestTable.tableArn}`,
-        description: 'DynamoDBTable ARN',
+        description: 'DynamoDBTable guestTable ARN',
+    });
+    new cdk.CfnOutput(this, 'DynamoDBDesignTableArn', {
+        value: `${this.designTable.tableArn}`,
+        description: 'DynamoDBTable designTable ARN',
     });
   }
 }

@@ -1,0 +1,32 @@
+/* CSS to explicitly allow screenshots on mobile devices */
+
+html, body, #root, 
+div, section, main, nav, header, footer,
+canvas, img, video {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+  -webkit-touch-callout: default !important;
+  -webkit-user-modify: read-write !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  cursor: auto !important;
+}
+
+/* Allow specific screenshot-sensitive elements to be captured */
+.recharts-wrapper,
+.recharts-surface,
+.MuiPaper-root,
+svg {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+  -webkit-touch-callout: default !important;
+}
+
+/* Make charts and graphs capture-friendly */
+.recharts-wrapper canvas,
+.recharts-surface canvas,
+canvas {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+  -webkit-touch-callout: default !important;
+}

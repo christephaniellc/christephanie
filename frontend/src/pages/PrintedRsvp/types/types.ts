@@ -39,3 +39,13 @@ export type PhotoVariant = {
   description?: string;
   layout: PhotoGridItem[];
 }
+
+export type SavedPhotoConfiguration = {
+  id?: string;
+  name: string;
+  familyUnitId: string;
+  orientation: CardOrientation;
+  photoGrid: PhotoGridItem[];
+  createdAt?: string;
+  lastModified?: string;
+}

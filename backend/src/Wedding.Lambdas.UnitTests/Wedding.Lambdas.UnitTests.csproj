@@ -35,6 +35,7 @@
 	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wedding.Common.Utility.Testing\Wedding.Common.Utility.Testing.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Admin.Configuration.Invitation\Wedding.Lambdas.Admin.Configuration.Invitation.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Create\Wedding.Lambdas.Admin.FamilyUnit.Create.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Delete\Wedding.Lambdas.Admin.FamilyUnit.Delete.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Admin.FamilyUnit.Get\Wedding.Lambdas.Admin.FamilyUnit.Get.csproj" />
