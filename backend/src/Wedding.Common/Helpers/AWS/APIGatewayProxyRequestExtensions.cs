@@ -218,5 +218,10 @@ namespace Wedding.Common.Helpers.AWS
                 return null;
             }
         }
+
+        public static string? GetDesignIdFromParams(this APIGatewayProxyRequest request)
+        {
+            return GetCaseInsensitiveParam(request, "designId");
+        }
     }
 }

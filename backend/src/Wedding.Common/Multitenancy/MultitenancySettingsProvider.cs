@@ -1,4 +1,5 @@
 ﻿using System;
+using Wedding.Abstractions.Enums;
 
 namespace Wedding.Common.Multitenancy
 {
@@ -37,14 +38,14 @@ namespace Wedding.Common.Multitenancy
             return audience;
         }
 
-        public string GetMappedTableName(string tenantId, bool rateLimit = false)
+        public string GetMappedTableName(string tenantId, DatabaseTableEnum table = DatabaseTableEnum.GuestData)
         {
             string? databaseTable;
             switch (tenantId.ToLower())
             {
                 // Unit tests only
                 case ("https://api.christephanie.com"):
-                    if (rateLimit)
+                    if (table == DatabaseTableEnum.RateLimiting)
                     {
                         databaseTable = $"christephanie-wedding-unittests-rate-limit";
                     }
@@ -57,9 +58,13 @@ namespace Wedding.Common.Multitenancy
                 case ("https://www.wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
                 case ("fianceapi.wedding.christephanie.com"):
-                    if (rateLimit)
+                    if (table == DatabaseTableEnum.RateLimiting)
                     {
                         databaseTable = $"christephanie-wedding-rate-limit";
+                    }
+                    else if (table == DatabaseTableEnum.InvitationDesign)
+                    {
+                        databaseTable = $"christephanie-wedding-invitation-design";
                     }
                     else
                     {
@@ -74,9 +79,13 @@ namespace Wedding.Common.Multitenancy
                 case ("localhost:5173"):
                 case ("http://localhost:5000"):
                 case ("localhost:5000"):
-                    if (rateLimit)
+                    if (table == DatabaseTableEnum.RateLimiting)
                     {
                         databaseTable = $"christephanie-wedding-rate-limit";
+                    }
+                    else if (table == DatabaseTableEnum.InvitationDesign)
+                    {
+                        databaseTable = $"christephanie-wedding-invitation-design";
                     }
                     else
                     {

@@ -5,6 +5,11 @@ import EngagementPhoto2 from '@/assets/engagement-photos/topher_and_steph_rsvp2.
 import EngagementPhoto3 from '@/assets/engagement-photos/topher_and_steph_rsvp3.jpg';
 import EngagementPhoto4 from '@/assets/engagement-photos/topher_and_steph_rsvp4.jpg';
 import EngagementPhoto8 from '@/assets/engagement-photos/topher_and_steph_rsvp8.jpg';
+import EngagementPhoto5 from '@/assets/engagement-photos/bremerhaven.jpg';
+import EngagementPhoto6 from '@/assets/engagement-photos/burn_night.jpg';
+import EngagementPhoto7 from '@/assets/engagement-photos/hammock.jpg';
+import EngagementPhoto9 from '@/assets/engagement-photos/oktoberfest.jpg';
+import EngagementPhoto10 from '@/assets/engagement-photos/roadtrip.jpg';
 import { atom, useRecoilState, atomFamily, selector } from 'recoil';
 
 // Recoil atoms for photo grid state
@@ -193,7 +198,12 @@ const availablePhotos = [
   EngagementPhoto2,
   EngagementPhoto3,
   EngagementPhoto4,
-  EngagementPhoto8
+  EngagementPhoto5,
+  EngagementPhoto6,
+  EngagementPhoto7,
+  EngagementPhoto8,
+  EngagementPhoto9,
+  EngagementPhoto10
 ];
 
 export const usePhotoVariants = (orientation: CardOrientation) => {
@@ -318,14 +328,27 @@ export const usePhotoVariants = (orientation: CardOrientation) => {
       )
     );
   }, [setCurrentPhotoGrid]);
+  
+  // Update photo source
+  const updatePhotoSource = useCallback((photoId: number, newPhotoSrc: string) => {
+    setCurrentPhotoGrid(prevGrid => 
+      prevGrid.map(item => 
+        item.id === photoId 
+          ? { ...item, photoSrc: newPhotoSrc } 
+          : item
+      )
+    );
+  }, [setCurrentPhotoGrid]);
 
   return {
     currentPhotoGrid,
     presetVariants,
+    availablePhotos,
     randomizePhotos,
     toggleLock,
     setSelectedVariant,
     updatePhotoPosition,
+    updatePhotoSource,
     selectedVariantId
   };
 };

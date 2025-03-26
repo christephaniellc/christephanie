@@ -173,6 +173,7 @@ export interface GuestViewModel {
   phone?: MaskedVerifiedModel;
   rsvp?: RsvpDto;
   preferences?: PreferencesDto;
+  clientInfos?: ClientInfoDto[] | null;
   ageGroup?: AgeGroupEnum;
   /** @format date-time */
   lastActivity?: string | null;
@@ -251,6 +252,19 @@ export interface IAMPolicyStatement {
   Condition?: Record<string, Record<string, any>>;
 }
 
+export interface InvitationDesignDto {
+  guestId: string | null;
+  designId?: string | null;
+  name?: string | null;
+  dateCreated?: LastUpdateAuditDto;
+  dateUpdated?: LastUpdateAuditDto;
+  orientation?: OrientationEnum;
+  /** @format int32 */
+  separatorWidth?: number | null;
+  separatorColor?: string | null;
+  photoGridItems?: PhotoGridItemDto[] | null;
+}
+
 export enum InvitationResponseEnum {
   Pending = 'Pending',
   Interested = 'Interested',
@@ -271,6 +285,11 @@ export interface MaskedVerifiedModel {
 export enum NotificationPreferenceEnum {
   Email = 'Email',
   Text = 'Text',
+}
+
+export enum OrientationEnum {
+  Portrait = 'Portrait',
+  Landscape = 'Landscape',
 }
 
 export interface PatchFamilyUnitRequest {
@@ -298,6 +317,19 @@ export interface PatchGuestRequest {
 
 export interface PatchUserRequest {
   clientInfo?: ClientInfoDto;
+}
+
+export interface PhotoGridItemDto {
+  /** @format uuid */
+  id?: string;
+  photoSrc?: string | null;
+  /** @format int32 */
+  rowPosition?: number;
+  /** @format int32 */
+  columnPosition?: number;
+  isLocked?: boolean;
+  objectFit?: string | null;
+  objectPosition?: string | null;
 }
 
 export interface PreferencesDto {
@@ -626,6 +658,82 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags AdminConfiguration
+     * @name AdminConfigurationInvitationCreate
+     * @request POST:/api/admin/configuration/invitation
+     * @secure
+     */
+    adminConfigurationInvitationCreate: (data: InvitationDesignDto, params: RequestParams = {}) =>
+      this.request<InvitationDesignDto, ProblemDetails | void>({
+        path: `/api/admin/configuration/invitation`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminConfiguration
+     * @name AdminConfigurationInvitationList
+     * @request GET:/api/admin/configuration/invitation
+     * @secure
+     */
+    adminConfigurationInvitationList: (params: RequestParams = {}) =>
+      this.request<InvitationDesignDto[], ProblemDetails | void>({
+        path: `/api/admin/configuration/invitation`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminConfiguration
+     * @name AdminConfigurationInvitationDelete
+     * @request DELETE:/api/admin/configuration/invitation
+     * @secure
+     */
+    adminConfigurationInvitationDelete: (
+      query?: {
+        designId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteResponse, ProblemDetails | void>({
+        path: `/api/admin/configuration/invitation`,
+        method: 'DELETE',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminConfiguration
+     * @name AdminConfigurationInvitationDetail
+     * @request GET:/api/admin/configuration/invitation/{designId}
+     * @secure
+     */
+    adminConfigurationInvitationDetail: (designId: string, params: RequestParams = {}) =>
+      this.request<InvitationDesignDto, ProblemDetails | void>({
+        path: `/api/admin/configuration/invitation/${designId}`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags AdminFamilyUnit
      * @name AdminFamilyunitCreateUpdate
      * @request PUT:/api/admin/familyunit/create
@@ -860,6 +968,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Health
+     * @name HealthList
+     * @request GET:/api/health
+     * @secure
+     */
+    healthList: (params: RequestParams = {}) =>
+      this.request<APIGatewayProxyResponse, ProblemDetails | void>({
+        path: `/api/health`,
+        method: 'GET',
+        secure: true,
         format: 'json',
         ...params,
       }),

@@ -479,7 +479,16 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
 
   return (
     <Box sx={{ mb: 4 }}>
-      <Box sx={{ backgroundColor: 'rgba(0,0,0,0.7)', p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: 2, mb: 4 }}>
+      <Box sx={{ 
+        backgroundColor: 'rgba(0,0,0,0.7)', 
+        p: { xs: 1.5, sm: 2, md: 3 }, 
+        borderRadius: 2, 
+        mb: 4,
+        // Allow screenshots
+        userSelect: 'text',
+        WebkitUserSelect: 'text',
+        WebkitTouchCallout: 'default'
+      }}>
         <StephsActualFavoriteTypography variant="h2" sx={{ mb: 3, textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
           Wedding Dashboard
         </StephsActualFavoriteTypography>
@@ -797,7 +806,13 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                       opacity: 0.8
                     }}
                   >
-                    Total: {metrics.allergiesData.reduce((sum, item) => sum + item.value, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
+                    Total: {metrics.allergiesData.reduce((sum, item) => {
+                      // Exclude "none" or blank allergies from the total count
+                      if (item.name.toLowerCase() === "none" || item.name.trim() === "") {
+                        return sum;
+                      }
+                      return sum + item.value;
+                    }, 0)} allergies from {metrics.attendingGuests + metrics.declinedGuests} guests
                   </Typography>
                 </Box>
                 

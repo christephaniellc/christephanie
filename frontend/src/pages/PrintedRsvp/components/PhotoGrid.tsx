@@ -28,8 +28,10 @@ import CropIcon from '@mui/icons-material/Crop';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { usePhotoVariants } from '../hooks/usePhotoVariants';
 import { PhotoGridItem, CardOrientation, PhotoVariant } from '../types/types';
+import PhotoSelector from './PhotoSelector';
 
 interface PhotoGridProps {
   orientation: CardOrientation;
@@ -61,6 +63,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     toggleLock, 
     setSelectedVariant,
     updatePhotoPosition,
+    updatePhotoSource,
     selectedVariantId
   } = usePhotoVariants(orientation);
   
@@ -72,6 +75,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [currentPosition, setCurrentPosition] = useState<string>('center 50%');
+  const [photoSelectorOpen, setPhotoSelectorOpen] = useState<boolean>(false);
+  const [selectedPhotoForChange, setSelectedPhotoForChange] = useState<number | null>(null);
   
   // With Recoil state management, we don't need to force re-renders anymore
   // The state will be shared across all components using the hook
@@ -284,6 +289,22 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // Call provided callback if available
       onPhotoClick(photoId);
     }
+  };
+  
+  // Open photo selector
+  const handleOpenPhotoSelector = (event: React.MouseEvent, photoId: number) => {
+    event.stopPropagation();
+    setSelectedPhotoForChange(photoId);
+    setPhotoSelectorOpen(true);
+  };
+  
+  // Handle photo selection from the dialog
+  const handlePhotoSelected = (photoSrc: string) => {
+    if (selectedPhotoForChange !== null) {
+      updatePhotoSource(selectedPhotoForChange, photoSrc);
+    }
+    setPhotoSelectorOpen(false);
+    setSelectedPhotoForChange(null);
   };
 
   return (
@@ -513,27 +534,45 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                     
                     {/* Edit button overlay */}
                     {showControls && (
-                      <Tooltip title="Edit photo position">
-                        <IconButton
-                          size="small"
-                          className="edit-control"
-                          onClick={(e) => handleEditOpen(e, item.id)}
-                          sx={{
-                            position: 'absolute',
-                            bottom: 8,
-                            right: 8,
-                            color: 'white',
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(0,0,0,0.7)'
-                            },
-                            width: 28,
-                            height: 28
-                          }}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 1 }}>
+                        <Tooltip title="Change photo">
+                          <IconButton
+                            size="small"
+                            className="change-photo-control"
+                            onClick={(e) => handleOpenPhotoSelector(e, item.id)}
+                            sx={{
+                              color: 'white',
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0,0,0,0.7)'
+                              },
+                              width: 28,
+                              height: 28
+                            }}
+                          >
+                            <AddPhotoAlternateIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        
+                        <Tooltip title="Edit photo position">
+                          <IconButton
+                            size="small"
+                            className="edit-control"
+                            onClick={(e) => handleEditOpen(e, item.id)}
+                            sx={{
+                              color: 'white',
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0,0,0,0.7)'
+                              },
+                              width: 28,
+                              height: 28
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     )}
                   </>
                 )}
@@ -608,6 +647,22 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
           <ArrowDownwardIcon sx={{ color: 'white', opacity: 0.7 }} />
         </Stack>
         
+        <Button 
+          size="small" 
+          variant="outlined" 
+          startIcon={<AddPhotoAlternateIcon />}
+          onClick={(e) => {
+            handleEditClose();
+            if (editingPhotoId !== null) {
+              handleOpenPhotoSelector(e, editingPhotoId);
+            }
+          }}
+          fullWidth
+          sx={{ mb: 2, color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+        >
+          Change Photo
+        </Button>
+        
         <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
           <Button 
             size="small" 
@@ -620,6 +675,17 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
           </Button>
         </Box>
       </Popover>
+      
+      {/* Photo selector dialog */}
+      {photoSelectorOpen && (
+        <PhotoSelector
+          open={photoSelectorOpen}
+          photoId={selectedPhotoForChange || 0}
+          orientation={orientation}
+          onClose={() => setPhotoSelectorOpen(false)}
+          onSelect={handlePhotoSelected}
+        />
+      )}
     </Box>
   );
 };

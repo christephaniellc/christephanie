@@ -1,4 +1,5 @@
 import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, VerifyEmailResponse } from '@/types/api';
+import { SavedPhotoConfiguration } from '@/pages/PrintedRsvp/types/types';
 import { getConfig } from '@/auth_config';
 
 export type ApiError = {
@@ -104,6 +105,23 @@ export default class Api {
   verifyEmail(token?: string): Promise<{ response: VerifyEmailResponse }> {
     // Use the public endpoint that doesn't require authentication
     return this.getPublic(`/verify/email?token=${token}` );
+  }
+  
+  // Photo configuration endpoints
+  savePhotoConfiguration(config: SavedPhotoConfiguration): Promise<SavedPhotoConfiguration> {
+    return this.post('/photo-configurations', config);
+  }
+  
+  getPhotoConfigurations(familyUnitId: string): Promise<SavedPhotoConfiguration[]> {
+    return this.get(`/photo-configurations?familyUnitId=${encodeURIComponent(familyUnitId)}`);
+  }
+  
+  getPhotoConfiguration(id: string): Promise<SavedPhotoConfiguration> {
+    return this.get(`/photo-configurations/${id}`);
+  }
+  
+  deletePhotoConfiguration(id: string): Promise<void> {
+    return this.delete(`/photo-configurations/${id}`);
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
