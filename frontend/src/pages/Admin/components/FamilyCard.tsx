@@ -10,6 +10,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import PeopleIcon from '@mui/icons-material/People';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
 import { getFamilyStatusColor, getLatestActivityAndGuest } from './AdminHelpers';
@@ -71,6 +72,19 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
             <TierSquare tier={family.tier} />
             <Typography variant="h6" component="div">
               {family.unitName}
+              {(!family.mailingAddress || !family.mailingAddress.uspsVerified) && (
+                <Tooltip title={!family.mailingAddress ? "No address provided" : "Address not verified"}>
+                  <WarningAmberIcon 
+                    fontSize="small" 
+                    sx={{ 
+                      color: 'warning.main', 
+                      verticalAlign: 'middle', 
+                      ml: 0.5,
+                      fontSize: '1rem'
+                    }} 
+                  />
+                </Tooltip>
+              )}
             </Typography>
             <Chip 
               label={family.invitationCode} 
