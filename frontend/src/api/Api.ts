@@ -1,4 +1,4 @@
-import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, NotificationPreferenceEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, VerifyEmailResponse } from '@/types/api';
+import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, VerifyEmailResponse } from '@/types/api';
 import { SavedPhotoConfiguration } from '@/pages/PrintedRsvp/types/types';
 import { getConfig } from '@/auth_config';
 
@@ -107,21 +107,40 @@ export default class Api {
     return this.getPublic(`/verify/email?token=${token}` );
   }
   
-  // Photo configuration endpoints
-  savePhotoConfiguration(config: SavedPhotoConfiguration): Promise<SavedPhotoConfiguration> {
-    return this.post('/photo-configurations', config);
+  // Invitation design configuration endpoints
+  saveInvitationDesign(config: SavedPhotoConfiguration): Promise<InvitationDesignDto> {
+    // Convert from SavedPhotoConfiguration to InvitationDesignDto
+    const photoGridItems = config.photoGrid.map(item => ({
+      id: item.id.toString(),
+      photoSrc: item.photoSrc,
+      rowPosition: item.position[0],
+      columnPosition: item.position[1],
+      isLocked: item.isLocked,
+      objectFit: item.objectFit || 'cover',
+      objectPosition: item.objectPosition || 'center'
+    }));
+    
+    const invitationDesign: InvitationDesignDto = {
+      guestId: null, // Will be set from the token on the server side
+      designId: config.id, // May be null for new designs
+      name: config.name,
+      orientation: config.orientation === 'vertical' ? OrientationEnum.Portrait : OrientationEnum.Landscape,
+      photoGridItems: photoGridItems
+    };
+    
+    return this.post('/admin/configuration/invitation', invitationDesign);
   }
   
-  getPhotoConfigurations(familyUnitId: string): Promise<SavedPhotoConfiguration[]> {
-    return this.get(`/photo-configurations?familyUnitId=${encodeURIComponent(familyUnitId)}`);
+  getInvitationDesigns(): Promise<InvitationDesignDto[]> {
+    return this.get('/admin/configuration/invitation');
   }
   
-  getPhotoConfiguration(id: string): Promise<SavedPhotoConfiguration> {
-    return this.get(`/photo-configurations/${id}`);
+  getInvitationDesign(designId: string): Promise<InvitationDesignDto> {
+    return this.get(`/admin/configuration/invitation/${designId}`);
   }
   
-  deletePhotoConfiguration(id: string): Promise<void> {
-    return this.delete(`/photo-configurations/${id}`);
+  deleteInvitationDesign(designId: string): Promise<void> {
+    return this.delete(`/admin/configuration/invitation?designId=${encodeURIComponent(designId)}`);
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
