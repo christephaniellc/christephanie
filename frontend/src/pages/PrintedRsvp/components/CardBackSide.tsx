@@ -4,6 +4,11 @@ import EngagementPhoto1 from '@/assets/engagement-photos/topher_and_steph_rsvp1.
 import EngagementPhoto2 from '@/assets/engagement-photos/topher_and_steph_rsvp2.jpg';
 import EngagementPhoto3 from '@/assets/engagement-photos/topher_and_steph_rsvp3.jpg';
 import EngagementPhoto4 from '@/assets/engagement-photos/topher_and_steph_rsvp4.jpg';
+import EngagementPhoto5 from '@/assets/engagement-photos/bremerhaven.jpg'
+import EngagementPhoto6 from '@/assets/engagement-photos/burn_night.jpg'
+import EngagementPhoto7 from '@/assets/engagement-photos/hammock.jpg'
+import EngagementPhoto8 from '@/assets/engagement-photos/oktoberfest.jpg'
+import EngagementPhoto9 from '@/assets/engagement-photos/roadtrip.jpg'
 
 interface CardBackSideProps {
   actualCardWidth: number;

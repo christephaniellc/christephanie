@@ -55,6 +55,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                 cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                 cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
             });
 
             _mapper = config.CreateMapper();
@@ -112,7 +113,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                         guestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_mapper!.Map<WeddingEntity>(guestWithValue));
 
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(queryStringParams: new Dictionary<string, string>
             {
                 {"guestId", guestId},
                 {"maskedValueType", preferenceType.ToString()}
@@ -135,7 +136,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
         public async Task FunctionHandler_Should_Return_BadRequest_When_RequestIsInvalid_wip()
         {
             // Arrange
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(queryStringParams: new Dictionary<string, string>
             {
                 {"guestId", null!},
                 {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}
@@ -161,7 +162,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                         nonExistentGuestId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((WeddingEntity)null!);
 
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(queryStringParams: new Dictionary<string, string>
             {
                 {"guestId", nonExistentGuestId},
                 {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}
@@ -188,7 +189,7 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
                         guestId, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
             
-            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(new Dictionary<string, string>
+            var apiGatewayRequest = TestRequestHelper.RequestAsJohn(queryStringParams: new Dictionary<string, string>
             {
                 {"guestId", guestId},
                 {"maskedValueType", NotificationPreferenceEnum.Email.ToString()}

@@ -42,6 +42,7 @@ public class AdminCreateFunctionTests
                 cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
                 cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                 cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
+                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
             }
         );
         var mapper = config.CreateMapper();

@@ -102,6 +102,7 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.Stats.Get', method: apigateway.HttpMethod.GET, path: `/stats`},
         { name: 'Wedding.Lambdas.Helloworld', method: apigateway.HttpMethod.GET, path: `/helloworld`, unauthorized: true },
         { name: 'Wedding.Lambdas.Admin.Setup', method: apigateway.HttpMethod.PUT, path: `/admin/setup`, unauthorized: true },
+        { name: 'Wedding.Lambdas.Admin.Configuration.Invitation', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.GET, apigateway.HttpMethod.DELETE], path: `/admin/configuration/invitation` },
       ];
 
       lambdaConfigs.forEach(lambdaConfig => {

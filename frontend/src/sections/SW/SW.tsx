@@ -17,6 +17,20 @@ function SW() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW();
+  
+  // Force the app to allow screenshots on mobile devices
+  useEffect(() => {
+    // Add meta tag to allow screenshots
+    const metaTag = document.createElement('meta');
+    metaTag.name = 'allow-screenshots';
+    metaTag.content = 'true';
+    document.head.appendChild(metaTag);
+
+    // Make sure webkit touch callout is enabled
+    document.documentElement.style.setProperty('-webkit-touch-callout', 'default', 'important');
+    document.documentElement.style.setProperty('-webkit-user-select', 'auto', 'important');
+    document.documentElement.style.setProperty('user-select', 'auto', 'important');
+  }, []);
 
   const close = useCallback(() => {
     setOfflineReady(false);

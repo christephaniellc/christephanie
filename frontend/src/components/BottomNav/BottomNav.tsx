@@ -1,59 +1,83 @@
-import { useEffect, useMemo, useState, useContext } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BottomNavigation, BottomNavigationAction, Box, useTheme, Tooltip } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
-import ShieldIcon from '@mui/icons-material/Security';
 import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PrintIcon from '@mui/icons-material/Print';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 import Paper from '@mui/material/Paper';
-import { useFamily } from '@/store/family';
 import { useRecoilValue } from 'recoil';
-import { stdStepperState } from '@/store/steppers/steppers';
-import { QuestionMark } from '@mui/icons-material';
 import { userState } from '@/store/user';
 import { isAdmin } from '@/utils/roles';
-import { ApiContext } from '@/context/ApiContext';
 import AppVersionFooter from '../VersionHash';
 
 export const BottomNav = () => {
-  const [navValue, setNavValue] = useState();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const theme = useTheme();
   const { user: auth0User, loginWithRedirect } = useAuth0();  
   const { logOutFromAuth0 } = useAuth0Queries();  
-  const [isNavigating, setIsNavigating] = useState(false);
-  const navigate = useNavigate();
-  const stdStepper = useRecoilValue(stdStepperState);
   const currentUser = useRecoilValue(userState);
   const userIsAdmin = isAdmin(currentUser);
 
-  const handleNavigation = (path: string) => {
-    if (isNavigating) return; // Prevent rapid clicks
-    setIsNavigating(true);
-    navigate(path);
-
-    // Reset navigation lock after 500ms
-    setTimeout(() => setIsNavigating(false), 500);
+  // Determine which tab should be active based on the current location
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path === routes[Pages.Welcome].path) return 0;
+    if (path === routes[Pages.SaveTheDate].path) return 1;
+    if (path === routes[Pages.Bureaucracy].path) return 2;
+    if (path === routes[Pages.Admin].path) return 3;
+    if (path === routes[Pages.PrintedRsvp].path) return 4;
+    return -1; // No tab selected
   };
+  
+  const [activeTab, setActiveTab] = useState(getCurrentTab());
 
-  const activeLegalButtons = useMemo(() => {
-    return stdStepper.currentStep[0] === 'communicationPreference' || stdStepper.currentStep[0] === 'mailingAddress' ? 'secondary' : 'inherit' as 'secondary' | 'inherit'
-  }, [stdStepper.currentStep]);
-
-  const activeLoginButton = useMemo(() => {
-    console.log(`activeloginbutton ${auth0User} ${currentUser}`)
-    return !!auth0User ? 'secondary' : 'inherit' as 'secondary' | 'inherit';
-  }, [currentUser, auth0User]);
-
+  // Update active tab when location changes
   useEffect(() => {
-    //console.log(`Current step: ${stdStepper.currentStep[0]}`)
-  }, [stdStepper.currentStep]);
+    setActiveTab(getCurrentTab());
+  }, [location.pathname]);
+  
+  // Handle tab change
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    switch (newValue) {
+      case 0: 
+        navigate(routes[Pages.Welcome].path!);
+        break;
+      case 1:
+        navigate(routes[Pages.SaveTheDate].path!);
+        break;
+      case 2:
+        navigate(routes[Pages.Bureaucracy].path!);
+        break;
+      case 3:
+        navigate(routes[Pages.Admin].path!);
+        break;
+      case 4:
+        navigate(routes[Pages.PrintedRsvp].path!);
+        break;
+      case 5: // Auth button
+        if (auth0User) {
+          logOutFromAuth0();
+        } else {
+          localStorage.removeItem('user');
+          loginWithRedirect({
+            authorizationParams: {
+              prompt: 'login',
+              screen_hint: 'login',
+              redirect_uri: window.location.origin,
+            }
+          });
+        }
+        break;
+    }
+  };
 
   return (
     <Box>
@@ -92,8 +116,8 @@ export const BottomNav = () => {
             boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
             borderRadius: 0,
             "& .MuiBottomNavigationAction-root.Mui-selected": {
-              backgroundColor: "primary.main",
-              color: "common.white",
+              backgroundColor: theme.palette.primary.main,
+              color: "white",
             },
             "& .MuiBottomNavigationAction-root": {
               minWidth: '52px',
@@ -109,92 +133,55 @@ export const BottomNav = () => {
               }
             }
           }}
-          value={navValue}
-          onChange={(event, newValue) => setNavValue(newValue)}
+          value={activeTab}
+          onChange={handleChange}
+          showLabels
         >
+          {/* Home */}
           <BottomNavigationAction
             label="Home"
-            component={Link}
-            sx={{ lineHeight: 1}}
-            showLabel={true}
-            to={routes[Pages.Welcome].path!}
             icon={<HomeIcon />}
             aria-label="Go to home page"
+            disabled={false}
           />
-          {auth0User && (
-            <>
-              <BottomNavigationAction
-                disabled={!auth0User}
-                label="Survey"
-                sx={{ textAlign: 'center' }}
-                component={Link}
-                showLabel={true}
-                to={routes[Pages.SaveTheDate].path!}
-                icon={<ConnectWithoutContactIcon />}
-                aria-label="Go to Save the Date Survey page"
-                aria-disabled={!auth0User}
-              />
-            </>
-          )}
+          
+          {/* Survey (only for authenticated users) */}
           <BottomNavigationAction
-            color={activeLegalButtons}
-            sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, .1)' }}
-            label="Bureaucracy"
-            showLabel={true}
-            icon={<GavelIcon color={activeLegalButtons} />}
-            onClick={() => handleNavigation(routes[Pages.Bureaucracy].path!)}
-            aria-label="View legal information and bureaucracy pages"
+            label="Survey"
+            icon={<ConnectWithoutContactIcon />}
+            aria-label="Go to Save the Date Survey page"
+            disabled={!auth0User}
           />
-          {auth0User && (
-            <>
-              <BottomNavigationAction
-                disabled={!auth0User}
-                label="Stats"
-                component={Link}
-                showLabel={true}
-                to={routes[Pages.Admin].path!}
-                icon={<BarChartIcon />}
-                aria-label="View wedding statistics"
-                aria-disabled={!auth0User}
-              />
-            </>
-          )}
-          {userIsAdmin && (
-            <>
-              <Tooltip title="View Printed RSVP" placement="top">
-                <BottomNavigationAction
-                  label="Printed RSVP"
-                  component={Link}
-                  showLabel={true}
-                  to={routes[Pages.PrintedRsvp].path!}
-                  icon={<PrintIcon />}
-                  aria-label="View Printed RSVP"
-                />
-              </Tooltip>
-            </>
-          )}
+          
+          {/* Bureaucracy */}
+          <BottomNavigationAction
+            label="Bureaucracy"
+            icon={<GavelIcon />}
+            aria-label="View legal information and bureaucracy pages"
+            disabled={false}
+          />
+          
+          {/* Stats (only for authenticated users) */}
+          <BottomNavigationAction
+            label="Stats"
+            icon={<BarChartIcon />}
+            aria-label="View wedding statistics"
+            disabled={!auth0User}
+          />
+          
+          {/* Printed RSVP (only for admin users) */}
+          <BottomNavigationAction
+            label="Printed RSVP"
+            icon={<PrintIcon />}
+            aria-label="View Printed RSVP"
+            disabled={!userIsAdmin}
+            sx={{ display: userIsAdmin ? 'flex' : 'none' }}
+          />
+          
+          {/* Login/Logout button */}
           <BottomNavigationAction
             label={auth0User ? 'Logout' : 'Login'}
-            showLabel={true}
             icon={<ProfileIcon color={auth0User ? 'inherit' : 'secondary'} />}
-            //color={auth0User ? 'inherit' : 'secondary'}
-            sx={{ paddingLeft: 0, paddingRight: 0 }}
-            onClick={() => {
-              if (auth0User) {
-                logOutFromAuth0();
-              } else {
-                // Force clean login by clearing any potentially cached data first
-                localStorage.removeItem('user');
-                // Use explicit parameters to ensure proper redirect
-                loginWithRedirect({
-                  authorizationParams: {
-                    prompt: 'login', // Force login screen even if user has active session
-                    screen_hint: 'login',
-                    redirect_uri: window.location.origin,
-                  }
-                });
-              }
-            }}
             aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
           />
         </BottomNavigation>

@@ -40,7 +40,7 @@ namespace Wedding.Lambdas.UnitTests.TestData
             };
         }
 
-        public static APIGatewayProxyRequest RequestAsJohn(Dictionary<string, string> queryStringParams)
+        public static APIGatewayProxyRequest RequestAsJohn(Dictionary<string, string> queryStringParams, string? httpMethod = null)
         {
             return new APIGatewayProxyRequest
             {
@@ -55,9 +55,9 @@ namespace Wedding.Lambdas.UnitTests.TestData
             };
         }
 
-        public static APIGatewayProxyRequest RequestAsJohn<T>(T request)
+        public static APIGatewayProxyRequest RequestAsJohn<T>(T body, Dictionary<string, string>? queryStringParams = null, string? httpMethod = null)
         {
-            return new APIGatewayProxyRequest
+            var request = new APIGatewayProxyRequest
             {
                 RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
                 {
@@ -66,8 +66,20 @@ namespace Wedding.Lambdas.UnitTests.TestData
                         ["lambda"] = JsonSerializer.Serialize(GetAuthContext())
                     }
                 },
-                Body = JsonSerializer.Serialize(request, JsonSerializationHelper.FromFrontendOptions)
+                Body = JsonSerializer.Serialize(body, JsonSerializationHelper.FromFrontendOptions)
             };
+
+            if (httpMethod != null)
+            {
+                request.HttpMethod = httpMethod.ToUpper(); 
+            }
+
+            if (queryStringParams != null)
+            {
+                request.QueryStringParameters = queryStringParams;
+            }
+
+            return request;
         }
     }
 }
