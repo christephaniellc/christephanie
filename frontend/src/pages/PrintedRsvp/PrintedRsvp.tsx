@@ -42,9 +42,9 @@ const PrintedRsvp: React.FC = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
   
-  // Card state
+  // Card state - default to front side in portrait mode
   const [cardSide, setCardSide] = useState<CardSide>('front');
-  const [frontOrientation, setFrontOrientation] = useState<CardOrientation>('horizontal');
+  const [frontOrientation, setFrontOrientation] = useState<CardOrientation>('vertical');
   const [backOrientation, setBackOrientation] = useState<CardOrientation>('horizontal');
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -113,7 +113,9 @@ const PrintedRsvp: React.FC = () => {
   return (
     <Box 
       sx={{ 
-        p: 4, 
+        px: 4, 
+        pt: 3,
+        pb: 2,
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
@@ -121,8 +123,8 @@ const PrintedRsvp: React.FC = () => {
         backdropFilter: 'blur(8px)'
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <StephsActualFavoriteTypography variant="h3" sx={{ flexGrow: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+        <StephsActualFavoriteTypography variant="h4" sx={{ flexGrow: 1 }}>
           Printed RSVP Card Preview
         </StephsActualFavoriteTypography>
         
@@ -155,7 +157,7 @@ const PrintedRsvp: React.FC = () => {
       {/* Info bar */}
       <Box 
         sx={{ 
-          mb: 2, 
+          mb: 1.5, 
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'space-between',
@@ -183,7 +185,7 @@ const PrintedRsvp: React.FC = () => {
       </Box>
       
       {/* Main content area with families list on left and card preview on right */}
-      <Box sx={{ display: 'flex', flexGrow: 1, gap: 3, height: `calc(100vh - 350px)` }}>
+      <Box sx={{ display: 'flex', flexGrow: 1, gap: 3, height: `calc(100vh - 250px)` }}>
         {/* Left side - Families List */}
         <FamilyList 
           familyStats={familyStats}
@@ -212,29 +214,10 @@ const PrintedRsvp: React.FC = () => {
           height: '100%',
           overflow: 'hidden'
         }}>
-          {/* Toggle controls */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            {/* Side toggle */}
-            <ToggleButtonGroup
-              value={cardSide}
-              exclusive
-              onChange={handleCardSideToggle}
-              aria-label="Card side"
-              color="primary"
-              size="small"
-            >
-              <ToggleButton value="front">
-                <MailOutlineIcon sx={{ mr: 1 }} />
-                Address Side
-              </ToggleButton>
-              <ToggleButton value="back">
-                <EmailIcon sx={{ mr: 1 }} />
-                Picture Side
-              </ToggleButton>
-            </ToggleButtonGroup>
-            
-            {/* Orientation and action buttons */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
+          {/* Toggle controls - all grouped together */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            {/* Combined toggle controls */}
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               {/* Orientation toggle buttons */}
               <ToggleButtonGroup
                 value={currentOrientation}
@@ -285,6 +268,28 @@ const PrintedRsvp: React.FC = () => {
                 </ToggleButton>
               </ToggleButtonGroup>
               
+              {/* Side toggle - moved next to orientation toggle */}
+              <ToggleButtonGroup
+                value={cardSide}
+                exclusive
+                onChange={handleCardSideToggle}
+                aria-label="Card side"
+                color="primary"
+                size="small"
+              >
+                <ToggleButton value="front">
+                  <MailOutlineIcon sx={{ mr: 1 }} />
+                  Address Side
+                </ToggleButton>
+                <ToggleButton value="back">
+                  <EmailIcon sx={{ mr: 1 }} />
+                  Picture Side
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+            
+            {/* Action buttons */}
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Tooltip title="Open in full screen">
                 <span>
                   <Button
@@ -312,7 +317,6 @@ const PrintedRsvp: React.FC = () => {
             </Box>
           </Box>
           
-          
           {/* Card preview */}
           <Box 
             sx={{ 
@@ -322,7 +326,7 @@ const PrintedRsvp: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'auto',
-              maxHeight: 'calc(100vh - 350px)',
+              maxHeight: 'calc(100vh - 250px)',
               cursor: selectedFamily ? 'pointer' : 'default'
             }}
             onClick={selectedFamily ? handleCardClick : undefined}

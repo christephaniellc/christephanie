@@ -13,7 +13,7 @@ export const CardBackVertical: React.FC<CardBackVerticalProps> = ({ previewOnly 
   return (
     <Paper 
       elevation={8}
-      className="card-back-vertical"
+      className={`card-back-vertical`}
       sx={{
         width: 384, // 4 inches @ 96ppi
         height: 576, // 6 inches @ 96ppi
