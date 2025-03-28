@@ -14,8 +14,9 @@ export const TIER_PRIORITY = {
   'Gold': 2,
   'Sapphire': 3,
   'Ruby': 4,
-  'Amethyst': 5,
-  'Opal': 6,
+  'Rubellite': 5,
+  'Amethyst': 6,
+  'Opal': 7,
   'Amber': 0,
   'Peridot': 0
 };
@@ -27,6 +28,7 @@ export const TIER_COLORS = {
   'Gold': '#FFD700', // gold
   'Sapphire': '#0F52BA', // deep blue
   'Ruby': '#E0115F', // ruby red
+  'Rubellite': '#E08ACC', // ruby red
   'Amethyst': '#9966CC', // purple
   'Opal': '#A8C3BC', // opal green-blue
   'Amber': '#FFBF00', // amber
@@ -119,8 +121,8 @@ export const getFoodPreferenceDetails = (preference?: FoodPreferenceEnum) => {
       };
     default:
       return { 
-        label: 'Meat-a-tarian', 
-        color: '#9C27B0' // purple
+        label: 'Unknown', 
+        color: '#9e9e9e' // grey
       };
   }
 };
@@ -180,46 +182,21 @@ export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
 export function getLatestActivityAndGuest(family: FamilyUnitViewModel): { 
   firstName: string | null; lastActivity: Date | null } {
   // Filter out guests without a valid LastActivity
-  // Make sure to handle undefined as well as null values
-  const validGuests = family.guests.filter(guest => 
-    guest.lastActivity !== null && 
-    guest.lastActivity !== undefined &&
-    guest.lastActivity !== ""
-  );
+  const validGuests = family.guests.filter(guest => guest.lastActivity !== null);
   
   // If no valid guest found, return null values
   if (validGuests.length === 0) {
     return { firstName: null, lastActivity: null };
   }
   
-  // Find the guest with the latest LastActivity using reduce with a safer comparison
+  // Find the guest with the latest LastActivity using reduce
   const latestGuest = validGuests.reduce((prev, current) => {
-    // Handle potential invalid dates
-    try {
-      const prevDate = new Date(prev.lastActivity!);
-      const currentDate = new Date(current.lastActivity!);
-      
-      // Check if dates are valid before comparing
-      if (isNaN(prevDate.getTime())) return current;
-      if (isNaN(currentDate.getTime())) return prev;
-      
-      return prevDate > currentDate ? prev : current;
-    } catch (e) {
-      // If there's any error parsing dates, prefer the current item as a fallback
-      console.warn('Error comparing dates', e);
-      return current;
-    }
+    const prevDate = new Date(prev.lastActivity!);
+    const currentDate = new Date(current.lastActivity!);
+    return prevDate > currentDate ? prev : current;
   });
   
-  try {
-    return { 
-      firstName: latestGuest.firstName, 
-      lastActivity: new Date(latestGuest.lastActivity!) 
-    };
-  } catch (e) {
-    console.warn('Error creating date object', e);
-    return { firstName: latestGuest.firstName, lastActivity: null };
-  }
+  return { firstName: latestGuest.firstName, lastActivity: new Date(latestGuest.lastActivity!) };
 }
 
 // Generate fun quotes for the guest narrative
