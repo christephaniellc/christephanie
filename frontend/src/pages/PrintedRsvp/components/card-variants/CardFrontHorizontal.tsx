@@ -56,7 +56,7 @@ export const CardFrontHorizontal: React.FC<CardFrontHorizontalProps> = ({
   return (
     <Paper 
       elevation={8}
-      className="card-front-horizontal"
+      className={`card-front-horizontal`}
       sx={{
         width: 576, // 6 inches @ 96ppi
         height: 384, // 4 inches @ 96ppi
@@ -465,7 +465,7 @@ export const CardFrontHorizontal: React.FC<CardFrontHorizontalProps> = ({
             fontFamily: 'sans-serif'
           }}
         >
-          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}{selectedFamily?.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}
+          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}
         </Typography>
       </Box>
       

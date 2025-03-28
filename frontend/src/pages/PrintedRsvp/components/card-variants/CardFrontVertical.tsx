@@ -1,5 +1,7 @@
 import React from 'react';
+import { rem } from 'polished';
 import { 
+  alpha,
   Box,
   Paper,
   Typography, 
@@ -9,6 +11,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { FamilyUnitDto } from '@/types/api';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
+import ElPulpoIcon from '@/assets/favicon_big_art_transparent.png';
 
 interface CardFrontVerticalProps {
   selectedFamily: FamilyUnitDto | null;
@@ -20,6 +23,9 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   exportMode = false
 }) => {
   const theme = useTheme();
+  
+  // Check if we're currently in export mode by looking for the marker class
+  const isExporting = exportMode || (typeof document !== 'undefined' && document.body.classList.contains('exporting-png'));
 
   // Create a fancy border style
   const gradientBorder = `
@@ -50,16 +56,17 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   
   // QR code URL for the selected family's invitation code
   const qrCodeUrl = selectedFamily?.invitationCode 
-    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}${selectedFamily.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}`
-    : "https://christephanie.com?inviteCode=DEMO";
+    ? `https://christephanie.com?inviteCode=${selectedFamily.invitationCode}`
+    : "https://christephanie.com";
   
   return (
     <Paper 
       elevation={8}
-      className="card-front-vertical"
+      className={`card-front-vertical`}
+      data-card-type={`front-vertical`}
       sx={{
-        width: 384, // 4 inches @ 96ppi
-        height: 576, // 6 inches @ 96ppi
+        width: isExporting ? 1200 : 384, // 4 inches @ 300ppi for export, 96ppi for display
+        height: isExporting ? 1800 : 576, // 6 inches @ 300ppi for export, 96ppi for display
         backgroundColor: '#121212', // Dark background matching the back side
         backgroundImage: `radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 70%)`,
         display: 'flex',
@@ -68,11 +75,16 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         position: 'relative',
         boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         transformOrigin: 'top left',
-        border: '10px solid transparent',
-        borderImageSource: gradientBorder,
+        border: isExporting ? '0px solid transparent' : '10px solid transparent',
+        borderImageSource: !isExporting ? gradientBorder : 'none',
         borderImageSlice: 1,
         boxSizing: 'border-box',
-        color: 'white'
+        color: 'white',
+        // For print media
+        '@media print': {
+          width: '4in',
+          height: '6in'
+        }
       }}
     >
       {/* Background enhancement elements */}
@@ -98,6 +110,39 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         zIndex: 0
       }} />
       
+      {/* El Pulpo icon in top right corner */}
+      <Box
+        className="el-pulpo-icon-container"
+        sx={{
+          position: 'absolute',
+          top: 7,
+          right: -7,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          width: '60px',  // Explicitly constrain width
+          height: '60px', // Explicitly constrain height
+        }}
+      >
+        <Box
+          component="img"
+          className="el-pulpo-icon"
+          src={ElPulpoIcon}
+          alt="El Pulpo"
+          sx={{
+            height: '100%',
+            width: '100%',
+            maxWidth: '30px',   // Strict max dimensions
+            maxHeight: '30px',  // Strict max dimensions
+            borderRadius: '50%',
+            objectFit: 'contain',  // Use contain to maintain aspect ratio
+            objectPosition: 'center',
+            border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
+            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+          }}
+        />
+      </Box>
+      
       {/* Ornamental Header */}
       <Box sx={{
         position: 'relative',
@@ -111,11 +156,12 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           variant="h5" 
           sx={{ 
             fontSize: '1.5rem', 
+            lineHeight: '1.5rem',
             color: theme.palette.secondary.main,
-            mb: 0.5
+            mb: 2
           }}
         >
-          RSVP
+          Steph Stubler<br/>& Topher Sikorra
         </StephsActualFavoriteTypographyNoDrop>
         
         {/* Decorative divider */}
@@ -132,8 +178,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
       <Box sx={{ 
         position: 'relative',
         textAlign: 'center',
-        mt: 1,
-        mb: 2,
+        mt: 2,
+        mb: 1,
         zIndex: 1
       }}>
         <Typography 
@@ -144,10 +190,10 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontWeight: 600,
             fontSize: '1.1rem',
             mb: 0.5,
-            letterSpacing: '0.05em'
+            letterSpacing: '0.08em'
           }}
         >
-          Topher & Steph
+          are getting married
         </Typography>
         
         <Typography 
@@ -161,7 +207,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontStyle: 'italic'
           }}
         >
-          July 5, 2025 at 6:00pm
+          on July 5, 2025 at 6:00pm
         </Typography>
         
         <Typography 
@@ -176,16 +222,21 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         </Typography>
       </Box>
       
-      {/* Guest Address Block */}
+      {/* Guest Address Block - fixed height regardless of content - shorter now */}
       <Box sx={{ 
         position: 'relative',
         mx: 'auto',
         mt: 2,
-        mb: 3,
+        mb: 2,
         width: '85%',
-        p: 2,
-        pt: 1.5,
-        pb: 1.5,
+        height: isExporting ? 380 : 120, // Further reduced fixed height
+        minHeight: isExporting ? 380 : 120, // Ensure minimum height
+        maxHeight: isExporting ? 380 : 120, // Ensure maximum height
+        display: 'flex',
+        flexDirection: 'column',
+        p: 1.5, // Reduced overall padding
+        pt: 1.0,
+        pb: 1.0,
         textAlign: 'center',
         borderRadius: '4px',
         border: `1px solid ${theme.palette.primary.main}`,
@@ -199,7 +250,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           variant="body1" 
           sx={{ 
             fontFamily: 'Snowstorm, serif', 
-            mb: 0.5, 
+            mb: 0.8, 
             fontWeight: 600,
             fontSize: '1.2rem',
             color: theme.palette.secondary.main,
@@ -209,46 +260,21 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           {calculateLastNames(selectedFamily || {})} Family
         </Typography>
         
-        {/* Individual guest names if available */}
-        {hasIndividualGuests && (
-          <Box sx={{ mb: 0.75 }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontFamily: 'Snowstorm, serif', 
-                  fontSize: '0.9rem',
-                  color: '#ddd',
-                }}
-              > 
-                {selectedFamily?.guests
-                  ?.sort((a, b) => (a.guestNumber || 0) - (b.guestNumber || 0))
-                  .map(guest => guest.firstName)
-                  .reduce((result, name, index, array) => {
-                    if (array.length === 1) return name;
-                    if (index === 0) return name;
-                    if (index === array.length - 1) return `${result} and ${name}`;
-                    return `${result}, ${name}`;
-                  }, '')}
-              </Typography>
-          </Box>
-        )}
-        
-        {/* Street Address */}
-        {selectedFamily?.mailingAddress ? (
-          <>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontFamily: 'Snowstorm, serif', 
-                lineHeight: 1.3,
-                mb: 0.25,
-                color: 'rgba(255,255,255,0.85)'
-              }}
-            >
-              {selectedFamily.mailingAddress.streetAddress}
-            </Typography>
-            
-            {selectedFamily.mailingAddress.secondaryAddress && (
+        {/* Address Content Area - fixed height container with consistent centering */}
+        <Box 
+          sx={{ 
+            flex: '1 1 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            overflow: 'hidden' // Prevent content from overflowing
+          }}
+        >
+          {/* Street Address */}
+          {selectedFamily?.mailingAddress ? (
+            <>
               <Typography 
                 variant="body2" 
                 sx={{ 
@@ -258,55 +284,86 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
                   color: 'rgba(255,255,255,0.85)'
                 }}
               >
-                {selectedFamily.mailingAddress.secondaryAddress}
+                {selectedFamily.mailingAddress.streetAddress}
               </Typography>
-            )}
-            
-            {/* City, State ZIP */}
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontFamily: 'Snowstorm, serif', 
-                lineHeight: 1.3,
-                color: 'rgba(255,255,255,0.85)'
+              
+              {selectedFamily.mailingAddress.secondaryAddress && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: 'Snowstorm, serif', 
+                    lineHeight: 1.3,
+                    mb: 0.25,
+                    color: 'rgba(255,255,255,0.85)'
+                  }}
+                >
+                  {selectedFamily.mailingAddress.secondaryAddress}
+                </Typography>
+              )}
+              
+              {/* City, State ZIP */}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontFamily: 'Snowstorm, serif', 
+                  lineHeight: 1.3,
+                  color: 'rgba(255,255,255,0.85)'
+                }}
+              >
+                {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
+              </Typography>
+            </>
+          ) : (
+            /* Empty address area for manual labeling */
+            <Box
+              sx={{
+                width: '100%',
+                height: '80%', // Use most of the space but not all
+                //border: `1px dashed ${alpha(theme.palette.primary.main, 0.4)}`,
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
-            </Typography>
-          </>
-        ) : (
-          <>
-            {/* Address placeholder with prompt */}
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'rgba(255,255,255,0.5)',
-                fontStyle: 'italic',
-                fontSize: '0.75rem'
-              }}
-            >
-              Please complete your mailing address in the RSVP form
-            </Typography>
-          </>
-        )}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.4)',
+                  fontStyle: 'italic',
+                  fontSize: '0.75rem',
+                }}
+              >
+                (Address label needed)
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Box>
       
-      {/* RSVP Circular Seal and website content in a single flex row */}
+      {/* Spacer to create distance between address box and website section */}
+      <Box sx={{ height: isExporting ? 90 : 30 }} /> {/* Fixed height spacer */}
+      
+      {/* Website Info with QR and RSVP Seal in a row - positioned to end above corner elements */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'row',
+          justifyContent: 'center',
           alignItems: 'center',
+          gap: 2,
           px: 3,
           position: 'relative',
-          mb: 6,
+          mt: 0, // Don't push down with margin
+          mb: isExporting ? 45 : 15, // Precise margin to end just above corner elements (different for export)
           zIndex: 1
         }}
       >
         {/* Website Info with QR */}
         <Box
           sx={{
-            width: '85%',
+            //width: '85%',
+            flexBasis: '60%',
             backgroundColor: 'rgba(0,0,0,0.8)',
             padding: '12px',
             borderRadius: '6px',
@@ -316,7 +373,10 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             flexDirection: 'column',
             alignItems: 'center',
             boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-            mb: 4
+            ml: 3,
+            mr: -4,
+            mt: -1      
+            //mb: 4
           }}
         >
           <Typography
@@ -325,7 +385,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               fontSize: '0.8rem',
               fontWeight: 500,
               fontFamily: 'sans-serif',
-              mb: 0.5
+              mb: 0.2
             }}
           >
             Please visit our website:
@@ -335,7 +395,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               color: theme.palette.secondary.light,
               fontSize: '0.8rem',
               fontWeight: 600,
-              fontFamily: 'sans-serif'
+              fontFamily: 'sans-serif',
+              mb: -1
             }}
           >
             https://christephanie.com
@@ -407,14 +468,16 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           </Box>
         </Box>
         
-        {/* RSVP Seal */}
+        {/* RSVP Seal - right side */}
         <Box 
           sx={{
             width: 130,
             height: 130,
             position: 'relative',
             transform: 'rotate(-3deg)',
-            mb: 3
+            flexShrink: 0,
+            mr: 1
+            //mb: 3
           }}
         >
           {/* Outer ring */}
@@ -427,12 +490,13 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               height: '100%',
               borderRadius: '50%',
               background: 'transparent',
-              border: `2px dashed ${theme.palette.secondary.main}`,
-              opacity: 0.7
+              border: `3px dashed ${theme.palette.secondary.main}`,
+              opacity: 0.9,
+              zIndex: 2
             }}
           />
           
-          {/* Middle ring with text */}
+          {/* Middle ring - now behind the text */}
           <Box 
             sx={{
               position: 'absolute',
@@ -442,12 +506,27 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               width: '85%',
               height: '85%',
               borderRadius: '50%',
-              backgroundColor: 'rgba(0,0,0,0.6)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
               border: `2px solid ${theme.palette.primary.main}`,
+              boxShadow: `0 0 8px ${theme.palette.primary.dark}`,
+              zIndex: 2
+            }}
+          />
+          
+          {/* Text in front of the rings */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 5, // Higher z-index to ensure text is on top
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              width: '100%',
+              pointerEvents: 'none' // Ensures the text doesn't block clicks
             }}
           >
             <Typography 
@@ -461,12 +540,26 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
                 letterSpacing: '0.1em',
                 textAlign: 'center',
                 lineHeight: 1.2,
-                mb: 0.5
+                mb: 0.0
               }}
             >
               RSVP
             </Typography>
-            
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontFamily: 'Snowstorm, serif',
+                fontSize: '0.7rem',
+                color: theme.palette.secondary.main,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                textAlign: 'center',
+                lineHeight: 1.2,
+                mb: 0.5
+              }}
+            >
+              required
+            </Typography>
             <Typography 
               variant="body2" 
               sx={{ 
@@ -491,17 +584,17 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               height: '40%',
               borderRadius: '50%',
               border: `1px solid ${theme.palette.primary.main}`,
-              opacity: 0.5
+              opacity: 0.7,
+              zIndex: 3
             }}
           />
         </Box>
       </Box>
       
-      {/* Spacer to push El Pulpo to bottom */}
-      <Box sx={{ flexGrow: 1 }} />
+{/* No longer needed as we're now using flexbox positioning */}
 
       {/* Octopus image - full width with proper sizing */}
-      <Box
+      {/* <Box
         sx={{
           position: 'relative',
           width: '100%',
@@ -511,7 +604,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           alignItems: 'flex-end',
           overflow: 'hidden',
           mt: 'auto', 
-          zIndex: 1
+          //zIndex: 1
         }}
       >
         <Box
@@ -523,10 +616,11 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             objectFit: 'cover',
             objectPosition: 'center bottom',
             opacity: 0.9,
-            transform: 'translateY(30px)'
+            transform: 'translateY(30px)', 
+            zIndex: 100
           }}
         />
-      </Box>
+      </Box> */}
       
       {/* Decorative corner elements */}
       <Box sx={{ 

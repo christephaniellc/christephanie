@@ -10,6 +10,7 @@ using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Keys;
 using AutoMapper;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Multitenancy;
 
 namespace Wedding.Common.Helpers.AWS
@@ -32,11 +33,11 @@ namespace Wedding.Common.Helpers.AWS
             _multitenancySettingsProvider = multitenancySettingsProvider;
         }
 
-        public DynamoDBOperationConfig GetTableConfig(string audience, bool rateLimit = false)
+        public DynamoDBOperationConfig GetTableConfig(string audience, DatabaseTableEnum table = DatabaseTableEnum.GuestData)
         {
             return new DynamoDBOperationConfig
             {
-                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience, rateLimit)
+                OverrideTableName = _multitenancySettingsProvider.GetMappedTableName(audience, table)
             };
         }
 
@@ -51,7 +52,7 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<bool> CheckRateLimitAsync(string audience, string ipAddress, string route, 
             int rateLimit = 3, double rateLimitPerSeconds = 1.0, CancellationToken cancellationToken = default)
         {
-            var config = GetTableConfig(audience, rateLimit:true);
+            var config = GetTableConfig(audience, DatabaseTableEnum.RateLimiting);
             var now = DateTime.UtcNow;
 
             // Retrieve existing rate limit record
@@ -270,16 +271,99 @@ namespace Wedding.Common.Helpers.AWS
 
             return familyUnits;
         }
+        
+        public async Task<DesignConfigurationEntity?> GetPhotoConfigurationAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default)
+        {
+            // const result = await docClient.query({
+            //     TableName: 'WeddingConfigurations',
+            //     IndexName: 'AllConfigsIndex',
+            //     KeyConditionExpression: 'ConfigPK = :template',
+            //     ExpressionAttributeValues:
+            //     {
+            //         ':template': 'CONFIG#invitation#modern' // Modern = designId
+            //     }
+            // });
+
+            var partitionKey = DynamoKeys.GetConfigurationPartitionKey(guestId);
+            var configSortKey = DynamoKeys.GetConfigurationInvitationSortKey(DesignConfigurationTypeEnum.Invitation, configurationId);
+
+            //
+            // var dynamoQuery = new QueryOperationConfig()
+            // {
+            //     KeyExpression = new Expression
+            //     {
+            //         ExpressionStatement = "PartitionKey = :pk",
+            //         ExpressionAttributeValues =
+            //         {
+            //             { ":pk", partitionKey },
+            //         }
+            //     }
+            // };
+
+            // return await _repository.FromQueryAsync<InvitationDesignEntity>(dynamoQuery, GetTableConfig(audience, DatabaseTableEnum.InvitationDesign)).GetRemainingAsync();
+
+            return await _repository.LoadAsync<DesignConfigurationEntity>(
+                partitionKey, configSortKey, GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
+        }
+
+        public async Task<List<DesignConfigurationEntity>?> GetPhotoConfigurationsAsync(string audience, CancellationToken cancellationToken = default)
+        {
+            // const result = await docClient.query({
+            //     TableName: 'WeddingConfigurations',
+            //     IndexName: 'AllConfigsIndex',
+            //     KeyConditionExpression: 'ConfigPK = :template',
+            //     ExpressionAttributeValues:
+            //     {
+            //         ':template': 'CONFIG#invitation#modern' // Modern = designId
+            //     }
+            // });
+            var queryConfig = GetTableConfig(audience, DatabaseTableEnum.InvitationDesign);
+            queryConfig.IndexName = DynamoKeys.AllConfigsIndex;
+
+            //var partitionKey = DynamoKeys.GetConfigurationPartitionKey(guestId);
+            var configSortKey = DynamoKeys.GetConfigurationInvitationSortKey(DesignConfigurationTypeEnum.Invitation);
+
+
+            var dynamoQuery = new QueryOperationConfig()
+            {
+                KeyExpression = new Expression
+                {
+                    ExpressionStatement = "PartitionKey = :template",
+                    ExpressionAttributeValues =
+                    {
+                        { ":template", configSortKey },
+                    }
+                }
+            };
+
+            return await _repository.FromQueryAsync<DesignConfigurationEntity>(dynamoQuery, queryConfig).GetRemainingAsync(cancellationToken);
+
+            // return await _repository.LoadAsync<InvitationDesignEntity>(
+            //     partitionKey, configSortKey, GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
+        }
 
         public async Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default)
         {
-            await _repository.SaveAsync(entity, GetTableConfig(audience), cancellationToken);
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.GuestData), cancellationToken);
         }
 
         public async Task DeleteAsync(string audience, string invitationCode, string sortKey, CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(invitationCode);
-            await _repository.DeleteAsync<WeddingEntity>(partitionKey, sortKey, GetTableConfig(audience), cancellationToken);
+            await _repository.DeleteAsync<WeddingEntity>(partitionKey, sortKey, GetTableConfig(audience, DatabaseTableEnum.GuestData), cancellationToken);
+        }
+
+        public async Task SaveDesignAsync(string audience, DesignConfigurationEntity entity, CancellationToken cancellationToken = default)
+        {
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
+        }
+
+        public async Task DeleteDesignAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = DynamoKeys.GetConfigurationPartitionKey(guestId);
+            var configSortKey = DynamoKeys.GetConfigurationInvitationSortKey(DesignConfigurationTypeEnum.Invitation, configurationId);
+            await _repository.DeleteAsync<DesignConfigurationEntity>(partitionKey, configSortKey, 
+                GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
         }
     }
 }

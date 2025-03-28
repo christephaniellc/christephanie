@@ -38,15 +38,18 @@ import InfoIcon from '@mui/icons-material/Info';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SaveIcon from '@mui/icons-material/Save';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { TransitionProps } from '@mui/material/transitions';
 import { FamilyUnitDto } from '@/types/api';
-import { CardSide, CardOrientation } from '../types/types';
+import { CardSide, CardOrientation, PhotoGridItem } from '../types/types';
 import { CardFrontHorizontal } from './card-variants/CardFrontHorizontal';
 import { CardFrontVertical } from './card-variants/CardFrontVertical';
 import { CardBackHorizontal } from './card-variants/CardBackHorizontal';
 import { CardBackVertical } from './card-variants/CardBackVertical';
 import { usePrinting, usePhotoVariants, useExportToPng } from '../hooks';
 import { PhotoGrid } from './PhotoGrid';
+import ConfigurationManager from './ConfigurationManager';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import EmailIcon from '@mui/icons-material/Email';
 
@@ -85,6 +88,7 @@ const CardModal: React.FC<CardModalProps> = ({
   const [cardScale, setCardScale] = useState<number>(isSmall ? 1 : 1.8);
   const [helpDialogOpen, setHelpDialogOpen] = useState<boolean>(false);
   const [showChangeFeedback, setShowChangeFeedback] = useState<boolean>(false);
+  const [configManagerOpen, setConfigManagerOpen] = useState<boolean>(false);
   
   // Handle card side toggle
   const handleCardSideToggle = (
@@ -131,8 +135,8 @@ const CardModal: React.FC<CardModalProps> = ({
     setCardScale(isSmall ? 1 : 1.8);
   }, [isSmall]);
 
-  // Get current photo variant for random button, getting the right state for the current orientation
-  const { randomizePhotos, currentPhotoGrid } = usePhotoVariants(orientation);
+  // Get all needed functions and state from the hook
+  const { randomizePhotos, currentPhotoGrid, setSelectedVariant } = usePhotoVariants(orientation);
   
   // State for selected photo in editor
   const [selectedPhotoId, setSelectedPhotoId] = useState<number | null>(null);
@@ -140,6 +144,36 @@ const CardModal: React.FC<CardModalProps> = ({
   // Handler to receive selected photo from PhotoGrid
   const handlePhotoSelected = (photoId: number) => {
     setSelectedPhotoId(prev => prev === photoId ? null : photoId);
+  };
+  
+  // Load a saved configuration
+  const handleLoadConfiguration = (photoGrid: PhotoGridItem[], savedOrientation: CardOrientation) => {
+    try {
+      // Set the orientation first
+      setOrientation(savedOrientation);
+      showTransitionFeedback();
+      
+      // Delay applying the configuration to ensure orientation is updated
+      setTimeout(() => {
+        // Create a variant-like object to apply
+        const savedVariant = {
+          id: 'loaded-config',
+          name: 'Loaded Configuration',
+          layout: photoGrid
+        };
+        
+        // Apply the saved configuration
+        if (setSelectedVariant) {
+          setSelectedVariant(savedVariant);
+        }
+        
+        // Show feedback
+        setShowChangeFeedback(true);
+        setTimeout(() => setShowChangeFeedback(false), 1500);
+      }, 100);
+    } catch (error) {
+      console.error('Error loading configuration:', error);
+    }
   };
   
   return (
@@ -227,7 +261,21 @@ const CardModal: React.FC<CardModalProps> = ({
             <Button 
               color="inherit"
               variant={isExporting ? "outlined" : "contained"}
-              onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+              onClick={() => {
+                if (family) {
+                  console.log("Toolbar Export button clicked");
+                  // Force a re-render first to ensure everything is properly displayed
+                  setShowChangeFeedback(true);
+                  setTimeout(() => {
+                    setShowChangeFeedback(false);
+                    // Add delay to ensure UI is updated before capture
+                    setTimeout(() => {
+                      console.log("Starting export from toolbar button");
+                      handleExportAsPng(family, cardSide, orientation);
+                    }, 300);
+                  }, 100);
+                }
+              }}
               disabled={!family || isExporting}
               startIcon={<ImageIcon />}
               sx={{
@@ -335,19 +383,27 @@ const CardModal: React.FC<CardModalProps> = ({
               >
                 {/* Front sides */}
                 {cardSide === 'front' && orientation === 'horizontal' && (
-                  <CardFrontHorizontal selectedFamily={family} />
+                  <div id="print-card-element" data-card-type="front-horizontal" className={`print-ready-card card-front-horizontal`}>
+                    <CardFrontHorizontal selectedFamily={family} exportMode={true} />
+                  </div>
                 )}
                 {cardSide === 'front' && orientation === 'vertical' && (
-                  <CardFrontVertical selectedFamily={family} />
+                  <div id="print-card-element" data-card-type="front-vertical" className={`print-ready-card card-front-vertical`}>
+                    <CardFrontVertical selectedFamily={family} exportMode={true} />
+                  </div>
                 )}
                 
                 {/* Back sides - using editable components */}
                 {cardSide === 'back' && orientation === 'horizontal' && (
-                  <CardBackHorizontal />
+                  <div id="print-card-element" data-card-type="back-horizontal" className={`print-ready-card card-back-horizontal`}>
+                    <CardBackHorizontal exportMode={true} />
+                  </div>
                 )}
                 
                 {cardSide === 'back' && orientation === 'vertical' && (
-                  <CardBackVertical />
+                  <div id="print-card-element" data-card-type="back-vertical" className={`print-ready-card card-back-vertical`}>
+                    <CardBackVertical exportMode={true} />
+                  </div>
                 )}
               </Box>
             </Paper>
@@ -363,10 +419,24 @@ const CardModal: React.FC<CardModalProps> = ({
                   color="primary" 
                   size="small" 
                   startIcon={<ImageIcon />}
-                  onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+                  onClick={() => {
+                    if (family) {
+                      console.log("Modal Export button clicked");
+                      // Force a re-render first to ensure everything is properly displayed
+                      setShowChangeFeedback(true);
+                      setTimeout(() => {
+                        setShowChangeFeedback(false);
+                        // Add delay to ensure UI is updated before capture
+                        setTimeout(() => {
+                          console.log("Starting export from bottom button");
+                          handleExportAsPng(family, cardSide, orientation);
+                        }, 300);
+                      }, 100);
+                    }
+                  }}
                   disabled={!family || isExporting}
                 >
-                  Export PNG (300 DPI)
+                  {isExporting ? "Processing..." : "Export PNG (300 DPI)"}
                 </Button>
               </Tooltip>
             </Box>
@@ -381,15 +451,74 @@ const CardModal: React.FC<CardModalProps> = ({
                 </Typography>
                 
                 <Box>
-                  <Tooltip title="Switch card orientation">
-                    <Button 
-                      variant="outlined" 
-                      startIcon={<ScreenRotationIcon />} 
-                      onClick={handleOrientationToggle}
+                  <ToggleButtonGroup
+                    value={orientation}
+                    exclusive
+                    onChange={(e, newOrientation) => {
+                      if (newOrientation !== null) {
+                        setOrientation(newOrientation);
+                        showTransitionFeedback();
+                      }
+                    }}
+                    aria-label="card orientation"
+                    size="small"
+                    sx={{ mr: 1 }}
+                  >
+                    <ToggleButton 
+                      value="horizontal"
+                      sx={{ 
+                        bgcolor: orientation === 'horizontal' ? 'primary.main' : 'dark',
+                        color: orientation === 'horizontal' ? 'white' : 'text.primary',
+                        '&.Mui-selected': {
+                          bgcolor: 'secondary.main',
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: 'secondary.dark',
+                          }
+                        }
+                      }}
+                    >
+                      Landscape
+                    </ToggleButton>
+                    <ToggleButton 
+                      value="vertical"
+                      sx={{ 
+                        bgcolor: orientation === 'vertical' ? 'secondary.main' : 'white',
+                        color: orientation === 'vertical' ? 'white' : 'text.primary',
+                        '&.Mui-selected': {
+                          bgcolor: 'secondary.main',
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: 'secondary.dark',
+                          }
+                        }
+                      }}
+                    >
+                      Portrait
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  
+                  <Tooltip title="Save current configuration">
+                    <Button
+                      variant="outlined"
+                      startIcon={<SaveIcon />}
+                      onClick={() => setConfigManagerOpen(true)}
                       size="small"
                       sx={{ mr: 1 }}
                     >
-                      {orientation === 'horizontal' ? 'Portrait' : 'Landscape'}
+                      Save
+                    </Button>
+                  </Tooltip>
+                  
+                  <Tooltip title="Load saved configuration">
+                    <Button
+                      variant="outlined"
+                      startIcon={<FolderOpenIcon />}
+                      onClick={() => setConfigManagerOpen(true)}
+                      size="small"
+                      sx={{ mr: 1 }}
+                    >
+                      Load
                     </Button>
                   </Tooltip>
                   
@@ -650,6 +779,17 @@ const CardModal: React.FC<CardModalProps> = ({
             </Typography>
           </Box>
         </Dialog>
+        
+        {/* Configuration Manager Dialog */}
+        {configManagerOpen && currentPhotoGrid && (
+          <ConfigurationManager
+            open={configManagerOpen}
+            onClose={() => setConfigManagerOpen(false)}
+            onLoad={handleLoadConfiguration}
+            currentPhotoGrid={currentPhotoGrid}
+            currentOrientation={orientation}
+          />
+        )}
       </Container>
     </Dialog>
   );

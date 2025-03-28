@@ -296,7 +296,16 @@ function Stats() {
       p: { xs: 1, sm: 2, md: 3 }, 
       maxWidth: '100%',
       maxHeight: '100vh',
-      overflow: 'auto'
+      overflow: 'auto',
+      // Ensure content is capturable
+      userSelect: 'text',
+      WebkitUserSelect: 'text',
+      WebkitTouchCallout: 'default',
+      // Additional properties to ensure screenshots work
+      WebkitUserModify: 'read-write',
+      MozUserSelect: 'text',
+      msUserSelect: 'text',
+      cursor: 'auto'
     }}>
       <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ 
         mb: 4,

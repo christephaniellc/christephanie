@@ -465,7 +465,7 @@ export const InvitationCodeInputs = () => {
           transition: 'all 0.3s ease',
         }}
       >
-        {/* QR code and El Pulpo as decorative elements in corners */}
+        {/* El Pulpo as decorative element in corner */}
         <Box
           sx={{
             position: 'absolute',
