@@ -455,7 +455,7 @@ export const CardFrontSide: React.FC<CardFrontSideProps> = ({
             fontFamily: 'sans-serif'
           }}
         >
-          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}{selectedFamily?.guests?.[0]?.firstName ? `&firstName=${selectedFamily.guests[0].firstName}` : ''}
+          https://christephanie.com?inviteCode={selectedFamily?.invitationCode || 'DEMO'}
         </Typography>
       </Box>
       

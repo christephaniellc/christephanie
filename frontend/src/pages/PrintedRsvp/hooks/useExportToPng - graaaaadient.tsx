@@ -193,42 +193,24 @@ export const useExportToPng = () => {
           const images = elementClone.querySelectorAll('img');
           const imagePromises: Promise<void>[] = [];
           
-          // Find corner elements and ensure they're visible
-          const cornerElements = elementClone.querySelectorAll('[style*="border-top"][style*="border-right"]');
-          cornerElements.forEach(corner => {
-            (corner as HTMLElement).style.zIndex = '50'; // Very high z-index
-          });
-          
-          // Special handling for El Pulpo icon - scale it properly for export
+          // Special handling for El Pulpo icon
           const elPulpoIcons = elementClone.querySelectorAll('.el-pulpo-icon');
           elPulpoIcons.forEach(icon => {
             const img = icon as HTMLImageElement;
-            // Scale based on export scaling factor (~3.125x for 300dpi)
-            
-            // For export, we want a small icon that doesn't interfere with corner elements
-            img.style.maxWidth = '30px';
-            img.style.maxHeight = '30px';
-            img.style.width = '30px'; 
-            img.style.height = '30px';
+            // Ensure the El Pulpo icon has appropriate dimensions
+            img.style.maxWidth = '60px';
+            img.style.maxHeight = '60px';
+            img.style.width = '60px';
+            img.style.height = '60px';
             img.style.objectFit = 'contain';
             img.style.overflow = 'hidden';
-            img.style.opacity = '0.9';
             
-            // Apply the same styling as in the component
-            img.style.borderRadius = '50%';
-            img.style.border = '1px solid rgba(255, 152, 0, 0.7)';
-            img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-            
-            // Make sure the container is also properly constrained and positioned
+            // Make sure the container is also properly constrained
             const container = img.closest('.el-pulpo-icon-container');
             if (container) {
-              (container as HTMLElement).style.width = '30px';
-              (container as HTMLElement).style.height = '30px';
-              (container as HTMLElement).style.position = 'absolute';
-              (container as HTMLElement).style.top = '20px'; // Move away from the corner
-              (container as HTMLElement).style.right = '20px'; // Move away from the corner
+              (container as HTMLElement).style.width = '60px';
+              (container as HTMLElement).style.height = '60px';
               (container as HTMLElement).style.overflow = 'hidden';
-              (container as HTMLElement).style.zIndex = '5'; // Lower than corner elements
             }
           });
           
@@ -371,71 +353,29 @@ export const useExportToPng = () => {
               // Define the border width - adjust based on the scale
               const borderWidth = Math.round(30 * scaleFactor); // 10px scaled up
               
-              // Define colors matching the theme
-              const primaryColor = '#9c27b0';    // Purple - MUI primary
-              const secondaryColor = '#ff9800';  // Orange - MUI secondary
-              const darkColor = '#121212';       // Dark background
+              // Create gradient pattern for border
+              const gradient = ctx.createLinearGradient(0, 0, finalWidth, finalHeight);
               
-              // Save context state
+              // Repeating pattern segments - cycle through primary, dark, secondary colors
+              gradient.addColorStop(0, '#9c27b0');    // Purple (primary)
+              gradient.addColorStop(0.33, '#121212'); // Dark
+              gradient.addColorStop(0.66, '#ff9800'); // Orange (secondary)
+              gradient.addColorStop(1, '#9c27b0');    // Back to purple
+              
+              // Save current context state
               ctx.save();
               
-              // Draw each side of the border with segments
-              // We'll draw each border side as separate segments with the colors
+              // Draw border directly on top of the image
+              ctx.fillStyle = gradient;
               
-              // Number of segments in the border (primary, dark, secondary pattern repeated)
-              const segmentCount = 15;  // 5 full pattern repeats (3 colors each)
-              
-              // Calculate segment lengths for each side
-              const topSegmentLength = scaledWidth / segmentCount;
-              const sideSegmentLength = scaledHeight / segmentCount;
-              
-              // Draw top border segments
-              for (let i = 0; i < segmentCount; i++) {
-                const color = i % 3 === 0 ? primaryColor : i % 3 === 1 ? darkColor : secondaryColor;
-                ctx.fillStyle = color;
-                ctx.fillRect(
-                  offsetX + (i * topSegmentLength), 
-                  offsetY, 
-                  topSegmentLength, 
-                  borderWidth
-                );
-              }
-              
-              // Draw right border segments
-              for (let i = 0; i < segmentCount; i++) {
-                const color = i % 3 === 0 ? primaryColor : i % 3 === 1 ? darkColor : secondaryColor;
-                ctx.fillStyle = color;
-                ctx.fillRect(
-                  offsetX + scaledWidth - borderWidth, 
-                  offsetY + (i * sideSegmentLength), 
-                  borderWidth, 
-                  sideSegmentLength
-                );
-              }
-              
-              // Draw bottom border segments
-              for (let i = 0; i < segmentCount; i++) {
-                const color = i % 3 === 0 ? primaryColor : i % 3 === 1 ? darkColor : secondaryColor;
-                ctx.fillStyle = color;
-                ctx.fillRect(
-                  offsetX + ((segmentCount - 1 - i) * topSegmentLength), 
-                  offsetY + scaledHeight - borderWidth, 
-                  topSegmentLength, 
-                  borderWidth
-                );
-              }
-              
-              // Draw left border segments
-              for (let i = 0; i < segmentCount; i++) {
-                const color = i % 3 === 0 ? primaryColor : i % 3 === 1 ? darkColor : secondaryColor;
-                ctx.fillStyle = color;
-                ctx.fillRect(
-                  offsetX, 
-                  offsetY + ((segmentCount - 1 - i) * sideSegmentLength), 
-                  borderWidth, 
-                  sideSegmentLength
-                );
-              }
+              // Top border
+              ctx.fillRect(offsetX, offsetY, scaledWidth, borderWidth);
+              // Right border
+              ctx.fillRect(offsetX + scaledWidth - borderWidth, offsetY, borderWidth, scaledHeight);
+              // Bottom border
+              ctx.fillRect(offsetX, offsetY + scaledHeight - borderWidth, scaledWidth, borderWidth);
+              // Left border
+              ctx.fillRect(offsetX, offsetY, borderWidth, scaledHeight);
               
               // Restore context state
               ctx.restore();
