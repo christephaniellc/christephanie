@@ -261,7 +261,21 @@ const CardModal: React.FC<CardModalProps> = ({
             <Button 
               color="inherit"
               variant={isExporting ? "outlined" : "contained"}
-              onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+              onClick={() => {
+                if (family) {
+                  console.log("Toolbar Export button clicked");
+                  // Force a re-render first to ensure everything is properly displayed
+                  setShowChangeFeedback(true);
+                  setTimeout(() => {
+                    setShowChangeFeedback(false);
+                    // Add delay to ensure UI is updated before capture
+                    setTimeout(() => {
+                      console.log("Starting export from toolbar button");
+                      handleExportAsPng(family, cardSide, orientation);
+                    }, 300);
+                  }, 100);
+                }
+              }}
               disabled={!family || isExporting}
               startIcon={<ImageIcon />}
               sx={{
@@ -369,19 +383,27 @@ const CardModal: React.FC<CardModalProps> = ({
               >
                 {/* Front sides */}
                 {cardSide === 'front' && orientation === 'horizontal' && (
-                  <CardFrontHorizontal selectedFamily={family} />
+                  <div id="print-card-element" data-card-type="front-horizontal" className={`print-ready-card card-front-horizontal`}>
+                    <CardFrontHorizontal selectedFamily={family} exportMode={true} />
+                  </div>
                 )}
                 {cardSide === 'front' && orientation === 'vertical' && (
-                  <CardFrontVertical selectedFamily={family} />
+                  <div id="print-card-element" data-card-type="front-vertical" className={`print-ready-card card-front-vertical`}>
+                    <CardFrontVertical selectedFamily={family} exportMode={true} />
+                  </div>
                 )}
                 
                 {/* Back sides - using editable components */}
                 {cardSide === 'back' && orientation === 'horizontal' && (
-                  <CardBackHorizontal />
+                  <div id="print-card-element" data-card-type="back-horizontal" className={`print-ready-card card-back-horizontal`}>
+                    <CardBackHorizontal exportMode={true} />
+                  </div>
                 )}
                 
                 {cardSide === 'back' && orientation === 'vertical' && (
-                  <CardBackVertical />
+                  <div id="print-card-element" data-card-type="back-vertical" className={`print-ready-card card-back-vertical`}>
+                    <CardBackVertical exportMode={true} />
+                  </div>
                 )}
               </Box>
             </Paper>
@@ -397,10 +419,24 @@ const CardModal: React.FC<CardModalProps> = ({
                   color="primary" 
                   size="small" 
                   startIcon={<ImageIcon />}
-                  onClick={() => family && handleExportAsPng(family, cardSide, orientation)}
+                  onClick={() => {
+                    if (family) {
+                      console.log("Modal Export button clicked");
+                      // Force a re-render first to ensure everything is properly displayed
+                      setShowChangeFeedback(true);
+                      setTimeout(() => {
+                        setShowChangeFeedback(false);
+                        // Add delay to ensure UI is updated before capture
+                        setTimeout(() => {
+                          console.log("Starting export from bottom button");
+                          handleExportAsPng(family, cardSide, orientation);
+                        }, 300);
+                      }, 100);
+                    }
+                  }}
                   disabled={!family || isExporting}
                 >
-                  Export PNG (300 DPI)
+                  {isExporting ? "Processing..." : "Export PNG (300 DPI)"}
                 </Button>
               </Tooltip>
             </Box>

@@ -13,7 +13,7 @@ export const CardBackHorizontal: React.FC<CardBackHorizontalProps> = ({ previewO
   return (
     <Paper 
       elevation={8}
-      className="card-back-horizontal"
+      className={`card-back-horizontal`}
       sx={{
         width: 576, // 6 inches @ 96ppi
         height: 384, // 4 inches @ 96ppi
