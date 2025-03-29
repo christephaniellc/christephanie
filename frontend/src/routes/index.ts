@@ -37,7 +37,7 @@ const routes: Routes = {
     icon: AddTaskIcon,
   },
   [Pages.Admin]: {
-    component: asyncComponentLoader(() => import('@/pages/Admin')),
+    component: asyncComponentLoader(() => import('@/pages/Stats')),
     path: '/stats',
     title: 'Wedding Stats',
     icon: BarChartIcon,

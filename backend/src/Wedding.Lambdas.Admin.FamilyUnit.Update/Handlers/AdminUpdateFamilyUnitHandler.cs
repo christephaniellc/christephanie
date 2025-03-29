@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
+using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
@@ -16,7 +19,9 @@ using Wedding.Lambdas.Admin.FamilyUnit.Update.Validation;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 {
-    public class AdminUpdateFamilyUnitHandler : IAsyncCommandHandler<AdminUpdateFamilyUnitCommand, FamilyUnitDto>
+    public class AdminUpdateFamilyUnitHandler : 
+        IAsyncCommandHandler<AdminUpdateFamilyUnitCommand, FamilyUnitDto>,
+        IAsyncCommandHandler<AdminPatchGuestCommand, GuestDto>
     {
         private readonly ILogger<AdminUpdateFamilyUnitHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -134,6 +139,113 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
             }
 
             return familyUnit;
+        }
+
+        public async Task<GuestDto> ExecuteAsync(AdminPatchGuestCommand command, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            _logger.LogInformation("AdminUpdatePatchGuestHandler");
+            command.Validate(nameof(command));
+
+            _logger.LogInformation($"Serialized Guest Patch command: {JsonSerializer.Serialize(command)}");
+
+            var existingGuestEntity = await _dynamoDBProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience,
+                command.InvitationCode,
+                command.GuestId,
+                cancellationToken);
+
+            if (existingGuestEntity == null)
+            {
+                throw new UnauthorizedAccessException($"Guest not found: Audience: {command.AuthContext.Audience}, GuestId: {command.GuestId}");
+            }
+
+            _logger.LogInformation($"Serialized existing guest: {JsonSerializer.Serialize(existingGuestEntity)}");
+            
+            if (command.InvitationResponse != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.InvitationResponse from '{existingGuestEntity.InvitationResponse}' to '{command.InvitationResponse}'");
+                existingGuestEntity.InvitationResponse = command.InvitationResponse.Value;
+
+                if (command.InvitationResponse != InvitationResponseEnum.Pending)
+                {
+                    _logger.LogInformation($"Invitation Response audit, command.AuthContext.Name: {command.AuthContext.Name ?? "<unknown>"}");
+                    existingGuestEntity.InvitationResponseAudit = new LastUpdateAuditDto
+                    {
+                        LastUpdate = DateTime.UtcNow,
+                        Username = command.AuthContext.Name ?? "unknown"
+                    }.ToString();
+                }
+            }
+
+            if (command.Wedding != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.Wedding from '{existingGuestEntity.RsvpWedding}' to '{command.Wedding}'");
+                existingGuestEntity.RsvpWedding = command.Wedding.Value;
+
+                if (command.Wedding != RsvpEnum.Pending)
+                {
+                    _logger.LogInformation($"RSVP Response audit, command.AuthContext.Name: {command.AuthContext.Name ?? "<unknown>"}");
+                    existingGuestEntity.RsvpAudit = new LastUpdateAuditDto
+                    {
+                        LastUpdate = DateTime.UtcNow,
+                        Username = command.AuthContext.Name ?? "unknown"
+                    }.ToString();
+                }
+            }
+
+            if (command.RehearsalDinner != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.RehearsalDinner from '{existingGuestEntity.RsvpRehearsalDinner}' to '{command.RehearsalDinner}'");
+                existingGuestEntity.RsvpRehearsalDinner = command.RehearsalDinner;
+            }
+
+            if (command.FourthOfJuly != null)
+            {
+                _logger.LogInformation($"Updating guest.Rsvp.FourthOfJuly from '{existingGuestEntity.RsvpFourthOfJuly}' to '{command.FourthOfJuly}'");
+                existingGuestEntity.RsvpFourthOfJuly = command.FourthOfJuly;
+            }
+
+            if (command.Email != null)
+            {
+                var currentEmail = _mapper.Map<VerifiedDto>(existingGuestEntity.Email);
+                if (currentEmail == null || currentEmail.Value != command.Email)
+                {
+                    _logger.LogInformation($"Updating guest.Email from '{currentEmail?.Value ?? "<empty>"}, verified: {currentEmail?.Verified}' to '{command.Email}'");
+                    existingGuestEntity.Email = new VerifiedDto
+                    {
+                        Value = command.Email,
+                        Verified = false
+                    }.ToString();
+                }
+            }
+
+            if (command.Phone != null)
+            {
+                var currentPhone = _mapper.Map<VerifiedDto>(existingGuestEntity.Phone);
+                if (currentPhone == null || currentPhone.Value != command.Phone)
+                {
+                    _logger.LogInformation(
+                        $"Updating guest.Phone from '{currentPhone?.Value ?? "<empty>"}, verified: {currentPhone?.Verified}' to '{command.Phone}'");
+                    existingGuestEntity.Phone = new VerifiedDto
+                    {
+                        Value = command.Phone,
+                        Verified = false
+                    }.ToString();
+                }
+            }
+
+            _logger.LogInformation("About to save...");
+
+            await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuestEntity, cancellationToken);
+            _logger.LogInformation("Saved.");
+
+            var result = await _dynamoDBProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, 
+                command.InvitationCode, 
+                command.GuestId, 
+                cancellationToken);
+
+            _logger.LogInformation($"Got updated existing guest entity: {JsonSerializer.Serialize(result)}");
+
+            return _mapper.Map<GuestDto>(result);
         }
     }
 }

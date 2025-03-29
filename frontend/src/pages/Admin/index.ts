@@ -1,3 +1,1 @@
-import Stats from './Admin';
-
-export default Stats;
+export { default } from './Admin';

@@ -91,16 +91,12 @@ export const useFamilyData = () => {
         // Fetch data
         const response = await getAllFamiliesQuery.refetch();
         
-        if (response.data) {
-          const excludedCodes = ["BAAAD", "BAAAA", "BAAAB"]; // Exclude test codes
-          
-          // Filter out test families
-          const filteredFamilies = response.data.filter(
-            family => !excludedCodes.includes(family.invitationCode || '')
-          );
+        if (response.data) {          
+          // Filtering of test families performed on backend in stats
+          const families = response.data;
           
           // Sort alphabetically by family name
-          const sortedFamilies = filteredFamilies.sort((a, b) => {
+          const sortedFamilies = families.sort((a, b) => {
             const aName = a.unitName?.toLowerCase() || '';
             const bName = b.unitName?.toLowerCase() || '';
             return aName.localeCompare(bName);

@@ -244,9 +244,9 @@ const FamilyList: React.FC<FamilyListProps> = ({
                   <ListItemText 
                     primary={
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography noWrap component="span" sx={{ flexGrow: 1 }}>
+                        <Box component="span" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {family.unitName || 'Unnamed Family'}
-                        </Typography>
+                        </Box>
                         {interestedCount > 0 && (
                           <Box component="span" sx={{ display: 'flex', ml: 1 }}>
                             <FavoriteIcon 

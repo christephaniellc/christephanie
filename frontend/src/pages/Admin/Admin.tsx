@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { 
   Box, Typography, Grid, CircularProgress, 
   Popper, Grow, ClickAwayListener,
-  FormControl, InputLabel, Select, MenuItem, SelectChangeEvent
+  FormControl, InputLabel, Select, MenuItem, SelectChangeEvent,
+  Button
 } from '@mui/material';
 
 import { FamilyUnitDto, FamilyUnitViewModel, InvitationResponseEnum } from '@/types/api';
 import { useAdminQueries, useStatsQueries } from '@/hooks/useAdminQueries';
+import { useApiContext } from '@/context/ApiContext';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { isAdmin } from '@/utils/roles';
 import { useRecoilValue } from 'recoil';
@@ -31,6 +33,7 @@ function Stats() {
   // Use both queries - stats for all users and admin data for admin users
   const { getStatsQuery } = useStatsQueries();
   const { getAllFamiliesQuery } = useAdminQueries();
+  const apiContext = useApiContext();
   
   const user = useRecoilValue(userState);
   const userIsAdmin = isAdmin(user);
@@ -43,6 +46,45 @@ function Stats() {
     flipped: false,
     flipAxis: 'Y'
   });
+  
+  // For handling family updates using admin endpoints
+  const handleFamilyUpdate = useCallback((invitationCode: string, updatedData: Partial<FamilyUnitDto>) => {
+    // Find the family we need to update
+    const familyToUpdate = adminData.find(f => f.invitationCode === invitationCode);
+    
+    if (!familyToUpdate) {
+      console.error(`Family with invitation code ${invitationCode} not found`);
+      return;
+    }
+    
+    console.log('Updating family with code:', invitationCode, 'Data:', updatedData);
+    
+    // Create a full updated family object by merging the existing data with the updates
+    const updatedFamily: FamilyUnitDto = {
+      ...familyToUpdate,
+      ...updatedData
+    };
+    
+    // Make sure we're using the admin API endpoint
+    if (apiContext && apiContext.apiInstance) {
+      // Use the admin POST endpoint directly
+      apiContext.apiInstance.adminUpdateFamily(updatedFamily)
+        .then(() => {
+          console.log('Family updated successfully via admin endpoint');
+          // Refresh the data
+          getAllFamiliesQuery.refetch();
+        })
+        .catch(error => {
+          console.error('Failed to update family via admin endpoint:', error);
+        });
+    }
+  }, [adminData, getAllFamiliesQuery, apiContext]);
+  
+  // For handling guest updates
+  const handleGuestUpdated = useCallback(() => {
+    // Refetch the family data after a guest is updated
+    getAllFamiliesQuery.refetch();
+  }, [getAllFamiliesQuery]);
 
   // Sort families based on selected sort option - specific for FamilyUnitDto arrays
   const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption): FamilyUnitDto[] => {
@@ -270,17 +312,33 @@ function Stats() {
   };
 
   // Find a guest by ID
-  const findGuestById = (guestId: string) => {
+  const findGuestById = (guestId: string | null) => {
+    if (!guestId) {
+      return null;
+    }
+    
     let foundGuest = null;
+    let invitationCode = null;
     
     for (const family of adminData) {
       if (family.guests) {
         foundGuest = family.guests.find(guest => guest.guestId === guestId);
-        if (foundGuest) break;
+        if (foundGuest) {
+          invitationCode = family.invitationCode;
+          break;
+        }
       }
     }
     
-    return foundGuest;
+    // Add invitationCode to guest if found
+    if (foundGuest && invitationCode) {
+      return {
+        ...foundGuest,
+        invitationCode
+      };
+    }
+    
+    return null;
   };
 
   // Handle flipping the card
@@ -376,7 +434,8 @@ function Stats() {
                 <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
                   <FamilyCard 
                     family={family} 
-                    onGuestClick={handleGuestClick} 
+                    onGuestClick={handleGuestClick}
+                    onFamilyUpdate={handleFamilyUpdate}
                   />
                 </Grid>
               ))}
@@ -403,15 +462,43 @@ function Stats() {
                       backdropFilter: 'blur(10px)',
                       borderRadius: 1,
                       boxShadow: 3,
-                    }} 
-                    onClick={handleFlipCard}
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
                   >
-                    {popperState.guestId && (
-                      <GuestDetailCard 
-                        guest={findGuestById(popperState.guestId)} 
-                        flipped={popperState.flipped} 
-                        flipAxis={popperState.flipAxis}
-                      />
+                    {popperState.guestId && findGuestById(popperState.guestId) && (
+                      <>
+                        <Box>
+                          {/* Action button for flipping the card */}
+                          <Box 
+                            sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'flex-end',
+                              p: 1,
+                              borderBottom: '1px solid rgba(255,255,255,0.2)'
+                            }}
+                          >
+                            <Button 
+                              variant="outlined" 
+                              size="small"
+                              color="primary"
+                              onClick={handleFlipCard}
+                            >
+                              Flip Card
+                            </Button>
+                          </Box>
+                          
+                          <Box onClick={handleFlipCard}>
+                            <GuestDetailCard 
+                              guest={findGuestById(popperState.guestId)!} 
+                              flipped={popperState.flipped} 
+                              flipAxis={popperState.flipAxis}
+                              editable={true}
+                              onGuestUpdated={handleGuestUpdated}
+                            />
+                          </Box>
+                        </Box>
+                      </>
                     )}
                   </Box>
                 </Grow>
