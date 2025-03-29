@@ -55,7 +55,7 @@ interface ApiContextProps {
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getStats: () => Promise<FamilyUnitViewModel[]>;
-  getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
+  getAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
   apiInstance?: Api; // Expose the API instance for direct access

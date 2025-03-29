@@ -85,7 +85,7 @@ export class ApiStack extends cdk.Stack {
         // Existing endpoints
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Create', method: apigateway.HttpMethod.PUT, path: `/admin/familyunit/create` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit/all` },
-        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/admin/familyunit` },
+        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.PATCH], path: `/admin/familyunit` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Delete', method: apigateway.HttpMethod.DELETE, path: `/admin/familyunit/{invitationCode}` },
         { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit`, keepWarm: true },
