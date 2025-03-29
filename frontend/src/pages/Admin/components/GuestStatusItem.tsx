@@ -1,8 +1,11 @@
-import { Box, Avatar, Typography, Chip, useTheme, Tooltip } from '@mui/material';
+import { Box, Avatar, Typography, Chip, useTheme, Tooltip, IconButton, Dialog, DialogContent } from '@mui/material';
 import { InvitationResponseEnum, NotificationPreferenceEnum } from '@/types/api';
 import { getInvitationStatusColor, getInvitationStatusIcon } from './AdminHelpers';
 import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import EmailIcon from '@mui/icons-material/Email';
+import EditIcon from '@mui/icons-material/Edit';
+import { useState } from 'react';
+import GuestEditor from './GuestEditor';
 
 interface GuestStatusItemProps {
   guest: {
@@ -11,6 +14,9 @@ interface GuestStatusItemProps {
     lastName?: string;
     rsvp?: {
       invitationResponse?: InvitationResponseEnum;
+      wedding?: any;
+      rehearsalDinner?: any;
+      fourthOfJuly?: any;
     };
     email?: {
       verified?: boolean;
@@ -21,11 +27,28 @@ interface GuestStatusItemProps {
   };
   onClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
   compact?: boolean; // Added for the compact avatar-only view
+  editable?: boolean; // Whether the guest can be edited
+  onGuestUpdated?: () => void; // Callback when guest is updated
 }
 
-const GuestStatusItem = ({ guest, onClick, compact = false }: GuestStatusItemProps) => {
+const GuestStatusItem = ({ guest, onClick, compact = false, editable = false, onGuestUpdated }: GuestStatusItemProps) => {
   const theme = useTheme();
+  
+  // Safety check - if guest is null or undefined, don't render
+  if (!guest || !guest.guestId) {
+    // Log only if there's a problem
+    console.error('Guest data is missing required fields:', guest);
+    return null;
+  }
+  
   const responseStatus = guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  const handleEditClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation(); // Prevent triggering the onClick of the parent
+    console.log('Edit button clicked, opening dialog for guest:', guest.firstName, guest.lastName);
+    setEditDialogOpen(true);
+  };
 
   // If compact mode, just return the avatar
   if (compact) {
@@ -99,7 +122,7 @@ const GuestStatusItem = ({ guest, onClick, compact = false }: GuestStatusItemPro
           {guest.firstName} {guest.lastName}
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
         {/* Email verification icon */}
         {guest.email?.verified && guest.preferences?.notificationPreference?.includes(NotificationPreferenceEnum.Email) && (
           <Tooltip title="Verified email">
@@ -136,6 +159,157 @@ const GuestStatusItem = ({ guest, onClick, compact = false }: GuestStatusItemPro
         />
       </Box>
     </Box>
+  );
+  
+  // Need to return a React Fragment with both components
+  return (
+    <>
+      {/* Main component */}
+      {compact ? (
+        <Avatar 
+          sx={{ 
+            width: 32, 
+            height: 32, 
+            bgcolor: getInvitationStatusColor(responseStatus),
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            border: '2px solid',
+            borderColor: 'background.paper',
+            boxShadow: 2,
+            transition: 'transform 0.2s',
+            '&:hover': {
+              transform: 'scale(1.1)',
+            },
+          }}
+          onClick={(e) => onClick(e, guest.guestId as string)}
+          title={`${guest.firstName} ${guest.lastName}`}
+        >
+          {guest.firstName?.[0]}{guest.lastName?.[0]}
+        </Avatar>
+      ) : (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 1,
+            borderRadius: 1,
+            backgroundColor: responseStatus === InvitationResponseEnum.Interested 
+              ? themePaletteToRgba(theme.palette.success.main, 0.3)
+              : responseStatus === InvitationResponseEnum.Declined
+                ? themePaletteToRgba(theme.palette.error.main, 0.3)
+                : themePaletteToRgba(theme.palette.warning.main, 0.2),
+            cursor: 'pointer',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              boxShadow: `0 0 10px ${themePaletteToRgba(theme.palette.primary.main, 0.5)}`,
+              transform: 'scale(1.02)',
+            },
+            border: '1px solid',
+            borderColor: responseStatus === InvitationResponseEnum.Interested 
+              ? 'success.main' 
+              : responseStatus === InvitationResponseEnum.Declined
+                ? 'error.main'
+                : 'warning.main',
+            backdropFilter: 'blur(8px)'
+          }}
+          onClick={(e) => onClick(e, guest.guestId as string)}
+          data-testid="guest-status-item"
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar 
+              sx={{ 
+                width: 28, 
+                height: 28, 
+                bgcolor: getInvitationStatusColor(responseStatus),
+                fontSize: '0.875rem'
+              }}
+            >
+              {guest.firstName?.[0]}{guest.lastName?.[0]}
+            </Avatar>
+            <Typography variant="body2">
+              {guest.firstName} {guest.lastName}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+            {/* Email verification icon */}
+            {guest.email?.verified && guest.preferences?.notificationPreference?.includes(NotificationPreferenceEnum.Email) && (
+              <Tooltip title="Verified email">
+                <Chip
+                  size="small"
+                  icon={<EmailIcon fontSize="small" />}
+                  sx={{
+                    backgroundColor: theme.palette.success.light,
+                    color: theme.palette.success.contrastText,
+                    '& .MuiChip-icon': {
+                      color: 'inherit',
+                      marginLeft: '5px',
+                      marginRight: '-8px'
+                    },
+                    minWidth: 0,
+                    width: 'auto',
+                    px: 0.5
+                  }}
+                />
+              </Tooltip>
+            )}
+            
+            {/* Status chip */}
+            <Chip 
+              size="small"
+              label="Status"
+              icon={getInvitationStatusIcon(responseStatus)}
+              sx={{ 
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? `${getInvitationStatusColor(responseStatus)}70` 
+                  : `${getInvitationStatusColor(responseStatus)}40`,
+                color: getInvitationStatusColor(responseStatus)
+              }}
+            />
+            
+            {/* Edit button */}
+            {editable && (
+              <IconButton 
+                size="small" 
+                onClick={handleEditClick}
+                sx={{ 
+                  ml: 0.5, 
+                  color: 'primary.main',
+                  width: 24,
+                  height: 24
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
+        </Box>
+      )}
+      
+      {/* Edit Dialog */}
+      {editable && (
+        <Dialog 
+          open={editDialogOpen} 
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent>
+            <GuestEditor 
+              guest={{
+                ...guest,
+                // Ensure invitationCode is available
+                invitationCode: guest?.invitationCode || ''
+              }}
+              onClose={() => setEditDialogOpen(false)}
+              onSuccess={() => {
+                if (onGuestUpdated) onGuestUpdated();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
 

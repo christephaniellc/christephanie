@@ -754,36 +754,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags AdminFamilyUnit
-     * @name AdminFamilyunitInvitationCodeList
-     * @request GET:/api/admin/familyunit/invitationCode
-     * @secure
-     */
-    adminFamilyunitInvitationCodeList: (
-      query?: {
-        invitationCode?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<FamilyUnitDto, ProblemDetails | void>({
-        path: `/api/admin/familyunit/invitationCode`,
-        method: 'GET',
-        query: query,
-        secure: true,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags AdminFamilyUnit
      * @name AdminFamilyunitList
      * @request GET:/api/admin/familyunit
      * @secure
      */
     adminFamilyunitList: (params: RequestParams = {}) =>
       this.request<FamilyUnitDto[], ProblemDetails | void>({
-        path: `/api/admin/familyunit`,
+        path: `/api/admin/familyunit/all`,
         method: 'GET',
         secure: true,
         format: 'json',

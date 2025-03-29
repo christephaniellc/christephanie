@@ -51,22 +51,52 @@ public class Function
 
             var authContext = request.GetAuthContext();
 
-            var familyUnit = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
-            var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext);
-
-            if (command.FamilyUnit == null)
-            {
-                throw new ValidationException("Invalid FamilyUnit in request.");
-            }
-
-            context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
-            context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnit)}");
-
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AdminUpdateFamilyUnitHandler>();
-            var result = await handler.ExecuteAsync(command);
 
-            return result.OkResponse();
+
+            switch (request.HttpMethod?.ToUpperInvariant())
+            {
+                case "POST":
+                {
+                    var familyUnit = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
+                    var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext);
+
+                    context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
+                    context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnit)}");
+
+                    if (command.FamilyUnit == null)
+                    {
+                        throw new ValidationException("Invalid FamilyUnit in request.");
+                    }
+
+                    var result = await handler.ExecuteAsync(command);
+
+                    return result.OkResponse();
+                    break;
+                }
+                case "PATCH":
+                {
+                    var familyPatchRequest = JsonSerializationHelper.DeserializeFromFrontend<AdminPatchGuestRequest>(request.Body);
+                    var command = new AdminPatchGuestCommand(authContext, 
+                        familyPatchRequest.InvitationCode,
+                        familyPatchRequest.GuestId, 
+                        familyPatchRequest.Email, 
+                        familyPatchRequest.Phone, 
+                        familyPatchRequest.InvitationResponse, 
+                        familyPatchRequest.Wedding);
+
+                    context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
+
+                    var result = await handler.ExecuteAsync(command);
+
+                    return result.OkResponse();
+                    break;
+                    }
+                default:
+                    return $"Unsupported HTTP method: {request.HttpMethod}".ErrorResponse((int)HttpStatusCode.MethodNotAllowed,
+                        typeof(MissingMethodException).ToString());
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
