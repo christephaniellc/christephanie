@@ -14,5 +14,15 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Validation
             this AdminUpdateFamilyUnitCommand obj,
             object? context = default)
             => ValidateHelpers.Validate<AdminUpdateFamilyUnitCommand, AdminUpdateFamilyUnitCommandValidator>(obj, context);
+
+        /// <summary>
+        /// Validates the specified command.
+        /// </summary>
+        /// <param name="obj">The command.</param>
+        /// <param name="context">The context.</param>
+        public static void Validate(
+            this AdminPatchGuestCommand obj,
+            object? context = default)
+            => ValidateHelpers.Validate<AdminPatchGuestCommand, AdminPatchGuestCommandValidator>(obj, context);
     }
 }
