@@ -14,6 +14,7 @@ namespace Wedding.Abstractions.Dtos
 
         /// <summary>
         /// Only available if camping sleep preference is set to camping
+        /// Or wedding party, photographer, manor guest, officiant, or out of towners
         /// </summary>
         public RsvpEnum? FourthOfJuly { get; set; }
 

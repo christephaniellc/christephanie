@@ -17,7 +17,7 @@ import { userState } from '@/store/user';
 import { GuestPopperState, getRandomAxis, getTierDetails } from './components/AdminHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
 import FamilyCard from './components/FamilyCard';
-import AdminDashboardCharts from '@/components/AdminDashboardCharts';
+import StatsDashboardCharts from '@/components/StatsDashboardCharts';
 
 // Define sort options
 type SortOption = 'lastUpdated' | 'invitationStatus' | 'default';
@@ -380,7 +380,7 @@ function Stats() {
       ) : error ? (
         <Typography color="error" sx={{ mb: 4 }}>{error}</Typography>
       ) : (
-        <AdminDashboardCharts families={statsData} loading={false} />
+        <StatsDashboardCharts families={statsData} loading={false} />
       )}
       
       {/* Family Cards - only visible to admins */}
