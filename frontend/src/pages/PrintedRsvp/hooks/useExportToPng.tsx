@@ -369,7 +369,7 @@ export const useExportToPng = () => {
               console.log('Adding gradient border to the card');
               
               // Define the border width - adjust based on the scale
-              const borderWidth = Math.round(30 * scaleFactor); // 10px scaled up
+              const borderWidth = Math.round(60 * scaleFactor); // 10px scaled up
               
               // Define colors matching the theme
               const primaryColor = '#9c27b0';    // Purple - MUI primary

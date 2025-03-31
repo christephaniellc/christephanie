@@ -75,7 +75,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         position: 'relative',
         boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         transformOrigin: 'top left',
-        border: isExporting ? '0px solid transparent' : '10px solid transparent',
+        border: isExporting ? '0px solid transparent' : '15px solid transparent',
         borderImageSource: !isExporting ? gradientBorder : 'none',
         borderImageSlice: 1,
         boxSizing: 'border-box',
@@ -382,13 +382,13 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           <Typography
             sx={{
               color: theme.palette.common.white,
-              fontSize: '0.8rem',
+              fontSize: '0.7rem',
               fontWeight: 500,
               fontFamily: 'sans-serif',
               mb: 0.2
             }}
           >
-            Please visit our website:
+            Visit our website to RSVP:
           </Typography>
           <Typography
             sx={{
@@ -412,12 +412,12 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             <Typography
               sx={{
                 color: theme.palette.primary.light,
-                fontSize: '0.8rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
                 fontFamily: 'sans-serif'
               }}
             >
-              Your invite code:
+              YOUR INVITE CODE:
             </Typography>
             <Typography
               sx={{
@@ -463,7 +463,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               }}
             />
             <Typography variant="caption" sx={{ fontSize: '0.45rem', textAlign: 'center', color: theme.palette.common.white }}>
-              SCAN ME
+              OR, SCAN ME
             </Typography>
           </Box>
         </Box>
