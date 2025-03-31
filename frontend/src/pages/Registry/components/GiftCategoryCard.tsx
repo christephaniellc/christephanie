@@ -47,9 +47,14 @@ const IconWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Define selected property interface for AmountButton
+interface AmountButtonProps {
+  selected?: boolean;
+}
+
 const AmountButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'selected',
-})(({ theme, selected }) => ({
+})<AmountButtonProps>(({ theme, selected }) => ({
   margin: theme.spacing(0.5),
   fontWeight: selected ? 'bold' : 'normal',
   backgroundColor: selected ? theme.palette.primary.main : 'transparent',
