@@ -1,5 +1,11 @@
 import { atom, selector, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { CardGiftcardIcon, LocalFloristIcon, CakeIcon, HotelIcon, DirectionsCarIcon, FlightIcon, WineBarIcon } from '@mui/icons-material';
+import CardGiftcard from '@mui/icons-material/CardGiftcard';
+import LocalFlorist from '@mui/icons-material/LocalFlorist';
+import Cake from '@mui/icons-material/Cake';
+import Hotel from '@mui/icons-material/Hotel';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import Flight from '@mui/icons-material/Flight';
+import WineBar from '@mui/icons-material/WineBar';
 
 // Registry gift option type
 export type GiftOption = {
@@ -23,42 +29,42 @@ export const giftOptionsData: GiftOption[] = [
     id: 'honeymoon',
     title: 'Honeymoon Fund',
     description: 'Help us create unforgettable memories on our honeymoon adventure.',
-    icon: FlightIcon,
+    icon: Flight,
     suggestedAmounts: [25, 50, 100, 200]
   },
   {
     id: 'flowers',
     title: 'Wedding Flowers',
     description: 'Contribute to beautiful floral arrangements for our special day.',
-    icon: LocalFloristIcon,
+    icon: LocalFlorist,
     suggestedAmounts: [20, 50, 75, 100]
   },
   {
     id: 'cake',
     title: 'Wedding Cake',
     description: 'Help us celebrate with a delicious wedding cake.',
-    icon: CakeIcon,
+    icon: Cake,
     suggestedAmounts: [15, 25, 50, 75]
   },
   {
     id: 'accommodations',
     title: 'Guest Accommodations',
     description: 'Support our out-of-town guests with comfortable accommodations.',
-    icon: HotelIcon,
+    icon: Hotel,
     suggestedAmounts: [30, 60, 100, 150]
   },
   {
     id: 'transportation',
     title: 'Transportation',
     description: 'Help with transportation costs for our wedding day.',
-    icon: DirectionsCarIcon,
+    icon: DirectionsCar,
     suggestedAmounts: [20, 40, 75, 100]
   },
   {
     id: 'drinks',
     title: 'Drinks & Toasts',
     description: 'Contribute to refreshments and celebratory toasts.',
-    icon: WineBarIcon,
+    icon: WineBar,
     suggestedAmounts: [15, 30, 50, 100]
   },
 ];
@@ -100,7 +106,7 @@ export const traditionalRegistryState = atom<{
     title: 'Physical Gifts',
     description: 'If you prefer to give a traditional gift, we\'ve created a registry at our favorite store.',
     url: 'https://www.amazon.com/wedding/registry', // Replace with actual registry URL
-    icon: CardGiftcardIcon
+    icon: CardGiftcard
   }
 });
 

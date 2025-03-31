@@ -297,9 +297,8 @@ const GuestStatusItem = ({ guest, onClick, compact = false, editable = false, on
           <DialogContent>
             <GuestEditor 
               guest={{
-                ...guest,
-                // Ensure invitationCode is available
-                invitationCode: guest?.invitationCode || ''
+                ...guest
+                // Removing invitationCode as it doesn't exist on the type
               }}
               onClose={() => setEditDialogOpen(false)}
               onSuccess={() => {
