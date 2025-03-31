@@ -6,6 +6,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import PrintIcon from '@mui/icons-material/Print';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -33,7 +34,8 @@ export const BottomNav = () => {
     if (path === routes[Pages.SaveTheDate].path) return 1;
     if (path === routes[Pages.Bureaucracy].path) return 2;
     if (path === routes[Pages.Admin].path) return 3;
-    if (path === routes[Pages.PrintedRsvp].path) return 4;
+    if (path === routes[Pages.Registry].path) return 4;
+    if (path === routes[Pages.PrintedRsvp].path) return 5;
     return -1; // No tab selected
   };
   
@@ -60,9 +62,12 @@ export const BottomNav = () => {
         navigate(routes[Pages.Admin].path!);
         break;
       case 4:
+        navigate(routes[Pages.Registry].path!);
+        break;
+      case 5:
         navigate(routes[Pages.PrintedRsvp].path!);
         break;
-      case 5: // Auth button
+      case 6: // Auth button
         if (auth0User) {
           logOutFromAuth0();
         } else {
@@ -120,16 +125,16 @@ export const BottomNav = () => {
               color: "white",
             },
             "& .MuiBottomNavigationAction-root": {
-              minWidth: '52px',
+              minWidth: '42px',
               padding: '0 0',
-              fontSize: '0.65rem',
+              fontSize: '0.6rem',
               '@media (min-width: 400px)': {
-                minWidth: '68px',
-                padding: '0 2px'
+                minWidth: '56px',
+                padding: '0 1px'
               },
               '@media (min-width: 600px)': {
-                minWidth: '80px',
-                padding: '0 4px'
+                minWidth: '65px',
+                padding: '0 2px'
               }
             }
           }}
@@ -167,6 +172,14 @@ export const BottomNav = () => {
             icon={<BarChartIcon />}
             aria-label="View wedding statistics"
             disabled={!auth0User}
+          />
+          
+          {/* Registry */}
+          <BottomNavigationAction
+            label="Registry"
+            icon={<CardGiftcardIcon />}
+            aria-label="View Wedding Registry"
+            disabled={false}
           />
           
           {/* Printed RSVP (only for admin users) */}

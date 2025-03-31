@@ -6,6 +6,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -52,6 +53,12 @@ const routes: Routes = {
     path: '/printed-rsvp',
     title: 'Printed RSVP',
     icon: PrintIcon,
+  },
+  [Pages.Registry]: {
+    component: asyncComponentLoader(() => import('@/pages/Registry')),
+    path: '/registry',
+    title: 'Registry',
+    icon: CardGiftcardIcon,
   },
   [Pages.Debug]: {
     component: asyncComponentLoader(() => import('@/pages/Cors/CorsPage')),
