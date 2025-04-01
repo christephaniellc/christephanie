@@ -7,12 +7,14 @@ import DirectionsCar from '@mui/icons-material/DirectionsCar';
 import Flight from '@mui/icons-material/Flight';
 import WineBar from '@mui/icons-material/WineBar';
 
+import { SvgIconComponent } from '@mui/icons-material';
+
 // Registry gift option type
 export type GiftOption = {
   id: string;
   title: string;
   description: string;
-  icon: any; // React icon component
+  icon: SvgIconComponent; // React icon component
   suggestedAmounts: number[];
 };
 
@@ -21,6 +23,14 @@ export type RegistryNotification = {
   show: boolean;
   message: string;
   severity: 'success' | 'error';
+};
+
+// Payment dialog state type
+export type PaymentDialogState = {
+  open: boolean;
+  amount: number;
+  category: string;
+  categoryId: string;
 };
 
 // Gift options data
@@ -94,12 +104,39 @@ export const notificationState = atom<RegistryNotification>({
   }
 });
 
+export const paymentDialogState = atom<PaymentDialogState>({
+  key: 'paymentDialogState',
+  default: {
+    open: false,
+    amount: 0,
+    category: '',
+    categoryId: ''
+  }
+});
+
+export const paymentSuccessDialogState = atom<{open: boolean; amount: number; category: string}>({
+  key: 'paymentSuccessDialogState',
+  default: {
+    open: false,
+    amount: 0,
+    category: ''
+  }
+});
+
+export const paymentErrorDialogState = atom<{open: boolean; message: string}>({
+  key: 'paymentErrorDialogState',
+  default: {
+    open: false,
+    message: ''
+  }
+});
+
 // Selectors
 export const traditionalRegistryState = atom<{
   title: string;
   description: string;
   url: string;
-  icon: any;
+  icon: SvgIconComponent;
 }>({
   key: 'traditionalRegistryState',
   default: {
@@ -147,29 +184,85 @@ export const useRegistry = () => {
     }
   };
 
+  const [paymentDialog, setPaymentDialog] = useRecoilState(paymentDialogState);
+  const [successDialog, setSuccessDialog] = useRecoilState(paymentSuccessDialogState);
+  const [errorDialog, setErrorDialog] = useRecoilState(paymentErrorDialogState);
+
   const handleContribute = (id: string) => {
-    const amount = customAmounts[id] || selectedAmounts[id];
-    const category = giftOptions.find(option => option.id === id)?.title;
+    const amount = parseInt(customAmounts[id]) || selectedAmounts[id] || 0;
+    const category = giftOptions.find(option => option.id === id)?.title || '';
     
-    // Show notification
-    setNotification({
-      show: true,
-      message: `Thank you for your contribution of $${amount} to our ${category}!`,
-      severity: 'success'
+    if (amount <= 0) return;
+    
+    // Open payment dialog instead of showing notification directly
+    setPaymentDialog({
+      open: true,
+      amount,
+      category,
+      categoryId: id
+    });
+  };
+  
+  const handlePaymentSuccess = () => {
+    const { amount, category, categoryId } = paymentDialog;
+    
+    // Close payment dialog
+    setPaymentDialog(prev => ({
+      ...prev,
+      open: false
+    }));
+    
+    // Show success dialog
+    setSuccessDialog({
+      open: true,
+      amount,
+      category
     });
     
-    // Reset the form after submission
+    // Reset the form
     setSelectedAmounts(prev => ({
       ...prev,
-      [id]: null
+      [categoryId]: null
     }));
     setCustomAmounts(prev => ({
       ...prev,
-      [id]: ''
+      [categoryId]: ''
+    }));
+  };
+  
+  const handlePaymentError = (message: string) => {
+    // Close payment dialog
+    setPaymentDialog(prev => ({
+      ...prev,
+      open: false
     }));
     
-    // Here we would integrate with Stripe API
-    console.log(`Processing $${amount} contribution to ${id}`);
+    // Show error dialog
+    setErrorDialog({
+      open: true,
+      message
+    });
+  };
+  
+  const closePaymentDialog = () => {
+    setPaymentDialog(prev => ({
+      ...prev,
+      open: false
+    }));
+  };
+  
+  const closeSuccessDialog = () => {
+    setSuccessDialog(prev => ({
+      ...prev,
+      open: false
+    }));
+  };
+  
+  const closeErrorDialog = () => {
+    setErrorDialog(prev => ({
+      ...prev,
+      open: false
+    }));
   };
 
   const closeNotification = () => {
@@ -185,9 +278,17 @@ export const useRegistry = () => {
     customAmounts,
     notification,
     traditionalRegistry,
+    paymentDialog,
+    successDialog,
+    errorDialog,
     handleAmountSelect,
     handleCustomAmountChange,
     handleContribute,
+    handlePaymentSuccess,
+    handlePaymentError,
+    closePaymentDialog,
+    closeSuccessDialog,
+    closeErrorDialog,
     closeNotification
   };
 };

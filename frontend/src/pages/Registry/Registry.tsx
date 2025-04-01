@@ -11,6 +11,9 @@ import {
   RegistryInfoSection,
   GiftCategoryList,
   TraditionalRegistrySection,
+  StripePaymentForm,
+  PaymentSuccessDialog,
+  PaymentErrorDialog
 } from './components';
 
 // Styled components
@@ -44,9 +47,17 @@ const Registry: React.FC = () => {
     customAmounts,
     notification,
     traditionalRegistry,
+    paymentDialog,
+    successDialog,
+    errorDialog,
     handleAmountSelect,
     handleCustomAmountChange,
     handleContribute,
+    handlePaymentSuccess,
+    handlePaymentError,
+    closePaymentDialog,
+    closeSuccessDialog,
+    closeErrorDialog,
     closeNotification
   } = useRegistry();
 
@@ -90,6 +101,29 @@ const Registry: React.FC = () => {
           {notification.message}
         </Alert>
       </Snackbar>
+      
+      {/* Payment Dialogs */}
+      <StripePaymentForm
+        open={paymentDialog.open}
+        amount={paymentDialog.amount}
+        category={paymentDialog.category}
+        onClose={closePaymentDialog}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
+      />
+      
+      <PaymentSuccessDialog
+        open={successDialog.open}
+        onClose={closeSuccessDialog}
+        amount={successDialog.amount}
+        category={successDialog.category}
+      />
+      
+      <PaymentErrorDialog
+        open={errorDialog.open}
+        onClose={closeErrorDialog}
+        errorMessage={errorDialog.message}
+      />
     </RegistryContainer>
   );
 };
