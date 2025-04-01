@@ -5,6 +5,10 @@
 - **Backend**: `dotnet build` (build project), `dotnet lambda deploy-function` (deploy Lambda)
 - **AWS Infra**: `npx cdk deploy` (deploy stack), `./scripts/deploy.sh dev` (deploy to dev environment)
 
+## Package Management
+- **IMPORTANT**: NEVER run `npm install` without explicit permission from the user
+- **IMPORTANT**: NEVER use `--legacy-peer-deps` flag for any package installation commands
+
 ## Test Commands
 - **Frontend**: `yarn test:unit` (all tests), `yarn test:unit -- -t "test pattern"` (single test)
 - **Backend**: `dotnet test` (all tests), `dotnet test --filter "TestName"` (single test)

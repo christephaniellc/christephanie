@@ -5,30 +5,30 @@ This document outlines the implementation plan for creating a wedding registry p
 
 ## Implementation Steps
 
-1. **Create Page Structure**
-   - Create Registry page component
-   - Add to routes configuration
-   - Update BottomNav component to include Registry
+1. ✅ **Create Page Structure**
+   - ✅ Create Registry page component
+   - ✅ Add to routes configuration
+   - ✅ Update BottomNav component to include Registry
 
-2. **Design Components**
-   - Design Registry page UI with MUI components
-   - Create styled components for consistent look and feel
-   - Ensure mobile-first responsive design
+2. ✅ **Design Components**
+   - ✅ Design Registry page UI with MUI components
+   - ✅ Create styled components for consistent look and feel
+   - ✅ Ensure mobile-first responsive design
 
-3. **Implement Core Functionality**
-   - Set up gift category/fund components
-   - Create contribution amount selection system
-   - Add form validation
+3. ✅ **Implement Core Functionality**
+   - ✅ Set up gift category/fund components
+   - ✅ Create contribution amount selection system
+   - ✅ Add form validation
 
-4. **Stripe Integration**
-   - Add Stripe dependencies
-   - Create Stripe Elements components
-   - Implement payment processing logic
-   - Add transaction success/failure states
+4. ✅ **Stripe Integration**
+   - ✅ Add Stripe dependencies
+   - ✅ Create Stripe Elements components
+   - ✅ Implement payment processing logic
+   - ✅ Add transaction success/failure states
 
-5. **Traditional Registry Links**
-   - Add section for external registry links
-   - Create "physical gift" option card
+5. ✅ **Traditional Registry Links**
+   - ✅ Add section for external registry links
+   - ✅ Create "physical gift" option card
 
 6. **Testing**
    - Unit tests for Registry components
@@ -52,9 +52,9 @@ This document outlines the implementation plan for creating a wedding registry p
 | `TraditionalRegistrySection` | Section for physical gift options | Implemented | Not Started |
 | `BottomNav` | Updated navigation component | Implemented | Not Started |
 | `store/registry/index.ts` | Registry state management with Recoil | Implemented | Not Started |
-| `StripePaymentForm` | Payment form with Stripe Elements | Planning | Not Started |
-| `PaymentSuccessDialog` | Success confirmation dialog | Planning | Not Started |
-| `PaymentErrorDialog` | Error handling dialog | Planning | Not Started |
+| `StripePaymentForm` | Payment form with Stripe Elements | Implemented | Not Started |
+| `PaymentSuccessDialog` | Success confirmation dialog | Implemented | Not Started |
+| `PaymentErrorDialog` | Error handling dialog | Implemented | Not Started |
 
 ## Stripe Integration Details
 
