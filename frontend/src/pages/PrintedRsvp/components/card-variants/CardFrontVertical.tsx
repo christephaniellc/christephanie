@@ -10,7 +10,6 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { FamilyUnitDto } from '@/types/api';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
-import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import ElPulpoIcon from '@/assets/favicon_big_art_transparent.png';
 
 interface CardFrontVerticalProps {
@@ -31,8 +30,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   const gradientBorder = `
     repeating-linear-gradient(
       45deg,
-      ${theme.palette.primary.main}, 
-      ${theme.palette.primary.main} 5%,
+      #9c27b0, 
+      #9c27b0 5%,
       #121212 5%, 
       #121212 10%,
       ${theme.palette.secondary.main} 10%, 
@@ -94,7 +93,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+        //background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
         zIndex: 0
       }} />
       
@@ -109,59 +108,42 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         opacity: 0.5,
         zIndex: 0
       }} />
-      
-      {/* El Pulpo icon in top right corner */}
-      <Box
-        className="el-pulpo-icon-container"
-        sx={{
-          position: 'absolute',
-          top: 7,
-          right: -7,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          width: '60px',  // Explicitly constrain width
-          height: '60px', // Explicitly constrain height
-        }}
-      >
-        <Box
-          component="img"
-          className="el-pulpo-icon"
-          src={ElPulpoIcon}
-          alt="El Pulpo"
-          sx={{
-            height: '100%',
-            width: '100%',
-            maxWidth: '30px',   // Strict max dimensions
-            maxHeight: '30px',  // Strict max dimensions
-            borderRadius: '50%',
-            objectFit: 'contain',  // Use contain to maintain aspect ratio
-            objectPosition: 'center',
-            border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-          }}
-        />
-      </Box>
-      
+            
       {/* Ornamental Header */}
       <Box sx={{
         position: 'relative',
-        top: 20,
+        top: 13,
         left: 0,
         right: 0,
-        textAlign: 'center',
+        textAlign: 'right',
+        mr: 4,
         zIndex: 1
       }}>
         <StephsActualFavoriteTypographyNoDrop 
           variant="h5" 
           sx={{ 
+            zIndex: 5,
             fontSize: '1.5rem', 
             lineHeight: '1.5rem',
             color: theme.palette.secondary.main,
             mb: 2
           }}
         >
-          Steph Stubler<br/>& Topher Sikorra
+          Steph Stubler<br/>Topher Sikorra
+        </StephsActualFavoriteTypographyNoDrop>
+        <StephsActualFavoriteTypographyNoDrop 
+          variant="h5" 
+          sx={{ 
+            position: 'absolute',
+            top: '26px',
+            left: '94px',
+            fontSize: '1.5rem', 
+            lineHeight: '1.2rem',
+            zIndex: -10,
+            color: '#9c27b0',
+          }}
+        >
+          &
         </StephsActualFavoriteTypographyNoDrop>
         
         {/* Decorative divider */}
@@ -169,57 +151,100 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           margin: '0 auto',
           width: '80%',
           height: '2px',
-          background: `linear-gradient(to right, transparent, ${theme.palette.primary.main}, transparent)`,
+          background: `linear-gradient(to right, transparent, #9c27b0, transparent)`,
           mb: 1
         }} />
       </Box>
 
-      {/* Sender Address & Wedding Details */}
-      <Box sx={{ 
-        position: 'relative',
-        textAlign: 'center',
-        mt: 2,
-        mb: 1,
-        zIndex: 1
-      }}>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: theme.palette.primary.light,
-            fontWeight: 600,
-            fontSize: '1.1rem',
-            mb: 0.5,
-            letterSpacing: '0.08em'
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          pl: 2,
+          pr: 3
+
+        }} >
+        {/* El Pulpo icon in top right corner */}
+        <Box
+          className="el-pulpo-icon-container"
+            sx={{
+            alignItems: 'center',
+            display: 'flex',
+            pl: 2,
+            height: '65px', // Explicitly constrain height
           }}
         >
-          are getting married
-        </Typography>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: theme.palette.secondary.light,
-            fontWeight: 500,
-            fontSize: '0.9rem',
-            mb: 0.25,
-            fontStyle: 'italic'
-          }}
-        >
-          on July 5, 2025 at 6:00pm
-        </Typography>
-        
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: '#aaa',
-            fontSize: '0.8rem'
-          }}
-        >
-          Stone Manor Inn • Lovettsville, Virginia
-        </Typography>
+          <Box
+            component="img"
+            className="el-pulpo-icon"
+            src={ElPulpoIcon}
+            alt="El Pulpo"
+            sx={{
+              mt: 1,
+              height: '100%',
+              width: '100%',
+              maxWidth: '65px',   // Strict max dimensions
+              maxHeight: '65px',  // Strict max dimensions
+              borderRadius: '50%',
+              objectFit: 'contain',  // Use contain to maintain aspect ratio
+              objectPosition: 'center',
+              border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
+              // boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            }}
+          />
+        </Box>
+
+        {/* Sender Address & Wedding Details */}
+        <Box sx={{ 
+          position: 'relative',
+          textAlign: 'center',
+          mt: 2,
+          mb: 1,
+          zIndex: 1
+        }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: '#9c27b0',
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              mb: 0.5,
+              //pr: 4,
+              letterSpacing: '0.08em'
+            }}
+          >
+            are getting married
+          </Typography>
+          
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: theme.palette.secondary.main,
+              fontWeight: 500,
+              fontSize: '0.9rem',
+              mb: 0.25,
+              //pr: 6,
+              fontStyle: 'italic'
+            }}
+          >
+            on July 5, 2025 at 6:00pm
+          </Typography>
+          
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: '#aaa',
+              fontSize: '0.8rem'
+            }}
+          >
+            Stone Manor Inn • Lovettsville, Virginia
+          </Typography>
+        </Box>
       </Box>
       
       {/* Guest Address Block - fixed height regardless of content - shorter now */}
@@ -367,7 +392,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             backgroundColor: 'rgba(0,0,0,0.8)',
             padding: '12px',
             borderRadius: '6px',
-            border: `2px solid ${theme.palette.primary.main}40`,
+            border: `2px solid ${theme.palette.secondary.main}40`,
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
@@ -392,7 +417,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           </Typography>
           <Typography
             sx={{
-              color: theme.palette.secondary.light,
+              color: theme.palette.secondary.main,
               fontSize: '0.8rem',
               fontWeight: 600,
               fontFamily: 'sans-serif',
@@ -407,11 +432,11 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             mb: 1.5,
             pt: 1, 
             width: '100%', 
-            borderTop: `1px dashed ${theme.palette.primary.main}30` 
+            borderTop: `1px dashed #9c27b0 30` 
           }}>
             <Typography
               sx={{
-                color: theme.palette.primary.light,
+                color: '#9c27b0',
                 fontSize: '0.7rem',
                 fontWeight: 600,
                 fontFamily: 'sans-serif'
