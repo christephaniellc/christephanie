@@ -264,10 +264,10 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         pb: 1.0,
         textAlign: 'center',
         borderRadius: '4px',
-        border: `1px solid ${theme.palette.primary.main}`,
+        border: `1px solid ${theme.palette.secondary.main}`,
         backgroundColor: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(4px)',
-        boxShadow: `0 0 10px ${theme.palette.primary.dark}`,
+        boxShadow: `0 0 10px ${theme.palette.secondary.dark}`,
         zIndex: 1
       }}>
         {/* First line - Family/Guest Name(s) */}
@@ -300,14 +300,14 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           {selectedFamily?.mailingAddress ? (
             <>
               {/* Check for country and format accordingly */}
-              {((selectedFamily.mailingAddress as any)?.country === 'Germany' 
-                || (selectedFamily.mailingAddress as any)?.country === 'Norway') ? (
-                // European address format
+              {(selectedFamily.mailingAddress as any)?.country ? (
+                // International address format based on country
                 <>
                   <Typography 
                     variant="body2" 
                     sx={{ 
                       fontFamily: 'Snowstorm, serif', 
+                      //letterSpacing: '1px',
                       lineHeight: 1.3,
                       mb: 0.25,
                       color: 'rgba(255,255,255,0.85)'
@@ -330,31 +330,62 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
                     </Typography>
                   )}
                   
-                  {/* Postal code and city on one line */}
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      fontFamily: 'Snowstorm, serif', 
-                      lineHeight: 1.3,
-                      mb: 0.25,
-                      color: 'rgba(255,255,255,0.85)'
-                    }}
-                  >
-                    {selectedFamily.mailingAddress.zipCode} {selectedFamily.mailingAddress.city}
-                  </Typography>
-                  
-                  {/* Country in uppercase */}
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      fontFamily: 'Snowstorm, serif', 
-                      lineHeight: 1.3,
-                      color: 'rgba(255,255,255,0.85)',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
-                  </Typography>
+                  {/* Format based on country */}
+                  {['Canada', 'Mexico', 'Thailand'].includes((selectedFamily.mailingAddress as any)?.country) ? (
+                    // North American/Asian format - City, State/Province first, then postal code
+                    <>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          mb: 0.25,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.zipCode}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          color: 'rgba(255,255,255,0.85)',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
+                      </Typography>
+                    </>
+                  ) : (
+                    // European format (Germany/Norway)
+                    <>
+                      {/* Postal code and city on one line */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          mb: 0.25,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {selectedFamily.mailingAddress.zipCode} {selectedFamily.mailingAddress.city}
+                      </Typography>
+                      
+                      {/* Country in uppercase */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
+                      </Typography>
+                    </>
+                  )}
                 </>
               ) : (
                 // US address format

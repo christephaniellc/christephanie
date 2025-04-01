@@ -316,14 +316,35 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               fullWidth
               required
               name="zipCode"
-              label={(addressForm.country === 'Germany'
-                || addressForm.country === 'Norway') 
-                ? 'Postal Code' : 'ZIP Code'}
+              label={(addressForm.country === null) 
+                ? 'ZIP Code' 
+                : 'Postal Code'}
               value={addressForm.zipCode || ''}
               onChange={(e) => {
-                const value = (addressForm.country === 'Germany' || addressForm.country === 'Norway')
-                  ? e.target.value.slice(0, 10) // Allow longer postal codes for Germany
-                  : e.target.value.replace(/\D/g, '').slice(0, 5); // US format
+                let value = e.target.value;
+                
+                // Format postal code based on country
+                if (addressForm.country === null) {
+                  // US - only numbers, max 5 digits
+                  value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                } else if (addressForm.country === 'Canada') {
+                  // Canadian format: A1A 1A1
+                  value = e.target.value.replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase();
+                  if (value.length > 3 && !value.includes(' ')) {
+                    value = `${value.slice(0, 3)} ${value.slice(3, 7)}`.trim();
+                  }
+                  value = value.slice(0, 7); // Max length including space
+                } else if (['Germany', 'Mexico', 'Thailand'].includes(addressForm.country)) {
+                  // Postal codes for these countries are numeric, usually 5 digits
+                  value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                } else if (addressForm.country === 'Norway') {
+                  // Norway uses 4-digit postal codes
+                  value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                } else {
+                  // For any other countries, allow alphanumeric
+                  value = e.target.value.slice(0, 10);
+                }
+                
                 handleInputChange('zipCode', value || null);
               }}
               error={!addressForm.zipCode}
@@ -332,20 +353,58 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
           </Grid>
           
           <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel id="country-select-label">Country</InputLabel>
-              <Select
-                labelId="country-select-label"
-                id="country-select"
-                value={addressForm.country || null}
-                label="Country"
-                onChange={(e) => handleInputChange('country', e.target.value)}
-              >
-                <MenuItem value={null}>United States</MenuItem>
-                <MenuItem value="Germany">Germany</MenuItem>
-                <MenuItem value="Norway">Norway</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Country</Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 1 
+              }}>
+                {[
+                  { value: null, label: 'United States', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjM1IDY1MCIgeG1sbnM6dj0iaHR0cHM6Ly92ZWN0YS5pby9uYW5vIj48cGF0aCBkPSJNMCAwaDEyMzV2NjUwSDB6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTAgNTBoMTIzNXY1MEgwem0wIDEwMGgxMjM1djUwSDB6bTAgMTAwaDEyMzV2NTBIMHptMCAxMDBoMTIzNXY1MEgwem0wIDEwMGgxMjM1djUwSDB6bTAgMTAwaDEyMzV2NTBIMHoiIGZpbGw9IiNiMjIyMzQiLz48cGF0aCBkPSJNMCAwaDQ5NHYzNTBIMHoiIGZpbGw9IiMzYzNiNmUiLz48cGF0aCBkPSJNNDEuNyA1MGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LTEwLjEtOS4yTDQxLjcgMDEwMS43bDYuMi0xOS4xLTE2LjEtMTEuN2gxOS45em04MiAwbDYuMiAxOS4xaDIwbC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMTAuOWwtMTYuMSAxMS43IDYuMiAxOS4xLTE2LjMtMTEuOC0xNi4xIDExLjggNi4yLTE5LjEtMTYuMi0xMS43aDIwem04MiAwbDYuMiAxOS4xaDE5LjlsLTE2LjEgMTEuNyA2LjIgMTkuMS0xNi4zLTExLjgtMTYuMSAxMS44IDYuMi0xOS4xLTE2LjItMTEuN2gyMHptODIgMGw2LjIgMTkuMWgyMGwtMTYuMiAxMS43IDYuMiAxOS4xLTE2LjItMTEuOC0xNi4xIDExLjggNi4xLTE5LjEtMTYuMS0xMS43aDIwek00MS43IDEwMGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LTEwLjEtOS4yTDQxLjcgMDE1MS43bDYuMi0xOS4xLTE2LjEtMTEuN2gxOS45em04MiAwbDYuMiAxOS4xaDIwbC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMTkuOWwtMTYuMSAxMS43IDYuMiAxOS4xLTE2LjMtMTEuOC0xNi4xIDExLjggNi4yLTE5LjEtMTYuMi0xMS43aDIwem04MiAwbDYuMiAxOS4xaDE5LjlsLTE2LjEgMTEuNyA2LjIgMTkuMS0xNi4zLTExLjgtMTYuMSAxMS44IDYuMi0xOS4xLTE2LjItMTEuN2gyMHptODIgMGw2LjIgMTkuMWgyMGwtMTYuMiAxMS43IDYuMiAxOS4xLTE2LjItMTEuOC0xNi4xIDExLjggNi4xLTE5LjEtMTYuMS0xMS43aDIwek00MS43IDE1MGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LTEwLjEtOS4yTDQxLjcgMDIwMS43bDYuMi0xOS4xLTE2LjEtMTEuN2gxOS45em04MiAwbDYuMiAxOS4xaDIwbC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMTkuOWwtMTYuMSAxMS43IDYuMiAxOS4xLTE2LjMtMTEuOC0xNi4xIDExLjggNi4yLTE5LjEtMTYuMi0xMS43aDIwem04MiAwbDYuMiAxOS4xaDE5LjlsLTE2LjEgMTEuNyA2LjIgMTkuMS0xNi4zLTExLjgtMTYuMSAxMS44IDYuMi0xOS4xLTE2LjItMTEuN2gyMHptODIgMGw2LjIgMTkuMWgyMGwtMTYuMiAxMS43IDYuMiAxOS4xLTE2LjItMTEuOC0xNi4xIDExLjggNi4xLTE5LjEtMTYuMS0xMS43aDIwek00MS43IDIwMGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMjBsLTE2LjEgMTEuNyA2LjIgMTkuMS0xNi4zLTExLjgtMTYuMSAxMS44IDYuMi0xOS4xLTE2LjItMTEuN2gyMHptODIgMGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMTkuOWwtMTYuMSAxMS43IDYuMiAxOS4xLTE2LjMtMTEuOC0xNi4xIDExLjggNi4yLTE5LjEtMTYuMi0xMS43aDIwem04MiAwbDYuMiAxOS4xaDIwbC0xNi4yIDExLjcgNi4yIDE5LjEtMTYuMi0xMS44LTE2LjEgMTEuOCA2LjEtMTkuMS0xNi4xLTExLjdoMjB6TTgyLjYgMjc1bDYuMiAxOS4xaDIwbC0xNi4yIDExLjcgNi4yIDE5LjEtMTYuMi0xMS44LTE2LjEgMTEuOCA2LjEtMTkuMS0xNi4xLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMTkuOWwtMTYuMSAxMS43IDYuMiAxOS4xLTE2LjMtMTEuOC0xNi4xIDExLjggNi4yLTE5LjEtMTYuMi0xMS43aDIwem04MiAwbDYuMiAxOS4xaDE5LjlsLTE2LjEgMTEuNyA2LjIgMTkuMS0xNi4zLTExLjgtMTYuMSAxMS44IDYuMi0xOS4xLTE2LjItMTEuN2gyMHptODIgMGw2LjIgMTkuMWgxOS45bC0xNi4xIDExLjcgNi4yIDE5LjEtMTYuMy0xMS44LTE2LjEgMTEuOCA2LjItMTkuMS0xNi4yLTExLjdoMjB6bTgyIDBsNi4yIDE5LjFoMjBsLTE2LjIgMTEuNyA2LjIgMTkuMS0xNi4yLTExLjgtMTYuMSAxMS44IDYuMS0xOS4xLTE2LjEtMTEuN2gyMHoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=' },
+                  { value: 'Canada', label: 'Canada', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDEyMDAgNjAwIj48cGF0aCBmaWxsPSIjZjAwIiBkPSJNMCAwaDEyMDB2NjAwSDB6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTMwMCAwaDYwMHY2MDBIMzAweiIvPjxyZWN0IHdpZHRoPSI0OTUiIGhlaWdodD0iMzAiIHg9IjM1Mi41IiB5PSI0MDAiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNjAwIDQzMEw1ODUgMzg1bC00MiAyNyAyLTUwLTQwLTEzIDQwLTEzLTItNTAgNDIgMjcgMTUtNDUgMTUgNDUgNDItMjctMiA1MCA0MCAxMy00MCAxMyAyIDUwLTQyLTI3bTE4Ljc1LTQ1LjVsMTUuMjUgNDUuNS00Mi0yNyAyIDUwLTQwIDEzIDQwIDEzLTIgNTAgNDItMjcgMTIuNSAzNy41LjUgMS41LjUgMS41IDIgNnYuMDAxcy0uMDYzLjIyLS4xMjUuMTI1Yy0uMDYyLS4wOTUtLjM3LS4yMjItLjM3LS4yMjJhMjYwLjk2NyAyNjAuOTY3IDAgMCAwLTIuMzU0LS44NDRjLS45MzQtLjMxMS0yLjM3LS43MzMtMy42MjUtMWwtLjI1LS4wNjNhNjguNzQ4IDY4Ljc0OCAwIDAgMC0yLjUzLS42MjRjLS41MjctLjExOS0xLjMxLS4yODItMi4zMTMtLjQzOGExNDUuNjQyIDE0NS42NDIgMCAwIDAtNy4xMjQtLjk2OWMtMS4yNzUtLjEyNi0yLjUzMi0uMjE4LTMuNzUtLjI1YTQ0Ljc1IDQ0Ljc1IDAgMCAwLTcuMjUtLjEyNmMtLjUzLjAzMS0xLjIwMy4xMDMtMi4wNjMuMjJhMzIuNyAzMi43IDAgMCAwLTMuMzc1LjY4N2MtMi40NTQuNjU4LTQuNDk0IDEuNjctNy4xMjUgMy4wMzEtMS4yOTcuNjctMi43NTIgMS40NzYtNC4zNzUgMi40MzgtMi41NTcgMS41MTgtNS42NzQgMy41MDctOS4yMTkgNmwtLjEyNS4wOTRjLS4wNjYuMDU1LS41NjIuNDMyLS42MjUuNXYtLjAwMWwtLjAzMS0uMDMxcy42NDYtLjgzNC44NDQtMS4xNTdjLjE5Ny0uMzIyLjIxNy0uNTkuMDYyLS45NjktLjE1NC0uMzc5LS45MzgtLjg3NS0uOTM4LS44NzUgMC0uMDAxLTEuMDkyLjgzLTEuNjY5Ljk2OS0uNTgzLjEzOC0xLjA4OC0uMzYtMS40MzctLjY4OC0uMzQ4LS4zMjgtLjcxOS0xLjA2Mi0uNzE5LTEuMDYyIDAgLjAwMS0uMDQyLjkyMS0uNTMxIDEuMzEzLS40OS40LTEuNjczLjA5NC0xLjY4Ny4wNjIuMDEzLjAzMS0xLjI5OC0uMjIyLTEuNjU2LS41LS4zNTgtLjI3OS0uMjY2LS43NS0uMTI1LTEuMTg4LjE0MS0uNDM4LS4wMzEtLjk2OS0uMDMxLS45NjktLjAwMS0uMDAxLTEuMzcuNjQtMS43MTkuNTk0LS4zNDgtLjA0Ni0uOTA1LS41MzUtMS4wOTQtLjkwNi0uMTg5LS4zNy0uNjI1LTIuMjUtLjYyNS0yLjI1bC0uODEzLjEyNWMtLjE5Mi0uNjg5LTIuMDYyLTEuNTMtMi4wNjItMS41My0uMDAxIDAtLjUzIDEuMjU4LS45MzcgMS40MzctLjQwNy4xOC0uODQ0LS4zNzUtLjg0NC0uMzc1cy0uMjUgMS4wNjEtLjc1IDEuNDY5Yy0uNTA0LjQxLTEuMTQzLjIyLS45MDYtLjY1Ny4yMzctLjg3Ny43NS0yLjIyLjc1LTIuMzEzIDAtLjA5Mi0uNzE5LS45MzgtLjcxOS0uOTM4IDAgLjAwMS0uNTkzLjAzOC0uNzgxLjE4OC0uMTkuMTUtLjcxOC43NS0uNzE4Ljc1bC0uMDYzLS44NzVzLS4zMTQuMTQtLjc1LjEyNWMtLjQzNS0uMDE0LTEuMTktLjQzOC0xLjE4Ny0uNzE5LjAwMi0uMjgxLjkwNi0uNjI1LjkwNi0uNjI1IDAgLjAwMS0uODYtLjk1OS0xLjA5My0xLjI1LS4yMzQtLjI5MS0uNTM4LS41NjctLjY4OC0uNTk0LS4xNS0uMDI3LS42MjUuMDYyLS42MjUuMDYyczEuMDE2LTEuNzAxIDEuMjUtMi4yODFjLjIzNC0uNTgxLjE4Ny0xLjAzMS0uMzEyLTEuMjUtLjUtLjIxOS0xLjE1Ni0uMDAxLTEuMTU2LDAgMC0uMDAxIDAgLjA2Mi0uMDMxLS4zNDQtLjAzMS0uNDA2LS4xMjUtMS40MDYtLjEyNS0xLjQwNmwtLjQwNi0xLjI1Yy0uMDAxLS4wMDEtLjY3NCAxLjA1Mi0xLjI1IDEuNjI1LS41NzYuNTczLTEuNTYzIDEuMTU2LTIuMDYzIDEuMTU2LS41IDAtLjYyMi0uNzgyLS43MTktMS40MzctLjA5Ny0uNjU1LS4xMjYtMS43NS0uMTI2LTEuNzVzLTEuMzc2LjYyNS0yLjAzMS43MTljLS42NTUuMDk0LTEuMjE1LS4yMTktMS4yNS0uODEzcy4yOC0xLjYwNC0uMDMxLTIuMTg3OHYuMDAycy0uMzg4LTEuNzE0LS41NjMtMi40MzdjLS4xNzUtLjcyMy0uNDg3LTEuODQ1LS40MDYtMi42ODcuMDgtLjg0MyAyLjEyNS0yLjk1IDIuMTI1LTIuOTVsLjg1NS0xLjIyMi4wNTItLjAwNS0uMDAyLS4wMjEgNC4zNjgtLjM4LjU0LTEuODEzYy4wMDMtLjAwOCAxLjY5NC4xMDEgMi45MzguMzExIDEuMjQ0LjIwNSAyLjMxNC41NjUgMi4zNzUuNDY5IDAgMCAwLS4wMDIuMTU2IDAgLjE1Ni4wMDIgMi41NTQtLjI1IDMuMTI1LS4yNS41NyAwIC42NTQtLjQzOS44NzUtLjY4OC4yMy0uMjUuODQtLjc3NyAxLjMxLS43OC40NjguMDAxIDEuMzI2LjkzNSAxLjYwNSAxLjM1NS4yOC40Mi40MzUgMS4xNTIuNjg3IDEuMzEyLjI1My4xNi41NjUuMDYgMS4wMDEtLjEyNS40MzctLjE5NCAxLjI4LS43MzIgMS45MzgtLjc1Ni42NTgtLjAyMyAxLjA3OC40NjYgMS42ODcuNzgxLjYxLjMxNSAxLjY1OS44MTIgMi4xODguNzgxLjUyOS0uMDMgMS4xNDktLjI4NCAxLjY4Ny0uNDM3LjUzOC0uMTUzLjg4LS4zMDIgMS4wOTQtLjMxMy4yMTQtLjAxIDEuMjUtLjEyNSAxLjI1LS4xMjRsMi4xNzUtMS42OTljLTEuOTI0LTEuNTk3LTIuNTY3LTEuNzMyLTIuNTYyLTEuNzU3LS4wMDQuMDI1LTEuOTA3LS4xOS0xLjk2OSAuMDYzLS4wNjIuMjUyLS4wOTMuNTkzLS41My43NS0uNDM4LjE1Ni0xLjIzOS0uNjI1LTEuMTg4LS45MzcuMDUyLS4zMTMuNjg4LS42MjUuNjg4LS42MjUgMC0uMDAxLTEuNDgzLS4yMzUtMS43NS0uNDY4LS4yNjYtLjIzNC0uNDY4LS44MTMtLjQ2OC0uODEzbC0uNS0xLjA5M2MuMDQ5LjAwNi0uNzQ0LS4yNDUtMS4wMzEtLjMxMy0uMjg3LS4wNjktLjgxMi0uMjQ4LS45MzctLjM3NC0uMTI2LS4xMjYtLjQ3LS41NjYtLjQ3LS43NSAwLS4xODQuNDM4LS42ODcuNDM4LS42ODcgMC0uMDAxLS41MjMtLjQyOC0uNzUtLjY4OC0uMTcyLS4yLS4xMzMtLjcxOC0uMTMzLTcxOGw1LjQ2Ni0uNTAyLjU5NS0uNDA2cy0uMDg3LS4xOTctLjE2LS40MDZjLS4wNzQtLjIxLS4wOTQtLjQwNC0uMDYzLS40MzguMDMyLS4wMzQuMTg2LjA2My4xODguMDYybDEuMTg3LS4zNDNTNTYxLjk3OCAyNzAgNTYyIDI3MGMuMDIyIDAgMTUuMyA0NSAzOC43NSA5MHMxOCAzMCAxOCAzMHptLTEzOC4xMjUtMTIwczguNTcgMTEuNTk0LjczQTYuNDQ3IDYuNDQ3IDAgMCAwLTIxLjQzOGg0LjI1eiIgZmlsbD0iI2YwMCIvPjwvc3ZnPg==' },
+                  { value: 'Germany', label: 'Germany', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDYwMCI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTAgMGgxMDAwdjYwMEgweiIvPjxwYXRoIGZpbGw9IiNmMDAiIGQ9Ik0wIDIwMGgxMDAwdjIwMEgweiIvPjxwYXRoIGZpbGw9IiNmZmQiIGQ9Ik0wIDQwMGgxMDAwdjIwMEgweiIvPjwvc3ZnPg==' },
+                  { value: 'Norway', label: 'Norway', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTAwIDgwMCI+PHBhdGggZmlsbD0iI2VmMmI2ZCIgZD0iTTAgMGgxMTAwdjgwMEgweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMDAgMGgxMDB2ODAwSDMwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAzNTBoMTEwMHYxMDBIMHoiLz48cGF0aCBmaWxsPSIjMDAyODY4IiBkPSJNMCAzODBoMTEwMHY0MEgweiIvPjxwYXRoIGZpbGw9IiMwMDI4NjgiIGQ9Ik0zMzAgMGg0MHY4MDBIMzMweiIvPjwvc3ZnPg==' },
+                  { value: 'Mexico', label: 'Mexico', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDcwMCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgxMDAwdjcwMEgweiIvPjxwYXRoIGZpbGw9IiNjZTE0MjYiIGQ9Ik0wIDBoMzMzLjN2NzAwSDB6Ii8+PHBhdGggZmlsbD0iIzAwNTIzZiIgZD0iTTY2Ni43IDBoMzMzLjN2NzAwSDY2Ni43eiIvPjxnIGZpbGw9IiM4YjRiMTkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDUwMCAzNTApIj48Y2lyY2xlIHIgMTI1IGZpbGw9IiNmZmVhZDEiLz48cGF0aCBkPSJNIDAgMGgxMjVsLTYyLjUgMTAwemgwIiBmaWxsPSIjOGI0YjE5Ii8+PGVsbGlwc2UgY3g9IjAiIGN5PSItCTI1IiByeD0iMTIuNSIgcnk9IjI1IiBmaWxsPSIjOGI0YjE5Ii8+PGVsbGlwc2UgY3g9IjAiIGN5PSIyNSIgcng9IjEyLjUiIHJ5PSIyNSIgZmlsbD0iIzhiNGIxOSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iMCIgcng9IjI1IiByeT0iMTIuNSIgZmlsbD0iIzhiNGIxOSIvPjwvZz48L3N2Zz4=' },
+                  { value: 'Thailand', label: 'Thailand', flag: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMmQyYTRhIiBkPSJNMCAwaDkwMHY2MDBIMHoiLz48cGF0aCBmaWxsPSIjYjEwYjE0IiBkPSJNMCAxMDBoOTAwdjQwMEgweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE1MGg5MDB2MzAwSDB6Ii8+PC9zdmc+' }
+                ].map((option) => (
+                  <Button
+                    key={option.value || 'usa'}
+                    onClick={() => handleInputChange('country', option.value)}
+                    variant={addressForm.country === option.value ? 'contained' : 'outlined'}
+                    color={addressForm.country === option.value ? 'primary' : 'inherit'}
+                    disabled={disabled}
+                    sx={{
+                      minWidth: '100px',
+                      height: '36px',
+                      p: '0 10px',
+                      ml: 0,
+                      borderRadius: 1,
+                      '& .MuiButton-startIcon': {
+                        marginRight: 1,
+                        marginLeft: 0
+                      }
+                    }}
+                    startIcon={
+                      <Box 
+                        component="img" 
+                        src={option.flag} 
+                        alt={option.label}
+                        sx={{
+                          width: 24,
+                          height: 16,
+                          objectFit: 'cover',
+                          borderRadius: 0.5,
+                          border: '1px solid rgba(0,0,0,0.1)'
+                        }}
+                      />
+                    }
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
           </Grid>
           
           <Grid item xs={12}>
@@ -410,25 +469,44 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
       ) : (
         <Box>
           {/* Display address based on country format */}
-          {((initialAddress as any)?.country === 'Germany' 
-            || (initialAddress as any)?.country === 'Norway') ? (
-            // European address format
-            <>
-              <Typography variant="body1">
-                {initialAddress?.streetAddress}
-              </Typography>
-              {initialAddress?.secondaryAddress && (
+          {(initialAddress as any)?.country ? (
+            ['Canada', 'Mexico', 'Thailand'].includes((initialAddress as any)?.country) ? (
+              // North American/Asian format
+              <>
                 <Typography variant="body1">
-                  {initialAddress.secondaryAddress}
+                  {initialAddress?.streetAddress}
                 </Typography>
-              )}
-              <Typography variant="body1">
-                {initialAddress?.zipCode} {initialAddress?.city}
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                {(initialAddress as any)?.country.toUpperCase()}
-              </Typography>
-            </>
+                {initialAddress?.secondaryAddress && (
+                  <Typography variant="body1">
+                    {initialAddress.secondaryAddress}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  {initialAddress?.city}, {initialAddress?.state} {initialAddress?.zipCode}
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {(initialAddress as any)?.country.toUpperCase()}
+                </Typography>
+              </>
+            ) : (
+              // European address format (Germany/Norway)
+              <>
+                <Typography variant="body1">
+                  {initialAddress?.streetAddress}
+                </Typography>
+                {initialAddress?.secondaryAddress && (
+                  <Typography variant="body1">
+                    {initialAddress.secondaryAddress}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  {initialAddress?.zipCode} {initialAddress?.city}
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {(initialAddress as any)?.country.toUpperCase()}
+                </Typography>
+              </>
+            )
           ) : (
             // US address format
             <>
