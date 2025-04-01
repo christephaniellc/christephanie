@@ -129,6 +129,10 @@ namespace Wedding.Common.Helpers.AWS
                         _ => null // Return null if key does not match any property
                     };
                 }
+                if (request.RequestContext.Authorizer.TryGetValue(key, out var value))
+                {
+                    return value?.ToString();
+                }
             }
             catch (Exception ex)
             {
