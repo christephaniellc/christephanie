@@ -9,7 +9,8 @@ import {
   Box,
   Grid,
   Divider,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { AddressDto } from '@/types/api';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -21,6 +22,7 @@ interface AddressConfirmationDialogProps {
   originalAddress: AddressDto;
   validatedAddress: AddressDto;
   onConfirm: () => void;
+  loading?: boolean;
 }
 
 const AddressConfirmationDialog: React.FC<AddressConfirmationDialogProps> = ({
@@ -28,7 +30,8 @@ const AddressConfirmationDialog: React.FC<AddressConfirmationDialogProps> = ({
   onClose,
   originalAddress,
   validatedAddress,
-  onConfirm
+  onConfirm,
+  loading = false
 }) => {
   // Helper function to format an address as a string
   const formatAddress = (address: AddressDto): string => {
@@ -216,16 +219,21 @@ const AddressConfirmationDialog: React.FC<AddressConfirmationDialogProps> = ({
       </DialogContent>
       
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
+        <Button 
+          onClick={onClose} 
+          color="secondary"
+          disabled={loading}
+        >
           Cancel
         </Button>
         <Button 
           onClick={onConfirm} 
           variant="contained" 
           color="primary"
-          startIcon={<VerifiedUserIcon />}
+          startIcon={loading ? <CircularProgress size={20} /> : <VerifiedUserIcon />}
+          disabled={loading}
         >
-          Save Validated Address
+          {loading ? 'Saving...' : 'Save Validated Address'}
         </Button>
       </DialogActions>
     </Dialog>

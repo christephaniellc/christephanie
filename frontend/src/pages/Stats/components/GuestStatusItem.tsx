@@ -1,11 +1,8 @@
 import { Box, Avatar, Typography, Chip, useTheme, Tooltip, IconButton, Dialog, DialogContent } from '@mui/material';
 import { InvitationResponseEnum, NotificationPreferenceEnum } from '@/types/api';
-import { getInvitationStatusColor, getInvitationStatusIcon } from './AdminHelpers';
+import { getInvitationStatusColor, getInvitationStatusIcon } from './StatsHelpers';
 import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import EmailIcon from '@mui/icons-material/Email';
-import EditIcon from '@mui/icons-material/Edit';
-import { useState } from 'react';
-import GuestEditor from './GuestEditor';
 
 interface GuestStatusItemProps {
   invitationCode: string;
@@ -28,11 +25,9 @@ interface GuestStatusItemProps {
   };
   onClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
   compact?: boolean; // Added for the compact avatar-only view
-  editable?: boolean; // Whether the guest can be edited
-  onGuestUpdated?: () => void; // Callback when guest is updated
 }
 
-const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false, editable = false, onGuestUpdated }: GuestStatusItemProps) => {
+const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: GuestStatusItemProps) => {
   const theme = useTheme();
   
   // Safety check - if guest is null or undefined, don't render
@@ -43,14 +38,7 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false, edit
   }
   
   const responseStatus = guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
-  const handleEditClick = (e: React.MouseEvent<HTMLElement>) => {
-    e.stopPropagation(); // Prevent triggering the onClick of the parent
-    console.log('Edit button clicked, opening dialog for guest:', guest.firstName, guest.lastName);
-    setEditDialogOpen(true);
-  };
-
   // If compact mode, just return the avatar
   if (compact) {
     return (
@@ -267,48 +255,8 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false, edit
                 color: getInvitationStatusColor(responseStatus)
               }}
             />
-            
-            {/* Edit button */}
-            {editable && (
-              <IconButton 
-                size="small" 
-                onClick={handleEditClick}
-                sx={{ 
-                  ml: 0.5, 
-                  color: 'primary.main',
-                  width: 24,
-                  height: 24
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            )}
           </Box>
         </Box>
-      )}
-      
-      {/* Edit Dialog */}
-      {editable && (
-        <Dialog 
-          open={editDialogOpen} 
-          onClose={() => setEditDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogContent>
-            <GuestEditor 
-              guest={{
-                ...guest,
-                // Ensure invitationCode is available
-                invitationCode: invitationCode || ''
-              }}
-              onClose={() => setEditDialogOpen(false)}
-              onSuccess={() => {
-                if (onGuestUpdated) onGuestUpdated();
-              }}
-            />
-          </DialogContent>
-        </Dialog>
       )}
     </>
   );
