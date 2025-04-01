@@ -9,7 +9,7 @@ import ProtectedRoute from '@/routes/ProtectedRoute';
 import AppVersionFooter from '@/components/VersionHash';
 
 function Pages() {
-  const { contentHeight, contentPadding } = useAppLayout();
+  const { contentHeight } = useAppLayout();
   const theme = useTheme();
 
   return (
@@ -42,7 +42,7 @@ function Pages() {
             }
             
             // Stats page (formerly Admin) requires only authentication
-            if (page === PageEnum.Admin) {
+            if (page === PageEnum.Stats) {
               return (
                 <Route 
                   key={path} 

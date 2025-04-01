@@ -46,8 +46,8 @@ export default class Api {
     return this.get('/stats');
   }
 
-  async getAllFamilies(): Promise<FamilyUnitDto[]> {
-    return this.get('/admin/familyunit/all');
+  async adminGetAllFamilies(): Promise<FamilyUnitDto[]> {
+    return this.get('/admin/familyunit');
   }
   
   async adminCreateFamily(family: FamilyUnitDto): Promise<FamilyUnitDto> {
@@ -82,7 +82,7 @@ export default class Api {
     try {
       console.log('Testing admin access');
       // Try to fetch admin data
-      await this.get('/admin/familyunit/all');
+      await this.get('/admin/familyunit');
       console.log('Admin access granted');
       return true;
     } catch (error) {

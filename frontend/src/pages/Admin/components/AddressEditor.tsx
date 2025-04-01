@@ -1,230 +1,367 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  TextField,
-  Button,
-  Grid,
-  Typography,
+import React, { useState } from 'react';
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Grid, 
+  Typography, 
   CircularProgress,
-  Alert,
   Chip,
-  Stack
+  Paper,
+  Divider,
+  Alert
 } from '@mui/material';
-import { AddressDto, FamilyUnitDto } from '@/types/api';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { AddressDto } from '@/types/api';
 import { useApiContext } from '@/context/ApiContext';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+
+// Import confirmation dialog
+import AddressConfirmationDialog from './AddressConfirmationDialog';
 
 interface AddressEditorProps {
-  address: AddressDto | undefined;
-  invitationCode: string;
-  onUpdate: (updatedData: Partial<FamilyUnitDto>) => void;
-  onClose: () => void;
+  address: AddressDto | null | undefined;
+  onAddressUpdate: (updatedAddress: AddressDto) => Promise<void>;
+  readOnly?: boolean;
 }
 
-const AddressEditor: React.FC<AddressEditorProps> = ({
-  address,
-  invitationCode,
-  onUpdate,
-  onClose
+const AddressEditor: React.FC<AddressEditorProps> = ({ 
+  address, 
+  onAddressUpdate,
+  readOnly = false
 }) => {
+  const [editMode, setEditMode] = useState(false);
+  const [validatingAddress, setValidatingAddress] = useState(false);
+  const [addressValidationError, setAddressValidationError] = useState<string | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [originalAddress, setOriginalAddress] = useState<AddressDto | null>(null);
+  const [validatedAddress, setValidatedAddress] = useState<AddressDto | null>(null);
+  
+  const [editedAddress, setEditedAddress] = useState<AddressDto>(
+    address || {
+      streetAddress: '',
+      secondaryAddress: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      uspsVerified: false
+    }
+  );
+  
   const { validateAddressMutation } = useApiContext();
-  const [editedAddress, setEditedAddress] = useState<AddressDto>({
-    streetAddress: address?.streetAddress || null,
-    secondaryAddress: address?.secondaryAddress || null,
-    city: address?.city || null,
-    state: address?.state || null,
-    postalCode: address?.postalCode || null,
-    zipPlus4: address?.zipPlus4 || null,
-    uspsVerified: address?.uspsVerified || false
-  });
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  const handleChange = (field: keyof AddressDto, value: string | null) => {
+  
+  // Set address when it changes from props
+  React.useEffect(() => {
+    if (address) {
+      setEditedAddress(address);
+    }
+  }, [address]);
+  
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
     setEditedAddress(prev => ({
       ...prev,
-      [field]: value,
-      // If address is changed, it's no longer verified
-      uspsVerified: field !== 'uspsVerified' ? false : prev.uspsVerified
+      [name]: value,
+      // If we're editing a verified address, mark it as unverified
+      ...(name !== 'secondaryAddress' && prev.uspsVerified ? { uspsVerified: false } : {})
     }));
   };
-
-  const validateAddress = async () => {
-    setIsValidating(true);
-    setValidationError(null);
+  
+  const handleValidateAddress = async () => {
+    if (!editedAddress.streetAddress || !editedAddress.city || !editedAddress.state || !editedAddress.zipCode) {
+      setAddressValidationError('Please fill out all required address fields before validating.');
+      return;
+    }
+    
+    setValidatingAddress(true);
+    setAddressValidationError(null);
     
     try {
-      // Ensure address has all required fields before validation
-      if (!editedAddress.streetAddress || !editedAddress.city || !editedAddress.state || !editedAddress.postalCode) {
-        setValidationError('Address is incomplete. Please fill in all required fields.');
-        setIsValidating(false);
-        return;
-      }
-
-      // Create a clean address object for validation
-      const addressForValidation = {
-        streetAddress: editedAddress.streetAddress,
-        secondaryAddress: editedAddress.secondaryAddress,
-        city: editedAddress.city,
-        state: editedAddress.state,
-        postalCode: editedAddress.postalCode,
-        zipCode: editedAddress.postalCode, // Use postalCode for zipCode field
-        country: 'USA'
-      };
+      // Store the original address for comparison
+      setOriginalAddress({...editedAddress});
       
-      const result = await validateAddressMutation.mutateAsync(addressForValidation);
+      // Call the API to validate the address
+      const validatedAddressResult = await validateAddressMutation.mutateAsync(editedAddress);
       
-      // Check if we got a valid result
-      if (result) {
-        setEditedAddress({
-          ...editedAddress,
-          ...result,
-          uspsVerified: true
-        });
-      } else {
-        setValidationError('Address validation failed. The service might be temporarily unavailable.');
+      // Update the local state with the validated address
+      if (validatedAddressResult) {
+        // Create an address with the USPS verified flag explicitly set
+        const verifiedAddress: AddressDto = {
+          ...validatedAddressResult,
+          uspsVerified: true // Ensure it's marked as verified
+        };
+        
+        // Store the validated address and open the confirmation dialog
+        setValidatedAddress(verifiedAddress);
+        setConfirmDialogOpen(true);
       }
-    } catch (error: any) {
-      console.error('Error validating address:', error);
-      
-      // Provide more detailed error message based on the error
-      if (error?.status === 400) {
-        setValidationError('Invalid address format. Please check all fields and try again.');
-      } else if (error?.status === 500) {
-        setValidationError('Server error during validation. You can still save the address without validation.');
-      } else {
-        setValidationError('Address validation failed. You can still save the address without validation.');
-      }
+    } catch (error) {
+      console.error('Address validation failed:', error);
+      setAddressValidationError('Address validation failed. Please check the address and try again.');
     } finally {
-      setIsValidating(false);
+      setValidatingAddress(false);
     }
   };
-
-  const handleSave = () => {
-    onUpdate({
-      mailingAddress: editedAddress
-    });
-    onClose();
+  
+  // Handle confirmation of validated address
+  const handleConfirmValidatedAddress = async () => {
+    if (!validatedAddress) return;
+    
+    try {
+      // Update the local state
+      setEditedAddress(validatedAddress);
+      
+      // Save the validated address to the family using the admin endpoint
+      await onAddressUpdate(validatedAddress);
+      
+      // Close the dialog and exit edit mode
+      setConfirmDialogOpen(false);
+      setEditMode(false);
+    } catch (error) {
+      console.error('Failed to save validated address:', error);
+      setAddressValidationError('Failed to save validated address. Please try again.');
+      setConfirmDialogOpen(false);
+    }
   };
-
-  const isFormValid = !!editedAddress.streetAddress && 
-                     !!editedAddress.city && 
-                     !!editedAddress.state && 
-                     !!editedAddress.postalCode;
-
+  
+  const handleSaveAddress = async () => {
+    try {
+      await onAddressUpdate(editedAddress);
+      setEditMode(false);
+    } catch (error) {
+      console.error('Failed to save address:', error);
+      setAddressValidationError('Failed to save address. Please try again.');
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    // Reset to original address
+    if (address) {
+      setEditedAddress(address);
+    }
+    setEditMode(false);
+    setAddressValidationError(null);
+  };
+  
+  if (!address && !editMode) {
+    return (
+      <Box>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          No address information available.
+        </Typography>
+        <Button 
+          variant="outlined" 
+          startIcon={<EditIcon />}
+          onClick={() => setEditMode(true)}
+          disabled={readOnly}
+        >
+          Add Address
+        </Button>
+      </Box>
+    );
+  }
+  
   return (
-    <Box sx={{ p: 2 }}>
-      {validationError && (
+    <>
+      {/* Confirmation Dialog */}
+      {originalAddress && validatedAddress && (
+        <AddressConfirmationDialog
+          open={confirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+          originalAddress={originalAddress}
+          validatedAddress={validatedAddress}
+          onConfirm={handleConfirmValidatedAddress}
+        />
+      )}
+      
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 2
+        }}>
+          <Typography variant="h6">
+            Mailing Address
+          </Typography>
+          {!editMode && !readOnly && (
+            <Button 
+              variant="outlined" 
+              size="small"
+              startIcon={<EditIcon />} 
+              onClick={() => setEditMode(true)}
+            >
+              Edit
+            </Button>
+          )}
+          {address?.uspsVerified && (
+            <Chip 
+              icon={<VerifiedUserIcon />} 
+              label="USPS Verified" 
+              color="success" 
+              size="small"
+            />
+          )}
+        </Box>
+      
+      <Divider sx={{ mb: 2 }} />
+      
+      {addressValidationError && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {validationError}
+          {addressValidationError}
         </Alert>
       )}
       
-      <Typography variant="subtitle2" gutterBottom>
-        Family: {invitationCode}
-      </Typography>
-      
-      <Grid container spacing={2} sx={{ mt: 1 }}>
-        <Grid item xs={12}>
-          <TextField
-            label="Street Address"
-            value={editedAddress.streetAddress || ''}
-            onChange={(e) => handleChange('streetAddress', e.target.value || null)}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
+      {editMode ? (
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              required
+              name="streetAddress"
+              label="Street Address"
+              value={editedAddress.streetAddress || ''}
+              onChange={handleAddressChange}
+              error={!editedAddress.streetAddress}
+              helperText={!editedAddress.streetAddress ? 'Required' : ''}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              name="secondaryAddress"
+              label="Apartment, Suite, etc. (optional)"
+              value={editedAddress.secondaryAddress || ''}
+              onChange={handleAddressChange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              required
+              name="city"
+              label="City"
+              value={editedAddress.city || ''}
+              onChange={handleAddressChange}
+              error={!editedAddress.city}
+              helperText={!editedAddress.city ? 'Required' : ''}
+            />
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <TextField
+              fullWidth
+              required
+              name="state"
+              label="State"
+              value={editedAddress.state || ''}
+              onChange={handleAddressChange}
+              error={!editedAddress.state}
+              helperText={!editedAddress.state ? 'Required' : ''}
+            />
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <TextField
+              fullWidth
+              required
+              name="zipCode"
+              label="ZIP Code"
+              value={editedAddress.zipCode || ''}
+              onChange={handleAddressChange}
+              error={!editedAddress.zipCode}
+              helperText={!editedAddress.zipCode ? 'Required' : ''}
+            />
+          </Grid>
+          
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Button 
+                variant="outlined" 
+                color="secondary"
+                startIcon={<CancelIcon />}
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </Button>
+              
+              <Box>
+                <Button 
+                  variant="contained" 
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  onClick={handleSaveAddress}
+                  sx={{ mr: 1 }}
+                  disabled={
+                    !editedAddress.streetAddress || 
+                    !editedAddress.city || 
+                    !editedAddress.state || 
+                    !editedAddress.zipCode ||
+                    validatingAddress
+                  }
+                >
+                  Save
+                </Button>
+                
+                <Button 
+                  variant="contained" 
+                  color="success"
+                  startIcon={validatingAddress ? <CircularProgress size={20} /> : <CheckCircleIcon />}
+                  onClick={handleValidateAddress}
+                  disabled={
+                    validatingAddress || 
+                    !editedAddress.streetAddress || 
+                    !editedAddress.city || 
+                    !editedAddress.state || 
+                    !editedAddress.zipCode
+                  }
+                >
+                  {validatingAddress ? 'Validating...' : 'Validate with USPS'}
+                </Button>
+              </Box>
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12}>
-          <TextField
-            label="Apt/Unit (Optional)"
-            value={editedAddress.secondaryAddress || ''}
-            onChange={(e) => handleChange('secondaryAddress', e.target.value || null)}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="City"
-            value={editedAddress.city || ''}
-            onChange={(e) => handleChange('city', e.target.value || null)}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <TextField
-            label="State"
-            value={editedAddress.state || ''}
-            onChange={(e) => {
-              const value = e.target.value.toUpperCase().slice(0, 2);
-              handleChange('state', value || null);
-            }}
-            inputProps={{ maxLength: 2 }}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <TextField
-            label="Zip Code"
-            value={editedAddress.postalCode || ''}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-              handleChange('postalCode', value || null);
-              handleChange('zipPlus4', null); // Clear zip+4 when zip changes
-            }}
-            inputProps={{ maxLength: 5 }}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-      </Grid>
-      
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 3, mb: 1 }}>
-        <Chip 
-          icon={editedAddress.uspsVerified ? <CheckCircleOutlineIcon /> : <ErrorOutlineIcon />}
-          label={editedAddress.uspsVerified ? "Address Verified" : "Address Not Verified"}
-          color={editedAddress.uspsVerified ? "success" : "default"}
-          variant={editedAddress.uspsVerified ? "filled" : "outlined"}
-        />
-        
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={validateAddress}
-            disabled={isValidating || !isFormValid}
-            startIcon={isValidating ? <CircularProgress size={20} /> : null}
-          >
-            {isValidating ? 'Validating...' : 'Validate Address'}
-          </Button>
-          <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', alignSelf: 'center' }}>
-            {!editedAddress.uspsVerified && !validationError && "Optional - you can save without validation"}
+      ) : (
+        <Box>
+          <Typography variant="body1">
+            {editedAddress.streetAddress}
           </Typography>
+          {editedAddress.secondaryAddress && (
+            <Typography variant="body1">
+              {editedAddress.secondaryAddress}
+            </Typography>
+          )}
+          <Typography variant="body1">
+            {editedAddress.city}, {editedAddress.state} {editedAddress.zipCode}
+            {editedAddress.zipPlus4 && `-${editedAddress.zipPlus4}`}
+          </Typography>
+          
+          {editedAddress.streetAddressAbbreviation && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              USPS Standardized: {editedAddress.streetAddressAbbreviation}, 
+              {editedAddress.cityAbbreviation && ` ${editedAddress.cityAbbreviation},`} 
+              {editedAddress.state} {editedAddress.zipCode}
+              {editedAddress.zipPlus4 && `-${editedAddress.zipPlus4}`}
+            </Typography>
+          )}
+          
+          {!editedAddress.uspsVerified && (
+            <Chip 
+              icon={<ErrorIcon />} 
+              label="Not Verified" 
+              color="warning" 
+              size="small"
+              sx={{ mt: 2 }}
+            />
+          )}
         </Box>
-      </Stack>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-        <Button onClick={onClose} color="inherit">
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
-          color="primary"
-          disabled={!isFormValid}
-        >
-          Save Changes
-        </Button>
-      </Box>
-    </Box>
+      )}
+    </Paper>
+    </>
   );
 };
 

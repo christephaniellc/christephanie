@@ -16,8 +16,16 @@ export const FeatureFlags = {
   ENABLE_EMAIL_VERIFICATION: true,        // Enable email verification flow
   ENABLE_SMS_VERIFICATION: false,          // Enable SMS verification flow
   
-  // Other feature flags can be added here as needed
-  // Example: ENABLE_NEW_FOOD_PREFERENCES: false,
+  // Pages
+  ENABLE_RSVP: false,
+  ENABLE_REGISTRY: false,
+  ENABLE_DETAILS: false,
+  ENABLE_DETAILS_ABOUTUS: false,
+  ENABLE_DETAILS_ACCOMMODATIONS: false,
+  ENABLE_DETAILS_TRAVEL: false,
+  ENABLE_DETAILS_ATTIRE: false,
+  ENABLE_DETAILS_SCHEDULE: false,
+  ENABLE_DETAILS_THINGS_TO_DO: false
 };
 
 /**

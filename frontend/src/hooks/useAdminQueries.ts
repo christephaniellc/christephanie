@@ -123,7 +123,7 @@ export const useAdminQueries = () => {
   const apiContext = useContext(ApiContext);
   
   // We need to stabilize the getAllFamilies reference to prevent re-renders
-  const getAllFamiliesRef = useRef(apiContext.getAllFamilies);
+  const getAllFamiliesRef = useRef(apiContext.adminGetAllFamilies);
   
   // Query to get all families (admin only)
   const getAllFamiliesQuery = useQuery<FamilyUnitDto[], ApiError>({
