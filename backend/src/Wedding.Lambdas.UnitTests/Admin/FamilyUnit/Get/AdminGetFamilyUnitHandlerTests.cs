@@ -2,10 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
@@ -43,7 +39,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
             {
                 Audience = "test-audience",
                 GuestId = Guid.Parse("11111111-1111-1111-1111-111111111111").ToString(),
-                InvitationCode = "TEST123",
+                InvitationCode = "NNNNN",
                 Roles = "Admin",
                 Name = "Test Admin",
                 IpAddress = "127.0.0.1"
@@ -54,7 +50,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
         public async Task GetAsync_WithSingleInvitationCode_ReturnsFamilyUnit()
         {
             // Arrange
-            var invitationCode = "TEST123";
+            var invitationCode = "NNNNN";
             var query = new AdminGetFamilyUnitQuery(invitationCode, _authContext);
             
             var familyUnitDto = new FamilyUnitDto 
@@ -105,7 +101,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
             {
                 new FamilyUnitDto
                 {
-                    InvitationCode = "TEST001",
+                    InvitationCode = "NNNNN",
                     UnitName = "Family One",
                     Guests = new List<GuestDto>
                     {
@@ -120,7 +116,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
                 },
                 new FamilyUnitDto
                 {
-                    InvitationCode = "TEST002",
+                    InvitationCode = "QQQQQQ",
                     UnitName = "Family Two",
                     Guests = new List<GuestDto>
                     {
@@ -151,10 +147,10 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Get
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("TEST001", result[0].InvitationCode);
-            Assert.AreEqual("TEST002", result[1].InvitationCode);
+            Assert.AreEqual("NNNNN", result[0].InvitationCode);
+            Assert.AreEqual("QQQQQ", result[1].InvitationCode);
         }
-        
+
         [Test]
         public void GetAsync_SingleFamily_ThrowsExceptionWhenNotFound()
         {

@@ -1,7 +1,8 @@
 import { 
   Card, CardHeader, CardContent, Divider, 
   Box, Typography, Chip, Paper, Stack, Grid, useTheme,
-  IconButton, Collapse, AvatarGroup, Tooltip
+  IconButton, Collapse, AvatarGroup, Tooltip, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions
 } from '@mui/material';
 import { useState } from 'react';
 import { rgba } from 'polished';
@@ -11,9 +12,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import PeopleIcon from '@mui/icons-material/People';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import EditIcon from '@mui/icons-material/Edit';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
-import { getFamilyStatusColor, getLatestActivityAndGuest } from './AdminHelpers';
+import { getFamilyStatusColor, getLatestActivityAndGuest } from './StatsHelpers';
 import GuestStatusItem from './GuestStatusItem';
 import TierSquare from './TierSquare';
 
@@ -27,6 +30,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
   const statusColor = getFamilyStatusColor(family);
   const [expanded, setExpanded] = useState(false);
   const lastGuestActivity = getLatestActivityAndGuest(family);
+  const [editAddressOpen, setEditAddressOpen] = useState(false);
   
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -140,6 +144,7 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
               >
                 <span> {/* Wrapper needed for Tooltip + disabled elements */}
                   <GuestStatusItem 
+                    invitationCode={family.invitationCode}
                     guest={guest} 
                     onClick={onGuestClick} 
                     compact={true} 
@@ -175,8 +180,9 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
                 {family.guests?.map(guest => (
                   <Grid item xs={12} key={guest.guestId}>
                     <GuestStatusItem 
+                      invitationCode={family.invitationCode}
                       guest={guest} 
-                      onClick={onGuestClick} 
+                      onClick={onGuestClick}
                     />
                   </Grid>
                 ))}
@@ -196,25 +202,39 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
               }}
             >
               <HomeIcon color="action" sx={{ mt: 0.5 }} />
-              <Box>
-                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                  Mailing Address
-                </Typography>
-                <Typography variant="body2">
-                  {family.mailingAddress ? (
-                    <>
-                      {family.mailingAddress.streetAddress}<br />{family.mailingAddress.secondaryAddress !== null 
-                        ? family.mailingAddress.secondaryAddress 
-                        : ''}
-                      {family.mailingAddress.secondaryAddress !== undefined && <br/>}
-                      {family.mailingAddress.city}, {family.mailingAddress.state} {family.mailingAddress.postalCode}
-                    </>
-                  ) : (
-                    <Typography variant="body2" color="error">
-                      No address provided
-                    </Typography>
-                  )}
-                </Typography>
+              <Box sx={{ width: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                    Mailing Address
+                    {family.mailingAddress?.uspsVerified && (
+                      <Tooltip title="Address verified">
+                        <VerifiedIcon 
+                          fontSize="small" 
+                          sx={{ 
+                            color: 'success.main', 
+                            verticalAlign: 'middle', 
+                            ml: 0.5,
+                            fontSize: '0.8rem'
+                          }} 
+                        />
+                      </Tooltip>
+                    )}
+                  </Typography>
+                </Box>
+                {family.mailingAddress ? (
+                  <Typography variant="body2">
+                    {family.mailingAddress.streetAddress}<br />
+                    {family.mailingAddress.secondaryAddress !== null 
+                      ? family.mailingAddress.secondaryAddress 
+                      : ''}
+                    {family.mailingAddress.secondaryAddress !== undefined && <br/>}
+                    {family.mailingAddress.city}, {family.mailingAddress.state} {family.mailingAddress.postalCode}
+                  </Typography>
+                ) : (
+                  <Typography variant="body2" color="error">
+                    No address provided
+                  </Typography>
+                )}
               </Box>
             </Paper>
             

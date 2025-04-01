@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.ViewModels;
 using Wedding.Common.Abstractions;
+using Wedding.Common.FeatureFlags;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Stats.Get.Commands;
 using Wedding.Lambdas.Stats.Get.Validation;
@@ -34,19 +36,22 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
             try
             {
                 var result = await _dynamoDBProvider.GetFamilyUnitsAsync(query.AuthContext.Audience, cancellationToken);
+                var relevantResults = result
+                    .Where(family => FeatureFlags.TiersToIncludeInStats.Contains(family.Tier))
+                    .ToList();
 
                 if (result == null)
                 {
-                    throw new UnauthorizedAccessException("User not found.");
+                    throw new UnauthorizedAccessException("Stats not found.");
                 }
 
-                var dtos = _mapper.Map<List<FamilyUnitDto>>(result);
+                var dtos = _mapper.Map<List<FamilyUnitDto>>(relevantResults);
                 return _mapper.Map<List<FamilyUnitViewModel>>(dtos);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while getting the user.");
-                throw new UnauthorizedAccessException($"User not found. {ex.Message}");
+                _logger.LogError(ex, "An error occurred while getting the stats.");
+                throw new UnauthorizedAccessException($"Stats not found. {ex.Message}");
             }
         }
     }

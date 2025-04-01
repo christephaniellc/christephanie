@@ -835,23 +835,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags AdminFamilyUnit
-     * @name AdminFamilyunitAllList
-     * @request GET:/api/admin/familyunit/all
-     * @secure
-     */
-    adminFamilyunitAllList: (params: RequestParams = {}) =>
-      this.request<FamilyUnitDto[], ProblemDetails | void>({
-        path: `/api/admin/familyunit/all`,
-        method: 'GET',
-        secure: true,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
      * @tags Auth
      * @name AuthorizeList
      * @request GET:/api/authorize
@@ -968,23 +951,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Health
-     * @name HealthList
-     * @request GET:/api/health
-     * @secure
-     */
-    healthList: (params: RequestParams = {}) =>
-      this.request<APIGatewayProxyResponse, ProblemDetails | void>({
-        path: `/api/health`,
-        method: 'GET',
-        secure: true,
         format: 'json',
         ...params,
       }),

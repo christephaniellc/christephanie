@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using System.Threading;
 using Wedding.Abstractions.Dtos;
 using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;

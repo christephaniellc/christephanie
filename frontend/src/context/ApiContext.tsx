@@ -55,7 +55,7 @@ interface ApiContextProps {
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
   getStats: () => Promise<FamilyUnitViewModel[]>;
-  getAllFamilies: () => Promise<FamilyUnitViewModel[]>;
+  adminGetAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
   apiInstance?: Api; // Expose the API instance for direct access
@@ -388,9 +388,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   };
 
   // Get all families (admin function)
-  const getAllFamilies = async (): Promise<FamilyUnitViewModel[]> => {
+  const adminGetAllFamilies = async (): Promise<FamilyUnitViewModel[]> => {
     try {
-      return await apiRef.current.getAllFamilies();
+      return await apiRef.current.adminGetAllFamilies();
     } catch (error) {
       console.error('Failed to get all families:', error);
       throw error;
@@ -439,7 +439,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         patchFamilyGuestMutation,
         getMaskedValueQuery,
         getStats,
-        getAllFamilies,
+        adminGetAllFamilies,
         updateClientInfo,
         clearTokenCache, // Add the clearTokenCache function
         apiInstance: apiRef.current, // Expose the API instance
