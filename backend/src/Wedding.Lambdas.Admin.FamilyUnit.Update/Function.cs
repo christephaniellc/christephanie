@@ -47,7 +47,7 @@ public class Function
     {
         try
         {
-            context.Logger.LogInformation($"Raw Input: {request.Body}");
+            context.Logger.LogInformation($"Raw Input: {System.Text.Json.JsonSerializer.Serialize(request)}");
 
             var authContext = request.GetAuthContext();
 
