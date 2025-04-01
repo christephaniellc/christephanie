@@ -6,7 +6,11 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import PrintIcon from '@mui/icons-material/Print';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import SaveAsIcon from '@mui/icons-material/SaveAs';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import GiftCardIcon from '@mui/icons-material/CardGiftcard';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -17,6 +21,7 @@ import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 import { isAdmin } from '@/utils/roles';
 import AppVersionFooter from '../VersionHash';
+import { isFeatureEnabled } from '@/config';
 
 export const BottomNav = () => {
   const location = useLocation();
@@ -32,10 +37,13 @@ export const BottomNav = () => {
     const path = location.pathname;
     if (path === routes[Pages.Welcome].path) return 0;
     if (path === routes[Pages.SaveTheDate].path) return 1;
-    if (path === routes[Pages.Bureaucracy].path) return 2;
-    if (path === routes[Pages.Admin].path) return 3;
+    if (path === routes[Pages.RSVP].path) return 2;
+    if (path === routes[Pages.Details].path) return 3;
     if (path === routes[Pages.Registry].path) return 4;
-    if (path === routes[Pages.PrintedRsvp].path) return 5;
+    if (path === routes[Pages.Bureaucracy].path) return 5;
+    if (path === routes[Pages.Stats].path) return 6;
+    if (path === routes[Pages.Admin].path) return 7;
+    if (path === routes[Pages.PrintedRsvp].path) return 8;
     return -1; // No tab selected
   };
   
@@ -56,18 +64,27 @@ export const BottomNav = () => {
         navigate(routes[Pages.SaveTheDate].path!);
         break;
       case 2:
-        navigate(routes[Pages.Bureaucracy].path!);
+        navigate(routes[Pages.RSVP].path!);
         break;
       case 3:
-        navigate(routes[Pages.Admin].path!);
+        navigate(routes[Pages.Details].path!);
         break;
       case 4:
         navigate(routes[Pages.Registry].path!);
         break;
       case 5:
+        navigate(routes[Pages.Bureaucracy].path!);
+        break;
+      case 6:
+        navigate(routes[Pages.Stats].path!);
+        break;
+      case 7:
+        navigate(routes[Pages.Admin].path!);
+        break;
+      case 8:
         navigate(routes[Pages.PrintedRsvp].path!);
         break;
-      case 6: // Auth button
+      case 9: // Auth button
         if (auth0User) {
           logOutFromAuth0();
         } else {
@@ -157,6 +174,33 @@ export const BottomNav = () => {
             aria-label="Go to Save the Date Survey page"
             disabled={!auth0User}
           />
+
+          {/* RSVP (only for authenticated users) */}
+          <BottomNavigationAction
+            label="RSVP"
+            icon={<SaveAsIcon />}
+            aria-label="Go to RSVP pages"
+            disabled={!auth0User}
+            sx={{ display: isFeatureEnabled('ENABLE_RSVP')  ? 'flex' : 'none' }}
+          />
+
+          {/* Info (only for authenticated users) */}
+          <BottomNavigationAction
+            label="Details"
+            icon={<AutoAwesomeIcon />}
+            aria-label="Go to detail pages"
+            disabled={!auth0User}
+            sx={{ display: isFeatureEnabled('ENABLE_DETAILS')  ? 'flex' : 'none' }}
+          />
+
+          {/* Registry (only for authenticated users) */}
+          <BottomNavigationAction
+            label="Registry"
+            icon={<GiftCardIcon />}
+            aria-label="Go to registry page"
+            disabled={!auth0User}
+            sx={{ display: isFeatureEnabled('ENABLE_REGISTRY')  ? 'flex' : 'none' }}
+          />
           
           {/* Bureaucracy */}
           <BottomNavigationAction
@@ -173,13 +217,14 @@ export const BottomNav = () => {
             aria-label="View wedding statistics"
             disabled={!auth0User}
           />
-          
-          {/* Registry */}
+
+          {/* Admin Updates (only for admin users) */}
           <BottomNavigationAction
-            label="Registry"
-            icon={<CardGiftcardIcon />}
-            aria-label="View Wedding Registry"
-            disabled={false}
+            label="Admin"
+            icon={<AutoFixHighIcon />}
+            aria-label="Update Users"
+            disabled={!userIsAdmin}
+            sx={{ display: userIsAdmin ? 'flex' : 'none' }}
           />
           
           {/* Printed RSVP (only for admin users) */}
