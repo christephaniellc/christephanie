@@ -10,6 +10,7 @@ import SaveAsIcon from '@mui/icons-material/SaveAs';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import GiftCardIcon from '@mui/icons-material/CardGiftcard';
 import { useAuth0 } from '@auth0/auth0-react';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -141,16 +142,16 @@ export const BottomNav = () => {
               color: "white",
             },
             "& .MuiBottomNavigationAction-root": {
-              minWidth: '52px',
+              minWidth: '42px',
               padding: '0 0',
-              fontSize: '0.65rem',
+              fontSize: '0.6rem',
               '@media (min-width: 400px)': {
-                minWidth: '68px',
-                padding: '0 2px'
+                minWidth: '56px',
+                padding: '0 1px'
               },
               '@media (min-width: 600px)': {
-                minWidth: '80px',
-                padding: '0 4px'
+                minWidth: '65px',
+                padding: '0 2px'
               }
             }
           }}
@@ -195,7 +196,7 @@ export const BottomNav = () => {
           {/* Registry (only for authenticated users) */}
           <BottomNavigationAction
             label="Registry"
-            icon={<ShoppingBagIcon />}
+            icon={<GiftCardIcon />}
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{ display: isFeatureEnabled('ENABLE_REGISTRY')  ? 'flex' : 'none' }}
