@@ -46,10 +46,17 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   
   // Calculate last names
   const calculateLastNames = (family: FamilyUnitDto): string => {
-    if (!family.guests?.length) return 'Demo';
-    const lastNames = Array.from(new Set(family.guests?.map((user) => user.lastName)))
-    .map((lastName) => `${lastName}`)
-    .join(' & ');
+    if (!family.guests?.length) return 'Demo';  
+    const lastNames = Array.from(
+      new Set(
+        family.guests
+          .map((user) => user.lastName)
+          .filter((name): name is string => !!name) // Filters out undefined/null/empty
+      )
+    )
+      .map((lastName) => `${lastName}`)
+      .join(' & ');
+  
     return lastNames;
   };
   
