@@ -16,10 +16,9 @@ import {
   CardElement,
   useStripe,
   useElements,
-  Elements,
-  StripeElementsOptions
+  Elements
 } from '@stripe/react-stripe-js';
-import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeElements, StripeElementsOptions } from '@stripe/stripe-js';
 
 // Stripe styled components
 const CardElementContainer = styled(Paper)(({ theme }) => ({
