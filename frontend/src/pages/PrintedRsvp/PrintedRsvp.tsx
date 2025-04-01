@@ -25,7 +25,6 @@ import ImageIcon from '@mui/icons-material/Image';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InfoIcon from '@mui/icons-material/Info';
 import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { CardSide, CardOrientation } from './types/types';
 import { useCardDimensions, useFamilyData, usePrinting, useExportToPng } from './hooks';
 import { 
@@ -94,12 +93,7 @@ const PrintedRsvp: React.FC = () => {
     }
   };
   
-  // Handle card click to open modal
-  const handleCardClick = () => {
-    if (selectedFamily) {
-      setModalOpen(true);
-    }
-  };
+  // Modal has been disabled per user request
   
   // Mobile view message
   if (isMobile && isSmallScreen) {
@@ -290,20 +284,6 @@ const PrintedRsvp: React.FC = () => {
             
             {/* Action buttons */}
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title="Open in full screen">
-                <span>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<OpenInFullIcon />}
-                    onClick={handleCardClick}
-                    disabled={!selectedFamily}
-                  >
-                    Expand
-                  </Button>
-                </span>
-              </Tooltip>
-              
               <Button
                 variant="contained"
                 size="small"
@@ -326,10 +306,8 @@ const PrintedRsvp: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'auto',
-              maxHeight: 'calc(100vh - 250px)',
-              cursor: selectedFamily ? 'pointer' : 'default'
+              maxHeight: 'calc(100vh - 250px)'
             }}
-            onClick={selectedFamily ? handleCardClick : undefined}
           >
             {selectedFamily ? (
               <Box>
@@ -348,7 +326,7 @@ const PrintedRsvp: React.FC = () => {
                 
                 {/* Caption */}
                 <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: 'gray' }}>
-                  Click card to enlarge • {cardSide === 'front' ? 'Address' : 'Picture'} side • {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'} orientation
+                  {cardSide === 'front' ? 'Address' : 'Picture'} side • {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'} orientation
                 </Typography>
               </Box>
             ) : (
@@ -375,14 +353,7 @@ const PrintedRsvp: React.FC = () => {
         </Box>
       </Box>
       
-      {/* Modal for enlarged card view */}
-      <CardModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        family={selectedFamily}
-        cardSide={cardSide}
-        orientation={currentOrientation}
-      />
+      {/* Modal has been removed per user request */}
     </Box>
   );
 };

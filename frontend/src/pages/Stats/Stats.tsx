@@ -13,8 +13,7 @@ import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/At
 import { isAdmin } from '@/utils/roles';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
-
-import { GuestPopperState, getRandomAxis, getTierDetails } from './components/AdminHelpers';
+import { GuestPopperState, getRandomAxis, getTierDetails } from './components/StatsHelpers';
 import GuestDetailCard from './components/GuestDetailCard';
 import FamilyCard from './components/FamilyCard';
 import StatsDashboardCharts from '@/components/StatsDashboardCharts';
@@ -435,7 +434,6 @@ function Stats() {
                   <FamilyCard 
                     family={family} 
                     onGuestClick={handleGuestClick}
-                    onFamilyUpdate={handleFamilyUpdate}
                   />
                 </Grid>
               ))}
