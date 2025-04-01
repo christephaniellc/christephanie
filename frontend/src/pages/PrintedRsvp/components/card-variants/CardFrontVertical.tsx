@@ -297,46 +297,107 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             overflow: 'hidden' // Prevent content from overflowing
           }}
         >
-          {/* Street Address */}
           {selectedFamily?.mailingAddress ? (
             <>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontFamily: 'Snowstorm, serif', 
-                  lineHeight: 1.3,
-                  mb: 0.25,
-                  color: 'rgba(255,255,255,0.85)'
-                }}
-              >
-                {selectedFamily.mailingAddress.streetAddress}
-              </Typography>
-              
-              {selectedFamily.mailingAddress.secondaryAddress && (
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: 'Snowstorm, serif', 
-                    lineHeight: 1.3,
-                    mb: 0.25,
-                    color: 'rgba(255,255,255,0.85)'
-                  }}
-                >
-                  {selectedFamily.mailingAddress.secondaryAddress}
-                </Typography>
+              {/* Check for country and format accordingly */}
+              {((selectedFamily.mailingAddress as any)?.country === 'Germany' 
+                || (selectedFamily.mailingAddress as any)?.country === 'Norway') ? (
+                // European address format
+                <>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      mb: 0.25,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.streetAddress}
+                  </Typography>
+                  
+                  {selectedFamily.mailingAddress.secondaryAddress && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontFamily: 'Snowstorm, serif', 
+                        lineHeight: 1.3,
+                        mb: 0.25,
+                        color: 'rgba(255,255,255,0.85)'
+                      }}
+                    >
+                      {selectedFamily.mailingAddress.secondaryAddress}
+                    </Typography>
+                  )}
+                  
+                  {/* Postal code and city on one line */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      mb: 0.25,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.zipCode} {selectedFamily.mailingAddress.city}
+                  </Typography>
+                  
+                  {/* Country in uppercase */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      color: 'rgba(255,255,255,0.85)',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
+                  </Typography>
+                </>
+              ) : (
+                // US address format
+                <>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      mb: 0.25,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.streetAddress}
+                  </Typography>
+                  
+                  {selectedFamily.mailingAddress.secondaryAddress && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontFamily: 'Snowstorm, serif', 
+                        lineHeight: 1.3,
+                        mb: 0.25,
+                        color: 'rgba(255,255,255,0.85)'
+                      }}
+                    >
+                      {selectedFamily.mailingAddress.secondaryAddress}
+                    </Typography>
+                  )}
+                  
+                  {/* City, State ZIP */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
+                  </Typography>
+                </>
               )}
-              
-              {/* City, State ZIP */}
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontFamily: 'Snowstorm, serif', 
-                  lineHeight: 1.3,
-                  color: 'rgba(255,255,255,0.85)'
-                }}
-              >
-                {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
-              </Typography>
             </>
           ) : (
             /* Empty address area for manual labeling */

@@ -9,26 +9,21 @@ import DevicesIcon from '@mui/icons-material/Devices';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import EmailIcon from '@mui/icons-material/Email';
-import EditIcon from '@mui/icons-material/Edit';
 import { useState, useEffect, useCallback } from 'react';
-import GuestEditor from './GuestEditor';
 
 import { AgeGroupEnum, ClientInfoDto, GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { getFoodPreferenceDetails, getSleepPreferenceDetails, getRandomNarrative } from './AdminHelpers';
+import { getFoodPreferenceDetails, getSleepPreferenceDetails, getRandomNarrative } from './StatsHelpers';
 
 interface GuestDetailCardProps {
   guest: GuestViewModel & { clientInfos?: ClientInfoDto[] };
   flipped: boolean;
   flipAxis: string;
-  editable?: boolean;
-  onGuestUpdated?: () => void;
 }
 
-const GuestDetailCard = ({ guest, flipped, flipAxis, editable = false, onGuestUpdated }: GuestDetailCardProps) => {
+const GuestDetailCard = ({ guest, flipped, flipAxis }: GuestDetailCardProps) => {
   const theme = useTheme();
   const { contentHeight } = useAppLayout();
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   // No need for lifecycle logging in production
    
@@ -38,11 +33,6 @@ const GuestDetailCard = ({ guest, flipped, flipAxis, editable = false, onGuestUp
   const foodPreference = getFoodPreferenceDetails(guest.preferences?.foodPreference);
   const sleepPreference = getSleepPreferenceDetails(guest.preferences?.sleepPreference);
   
-  // Simple helper function to open the dialog
-  const handleOpenEditDialog = useCallback(() => {
-    setEditDialogOpen(true);
-  }, []);
-
   return (
     <>
       
@@ -92,27 +82,6 @@ const GuestDetailCard = ({ guest, flipped, flipAxis, editable = false, onGuestUp
                 <Typography variant="subtitle1" fontWeight="bold">
                   {guest.firstName} {guest.lastName}
                 </Typography>
-                
-                {editable && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    startIcon={<EditIcon />}
-                    onClick={(e) => {
-                      // Stop event propagation
-                      e.stopPropagation();
-                      // Open the dialog
-                      setEditDialogOpen(true);
-                    }}
-                    sx={{ 
-                      minWidth: 'unset',
-                      py: 0.5
-                    }}
-                  >
-                    Edit
-                  </Button>
-                )}
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -348,33 +317,6 @@ const GuestDetailCard = ({ guest, flipped, flipAxis, editable = false, onGuestUp
           </Box>
         </Paper>
       </Box>
-      
-      {/* Edit Guest Dialog */}
-      <Dialog 
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          <GuestEditor 
-            guest={{
-              ...guest,
-              invitationCode: guest.invitationCode || ''
-            }}
-            onClose={() => setEditDialogOpen(false)}
-            onSuccess={() => {
-              if (onGuestUpdated) {
-                onGuestUpdated();
-                // Close dialog after successful update
-                setTimeout(() => {
-                  setEditDialogOpen(false);
-                }, 500);
-              }
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
