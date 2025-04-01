@@ -5,6 +5,10 @@
 - **Backend**: `dotnet build` (build project), `dotnet lambda deploy-function` (deploy Lambda)
 - **AWS Infra**: `npx cdk deploy` (deploy stack), `./scripts/deploy.sh dev` (deploy to dev environment)
 
+## Package Management
+- **IMPORTANT**: NEVER run `npm install` without explicit permission from the user
+- **IMPORTANT**: NEVER use `--legacy-peer-deps` flag for any package installation commands
+
 ## Test Commands
 - **Frontend**: `yarn test:unit` (all tests), `yarn test:unit -- -t "test pattern"` (single test)
 - **Backend**: `dotnet test` (all tests), `dotnet test --filter "TestName"` (single test)
@@ -19,6 +23,10 @@
 - **Frontend**: React components in PascalCase, hooks with "use" prefix, files grouped by feature
 - **Error Handling**: Try-catch with specific exceptions, logging of errors with context
 - **Component Structure**: Each component in own directory with index.ts export, accompanying tests
+  - Maintain appropriate component depth - components should generally not exceed 200-300 lines
+  - Break larger components into smaller, focused components with clear responsibilities
+  - Extract business logic into custom hooks, keep components primarily focused on rendering
+  - Use container/presentational pattern: containers handle logic, state and data fetching, presentational components handle UI
 - **Typing**: Strong TypeScript typing for all components, enums for string constants
 
 ## Project Organization
