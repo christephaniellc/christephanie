@@ -491,8 +491,6 @@ function Stats() {
                               guest={findGuestById(popperState.guestId)!} 
                               flipped={popperState.flipped} 
                               flipAxis={popperState.flipAxis}
-                              editable={true}
-                              onGuestUpdated={handleGuestUpdated}
                             />
                           </Box>
                         </Box>
