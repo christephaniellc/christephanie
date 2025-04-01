@@ -10,7 +10,6 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { FamilyUnitDto } from '@/types/api';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
-import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
 import ElPulpoIcon from '@/assets/favicon_big_art_transparent.png';
 
 interface CardFrontVerticalProps {
@@ -31,8 +30,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
   const gradientBorder = `
     repeating-linear-gradient(
       45deg,
-      ${theme.palette.primary.main}, 
-      ${theme.palette.primary.main} 5%,
+      #9c27b0, 
+      #9c27b0 5%,
       #121212 5%, 
       #121212 10%,
       ${theme.palette.secondary.main} 10%, 
@@ -75,7 +74,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         position: 'relative',
         boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         transformOrigin: 'top left',
-        border: isExporting ? '0px solid transparent' : '10px solid transparent',
+        border: isExporting ? '0px solid transparent' : '15px solid transparent',
         borderImageSource: !isExporting ? gradientBorder : 'none',
         borderImageSlice: 1,
         boxSizing: 'border-box',
@@ -94,7 +93,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+        //background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
         zIndex: 0
       }} />
       
@@ -109,59 +108,42 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         opacity: 0.5,
         zIndex: 0
       }} />
-      
-      {/* El Pulpo icon in top right corner */}
-      <Box
-        className="el-pulpo-icon-container"
-        sx={{
-          position: 'absolute',
-          top: 7,
-          right: -7,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          width: '60px',  // Explicitly constrain width
-          height: '60px', // Explicitly constrain height
-        }}
-      >
-        <Box
-          component="img"
-          className="el-pulpo-icon"
-          src={ElPulpoIcon}
-          alt="El Pulpo"
-          sx={{
-            height: '100%',
-            width: '100%',
-            maxWidth: '30px',   // Strict max dimensions
-            maxHeight: '30px',  // Strict max dimensions
-            borderRadius: '50%',
-            objectFit: 'contain',  // Use contain to maintain aspect ratio
-            objectPosition: 'center',
-            border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-          }}
-        />
-      </Box>
-      
+            
       {/* Ornamental Header */}
       <Box sx={{
         position: 'relative',
-        top: 20,
+        top: 13,
         left: 0,
         right: 0,
-        textAlign: 'center',
+        textAlign: 'right',
+        mr: 4,
         zIndex: 1
       }}>
         <StephsActualFavoriteTypographyNoDrop 
           variant="h5" 
           sx={{ 
+            zIndex: 5,
             fontSize: '1.5rem', 
             lineHeight: '1.5rem',
             color: theme.palette.secondary.main,
             mb: 2
           }}
         >
-          Steph Stubler<br/>& Topher Sikorra
+          Steph Stubler<br/>Topher Sikorra
+        </StephsActualFavoriteTypographyNoDrop>
+        <StephsActualFavoriteTypographyNoDrop 
+          variant="h5" 
+          sx={{ 
+            position: 'absolute',
+            top: '26px',
+            left: '94px',
+            fontSize: '1.5rem', 
+            lineHeight: '1.2rem',
+            zIndex: -10,
+            color: '#9c27b0',
+          }}
+        >
+          &
         </StephsActualFavoriteTypographyNoDrop>
         
         {/* Decorative divider */}
@@ -169,57 +151,100 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           margin: '0 auto',
           width: '80%',
           height: '2px',
-          background: `linear-gradient(to right, transparent, ${theme.palette.primary.main}, transparent)`,
+          background: `linear-gradient(to right, transparent, #9c27b0, transparent)`,
           mb: 1
         }} />
       </Box>
 
-      {/* Sender Address & Wedding Details */}
-      <Box sx={{ 
-        position: 'relative',
-        textAlign: 'center',
-        mt: 2,
-        mb: 1,
-        zIndex: 1
-      }}>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: theme.palette.primary.light,
-            fontWeight: 600,
-            fontSize: '1.1rem',
-            mb: 0.5,
-            letterSpacing: '0.08em'
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          pl: 2,
+          pr: 3
+
+        }} >
+        {/* El Pulpo icon in top right corner */}
+        <Box
+          className="el-pulpo-icon-container"
+            sx={{
+            alignItems: 'center',
+            display: 'flex',
+            pl: 2,
+            height: '65px', // Explicitly constrain height
           }}
         >
-          are getting married
-        </Typography>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: theme.palette.secondary.light,
-            fontWeight: 500,
-            fontSize: '0.9rem',
-            mb: 0.25,
-            fontStyle: 'italic'
-          }}
-        >
-          on July 5, 2025 at 6:00pm
-        </Typography>
-        
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            fontFamily: 'Snowstorm, serif',
-            color: '#aaa',
-            fontSize: '0.8rem'
-          }}
-        >
-          Stone Manor Inn • Lovettsville, Virginia
-        </Typography>
+          <Box
+            component="img"
+            className="el-pulpo-icon"
+            src={ElPulpoIcon}
+            alt="El Pulpo"
+            sx={{
+              mt: 1,
+              height: '100%',
+              width: '100%',
+              maxWidth: '65px',   // Strict max dimensions
+              maxHeight: '65px',  // Strict max dimensions
+              borderRadius: '50%',
+              objectFit: 'contain',  // Use contain to maintain aspect ratio
+              objectPosition: 'center',
+              border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
+              // boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            }}
+          />
+        </Box>
+
+        {/* Sender Address & Wedding Details */}
+        <Box sx={{ 
+          position: 'relative',
+          textAlign: 'center',
+          mt: 2,
+          mb: 1,
+          zIndex: 1
+        }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: '#9c27b0',
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              mb: 0.5,
+              //pr: 4,
+              letterSpacing: '0.08em'
+            }}
+          >
+            are getting married
+          </Typography>
+          
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: theme.palette.secondary.main,
+              fontWeight: 500,
+              fontSize: '0.9rem',
+              mb: 0.25,
+              //pr: 6,
+              fontStyle: 'italic'
+            }}
+          >
+            on July 5, 2025 at 6:00pm
+          </Typography>
+          
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontFamily: 'Snowstorm, serif',
+              color: '#aaa',
+              fontSize: '0.8rem'
+            }}
+          >
+            Stone Manor Inn • Lovettsville, Virginia
+          </Typography>
+        </Box>
       </Box>
       
       {/* Guest Address Block - fixed height regardless of content - shorter now */}
@@ -239,10 +264,10 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         pb: 1.0,
         textAlign: 'center',
         borderRadius: '4px',
-        border: `1px solid ${theme.palette.primary.main}`,
+        border: `1px solid ${theme.palette.secondary.main}`,
         backgroundColor: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(4px)',
-        boxShadow: `0 0 10px ${theme.palette.primary.dark}`,
+        boxShadow: `0 0 10px ${theme.palette.secondary.dark}`,
         zIndex: 1
       }}>
         {/* First line - Family/Guest Name(s) */}
@@ -272,46 +297,138 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             overflow: 'hidden' // Prevent content from overflowing
           }}
         >
-          {/* Street Address */}
           {selectedFamily?.mailingAddress ? (
             <>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontFamily: 'Snowstorm, serif', 
-                  lineHeight: 1.3,
-                  mb: 0.25,
-                  color: 'rgba(255,255,255,0.85)'
-                }}
-              >
-                {selectedFamily.mailingAddress.streetAddress}
-              </Typography>
-              
-              {selectedFamily.mailingAddress.secondaryAddress && (
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: 'Snowstorm, serif', 
-                    lineHeight: 1.3,
-                    mb: 0.25,
-                    color: 'rgba(255,255,255,0.85)'
-                  }}
-                >
-                  {selectedFamily.mailingAddress.secondaryAddress}
-                </Typography>
+              {/* Check for country and format accordingly */}
+              {(selectedFamily.mailingAddress as any)?.country ? (
+                // International address format based on country
+                <>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      //letterSpacing: '1px',
+                      lineHeight: 1.3,
+                      mb: 0.25,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.streetAddress}
+                  </Typography>
+                  
+                  {selectedFamily.mailingAddress.secondaryAddress && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontFamily: 'Snowstorm, serif', 
+                        lineHeight: 1.3,
+                        mb: 0.25,
+                        color: 'rgba(255,255,255,0.85)'
+                      }}
+                    >
+                      {selectedFamily.mailingAddress.secondaryAddress}
+                    </Typography>
+                  )}
+                  
+                  {/* Format based on country */}
+                  {['Canada', 'Mexico', 'Thailand'].includes((selectedFamily.mailingAddress as any)?.country) ? (
+                    // North American/Asian format - City, State/Province first, then postal code
+                    <>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          mb: 0.25,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.zipCode}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          color: 'rgba(255,255,255,0.85)',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
+                      </Typography>
+                    </>
+                  ) : (
+                    // European format (Germany/Norway)
+                    <>
+                      {/* Postal code and city on one line */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          mb: 0.25,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {selectedFamily.mailingAddress.zipCode} {selectedFamily.mailingAddress.city}
+                      </Typography>
+                      
+                      {/* Country in uppercase */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Snowstorm, serif', 
+                          lineHeight: 1.3,
+                          color: 'rgba(255,255,255,0.85)'
+                        }}
+                      >
+                        {(selectedFamily.mailingAddress as any)?.country.toUpperCase()}
+                      </Typography>
+                    </>
+                  )}
+                </>
+              ) : (
+                // US address format
+                <>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      mb: 0.25,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.streetAddress}
+                  </Typography>
+                  
+                  {selectedFamily.mailingAddress.secondaryAddress && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontFamily: 'Snowstorm, serif', 
+                        lineHeight: 1.3,
+                        mb: 0.25,
+                        color: 'rgba(255,255,255,0.85)'
+                      }}
+                    >
+                      {selectedFamily.mailingAddress.secondaryAddress}
+                    </Typography>
+                  )}
+                  
+                  {/* City, State ZIP */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: 'Snowstorm, serif', 
+                      lineHeight: 1.3,
+                      color: 'rgba(255,255,255,0.85)'
+                    }}
+                  >
+                    {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
+                  </Typography>
+                </>
               )}
-              
-              {/* City, State ZIP */}
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontFamily: 'Snowstorm, serif', 
-                  lineHeight: 1.3,
-                  color: 'rgba(255,255,255,0.85)'
-                }}
-              >
-                {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
-              </Typography>
             </>
           ) : (
             /* Empty address area for manual labeling */
@@ -367,7 +484,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             backgroundColor: 'rgba(0,0,0,0.8)',
             padding: '12px',
             borderRadius: '6px',
-            border: `2px solid ${theme.palette.primary.main}40`,
+            border: `2px solid ${theme.palette.secondary.main}40`,
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
@@ -382,17 +499,17 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           <Typography
             sx={{
               color: theme.palette.common.white,
-              fontSize: '0.8rem',
+              fontSize: '0.7rem',
               fontWeight: 500,
               fontFamily: 'sans-serif',
               mb: 0.2
             }}
           >
-            Please visit our website:
+            Visit our website to RSVP:
           </Typography>
           <Typography
             sx={{
-              color: theme.palette.secondary.light,
+              color: theme.palette.secondary.main,
               fontSize: '0.8rem',
               fontWeight: 600,
               fontFamily: 'sans-serif',
@@ -407,17 +524,17 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             mb: 1.5,
             pt: 1, 
             width: '100%', 
-            borderTop: `1px dashed ${theme.palette.primary.main}30` 
+            borderTop: `1px dashed #9c27b0 30` 
           }}>
             <Typography
               sx={{
-                color: theme.palette.primary.light,
-                fontSize: '0.8rem',
+                color: '#9c27b0',
+                fontSize: '0.7rem',
                 fontWeight: 600,
                 fontFamily: 'sans-serif'
               }}
             >
-              Your invite code:
+              YOUR INVITE CODE:
             </Typography>
             <Typography
               sx={{
@@ -463,7 +580,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               }}
             />
             <Typography variant="caption" sx={{ fontSize: '0.45rem', textAlign: 'center', color: theme.palette.common.white }}>
-              SCAN ME
+              OR, SCAN ME
             </Typography>
           </Box>
         </Box>

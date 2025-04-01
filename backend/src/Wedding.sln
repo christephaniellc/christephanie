@@ -73,6 +73,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Health", "W
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Lambdas.Admin.Configuration.Invitation", "Wedding.Lambdas.Admin.Configuration.Invitation\Wedding.Lambdas.Admin.Configuration.Invitation.csproj", "{0FC8A51A-B12D-4CCC-97A6-B24852BEA44F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wedding.Common.FeatureFlags", "Wedding.Common.FeatureFlags\Wedding.Common.FeatureFlags.csproj", "{20F06BA5-238C-482E-8D8A-F4CA590F34D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -337,6 +339,14 @@ Global
 		{0FC8A51A-B12D-4CCC-97A6-B24852BEA44F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0FC8A51A-B12D-4CCC-97A6-B24852BEA44F}.Release|x64.ActiveCfg = Release|Any CPU
 		{0FC8A51A-B12D-4CCC-97A6-B24852BEA44F}.Release|x64.Build.0 = Release|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Debug|x64.Build.0 = Debug|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Release|x64.ActiveCfg = Release|Any CPU
+		{20F06BA5-238C-482E-8D8A-F4CA590F34D3}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

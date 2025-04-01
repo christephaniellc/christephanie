@@ -128,7 +128,66 @@ namespace Wedding.Lambdas.UnitTests.Stats.Get
             Assert.AreEqual("TEST001", result[0].InvitationCode);
             Assert.AreEqual("TEST002", result[1].InvitationCode);
         }
-        
+
+
+
+        [Test]
+        public async Task GetAsync_WhenGetStats_ReturnsAllFamilies_ExceptFFTiers()
+        {
+            // Arrange
+            var query = new GetStatsQuery(_fakeAuthContext);
+
+            var familyUnits = new List<FamilyUnitDto>
+            {
+                new FamilyUnitDto
+                {
+                    InvitationCode = "NNNNN",
+                    Tier = "Gold",
+                    UnitName = "Family One",
+                    Guests = new List<GuestDto>
+                    {
+                        new GuestDto
+                        {
+                            GuestId = Guid.NewGuid().ToString(),
+                            FirstName = "Guest",
+                            LastName = "One",
+                            Roles = new List<RoleEnum> { RoleEnum.Guest }
+                        }
+                    }
+                },
+                new FamilyUnitDto
+                {
+                    InvitationCode = "RRRRR",
+                    Tier = "Opal",
+                    UnitName = "Not invited family",
+                    Guests = new List<GuestDto>
+                    {
+                        new GuestDto
+                        {
+                            GuestId = Guid.NewGuid().ToString(),
+                            FirstName = "Guest",
+                            LastName = "Two",
+                            Roles = new List<RoleEnum> { RoleEnum.Guest }
+                        }
+                    }
+                }
+            };
+
+            _dynamoDbProviderMock
+                .Setup(x => x.GetFamilyUnitsAsync(
+                    _fakeAuthContext.Audience,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(familyUnits);
+
+            // Act
+            var result = await _handler.GetAsync(query);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("NNNNN", result[0].InvitationCode);
+        }
+
         [Test]
         public void GetAsync_Stats_ThrowsExceptionWhenNotFound()
         {

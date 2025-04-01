@@ -1,3 +1,3 @@
-import Stats from './Admin';
+import AdminPage from "./Admin";
 
-export default Stats;
+export default AdminPage;

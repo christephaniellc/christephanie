@@ -46,8 +46,49 @@ export default class Api {
     return this.get('/stats');
   }
 
-  async getAllFamilies(): Promise<FamilyUnitViewModel[]> {
-    return this.get('/admin/familyunit/all');
+  async adminGetAllFamilies(): Promise<FamilyUnitDto[]> {
+    return this.get('/admin/familyunit');
+  }
+  
+  async adminCreateFamily(family: FamilyUnitDto): Promise<FamilyUnitDto> {
+    return this.put('/admin/familyunit', family);
+  }
+  
+  async adminUpdateFamily(family: FamilyUnitDto): Promise<FamilyUnitDto> {
+    console.log('API: Updating family with invitation code:', family.invitationCode);
+    try {
+      const result = await this.post('/admin/familyunit', family);
+      console.log('API: Family update success');
+      return result;
+    } catch (error) {
+      console.error('API: Error updating family:', error);
+      throw error;
+    }
+  }
+  
+  async adminGetFamilyByInvitationCode(invitationCode: string): Promise<FamilyUnitDto> {
+    console.log('API: Getting family by invitation code:', invitationCode);
+    try {
+      const result = await this.get(`/admin/familyunit/invitationCode?invitationCode=${encodeURIComponent(invitationCode)}`);
+      console.log('API: Get family successful');
+      return result;
+    } catch (error) {
+      console.error('API: Error getting family:', error);
+      throw error;
+    }
+  }
+  
+  async testAdminAccess(): Promise<boolean> {
+    try {
+      console.log('Testing admin access');
+      // Try to fetch admin data
+      await this.get('/admin/familyunit');
+      console.log('Admin access granted');
+      return true;
+    } catch (error) {
+      console.error('Admin access denied:', error);
+      return false;
+    }
   }
 
   async patchFamilyUnit(familyUnit: PatchFamilyUnitRequest): Promise<FamilyUnitViewModel> {
@@ -291,12 +332,14 @@ export default class Api {
       
       // Check if we have a valid cached token (with 30 seconds buffer)
       if (this.tokenCache.token && this.tokenCache.expiresAt > now + 30) {
+        console.log('Using cached token, expires in:', this.tokenCache.expiresAt - now, 'seconds');
         headers['Authorization'] = `Bearer ${this.tokenCache.token}`;
         return headers;
       }
       
       // Get a fresh token
       try {
+        console.log('Getting fresh access token');
         const token = await this.getAccessTokenSilently();
         if (token) {
           // Cache the token with its expiry
@@ -313,11 +356,17 @@ export default class Api {
           if (decodedToken.exp) {
             const expiryDate = new Date(decodedToken.exp * 1000).toISOString();
             console.log(`Using token with expiry: ${expiryDate}`);
+          } else {
+            console.log('Token expiry time not found, using default 1hr');
           }
+        } else {
+          console.error('getAccessTokenSilently returned null token');
         }
       } catch (error) {
         console.error('Failed to get auth token for request:', error);
       }
+    } else {
+      console.log('Auth not required for this request');
     }
     
     return headers;
@@ -397,7 +446,15 @@ export default class Api {
   }
 
   async post<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    return this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
+    console.log('POST request to:', path, 'with data:', data);
+    try {
+      const result = await this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
+      console.log('POST request successful:', path);
+      return result;
+    } catch (error) {
+      console.error('POST request failed:', path, error);
+      throw error;
+    }
   }
 
   async patch<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {

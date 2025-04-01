@@ -456,7 +456,7 @@ const WelcomeStepper = () => {
       </Box>
 
       {/* Action button shows at bottom by default */}
-      //{/* {!buttonAtTop && <ActionButton />} */}
+      {/* {!buttonAtTop && <ActionButton />} */}
     </Box>
   );
 };

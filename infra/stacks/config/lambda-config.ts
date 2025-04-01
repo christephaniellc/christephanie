@@ -32,4 +32,5 @@ export const lambdaAuthDefaults = {
     path?: string;
     unauthorized?: boolean;
     keepWarm?: boolean;
+    v1payload?: boolean;
 }

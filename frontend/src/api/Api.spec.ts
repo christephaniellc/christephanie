@@ -40,12 +40,12 @@ describe('Api.wip', () => {
       });
       
       // Call the method
-      const result = await api.getAllFamilies();
+      const result = await api.adminGetAllFamilies();
       
       // Verify fetch was called correctly
       expect(globalAny.fetch).toHaveBeenCalledTimes(1);
       expect(globalAny.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/admin/familyunit/all'),
+        expect.stringContaining('/admin/familyunit'),
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -69,7 +69,7 @@ describe('Api.wip', () => {
       });
       
       // Call the method and expect it to reject
-      await expect(api.getAllFamilies()).rejects.toMatchObject({
+      await expect(api.adminGetAllFamilies()).rejects.toMatchObject({
         status: 500
       });
     });

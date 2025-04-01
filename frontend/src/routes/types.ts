@@ -6,8 +6,12 @@ import type { SvgIconProps } from '@mui/material/SvgIcon';
 enum Pages {
   Welcome,
   SaveTheDate,
+  RSVP,
+  Details,
+  Registry,
   Profile,
   Bureaucracy,
+  Stats,
   Admin,
   VerifyEmail,
   PrintedRsvp,
