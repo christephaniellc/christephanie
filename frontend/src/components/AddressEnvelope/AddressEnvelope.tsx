@@ -11,6 +11,7 @@ import {
   Tooltip,
   IconButton,
   Stack,
+  SelectChangeEvent,
 } from '@mui/material';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { guestSelector, useFamily, familyGuestsStates } from '@/store/family';
@@ -226,20 +227,6 @@ const AddressEnvelope: React.FC = () => {
     // Just store their preference in state
     // The server-side can determine if they want an announcement by checking
     // if they provided an address (wantsAnnouncement === true case shows the address form)
-  };
-
-  // Handle country change
-  const handleCountryChange = (event: SelectChangeEvent<string | null>) => {
-    const newCountry = event.target.value === "null" ? null : event.target.value;
-    setCountry(newCountry);
-    
-    // Update the family address with the new country
-    familyActions.updateFamilyAddress({
-      ...address,
-      country: newCountry,
-      // Reset USPS verification when changing country
-      uspsVerified: newCountry !== null ? false : address.uspsVerified,
-    });
   };
 
   return (
