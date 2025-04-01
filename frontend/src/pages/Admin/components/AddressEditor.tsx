@@ -24,6 +24,12 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import PublicIcon from '@mui/icons-material/Public';
+import FlagUS from '@/assets/flags/us.svg';
+import FlagCA from '@/assets/flags/ca.svg';
+import FlagDE from '@/assets/flags/de.svg';
+import FlagNO from '@/assets/flags/no.svg';
+import FlagMX from '@/assets/flags/mx.svg';
+import FlagTH from '@/assets/flags/th.svg';
 
 // Import confirmation dialog
 import AddressConfirmationDialog from './AddressConfirmationDialog';
@@ -316,14 +322,35 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               fullWidth
               required
               name="zipCode"
-              label={(addressForm.country === 'Germany'
-                || addressForm.country === 'Norway') 
-                ? 'Postal Code' : 'ZIP Code'}
+              label={(addressForm.country === null) 
+                ? 'ZIP Code' 
+                : 'Postal Code'}
               value={addressForm.zipCode || ''}
               onChange={(e) => {
-                const value = (addressForm.country === 'Germany' || addressForm.country === 'Norway')
-                  ? e.target.value.slice(0, 10) // Allow longer postal codes for Germany
-                  : e.target.value.replace(/\D/g, '').slice(0, 5); // US format
+                let value = e.target.value;
+                
+                // Format postal code based on country
+                if (addressForm.country === null) {
+                  // US - only numbers, max 5 digits
+                  value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                } else if (addressForm.country === 'Canada') {
+                  // Canadian format: A1A 1A1
+                  value = e.target.value.replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase();
+                  if (value.length > 3 && !value.includes(' ')) {
+                    value = `${value.slice(0, 3)} ${value.slice(3, 7)}`.trim();
+                  }
+                  value = value.slice(0, 7); // Max length including space
+                } else if (['Germany', 'Mexico', 'Thailand'].includes(addressForm.country)) {
+                  // Postal codes for these countries are numeric, usually 5 digits
+                  value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                } else if (addressForm.country === 'Norway') {
+                  // Norway uses 4-digit postal codes
+                  value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                } else {
+                  // For any other countries, allow alphanumeric
+                  value = e.target.value.slice(0, 10);
+                }
+                
                 handleInputChange('zipCode', value || null);
               }}
               error={!addressForm.zipCode}
@@ -332,20 +359,58 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
           </Grid>
           
           <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel id="country-select-label">Country</InputLabel>
-              <Select
-                labelId="country-select-label"
-                id="country-select"
-                value={addressForm.country || null}
-                label="Country"
-                onChange={(e) => handleInputChange('country', e.target.value)}
-              >
-                <MenuItem value={null}>United States</MenuItem>
-                <MenuItem value="Germany">Germany</MenuItem>
-                <MenuItem value="Norway">Norway</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Country</Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 1 
+              }}>
+                {[
+                  { value: null, label: 'United States', flag: FlagUS },
+                  { value: 'Canada', label: 'Canada', flag: FlagCA },
+                  { value: 'Germany', label: 'Germany', flag: FlagDE },
+                  { value: 'Norway', label: 'Norway', flag: FlagNO },
+                  { value: 'Mexico', label: 'Mexico', flag: FlagMX },
+                  { value: 'Thailand', label: 'Thailand', flag: FlagTH }
+                ].map((option) => (
+                  <Button
+                    key={option.value || 'usa'}
+                    onClick={() => handleInputChange('country', option.value)}
+                    variant={addressForm.country === option.value ? 'contained' : 'outlined'}
+                    color={addressForm.country === option.value ? 'primary' : 'inherit'}
+                    //disabled={disabled}
+                    sx={{
+                      minWidth: '100px',
+                      height: '36px',
+                      p: '0 10px',
+                      ml: 0,
+                      borderRadius: 1,
+                      '& .MuiButton-startIcon': {
+                        marginRight: 1,
+                        marginLeft: 0
+                      }
+                    }}
+                    startIcon={
+                      <Box 
+                        component="img" 
+                        src={option.flag} 
+                        alt={option.label}
+                        sx={{
+                          width: 24,
+                          height: 16,
+                          objectFit: 'cover',
+                          borderRadius: 0.5,
+                          border: '1px solid rgba(0,0,0,0.1)'
+                        }}
+                      />
+                    }
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
           </Grid>
           
           <Grid item xs={12}>
@@ -410,25 +475,44 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
       ) : (
         <Box>
           {/* Display address based on country format */}
-          {((initialAddress as any)?.country === 'Germany' 
-            || (initialAddress as any)?.country === 'Norway') ? (
-            // European address format
-            <>
-              <Typography variant="body1">
-                {initialAddress?.streetAddress}
-              </Typography>
-              {initialAddress?.secondaryAddress && (
+          {(initialAddress as any)?.country ? (
+            ['Canada', 'Mexico', 'Thailand'].includes((initialAddress as any)?.country) ? (
+              // North American/Asian format
+              <>
                 <Typography variant="body1">
-                  {initialAddress.secondaryAddress}
+                  {initialAddress?.streetAddress}
                 </Typography>
-              )}
-              <Typography variant="body1">
-                {initialAddress?.zipCode} {initialAddress?.city}
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                {(initialAddress as any)?.country.toUpperCase()}
-              </Typography>
-            </>
+                {initialAddress?.secondaryAddress && (
+                  <Typography variant="body1">
+                    {initialAddress.secondaryAddress}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  {initialAddress?.city}, {initialAddress?.state} {initialAddress?.zipCode}
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {(initialAddress as any)?.country.toUpperCase()}
+                </Typography>
+              </>
+            ) : (
+              // European address format (Germany/Norway)
+              <>
+                <Typography variant="body1">
+                  {initialAddress?.streetAddress}
+                </Typography>
+                {initialAddress?.secondaryAddress && (
+                  <Typography variant="body1">
+                    {initialAddress.secondaryAddress}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  {initialAddress?.zipCode} {initialAddress?.city}
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {(initialAddress as any)?.country.toUpperCase()}
+                </Typography>
+              </>
+            )
           ) : (
             // US address format
             <>
