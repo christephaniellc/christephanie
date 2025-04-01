@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -55,6 +56,7 @@ public class Function
             var handler = scope.ServiceProvider.GetRequiredService<AdminUpdateFamilyUnitHandler>();
 
             context.Logger.LogInformation($"HttpMethod: {request.HttpMethod?.ToUpperInvariant()}");
+            context.Logger.LogInformation($"authContext: {JsonSerializer.Serialize(authContext)}");
 
 
             switch (request.HttpMethod?.ToUpperInvariant())
