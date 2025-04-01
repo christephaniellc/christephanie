@@ -85,7 +85,7 @@ export class ApiStack extends cdk.Stack {
         // Existing endpoints
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Create', method: apigateway.HttpMethod.PUT, path: `/admin/familyunit/create` },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/admin/familyunit` },
-        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.PATCH], path: `/admin/familyunit` },
+        { name: 'Wedding.Lambdas.Admin.FamilyUnit.Update', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.PATCH], path: `/admin/familyunit`, v1payload: true },
         { name: 'Wedding.Lambdas.Admin.FamilyUnit.Delete', method: apigateway.HttpMethod.DELETE, path: `/admin/familyunit/{invitationCode}` },
         { name: 'Wedding.Lambdas.FamilyUnit.Get', method: apigateway.HttpMethod.GET, path: `/familyunit`, keepWarm: true },
         { name: 'Wedding.Lambdas.FamilyUnit.Update', method: apigateway.HttpMethod.POST, path: `/familyunit`, keepWarm: true },
@@ -139,7 +139,7 @@ export class ApiStack extends cdk.Stack {
             path: lambdaConfig.path!,
             methods: lambdaConfig.methods || [lambdaConfig.method!], // Support multiple methods if specified
             integration: new apigatewayintegration.HttpLambdaIntegration(`${lambdaConfig.name.replace(/\./g, '-')}-integration`, lambdaFunction, {
-                payloadFormatVersion: apigateway.PayloadFormatVersion.VERSION_2_0,
+                payloadFormatVersion: lambdaConfig.v1payload ? apigateway.PayloadFormatVersion.VERSION_1_0 : apigateway.PayloadFormatVersion.VERSION_2_0,
             }),
             ...(lambdaConfig.unauthorized ? {} : { authorizer: props.httpLambdaAuthorizer }),
             });

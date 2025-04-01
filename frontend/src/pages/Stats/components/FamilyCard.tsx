@@ -16,18 +16,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
 
 import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
-import { getFamilyStatusColor, getLatestActivityAndGuest } from './AdminHelpers';
+import { getFamilyStatusColor, getLatestActivityAndGuest } from './StatsHelpers';
 import GuestStatusItem from './GuestStatusItem';
 import TierSquare from './TierSquare';
-import AddressEditor from './AddressEditor';
 
 interface FamilyCardProps {
   family: FamilyUnitDto;
   onGuestClick: (event: React.MouseEvent<HTMLElement>, guestId: string) => void;
-  onFamilyUpdate?: (familyId: string, updatedData: Partial<FamilyUnitDto>) => void;
 }
 
-const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: FamilyCardProps) => {
+const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
   const theme = useTheme();
   const statusColor = getFamilyStatusColor(family);
   const [expanded, setExpanded] = useState(false);
@@ -185,12 +183,6 @@ const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: Family
                       invitationCode={family.invitationCode}
                       guest={guest} 
                       onClick={onGuestClick}
-                      editable={!!onFamilyUpdate}
-                      onGuestUpdated={() => {
-                        if (onFamilyUpdate) {
-                          onFamilyUpdate(family.invitationCode || '', {});
-                        }
-                      }}
                     />
                   </Grid>
                 ))}
@@ -228,18 +220,6 @@ const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: Family
                       </Tooltip>
                     )}
                   </Typography>
-                  
-                  {/* Add address edit button if onFamilyUpdate is provided */}
-                  {onFamilyUpdate && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<EditIcon />}
-                      onClick={() => setEditAddressOpen(true)}
-                    >
-                      Edit Address
-                    </Button>
-                  )}
                 </Box>
                 {family.mailingAddress ? (
                   <Typography variant="body2">
@@ -324,26 +304,6 @@ const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: Family
           </Stack>
         </CardContent>
       </Collapse>
-
-      {/* Edit Address Dialog */}
-      {onFamilyUpdate && (
-        <Dialog 
-          open={editAddressOpen} 
-          onClose={() => setEditAddressOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Edit Family Address</DialogTitle>
-          <DialogContent>
-            <AddressEditor 
-              address={family.mailingAddress}
-              invitationCode={family.invitationCode}
-              onUpdate={(updatedData) => onFamilyUpdate(family.invitationCode, updatedData)}
-              onClose={() => setEditAddressOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
     </Card>
   );
 };

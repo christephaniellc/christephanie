@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   TextField, 
@@ -9,7 +9,11 @@ import {
   Chip,
   Paper,
   Divider,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { AddressDto } from '@/types/api';
 import { useApiContext } from '@/context/ApiContext';
@@ -19,6 +23,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import PublicIcon from '@mui/icons-material/Public';
 
 // Import confirmation dialog
 import AddressConfirmationDialog from './AddressConfirmationDialog';
@@ -30,50 +35,59 @@ interface AddressEditorProps {
 }
 
 const AddressEditor: React.FC<AddressEditorProps> = ({ 
-  address, 
+  address: initialAddress,
   onAddressUpdate,
   readOnly = false
 }) => {
+  // Local form state instead of Recoil to prevent slow typing
+  const [addressForm, setAddressForm] = useState<AddressDto & { country?: string }>({
+    streetAddress: '',
+    secondaryAddress: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    uspsVerified: false,
+    country: null
+  });
+  
   const [editMode, setEditMode] = useState(false);
   const [validatingAddress, setValidatingAddress] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
   const [addressValidationError, setAddressValidationError] = useState<string | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [originalAddress, setOriginalAddress] = useState<AddressDto | null>(null);
   const [validatedAddress, setValidatedAddress] = useState<AddressDto | null>(null);
   
-  const [editedAddress, setEditedAddress] = useState<AddressDto>(
-    address || {
-      streetAddress: '',
-      secondaryAddress: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      uspsVerified: false
-    }
-  );
-  
   const { validateAddressMutation } = useApiContext();
   
-  // Set address when it changes from props
-  React.useEffect(() => {
-    if (address) {
-      setEditedAddress(address);
+  // Update local form state when initialAddress changes or edit mode is entered
+  useEffect(() => {
+    if (initialAddress) {
+      setAddressForm({
+        streetAddress: initialAddress.streetAddress || '',
+        secondaryAddress: initialAddress.secondaryAddress || '',
+        city: initialAddress.city || '',
+        state: initialAddress.state || '',
+        zipCode: initialAddress.zipCode || '',
+        uspsVerified: initialAddress.uspsVerified || false,
+        streetAddressAbbreviation: initialAddress.streetAddressAbbreviation,
+        cityAbbreviation: initialAddress.cityAbbreviation,
+        zipPlus4: initialAddress.zipPlus4,
+        country: (initialAddress as any)?.country || null // Add country field with default
+      });
     }
-  }, [address]);
+  }, [initialAddress, editMode]);
   
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    setEditedAddress(prev => ({
+  // Handle input changes without using Recoil
+  const handleInputChange = (field: keyof AddressDto, value: string | null) => {
+    setAddressForm(prev => ({
       ...prev,
-      [name]: value,
-      // If we're editing a verified address, mark it as unverified
-      ...(name !== 'secondaryAddress' && prev.uspsVerified ? { uspsVerified: false } : {})
+      [field]: value
     }));
   };
   
   const handleValidateAddress = async () => {
-    if (!editedAddress.streetAddress || !editedAddress.city || !editedAddress.state || !editedAddress.zipCode) {
+    if (!addressForm.streetAddress || !addressForm.city || !addressForm.state || !addressForm.zipCode) {
       setAddressValidationError('Please fill out all required address fields before validating.');
       return;
     }
@@ -83,10 +97,10 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
     
     try {
       // Store the original address for comparison
-      setOriginalAddress({...editedAddress});
+      setOriginalAddress({...addressForm});
       
       // Call the API to validate the address
-      const validatedAddressResult = await validateAddressMutation.mutateAsync(editedAddress);
+      const validatedAddressResult = await validateAddressMutation.mutateAsync(addressForm);
       
       // Update the local state with the validated address
       if (validatedAddressResult) {
@@ -113,8 +127,10 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
     if (!validatedAddress) return;
     
     try {
-      // Update the local state
-      setEditedAddress(validatedAddress);
+      setSavingAddress(true);
+      
+      // Update the form state with validated values
+      setAddressForm(validatedAddress);
       
       // Save the validated address to the family using the admin endpoint
       await onAddressUpdate(validatedAddress);
@@ -125,30 +141,57 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
     } catch (error) {
       console.error('Failed to save validated address:', error);
       setAddressValidationError('Failed to save validated address. Please try again.');
+    } finally {
+      setSavingAddress(false);
       setConfirmDialogOpen(false);
     }
   };
   
   const handleSaveAddress = async () => {
     try {
-      await onAddressUpdate(editedAddress);
+      setSavingAddress(true);
+      // Create a clean address object with only the fields we want to update
+      const addressToSave: AddressDto & { country?: string } = {
+        streetAddress: addressForm.streetAddress || null,
+        secondaryAddress: addressForm.secondaryAddress || null,
+        city: addressForm.city || null,
+        state: addressForm.state || null,
+        zipCode: addressForm.zipCode || null,
+        uspsVerified: false, // Mark as unverified when manually saved
+        country: addressForm.country || null
+      };
+      
+      await onAddressUpdate(addressToSave as AddressDto);
       setEditMode(false);
     } catch (error) {
       console.error('Failed to save address:', error);
       setAddressValidationError('Failed to save address. Please try again.');
+    } finally {
+      setSavingAddress(false);
     }
   };
   
   const handleCancelEdit = () => {
-    // Reset to original address
-    if (address) {
-      setEditedAddress(address);
+    // Reset form state to the original address
+    if (initialAddress) {
+      setAddressForm({
+        streetAddress: initialAddress.streetAddress || '',
+        secondaryAddress: initialAddress.secondaryAddress || '',
+        city: initialAddress.city || '',
+        state: initialAddress.state || '',
+        zipCode: initialAddress.zipCode || '',
+        uspsVerified: initialAddress.uspsVerified || false,
+        streetAddressAbbreviation: initialAddress.streetAddressAbbreviation,
+        cityAbbreviation: initialAddress.cityAbbreviation,
+        zipPlus4: initialAddress.zipPlus4,
+        country: (initialAddress as any)?.country || null
+      });
     }
     setEditMode(false);
     setAddressValidationError(null);
   };
   
-  if (!address && !editMode) {
+  if (!initialAddress && !editMode) {
     return (
       <Box>
         <Typography variant="body1" sx={{ mb: 2 }}>
@@ -176,6 +219,7 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
           originalAddress={originalAddress}
           validatedAddress={validatedAddress}
           onConfirm={handleConfirmValidatedAddress}
+          loading={savingAddress}
         />
       )}
       
@@ -199,7 +243,7 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               Edit
             </Button>
           )}
-          {address?.uspsVerified && (
+          {initialAddress?.uspsVerified && (
             <Chip 
               icon={<VerifiedUserIcon />} 
               label="USPS Verified" 
@@ -225,10 +269,10 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               required
               name="streetAddress"
               label="Street Address"
-              value={editedAddress.streetAddress || ''}
-              onChange={handleAddressChange}
-              error={!editedAddress.streetAddress}
-              helperText={!editedAddress.streetAddress ? 'Required' : ''}
+              value={addressForm.streetAddress || ''}
+              onChange={(e) => handleInputChange('streetAddress', e.target.value || null)}
+              error={!addressForm.streetAddress}
+              helperText={!addressForm.streetAddress ? 'Required' : ''}
             />
           </Grid>
           <Grid item xs={12}>
@@ -236,8 +280,8 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               fullWidth
               name="secondaryAddress"
               label="Apartment, Suite, etc. (optional)"
-              value={editedAddress.secondaryAddress || ''}
-              onChange={handleAddressChange}
+              value={addressForm.secondaryAddress || ''}              
+              onChange={(e) => handleInputChange('secondaryAddress', e.target.value || null)}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -246,10 +290,10 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               required
               name="city"
               label="City"
-              value={editedAddress.city || ''}
-              onChange={handleAddressChange}
-              error={!editedAddress.city}
-              helperText={!editedAddress.city ? 'Required' : ''}
+              value={addressForm.city || ''}
+              onChange={(e) => handleInputChange('city', e.target.value || null)}
+              error={!addressForm.city}
+              helperText={!addressForm.city ? 'Required' : ''}
             />
           </Grid>
           <Grid item xs={6} sm={3}>
@@ -258,10 +302,13 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               required
               name="state"
               label="State"
-              value={editedAddress.state || ''}
-              onChange={handleAddressChange}
-              error={!editedAddress.state}
-              helperText={!editedAddress.state ? 'Required' : ''}
+              value={addressForm.state || ''}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase().slice(0, 2);
+                handleInputChange('state', value || null);
+              }}
+              error={!addressForm.state}
+              helperText={!addressForm.state ? 'Required' : ''}
             />
           </Grid>
           <Grid item xs={6} sm={3}>
@@ -269,12 +316,36 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
               fullWidth
               required
               name="zipCode"
-              label="ZIP Code"
-              value={editedAddress.zipCode || ''}
-              onChange={handleAddressChange}
-              error={!editedAddress.zipCode}
-              helperText={!editedAddress.zipCode ? 'Required' : ''}
+              label={(addressForm.country === 'Germany'
+                || addressForm.country === 'Norway') 
+                ? 'Postal Code' : 'ZIP Code'}
+              value={addressForm.zipCode || ''}
+              onChange={(e) => {
+                const value = (addressForm.country === 'Germany' || addressForm.country === 'Norway')
+                  ? e.target.value.slice(0, 10) // Allow longer postal codes for Germany
+                  : e.target.value.replace(/\D/g, '').slice(0, 5); // US format
+                handleInputChange('zipCode', value || null);
+              }}
+              error={!addressForm.zipCode}
+              helperText={!addressForm.zipCode ? 'Required' : ''}
             />
+          </Grid>
+          
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id="country-select-label">Country</InputLabel>
+              <Select
+                labelId="country-select-label"
+                id="country-select"
+                value={addressForm.country || null}
+                label="Country"
+                onChange={(e) => handleInputChange('country', e.target.value)}
+              >
+                <MenuItem value={null}>United States</MenuItem>
+                <MenuItem value="Germany">Germany</MenuItem>
+                <MenuItem value="Norway">Norway</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
           
           <Grid item xs={12}>
@@ -284,6 +355,7 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
                 color="secondary"
                 startIcon={<CancelIcon />}
                 onClick={handleCancelEdit}
+                disabled={savingAddress || validatingAddress}
               >
                 Cancel
               </Button>
@@ -292,18 +364,19 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
                 <Button 
                   variant="contained" 
                   color="primary"
-                  startIcon={<SaveIcon />}
+                  startIcon={savingAddress ? <CircularProgress size={20} /> : <SaveIcon />}
                   onClick={handleSaveAddress}
                   sx={{ mr: 1 }}
                   disabled={
-                    !editedAddress.streetAddress || 
-                    !editedAddress.city || 
-                    !editedAddress.state || 
-                    !editedAddress.zipCode ||
-                    validatingAddress
+                    !addressForm.streetAddress || 
+                    !addressForm.city || 
+                    !addressForm.state || 
+                    !addressForm.zipCode ||
+                    validatingAddress ||
+                    savingAddress
                   }
                 >
-                  Save
+                  {savingAddress ? 'Saving...' : 'Save'}
                 </Button>
                 
                 <Button 
@@ -313,43 +386,87 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
                   onClick={handleValidateAddress}
                   disabled={
                     validatingAddress || 
-                    !editedAddress.streetAddress || 
-                    !editedAddress.city || 
-                    !editedAddress.state || 
-                    !editedAddress.zipCode
+                    savingAddress ||
+                    !addressForm.streetAddress || 
+                    !addressForm.city || 
+                    !addressForm.state || 
+                    !addressForm.zipCode ||
+                    // Disable USPS validation for non-US addresses
+                    addressForm.country !== null
                   }
                 >
                   {validatingAddress ? 'Validating...' : 'Validate with USPS'}
                 </Button>
+                {/* Show helper text for non-US addresses */}
+                {addressForm.country !== null && (
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'right' }}>
+                    USPS validation is only available for US addresses
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Grid>
         </Grid>
       ) : (
         <Box>
-          <Typography variant="body1">
-            {editedAddress.streetAddress}
-          </Typography>
-          {editedAddress.secondaryAddress && (
-            <Typography variant="body1">
-              {editedAddress.secondaryAddress}
-            </Typography>
+          {/* Display address based on country format */}
+          {((initialAddress as any)?.country === 'Germany' 
+            || (initialAddress as any)?.country === 'Norway') ? (
+            // European address format
+            <>
+              <Typography variant="body1">
+                {initialAddress?.streetAddress}
+              </Typography>
+              {initialAddress?.secondaryAddress && (
+                <Typography variant="body1">
+                  {initialAddress.secondaryAddress}
+                </Typography>
+              )}
+              <Typography variant="body1">
+                {initialAddress?.zipCode} {initialAddress?.city}
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                {(initialAddress as any)?.country.toUpperCase()}
+              </Typography>
+            </>
+          ) : (
+            // US address format
+            <>
+              <Typography variant="body1">
+                {initialAddress?.streetAddress}
+              </Typography>
+              {initialAddress?.secondaryAddress && (
+                <Typography variant="body1">
+                  {initialAddress.secondaryAddress}
+                </Typography>
+              )}
+              <Typography variant="body1">
+                {initialAddress?.city}, {initialAddress?.state} {initialAddress?.zipCode}
+                {initialAddress?.zipPlus4 && `-${initialAddress.zipPlus4}`}
+              </Typography>
+              
+              {initialAddress?.streetAddressAbbreviation && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  USPS Standardized: {initialAddress.streetAddressAbbreviation}, 
+                  {initialAddress.cityAbbreviation && ` ${initialAddress.cityAbbreviation},`} 
+                  {initialAddress.state} {initialAddress.zipCode}
+                  {initialAddress.zipPlus4 && `-${initialAddress.zipPlus4}`}
+                </Typography>
+              )}
+            </>
           )}
-          <Typography variant="body1">
-            {editedAddress.city}, {editedAddress.state} {editedAddress.zipCode}
-            {editedAddress.zipPlus4 && `-${editedAddress.zipPlus4}`}
-          </Typography>
           
-          {editedAddress.streetAddressAbbreviation && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              USPS Standardized: {editedAddress.streetAddressAbbreviation}, 
-              {editedAddress.cityAbbreviation && ` ${editedAddress.cityAbbreviation},`} 
-              {editedAddress.state} {editedAddress.zipCode}
-              {editedAddress.zipPlus4 && `-${editedAddress.zipPlus4}`}
-            </Typography>
-          )}
+          {/* Country indicator */}
+          <Chip 
+            icon={<PublicIcon />}
+            label={(initialAddress as any)?.country || 'United States'}
+            color="info"
+            size="small"
+            sx={{ mr: 1, mt: 2 }}
+          />
           
-          {!editedAddress.uspsVerified && (
+          {/* Verification status */}
+          {!initialAddress?.uspsVerified && (
             <Chip 
               icon={<ErrorIcon />} 
               label="Not Verified" 

@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { getTierDetails } from './AdminHelpers';
+import { getTierDetails } from './StatsHelpers';
 
 interface TierSquareProps {
   tier?: string | null;
