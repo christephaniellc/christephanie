@@ -70,7 +70,7 @@ const GuestList: React.FC<GuestListProps> = ({
   
   // Get guest icon based on age group
   const getGuestIcon = (ageGroup: AgeGroupEnum | undefined) => {
-    if (ageGroup === AgeGroupEnum.Child) {
+    if (ageGroup === AgeGroupEnum.Under13) {
       return <ChildCareIcon />;
     }
     return <PersonIcon />;
