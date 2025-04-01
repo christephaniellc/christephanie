@@ -146,6 +146,7 @@ const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: Family
               >
                 <span> {/* Wrapper needed for Tooltip + disabled elements */}
                   <GuestStatusItem 
+                    invitationCode={family.invitationCode}
                     guest={guest} 
                     onClick={onGuestClick} 
                     compact={true} 
@@ -181,6 +182,7 @@ const FamilyCard = ({ family, onGuestClick, onFamilyUpdate = undefined }: Family
                 {family.guests?.map(guest => (
                   <Grid item xs={12} key={guest.guestId}>
                     <GuestStatusItem 
+                      invitationCode={family.invitationCode}
                       guest={guest} 
                       onClick={onGuestClick}
                       editable={!!onFamilyUpdate}

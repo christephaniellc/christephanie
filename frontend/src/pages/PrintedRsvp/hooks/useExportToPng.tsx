@@ -203,32 +203,34 @@ export const useExportToPng = () => {
           const elPulpoIcons = elementClone.querySelectorAll('.el-pulpo-icon');
           elPulpoIcons.forEach(icon => {
             const img = icon as HTMLImageElement;
-            // Scale based on export scaling factor (~3.125x for 300dpi)
             
-            // For export, we want a small icon that doesn't interfere with corner elements
-            img.style.maxWidth = '30px';
-            img.style.maxHeight = '30px';
-            img.style.width = '30px'; 
-            img.style.height = '30px';
-            img.style.objectFit = 'contain';
-            img.style.overflow = 'hidden';
+            // For export, preserve the icon dimensions from the component
+            img.style.maxWidth = '65px';
+            img.style.maxHeight = '65px';
+            img.style.width = 'auto'; // Use auto width to maintain aspect ratio
+            img.style.height = '100%'; // Use 100% height to fill the container
+            img.style.objectFit = 'contain'; // Ensure the image keeps its aspect ratio
+            img.style.objectPosition = 'center';
             img.style.opacity = '0.9';
             
             // Apply the same styling as in the component
             img.style.borderRadius = '50%';
-            img.style.border = '1px solid rgba(255, 152, 0, 0.7)';
-            img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            img.style.border = `2px solid rgba(255, 152, 0, 0.8)`;
+            img.style.boxShadow = 'none';
             
             // Make sure the container is also properly constrained and positioned
             const container = img.closest('.el-pulpo-icon-container');
             if (container) {
-              (container as HTMLElement).style.width = '30px';
-              (container as HTMLElement).style.height = '30px';
-              (container as HTMLElement).style.position = 'absolute';
-              (container as HTMLElement).style.top = '20px'; // Move away from the corner
-              (container as HTMLElement).style.right = '20px'; // Move away from the corner
-              (container as HTMLElement).style.overflow = 'hidden';
-              (container as HTMLElement).style.zIndex = '5'; // Lower than corner elements
+              // Match the exact styles from CardFrontVertical.tsx
+              (container as HTMLElement).style.display = 'flex';
+              (container as HTMLElement).style.alignItems = 'center';
+              (container as HTMLElement).style.paddingLeft = '8px';
+              (container as HTMLElement).style.height = '65px';
+              (container as HTMLElement).style.position = 'static'; // Use static positioning like in the component
+              (container as HTMLElement).style.zIndex = '5';
+              // Remove any top/right positioning that might cause issues
+              (container as HTMLElement).style.top = '';
+              (container as HTMLElement).style.right = '';
             }
           });
           

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import GuestEditor from './GuestEditor';
 
 interface GuestStatusItemProps {
+  invitationCode: string;
   guest: {
     guestId?: string;  // Making this optional to match GuestDto
     firstName?: string;
@@ -31,7 +32,7 @@ interface GuestStatusItemProps {
   onGuestUpdated?: () => void; // Callback when guest is updated
 }
 
-const GuestStatusItem = ({ guest, onClick, compact = false, editable = false, onGuestUpdated }: GuestStatusItemProps) => {
+const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false, editable = false, onGuestUpdated }: GuestStatusItemProps) => {
   const theme = useTheme();
   
   // Safety check - if guest is null or undefined, don't render
@@ -299,7 +300,7 @@ const GuestStatusItem = ({ guest, onClick, compact = false, editable = false, on
               guest={{
                 ...guest,
                 // Ensure invitationCode is available
-                invitationCode: guest?.invitationCode || ''
+                invitationCode: invitationCode || ''
               }}
               onClose={() => setEditDialogOpen(false)}
               onSuccess={() => {

@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.DI;
@@ -11,6 +10,7 @@ using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Commands;
 using Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace Wedding.Lambdas.Admin.FamilyUnit.Update;
 
@@ -54,6 +54,8 @@ public class Function
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<AdminUpdateFamilyUnitHandler>();
 
+            context.Logger.LogInformation($"HttpMethod: {request.HttpMethod?.ToUpperInvariant()}");
+
 
             switch (request.HttpMethod?.ToUpperInvariant())
             {
@@ -62,7 +64,7 @@ public class Function
                     var familyUnit = JsonSerializationHelper.DeserializeFromFrontend<FamilyUnitDto>(request.Body);
                     var command = new AdminUpdateFamilyUnitCommand(familyUnit, authContext);
 
-                    context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
+                    context.Logger.LogInformation($"POST Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
                     context.Logger.LogInformation($"FamilyUnit: {System.Text.Json.JsonSerializer.Serialize(command.FamilyUnit)}");
 
                     if (command.FamilyUnit == null)
@@ -86,7 +88,7 @@ public class Function
                         familyPatchRequest.InvitationResponse, 
                         familyPatchRequest.Wedding);
 
-                    context.Logger.LogInformation($"Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
+                    context.Logger.LogInformation($"PATCH Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
 
                     var result = await handler.ExecuteAsync(command);
 
