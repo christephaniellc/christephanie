@@ -1,11 +1,11 @@
 import { atom, selector, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
-import LocalFlorist from '@mui/icons-material/LocalFlorist';
-import Cake from '@mui/icons-material/Cake';
-import Hotel from '@mui/icons-material/Hotel';
-import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import Dog from '@mui/icons-material/Pets';
+import HouseIcon from '@mui/icons-material/House';
 import Flight from '@mui/icons-material/Flight';
 import WineBar from '@mui/icons-material/WineBar';
+import CelebrationIcon from '@mui/icons-material/Celebration';
 
 import { SvgIconComponent } from '@mui/icons-material';
 
@@ -43,38 +43,38 @@ export const giftOptionsData: GiftOption[] = [
     suggestedAmounts: [25, 50, 100, 200]
   },
   {
-    id: 'flowers',
-    title: 'Wedding Flowers',
-    description: 'Contribute to beautiful floral arrangements for our special day.',
-    icon: LocalFlorist,
+    id: 'remodel',
+    title: 'Remodelling Our House',
+    description: 'Our little 125 year old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube!). Help us prevent zapping fires :)',
+    icon: ConstructionIcon,
     suggestedAmounts: [20, 50, 75, 100]
   },
   {
-    id: 'cake',
-    title: 'Wedding Cake',
-    description: 'Help us celebrate with a delicious wedding cake.',
-    icon: Cake,
-    suggestedAmounts: [15, 25, 50, 75]
-  },
-  {
-    id: 'accommodations',
-    title: 'Guest Accommodations',
-    description: 'Support our out-of-town guests with comfortable accommodations.',
-    icon: Hotel,
+    id: 'home',
+    title: 'Home Down Payment',
+    description: 'Help us invest in a future family home!',
+    icon: HouseIcon,
     suggestedAmounts: [30, 60, 100, 150]
   },
   {
-    id: 'transportation',
-    title: 'Transportation',
-    description: 'Help with transportation costs for our wedding day.',
-    icon: DirectionsCar,
-    suggestedAmounts: [20, 40, 75, 100]
+    id: 'dogs',
+    title: 'Creature Care',
+    description: 'Help us spoil our two furry bodyguard housemates.',
+    icon: Dog,
+    suggestedAmounts: [15, 25, 50, 75]
   },
   {
     id: 'drinks',
     title: 'Drinks & Toasts',
     description: 'Contribute to refreshments and celebratory toasts.',
     icon: WineBar,
+    suggestedAmounts: [15, 30, 50, 100]
+  },
+  {
+    id: 'custom',
+    title: 'Custom',
+    description: 'Contribute in your own way!',
+    icon: CelebrationIcon,
     suggestedAmounts: [15, 30, 50, 100]
   },
 ];
