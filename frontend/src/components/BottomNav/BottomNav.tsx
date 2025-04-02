@@ -145,6 +145,9 @@ export const BottomNav = () => {
               minWidth: '42px',
               padding: '0 0',
               fontSize: '0.6rem',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
               '@media (min-width: 400px)': {
                 minWidth: '56px',
                 padding: '0 1px'
@@ -153,11 +156,20 @@ export const BottomNav = () => {
                 minWidth: '65px',
                 padding: '0 2px'
               }
+            },
+            "& .MuiBottomNavigationAction-label": {
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              pointerEvents: 'none', // Prevents text selection and interaction
+              contentEditable: 'false', // Explicitly prevent contentEditable
             }
           }}
           value={activeTab}
           onChange={handleChange}
           showLabels
+          component="nav" // Semantic HTML5 element
+          className="non-editable-nav"
         >
           {/* Home */}
           <BottomNavigationAction
@@ -165,6 +177,13 @@ export const BottomNav = () => {
             icon={<HomeIcon />}
             aria-label="Go to home page"
             disabled={false}
+            contentEditable="false"
+            sx={{ 
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
           
           {/* Survey (only for authenticated users) */}
@@ -173,6 +192,13 @@ export const BottomNav = () => {
             icon={<ConnectWithoutContactIcon />}
             aria-label="Go to Save the Date Survey page"
             disabled={!auth0User}
+            contentEditable="false"
+            sx={{ 
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
 
           {/* RSVP (only for authenticated users) */}
@@ -181,7 +207,14 @@ export const BottomNav = () => {
             icon={<SaveAsIcon />}
             aria-label="Go to RSVP pages"
             disabled={!auth0User}
-            sx={{ display: isFeatureEnabled('ENABLE_RSVP')  ? 'flex' : 'none' }}
+            contentEditable="false"
+            sx={{ 
+              display: isFeatureEnabled('ENABLE_RSVP') ? 'flex' : 'none',
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
 
           {/* Info (only for authenticated users) */}
@@ -190,7 +223,14 @@ export const BottomNav = () => {
             icon={<AutoAwesomeIcon />}
             aria-label="Go to detail pages"
             disabled={!auth0User}
-            sx={{ display: isFeatureEnabled('ENABLE_DETAILS')  ? 'flex' : 'none' }}
+            contentEditable="false"
+            sx={{ 
+              display: isFeatureEnabled('ENABLE_DETAILS') ? 'flex' : 'none',
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
 
           {/* Registry (only for authenticated users) */}
@@ -199,7 +239,14 @@ export const BottomNav = () => {
             icon={<GiftCardIcon />}
             aria-label="Go to registry page"
             disabled={!auth0User}
-            sx={{ display: isFeatureEnabled('ENABLE_REGISTRY')  ? 'flex' : 'none' }}
+            contentEditable="false"
+            sx={{ 
+              display: isFeatureEnabled('ENABLE_REGISTRY') ? 'flex' : 'none',
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
           
           {/* Bureaucracy */}
@@ -208,6 +255,13 @@ export const BottomNav = () => {
             icon={<GavelIcon />}
             aria-label="View legal information and bureaucracy pages"
             disabled={false}
+            contentEditable="false"
+            sx={{ 
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
           
           {/* Stats (only for authenticated users) */}
@@ -216,6 +270,13 @@ export const BottomNav = () => {
             icon={<BarChartIcon />}
             aria-label="View wedding statistics"
             disabled={!auth0User}
+            contentEditable="false"
+            sx={{ 
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
 
           {/* Admin Updates (only for admin users) */}
@@ -224,7 +285,14 @@ export const BottomNav = () => {
             icon={<AutoFixHighIcon />}
             aria-label="Update Users"
             disabled={!userIsAdmin}
-            sx={{ display: userIsAdmin ? 'flex' : 'none' }}
+            contentEditable="false"
+            sx={{ 
+              display: userIsAdmin ? 'flex' : 'none',
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
           
           {/* Printed RSVP (only for admin users) */}
@@ -233,7 +301,14 @@ export const BottomNav = () => {
             icon={<PrintIcon />}
             aria-label="View Printed RSVP"
             disabled={!userIsAdmin}
-            sx={{ display: userIsAdmin ? 'flex' : 'none' }}
+            contentEditable="false"
+            sx={{ 
+              display: userIsAdmin ? 'flex' : 'none',
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
           
           {/* Login/Logout button */}
@@ -241,6 +316,13 @@ export const BottomNav = () => {
             label={auth0User ? 'Logout' : 'Login'}
             icon={<ProfileIcon color={auth0User ? 'inherit' : 'secondary'} />}
             aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
+            contentEditable="false"
+            sx={{ 
+              "& .MuiBottomNavigationAction-label": { 
+                contentEditable: "false",
+                userSelect: "none" 
+              } 
+            }}
           />
         </BottomNavigation>
       </Box>
