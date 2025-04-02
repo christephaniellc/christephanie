@@ -399,7 +399,7 @@ export const useExportToPng = () => {
               // Apply extremely strong shadow that html2canvas can't miss
               (block as HTMLElement).style.boxShadow = '0 0 20px 8px #9c27b0';
               (block as HTMLElement).style.webkitBoxShadow = '0 0 20px 8px #9c27b0';
-              (block as HTMLElement).style.mozBoxShadow = '0 0 20px 8px #9c27b0';
+              (block as HTMLElement).style.boxShadow = '0 0 20px 8px #9c27b0';
             }
           });
           
