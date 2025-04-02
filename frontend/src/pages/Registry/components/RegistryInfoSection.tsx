@@ -36,7 +36,10 @@ const RegistryInfoSection: React.FC = () => {
         </Typography>
         <Typography paragraph align="center">
           Your presence at our wedding is the greatest gift of all. However, for friends and family who have been asking for gift suggestions,
-          we've created this registry. We've been together for many years and are fortunate to already have many of the items we need for our home.
+          we've created this registry.
+          </Typography>
+        <Typography paragraph align="center">
+          We are old and already have many of the items we need for our home.
         </Typography>
         <Typography paragraph align="center">
           If you wish to give a gift, we would be grateful for a contribution to our future together through one of the funds below.
@@ -47,7 +50,7 @@ const RegistryInfoSection: React.FC = () => {
       <MessageBanner>
         <FavoriteIcon />
         <Typography>
-          We're excited to celebrate with you on our special day!
+          We're excited to celebrate with you on July 5!
         </Typography>
       </MessageBanner>
     </>
