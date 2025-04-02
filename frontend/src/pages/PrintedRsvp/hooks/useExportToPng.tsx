@@ -164,87 +164,6 @@ export const useExportToPng = () => {
           elementClone.style.left = '-9999px';
           elementClone.style.transform = 'none'; // Remove any transforms
           elementClone.style.opacity = '1';
-          
-          // Keep boxShadow for all exports and force apply the address block shadow
-          elementClone.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
-          
-          // For card fronts, we need to apply the address block shadow
-          if (elementClone.classList.contains('card-front-vertical') || 
-              elementClone.classList.contains('card-front-horizontal') ||
-              elementClone.querySelector('.card-front-vertical, .card-front-horizontal')) {
-            console.log('Processing card front, applying address block shadow');
-            
-            // FORCE APPLY SHADOWS: Directly create and insert a shadow element
-            // This is a more drastic approach that ensures the shadow is visible
-            const addressContainers = elementClone.querySelectorAll('div');
-            for (const container of addressContainers) {
-              const style = window.getComputedStyle(container);
-              // Look for the address container by checking for common style patterns
-              if ((style.border && style.border.includes('1px solid') && style.borderRadius === '4px') ||
-                  (container.innerHTML.includes('Family') && style.position === 'relative')) {
-                
-                console.log('Found address container, applying shadow');
-                
-                // 1. Set inline style with !important to force the shadow
-                (container as HTMLElement).style.cssText += '; box-shadow: 0 0 10px #9c27b0 !important;';
-                
-                // 2. Add a class that we can style with a strong selector
-                container.classList.add('address-block-with-shadow');
-                
-                // 3. Create a style element with a very specific rule
-                const styleElement = document.createElement('style');
-                styleElement.textContent = `
-                  .address-block-with-shadow {
-                    box-shadow: 0 0 10px #9c27b0 !important;
-                    -webkit-box-shadow: 0 0 10px #9c27b0 !important;
-                    -moz-box-shadow: 0 0 10px #9c27b0 !important;
-                  }
-                `;
-                elementClone.appendChild(styleElement);
-                
-                // 4. Create a pseudo-element to apply the shadow
-                const shadowDiv = document.createElement('div');
-                shadowDiv.style.cssText = `
-                  position: absolute;
-                  top: -5px;
-                  left: -5px;
-                  right: -5px;
-                  bottom: -5px;
-                  border-radius: 9px;
-                  box-shadow: 0 0 15px 5px #9c27b0;
-                  z-index: -1;
-                  pointer-events: none;
-                `;
-                container.style.position = 'relative'; // Ensure relative positioning
-                container.appendChild(shadowDiv);
-                
-                break;
-              }
-            }
-            
-            // Additional approach: Find elements that contain address text
-            const allElements = elementClone.querySelectorAll('*');
-            for (const el of allElements) {
-              // Check if this element contains address-like text
-              if (el.textContent && 
-                  (el.textContent.includes('Family') || 
-                   el.textContent.includes('Address') || 
-                   el.textContent.match(/\d{5}/) // Zip code pattern
-                  )) {
-                // Go up two levels to find the container
-                let container = el.parentElement?.parentElement;
-                if (container) {
-                  console.log('Found element with address text, applying shadow to container');
-                  (container as HTMLElement).style.boxShadow = '0 0 10px #9c27b0';
-                  (container as HTMLElement).style.position = 'relative';
-                  (container as HTMLElement).style.zIndex = '5';
-                }
-              }
-            }
-          } else {
-            console.log('Not a card front, not applying address shadow');
-          }
-          
           elementClone.style.margin = '0';
           
           // Don't remove border styling for card exports - keep gradient borders
@@ -419,15 +338,7 @@ export const useExportToPng = () => {
             height: elementClone.offsetHeight,
             // These dimensions help with proper rendering
             windowWidth: 2000,
-            windowHeight: 2000,
-            // Most importantly, make sure to render shadows
-            foreignObjectRendering: false,
-            removeContainer: false,
-            // Explicitly tell html2canvas to render shadows
-            ignoreElements: (el) => false, // Don't ignore any elements
-            onrendered: (canvas) => {
-              console.log('Canvas rendered successfully');
-            }
+            windowHeight: 2000
           });
           
           // Remove the clone from the document
