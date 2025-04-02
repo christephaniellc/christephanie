@@ -271,7 +271,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         pb: 1.0,
         textAlign: 'center',
         borderRadius: '4px',
-        border: `1px solid ${theme.palette.secondary.main}`,
+        border: `3px solid ${theme.palette.secondary.main}`,
         backgroundColor: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(4px)',
         boxShadow: `0 0 10px ${theme.palette.secondary.dark}`,
