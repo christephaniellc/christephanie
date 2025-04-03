@@ -4,7 +4,6 @@ using System.Reflection;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2;
 using Autofac;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Mapping;
@@ -47,15 +46,7 @@ namespace Wedding.Common.DI
 
         public static IServiceCollection AddWeddingAutomapper(this IServiceCollection services)
         {
-            var mapperConfig = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            });
-
-            IMapper mapper = mapperConfig.CreateMapper();
+            var mapper = MappingProfileHelper.GetMapper();
             services.AddSingleton(mapper);
             return services;
         }

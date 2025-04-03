@@ -48,18 +48,9 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 .Build();
 
             _testTokenHelper = new TestTokenHelper(configuration);
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            }
-            );
-
-            _mapper = config.CreateMapper();
             
+            _mapper = MappingProfileHelper.GetMapper();
+
             _lambdaContext = new TestLambdaContext();
 
             _mockAwsSmsHelper.Setup(x =>
