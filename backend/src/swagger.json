@@ -472,6 +472,70 @@
           }
         ]
       },
+      "patch": {
+        "tags": [
+          "AdminFamilyUnit"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "AdminFamilyUnit"
@@ -902,48 +966,6 @@
             "Bearer": [ ]
           }
         ]
-      }
-    },
-    "/api/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
       }
     },
     "/api/helloworld": {
@@ -1703,6 +1725,63 @@
           },
           "uspsVerified": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdminPatchGuestRequest": {
+        "required": [
+          "guestId",
+          "invitationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "invitationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalFirstNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tier": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitationResponse": {
+            "$ref": "#/components/schemas/InvitationResponseEnum"
+          },
+          "rehearsalDinner": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "fourthOfJuly": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "wedding": {
+            "$ref": "#/components/schemas/RsvpEnum"
           }
         },
         "additionalProperties": false
