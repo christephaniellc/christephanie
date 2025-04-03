@@ -6,7 +6,6 @@ canvas, img, video {
   -webkit-user-select: auto !important;
   user-select: auto !important;
   -webkit-touch-callout: default !important;
-  -webkit-user-modify: read-write !important;
   -moz-user-select: auto !important;
   -ms-user-select: auto !important;
   cursor: auto !important;
