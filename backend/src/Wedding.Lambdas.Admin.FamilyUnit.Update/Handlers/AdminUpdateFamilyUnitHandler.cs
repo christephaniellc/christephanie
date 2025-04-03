@@ -159,7 +159,31 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
             }
 
             _logger.LogInformation($"Serialized existing guest: {JsonSerializer.Serialize(existingGuestEntity)}");
-            
+
+            if (command.FirstName != null)
+            {
+                _logger.LogInformation($"Updating guest.FirstName from '{existingGuestEntity.FirstName}' to '{command.FirstName}'");
+                existingGuestEntity.FirstName = command.FirstName;
+            }
+
+            if (command.AdditionalFirstNames != null)
+            {
+                _logger.LogInformation($"Updating guest.AdditionalFirstNames from '{existingGuestEntity.AdditionalFirstNames?.Count ?? 0}' to '{command.AdditionalFirstNames.Count}'");
+                existingGuestEntity.AdditionalFirstNames = command.AdditionalFirstNames;
+            }
+
+            if (command.LastName != null)
+            {
+                _logger.LogInformation($"Updating guest.LastName from '{existingGuestEntity.LastName}' to '{command.LastName}'");
+                existingGuestEntity.LastName = command.LastName;
+            }
+
+            if (command.Tier != null)
+            {
+                _logger.LogInformation($"Updating guest.Tier from '{existingGuestEntity.Tier}' to '{command.Tier}'");
+                existingGuestEntity.Tier = command.Tier;
+            }
+
             if (command.InvitationResponse != null)
             {
                 _logger.LogInformation($"Updating guest.Rsvp.InvitationResponse from '{existingGuestEntity.InvitationResponse}' to '{command.InvitationResponse}'");
