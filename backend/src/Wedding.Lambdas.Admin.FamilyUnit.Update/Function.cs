@@ -81,14 +81,20 @@ public class Function
                 }
                 case "PATCH":
                 {
-                    var familyPatchRequest = JsonSerializationHelper.DeserializeFromFrontend<AdminPatchGuestRequest>(request.Body);
+                    var guestPatchRequest = JsonSerializationHelper.DeserializeFromFrontend<AdminPatchGuestRequest>(request.Body);
                     var command = new AdminPatchGuestCommand(authContext, 
-                        familyPatchRequest.InvitationCode,
-                        familyPatchRequest.GuestId, 
-                        familyPatchRequest.Email, 
-                        familyPatchRequest.Phone, 
-                        familyPatchRequest.InvitationResponse, 
-                        familyPatchRequest.Wedding);
+                        guestPatchRequest.InvitationCode,
+                        guestPatchRequest.GuestId, 
+                        guestPatchRequest.FirstName,
+                        guestPatchRequest.AdditionalFirstNames,
+                        guestPatchRequest.LastName,
+                        guestPatchRequest.Tier,
+                        guestPatchRequest.Email, 
+                        guestPatchRequest.Phone, 
+                        guestPatchRequest.InvitationResponse, 
+                        guestPatchRequest.RehearsalDinner,
+                        guestPatchRequest.FourthOfJuly,
+                        guestPatchRequest.Wedding);
 
                     context.Logger.LogInformation($"PATCH Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
 

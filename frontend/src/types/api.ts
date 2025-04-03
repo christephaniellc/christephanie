@@ -47,6 +47,21 @@ export interface AddressDto {
   uspsVerified?: boolean;
 }
 
+export interface AdminPatchGuestRequest {
+  invitationCode: string | null;
+  guestId: string | null;
+  firstName?: string | null;
+  additionalFirstNames?: string[] | null;
+  lastName?: string | null;
+  tier?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  invitationResponse?: InvitationResponseEnum;
+  rehearsalDinner?: RsvpEnum;
+  fourthOfJuly?: RsvpEnum;
+  wedding?: RsvpEnum;
+}
+
 export enum AgeGroupEnum {
   Baby = 'Baby',
   Under13 = 'Under13',
@@ -802,6 +817,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<FamilyUnitDto, ProblemDetails | void>({
         path: `/api/admin/familyunit`,
         method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AdminFamilyUnit
+     * @name AdminFamilyunitPartialUpdate
+     * @request PATCH:/api/admin/familyunit
+     * @secure
+     */
+    adminFamilyunitPartialUpdate: (data: AdminPatchGuestRequest, params: RequestParams = {}) =>
+      this.request<GuestDto, ProblemDetails | void>({
+        path: `/api/admin/familyunit`,
+        method: 'PATCH',
         body: data,
         secure: true,
         type: ContentType.Json,
