@@ -14,6 +14,7 @@ import {
   NotificationPreferenceEnum,
   PatchFamilyUnitRequest,
   PatchGuestRequest,
+  StatsViewModel,
   VerifyEmailResponse,
 } from '@/types/api';
 import { collectClientInfo } from '@/utils/utils';
@@ -378,7 +379,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   };
 
   // Get stats (public function accessible to any logged-in user)
-  const getStats = async (): Promise<FamilyUnitViewModel[]> => {
+  const getStats = async (): Promise<StatsViewModel> => {
     try {
       return await apiRef.current.getStats();
     } catch (error) {
