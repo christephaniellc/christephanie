@@ -14,6 +14,7 @@ import {
   NotificationPreferenceEnum,
   PatchFamilyUnitRequest,
   PatchGuestRequest,
+  StatsViewModel,
   VerifyEmailResponse,
 } from '@/types/api';
 import { collectClientInfo } from '@/utils/utils';
@@ -54,7 +55,7 @@ interface ApiContextProps {
   >;
   
   getMaskedValueQuery: (guestId: string, type: 'email' | 'text') => UseQueryResult<{ value: string, verified: boolean }, ApiError>;
-  getStats: () => Promise<FamilyUnitViewModel[]>;
+  getStats: () => Promise<StatsViewModel>;
   adminGetAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
@@ -378,7 +379,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   };
 
   // Get stats (public function accessible to any logged-in user)
-  const getStats = async (): Promise<FamilyUnitViewModel[]> => {
+  const getStats = async (): Promise<StatsViewModel> => {
     try {
       return await apiRef.current.getStats();
     } catch (error) {

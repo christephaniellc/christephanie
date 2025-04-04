@@ -21,16 +21,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-                    cfg.AllowNullCollections = true;
-                }
-            );
-            _mapper = config.CreateMapper();
+            _mapper = MappingProfileHelper.GetMapper();
         }
 
         [Test]

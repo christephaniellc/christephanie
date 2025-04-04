@@ -1,4 +1,4 @@
-import { AddressDto, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, VerifyEmailResponse } from '@/types/api';
+import { AddressDto, AdminPatchGuestRequest, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, StatsViewModel, VerifyEmailResponse } from '@/types/api';
 import { SavedPhotoConfiguration } from '@/pages/PrintedRsvp/types/types';
 import { getConfig } from '@/auth_config';
 
@@ -42,7 +42,7 @@ export default class Api {
     return this.get('/familyunit');
   }
   
-  async getStats(): Promise<FamilyUnitViewModel[]> {
+  async getStats(): Promise<StatsViewModel> {
     return this.get('/stats');
   }
 
@@ -64,6 +64,10 @@ export default class Api {
       console.error('API: Error updating family:', error);
       throw error;
     }
+  }
+  
+  async adminPatchGuest(guest: AdminPatchGuestRequest): Promise<GuestDto> {
+    return this.patch(`/admin/familyunit`, guest);
   }
   
   async adminGetFamilyByInvitationCode(invitationCode: string): Promise<FamilyUnitDto> {

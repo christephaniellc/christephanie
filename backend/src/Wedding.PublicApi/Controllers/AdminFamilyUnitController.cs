@@ -213,6 +213,58 @@ namespace Wedding.PublicApi.Controllers
                 return Problem(ex.Message);
             }
         }
+#if DEBUG_ANONYMOUS
+        [AllowAnonymous]
+#else
+        [Authorize]
+#endif
+        [HttpPatch("")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GuestDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<FamilyUnitDto>> AdminUpdateFamilyUnit([FromBody] AdminPatchGuestRequest patchGuestRequest, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (patchGuestRequest == null)
+                {
+                    return BadRequest(new { message = "Invalid request body." });
+                }
+
+                //#if !DEBUG_ANONYMOUS
+                var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
+                var ipAddress = HeaderHelper.GetIpAddress(HttpContext)!;
+                var authRequest = new ValidateAuthQuery(_auth0Configuration.Authority ?? string.Empty, _auth0Configuration.Audience ?? string.Empty,
+                    LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
+                var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
+                //#endif
+
+                var command = new AdminPatchGuestCommand(authContext, 
+                    patchGuestRequest.InvitationCode, 
+                    patchGuestRequest.GuestId,
+                    patchGuestRequest.FirstName,
+                    patchGuestRequest.AdditionalFirstNames,
+                    patchGuestRequest.LastName,
+                    patchGuestRequest.Tier,
+                    patchGuestRequest.Email,
+                    patchGuestRequest.Phone,
+                    patchGuestRequest.InvitationResponse,
+                    patchGuestRequest.RehearsalDinner,
+                    patchGuestRequest.FourthOfJuly,
+                    patchGuestRequest.Wedding);
+                command.Validate();
+                var result = await _dispatcher.ExecuteAsync<AdminPatchGuestCommand, GuestDto>(command, cancellationToken);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in AdminFamilyUnitController.");
+                return Problem(ex.Message);
+            }
+        }
+
         public class DeleteResponse
         {
             public bool Success { get; set; }

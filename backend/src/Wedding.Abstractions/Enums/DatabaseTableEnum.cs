@@ -4,6 +4,7 @@
     {
         GuestData,
         RateLimiting,
-        InvitationDesign
+        InvitationDesign,
+        PaymentData
     }
 }

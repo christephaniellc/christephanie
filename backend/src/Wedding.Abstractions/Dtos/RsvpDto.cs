@@ -20,6 +20,7 @@ namespace Wedding.Abstractions.Dtos
 
         public RsvpEnum? Wedding { get; set; }
 
+
         public LastUpdateAuditDto? RsvpAudit { get; set; }
 
         /// <summary>

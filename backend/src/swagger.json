@@ -472,6 +472,70 @@
           }
         ]
       },
+      "patch": {
+        "tags": [
+          "AdminFamilyUnit"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchGuestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "AdminFamilyUnit"
@@ -904,48 +968,6 @@
         ]
       }
     },
-    "/api/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/APIGatewayProxyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/api/helloworld": {
       "get": {
         "tags": [
@@ -1054,6 +1076,88 @@
         ]
       }
     },
+    "/api/payments/intent": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripePaymentIntentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripePaymentIntentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/stats": {
       "get": {
         "tags": [
@@ -1065,10 +1169,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FamilyUnitViewModel"
-                  }
+                  "$ref": "#/components/schemas/StatsViewModel"
                 }
               }
             }
@@ -1703,6 +1804,63 @@
           },
           "uspsVerified": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdminPatchGuestRequest": {
+        "required": [
+          "guestId",
+          "invitationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "invitationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalFirstNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tier": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitationResponse": {
+            "$ref": "#/components/schemas/InvitationResponseEnum"
+          },
+          "rehearsalDinner": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "fourthOfJuly": {
+            "$ref": "#/components/schemas/RsvpEnum"
+          },
+          "wedding": {
+            "$ref": "#/components/schemas/RsvpEnum"
           }
         },
         "additionalProperties": false
@@ -2399,6 +2557,28 @@
         },
         "additionalProperties": false
       },
+      "PaymentError": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "decline_code": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "PhotoGridItemDto": {
         "type": "object",
         "properties": {
@@ -2569,6 +2749,191 @@
         ],
         "type": "string"
       },
+      "StatsViewModel": {
+        "type": "object",
+        "properties": {
+          "totalGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRespondedSurveyGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRespondedRsvpGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attendingWeddingGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attending4thGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "interestedGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "declinedGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingWeddingGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pending4thGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "declined4thGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "babyGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "under13Guests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "under21Guests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "adultGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "omnivoreGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vegetarianGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "veganGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "allergiesCount": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "manorGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "campingGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hotelGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "otherAccommodationGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unknownAccommodationGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "interestedFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attendingWeddingFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attending4thFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "declinedFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalFamilies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalClientInfos": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deviceTypesCount": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "browsers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "operatingSystems": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "screenSizes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "languages": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "connectionTypes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "deviceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorageSupportInfoDto": {
         "type": "object",
         "properties": {
@@ -2579,6 +2944,32 @@
           "localStorageEnabled": {
             "type": "boolean",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StripePaymentIntentResponseDto": {
+        "type": "object",
+        "properties": {
+          "clientSecret": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentIntentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/PaymentError"
           }
         },
         "additionalProperties": false
