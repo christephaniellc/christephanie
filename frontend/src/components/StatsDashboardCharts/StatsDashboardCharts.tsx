@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper } from '@mui/material';
-import { FamilyUnitViewModel, GuestDto, InvitationResponseEnum, RsvpEnum, SleepPreferenceEnum, FoodPreferenceEnum, AgeGroupEnum } from '@/types/api';
+import { StatsViewModel } from '@/types/api';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { rgba } from 'polished';
 import { 
@@ -8,6 +8,7 @@ import {
   PieChart, Pie, Sector, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 import { animated, useSpring } from 'react-spring';
+import { FeatureFlags } from '@/config';
 
 // Custom themed tooltip with 8-bit style
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -163,311 +164,144 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
 type AdminTab = 'overview' | 'food' | 'accommodation' | 'interest' | 'client-info';
 
 interface AdminDashboardChartsProps {
-  families: FamilyUnitViewModel[];
+  stats: StatsViewModel;
   loading: boolean;
 }
 
-const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, loading }) => {
+const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, loading }) => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
-  // Calculate all the metrics we need from the families data
-  const metrics = useMemo(() => {
-    // Guard against empty or undefined families
-    if (!families || families.length === 0) {
-      return {
-        totalGuests: 0,
-        attendingGuests: 0,
-        declinedGuests: 0,
-        pendingGuests: 0,
-        interestData: [],
-        ageData: [],
-        foodData: [],
-        accommodationData: [],
-        allergiesData: [],
-        familyStatusData: [],
-        attendingFamilies: 0,
-        declinedFamilies: 0,
-        pendingFamilies: 0,
-        totalFamilies: 0,
-        clientInfo: {
-          deviceTypes: [],
-          browsers: [],
-          operatingSystems: [],
-          screenSizes: [],
-          languages: [],
-          connectionTypes: []
-        },
-        totalClientInfos: 0,
-        uniqueDevices: 0
-      };
-    }
-    // Count all guests
-    let totalGuests = 0;
-    let attendingGuests = 0;
-    let declinedGuests = 0;
-    let pendingGuests = 0;
-    let babyGuests = 0;
-    let under13Guests = 0;
-    let under21Guests = 0;
-    let adultGuests = 0;
-    let omnivoreGuests = 0;
-    let vegetarianGuests = 0;
-    let veganGuests = 0;
-    let manorGuests = 0;
-    let campingGuests = 0;
-    let hotelGuests = 0;
-    let otherAccommodationGuests = 0;
-    let unknownAccommodationGuests = 0;
-    const allergiesCount: Record<string, number> = {};
-
-    // Client info metrics
-    const deviceTypesCount: Record<string, number> = {};
-    const browsersCount: Record<string, number> = {};
-    const operatingSystemsCount: Record<string, number> = {};
-    const screenSizesCount: Record<string, number> = {};
-    const languagesCount: Record<string, number> = {};
-    const connectionTypesCount: Record<string, number> = {};
-    let totalClientInfos = 0;
-    const deviceIds = new Set<string>(); // To count unique devices (approximation using browser+os+screen)
-
-    // Count families by response type
-    let attendingFamilies = 0;
-    let declinedFamilies = 0;
-    let pendingFamilies = 0;
+  // Prepare data for charts using the stats from backend
+  const metrics = {
+    totalGuests: stats?.totalGuests || 0,
+    interestedGuests: stats?.interestedGuests || 0,
+    attendingGuests: stats?.attendingWeddingGuests || 0,
+    declinedGuests: stats?.declinedGuests || 0,
+    pendingGuests: stats?.pendingWeddingGuests || 0,
     
-    // Process each family
-    families.forEach(family => {
-      let familyAttending = false;
-      let familyDeclined = false;
-      
-      // Process each guest in the family
-      family.guests?.forEach(guest => {
-        // Always count everyone in the totals for the pixel representation
-        totalGuests++;
-        
-        // Count by invitationResponse status
-        if (guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested) {
-          attendingGuests++;
-          familyAttending = true;
-        } else if (guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined) {
-          declinedGuests++;
-          familyDeclined = true;
-        } else {
-          pendingGuests++;
-        }
-        
-        // Only count statistics for guests who are not pending
-        if (guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending) {
-          // Count by age group
-          if (guest.ageGroup === AgeGroupEnum.Baby) babyGuests++;
-          else if (guest.ageGroup === AgeGroupEnum.Under13) under13Guests++;
-          else if (guest.ageGroup === AgeGroupEnum.Under21) under21Guests++;
-          else if (guest.ageGroup === AgeGroupEnum.Adult) adultGuests++;
-          
-          // Count by food preference
-          if (guest.preferences?.foodPreference === FoodPreferenceEnum.Omnivore) omnivoreGuests++;
-          else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegetarian) vegetarianGuests++;
-          else if (guest.preferences?.foodPreference === FoodPreferenceEnum.Vegan) veganGuests++;
-          
-          // Count by accommodation preference
-          if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Manor) manorGuests++;
-          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Camping) campingGuests++;
-          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Hotel) hotelGuests++;
-          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Other) otherAccommodationGuests++;
-          else if (guest.preferences?.sleepPreference === SleepPreferenceEnum.Unknown) unknownAccommodationGuests++;
-        }
-        
-        // Count allergies (only if guest is not pending)
-        if (guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending) {
-          guest.preferences?.foodAllergies?.forEach(allergy => {
-            allergiesCount[allergy] = (allergiesCount[allergy] || 0) + 1;
-          });
-        }
-        
-        // Process client info for ALL guests, including pending
-        const guestWithClientInfo = guest as unknown as GuestDto;
-        if (guestWithClientInfo.clientInfos && guestWithClientInfo.clientInfos.length > 0) {
-          guestWithClientInfo.clientInfos.forEach(clientInfo => {
-            totalClientInfos++;
-            
-            // Track device types
-            const deviceType = clientInfo.device?.type || 'unknown';
-            deviceTypesCount[deviceType] = (deviceTypesCount[deviceType] || 0) + 1;
-            
-            // Track browsers
-            const browserName = clientInfo.browser?.name || 'unknown';
-            browsersCount[browserName] = (browsersCount[browserName] || 0) + 1;
-            
-            // Track operating systems
-            const os = clientInfo.os || 'unknown';
-            operatingSystemsCount[os] = (operatingSystemsCount[os] || 0) + 1;
-            
-            // Track screen sizes (categorize by common breakpoints)
-            const width = clientInfo.screen?.width || 0;
-            let screenCategory = 'unknown';
-            if (width > 0) {
-              if (width < 576) screenCategory = 'mobile (<576px)';
-              else if (width < 768) screenCategory = 'small tablet (576px-767px)';
-              else if (width < 992) screenCategory = 'tablet (768px-991px)';
-              else if (width < 1200) screenCategory = 'laptop (992px-1199px)';
-              else if (width < 1600) screenCategory = 'desktop (1200px-1599px)';
-              else screenCategory = 'large (1600px+)';
-            }
-            screenSizesCount[screenCategory] = (screenSizesCount[screenCategory] || 0) + 1;
-            
-            // Track languages
-            const language = clientInfo.language || 'unknown';
-            languagesCount[language] = (languagesCount[language] || 0) + 1;
-            
-            // Track connection types
-            const connectionType = clientInfo.connection?.effectiveType || 'unknown';
-            connectionTypesCount[connectionType] = (connectionTypesCount[connectionType] || 0) + 1;
-            
-            // Approximate unique devices
-            const deviceId = `${browserName}-${os}-${width}`;
-            deviceIds.add(deviceId);
-          });
-        }
-      });
-      
-      // Count family status
-      if (familyAttending) attendingFamilies++;
-      else if (familyDeclined) declinedFamilies++;
-      else pendingFamilies++;
-    });
+    // Interest data pie chart
+    interestData: [
+      { name: 'Interested', value: stats?.interestedGuests || 0, color: '#4CAF50' },
+      { name: 'Declined', value: stats?.declinedGuests || 0, color: '#F44336' },
+      { name: 'Pending', value: stats?.pendingWeddingGuests || 0, color: '#FFC107' }
+    ],
     
-    // Prepare data for charts
-    const interestData = [
-      { name: 'Interested', value: attendingGuests, color: '#4CAF50' },
-      { name: 'Declined', value: declinedGuests, color: '#F44336' },
-      { name: 'Pending', value: pendingGuests, color: '#FFC107' }
-    ];
+    // Age data bar chart
+    ageData: [
+      { name: 'Babies', value: stats?.babyGuests || 0, color: '#E91E63' },
+      { name: 'Under 13', value: stats?.under13Guests || 0, color: '#9C27B0' },
+      { name: 'Under 21', value: stats?.under21Guests || 0, color: '#3F51B5' },
+      { name: 'Adults', value: stats?.adultGuests || 0, color: '#2196F3' }
+    ],
     
-    const ageData = [
-      { name: 'Babies', value: babyGuests, color: '#E91E63' },
-      { name: 'Under 13', value: under13Guests, color: '#9C27B0' },
-      { name: 'Under 21', value: under21Guests, color: '#3F51B5' },
-      { name: 'Adults', value: adultGuests, color: '#2196F3' }
-    ];
+    // Food data pie chart
+    foodData: [
+      { name: 'Omnivore', value: stats?.omnivoreGuests || 0, color: '#FF9800' },
+      { name: 'Vegetarian', value: stats?.vegetarianGuests || 0, color: '#8BC34A' },
+      { name: 'Vegan', value: stats?.veganGuests || 0, color: '#4CAF50' },
+      { name: 'Meat-a-tarian', value: (stats?.totalRespondedSurveyGuests || 0) - 
+        (stats?.omnivoreGuests || 0) - (stats?.vegetarianGuests || 0) - (stats?.veganGuests || 0), color: '#9C27B0' }
+    ],
     
-    // Calculate total guests who have responded (for meat-a-tarian count)
-    const totalRespondedGuests = attendingGuests + declinedGuests;
+    // Accommodation data radar chart
+    accommodationData: [
+      { name: 'Manor', value: stats?.manorGuests || 0, color: '#9C27B0' },
+      { name: 'Camping', value: stats?.campingGuests || 0, color: '#4CAF50' },
+      { name: 'Hotel', value: stats?.hotelGuests || 0, color: '#2196F3' },
+      { name: 'Other', value: stats?.otherAccommodationGuests || 0, color: '#FF9800' },
+      { name: 'Unknown', value: stats?.unknownAccommodationGuests || 0, color: '#757575' }
+    ],
     
-    const foodData = [
-      { name: 'Omnivore', value: omnivoreGuests, color: '#FF9800' },
-      { name: 'Vegetarian', value: vegetarianGuests, color: '#8BC34A' },
-      { name: 'Vegan', value: veganGuests, color: '#4CAF50' },
-      { name: 'Meat-a-tarian', value: totalRespondedGuests - omnivoreGuests - vegetarianGuests - veganGuests, color: '#9C27B0' }
-    ];
-    
-    const accommodationData = [
-      { name: 'Manor', value: manorGuests, color: '#9C27B0' },
-      { name: 'Camping', value: campingGuests, color: '#4CAF50' },
-      { name: 'Hotel', value: hotelGuests, color: '#2196F3' },
-      { name: 'Other', value: otherAccommodationGuests, color: '#FF9800' },
-      { name: 'Unknown', value: unknownAccommodationGuests, color: '#757575' }
-    ];
-    
-    const allergiesData = Object.entries(allergiesCount)
+    // Allergies data for tags
+    allergiesData: Object.entries(stats?.allergiesCount || {})
       .map(([name, value]) => ({ name, value, color: '#F44336' }))
-      .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.value - a.value),
     
-    const familyStatusData = [
-      { name: 'Interested', value: attendingFamilies, color: '#4CAF50' },
-      { name: 'Declined', value: declinedFamilies, color: '#F44336' },
-      { name: 'Pending', value: pendingFamilies, color: '#FFC107' }
-    ];
+    // Family status data pie chart
+    familyStatusData: [
+      { name: 'Interested', value: stats?.interestedFamilies || 0, color: '#4CAF50' },
+      { name: 'Declined', value: stats?.declinedFamilies || 0, color: '#F44336' },
+      { name: 'Pending', value: stats?.pendingFamilies || 0, color: '#FFC107' }
+    ],
     
-    // Prepare client info data for charts
-    const deviceTypesData = Object.entries(deviceTypesCount)
-      .map(([name, value]) => ({ 
-        name, 
-        value, 
-        color: name === 'mobile' ? '#FF9800' : name === 'desktop' ? '#2196F3' : '#9C27B0' 
-      }))
-      .sort((a, b) => b.value - a.value);
+    // Family counts
+    attendingFamilies: stats?.attendingWeddingFamilies || 0,
+    interestedFamilies: stats?.interestedFamilies || 0,
+    declinedFamilies: stats?.declinedFamilies || 0,
+    pendingFamilies: stats?.pendingFamilies || 0,
+    totalFamilies: stats?.totalFamilies || 0,
     
-    const browsersData = Object.entries(browsersCount)
-      .map(([name, value]) => ({ 
-        name, 
-        value, 
-        color: 
-          name === 'chrome' ? '#4CAF50' : 
-          name === 'firefox' ? '#FF9800' : 
-          name === 'safari' ? '#2196F3' : 
-          name === 'edge' ? '#3F51B5' : 
-          '#9E9E9E'
-      }))
-      .sort((a, b) => b.value - a.value);
-    
-    const operatingSystemsData = Object.entries(operatingSystemsCount)
-      .map(([name, value]) => ({ 
-        name, 
-        value, 
-        color: name.includes('win') ? '#2196F3' : 
-               name.includes('mac') ? '#9C27B0' : 
-               name.includes('linux') ? '#FF9800' : 
-               name.includes('android') ? '#4CAF50' : 
-               name.includes('ios') ? '#F44336' : '#9E9E9E'
-      }))
-      .sort((a, b) => b.value - a.value);
-    
-    const screenSizesData = Object.entries(screenSizesCount)
-      .map(([name, value]) => ({ 
-        name, 
-        value, 
-        color: 
-          name.includes('mobile') ? '#F44336' : 
-          name.includes('tablet') ? '#FF9800' : 
-          name.includes('laptop') ? '#4CAF50' : 
-          name.includes('desktop') ? '#2196F3' : '#9E9E9E'
-      }))
-      .sort((a, b) => b.value - a.value);
+    // Client info
+    clientInfo: {
+      deviceTypes: Object.entries(stats?.deviceTypesCount || {})
+        .map(([name, value]) => ({ 
+          name, 
+          value, 
+          color: name === 'mobile' ? '#FF9800' : name === 'desktop' ? '#2196F3' : '#9C27B0' 
+        }))
+        .sort((a, b) => b.value - a.value),
       
-    const languagesData = Object.entries(languagesCount)
-      .map(([name, value]) => ({ name, value, color: '#E91E63' }))
-      .sort((a, b) => b.value - a.value);
+      browsers: Object.entries(stats?.browsers || {})
+        .map(([name, value]) => ({ 
+          name, 
+          value, 
+          color: 
+            name === 'chrome' ? '#4CAF50' : 
+            name === 'firefox' ? '#FF9800' : 
+            name === 'safari' ? '#2196F3' : 
+            name === 'edge' ? '#3F51B5' : 
+            '#9E9E9E'
+        }))
+        .sort((a, b) => b.value - a.value),
       
-    const connectionTypesData = Object.entries(connectionTypesCount)
-      .map(([name, value]) => ({ 
-        name, 
-        value, 
-        color: 
-          name === '4g' ? '#4CAF50' : 
-          name === '3g' ? '#FF9800' : 
-          name === '2g' ? '#F44336' : 
-          name === 'slow-2g' ? '#D32F2F' : '#9E9E9E'
-      }))
-      .sort((a, b) => b.value - a.value);
+      operatingSystems: Object.entries(stats?.operatingSystems || {})
+        .map(([name, value]) => ({ 
+          name, 
+          value, 
+          color: name.includes('win') ? '#2196F3' : 
+                name.includes('mac') ? '#9C27B0' : 
+                name.includes('linux') ? '#FF9800' : 
+                name.includes('android') ? '#4CAF50' : 
+                name.includes('ios') ? '#F44336' : '#9E9E9E'
+        }))
+        .sort((a, b) => b.value - a.value),
+      
+      screenSizes: Object.entries(stats?.screenSizes || {})
+        .map(([name, value]) => ({ 
+          name, 
+          value, 
+          color: 
+            name.includes('mobile') ? '#F44336' : 
+            name.includes('tablet') ? '#FF9800' : 
+            name.includes('laptop') ? '#4CAF50' : 
+            name.includes('desktop') ? '#2196F3' : '#9E9E9E'
+        }))
+        .sort((a, b) => b.value - a.value),
+        
+      languages: Object.entries(stats?.languages || {})
+        .map(([name, value]) => ({ name, value, color: '#E91E63' }))
+        .sort((a, b) => b.value - a.value),
+        
+      connectionTypes: Object.entries(stats?.connectionTypes || {})
+        .map(([name, value]) => ({ 
+          name, 
+          value, 
+          color: 
+            name === '4g' ? '#4CAF50' : 
+            name === '3g' ? '#FF9800' : 
+            name === '2g' ? '#F44336' : 
+            name === 'slow-2g' ? '#D32F2F' : '#9E9E9E'
+        }))
+        .sort((a, b) => b.value - a.value)
+    },
+    
+    totalClientInfos: stats?.totalClientInfos || 0,
+    uniqueDevices: stats?.deviceIds?.length || 0,
 
-    return {
-      totalGuests,
-      attendingGuests,
-      declinedGuests,
-      pendingGuests,
-      interestData,
-      ageData,
-      foodData,
-      accommodationData,
-      allergiesData,
-      familyStatusData,
-      attendingFamilies,
-      declinedFamilies,
-      pendingFamilies,
-      totalFamilies: families.length,
-      clientInfo: {
-        deviceTypes: deviceTypesData,
-        browsers: browsersData,
-        operatingSystems: operatingSystemsData,
-        screenSizes: screenSizesData,
-        languages: languagesData,
-        connectionTypes: connectionTypesData
-      },
-      totalClientInfos,
-      uniqueDevices: deviceIds.size
-    };
-  }, [families]);
+    attendingMetric: FeatureFlags.ENABLE_RSVP_PHASE 
+      ? stats?.attendingWeddingGuests : stats?.interestedGuests
+  };
 
   if (loading) {
     return (
@@ -510,8 +344,9 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
         <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
           <Grid item xs={6} sm={4}>
             <AnimatedCounter 
-              value={metrics.attendingGuests} 
-              label="Interested" 
+              value={metrics.attendingMetric} 
+              label={FeatureFlags.ENABLE_RSVP_PHASE 
+                ? "Attending" : "Interested" }
               color="#4CAF50" 
             />
           </Grid>
@@ -527,9 +362,9 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
               value={metrics.pendingGuests} 
               label="Pending" 
               color={
-                metrics.pendingGuests + metrics.attendingGuests > 250 
+                metrics.pendingGuests + metrics.attendingMetric > 250 
                   ? "#F44336" // Red if pending + interested > 250
-                  : (metrics.pendingGuests + metrics.attendingGuests + 10) <= 250 
+                  : (metrics.pendingGuests + metrics.attendingMetric + 10) <= 250 
                     ? "#4CAF50" // Green if (pending + interested + 10) <= 250
                     : "#FFC107" // Yellow otherwise
               }
@@ -555,7 +390,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
           </Typography>
           <PixelGuestGrid 
             totalGuests={metrics.totalGuests} 
-            attendingGuests={metrics.attendingGuests}
+            attendingGuests={metrics.attendingMetric}
             declinedGuests={metrics.declinedGuests}
             maxPerRow={20}
           />
@@ -642,7 +477,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ families, l
                       opacity: 0.8
                     }}
                   >
-                    Total: {metrics.attendingGuests + metrics.declinedGuests} of {metrics.totalGuests} guests ({metrics.pendingGuests} pending)
+                    Total: {metrics.attendingMetric + metrics.declinedGuests} of {metrics.totalGuests} guests ({metrics.pendingGuests} pending)
                   </Typography>
                 </Box>
                 <ResponsiveContainer width="100%" height="100%">
