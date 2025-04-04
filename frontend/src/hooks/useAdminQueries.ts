@@ -1,7 +1,7 @@
 import { useContext, useRef } from 'react';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/Api';
-import { FamilyUnitViewModel, RoleEnum, InvitationResponseEnum, SleepPreferenceEnum, FoodPreferenceEnum, RsvpEnum, AgeGroupEnum, FamilyUnitDto } from '@/types/api';
+import { FamilyUnitViewModel, RoleEnum, InvitationResponseEnum, SleepPreferenceEnum, FoodPreferenceEnum, RsvpEnum, AgeGroupEnum, FamilyUnitDto, StatsViewModel } from '@/types/api';
 import { ApiContext } from '@/context/ApiContext';
 import { mockFamilyUnitDto } from '../../test-utils/mockResponses';
 
@@ -150,7 +150,7 @@ export const useStatsQueries = () => {
   const getStatsRef = useRef(apiContext.getStats);
   
   // Query to get wedding stats (any authenticated user)
-  const getStatsQuery = useQuery<FamilyUnitViewModel[], ApiError>({
+  const getStatsQuery = useQuery<StatsViewModel, ApiError>({
     queryKey: ['getStats'],
     queryFn: () => getStatsRef.current(),
     refetchOnMount: false,
@@ -159,7 +159,7 @@ export const useStatsQueries = () => {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes before considering stale
     gcTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
     enabled: false, // Don't fetch on component mount, we'll do it manually
-  }) as UseQueryResult<FamilyUnitViewModel[], ApiError>;
+  }) as UseQueryResult<StatsViewModel, ApiError>;
 
   return {
     getStatsQuery,
