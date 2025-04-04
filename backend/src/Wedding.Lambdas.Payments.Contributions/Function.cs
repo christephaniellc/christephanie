@@ -30,7 +30,7 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
-        serviceCollection.AddScoped<GetStatsHandler>();
+        serviceCollection.AddScoped<GetContributionsHandler>();
 
         return serviceCollection.BuildServiceProvider();
     }
@@ -51,9 +51,9 @@ public class Function
             context.Logger.LogDebug($"Raw Auth Input: {authContext.GuestId} {authContext.InvitationCode} {authContext.Roles}");
 
             using var scope = _serviceProvider.CreateScope();
-            var handler = scope.ServiceProvider.GetRequiredService<GetStatsHandler>();
+            var handler = scope.ServiceProvider.GetRequiredService<GetContributionsHandler>();
             
-            var queryUnits = new GetStatsQuery(authContext);
+            var queryUnits = new GetContributionsQuery(authContext);
             var results = await handler.GetAsync(queryUnits);
             return results.OkResponse();
 
