@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -115,9 +116,9 @@ namespace Wedding.Lambdas.UnitTests.Stats.Get
             
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("TEST001", result[0].InvitationCode);
-            Assert.AreEqual("TEST002", result[1].InvitationCode);
+            Assert.AreEqual(2, result.TotalGuests);
+            Assert.AreEqual(2, result.TotalFamilies);
+            result.AttendingWeddingGuests.Should().Be(0);
         }
 
 
@@ -175,8 +176,9 @@ namespace Wedding.Lambdas.UnitTests.Stats.Get
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual("NNNNN", result[0].InvitationCode);
+            Assert.AreEqual(1, result.TotalGuests);
+            Assert.AreEqual(1, result.TotalFamilies);
+            result.AttendingWeddingGuests.Should().Be(0);
         }
 
         [Test]
