@@ -334,6 +334,13 @@ export interface PatchUserRequest {
   clientInfo?: ClientInfoDto;
 }
 
+export interface PaymentError {
+  type?: string | null;
+  message?: string | null;
+  code?: string | null;
+  decline_code?: string | null;
+}
+
 export interface PhotoGridItemDto {
   /** @format uuid */
   id?: string;
@@ -409,9 +416,87 @@ export enum SleepPreferenceEnum {
   Other = 'Other',
 }
 
+export interface StatsViewModel {
+  /** @format int32 */
+  totalGuests?: number;
+  /** @format int32 */
+  totalRespondedSurveyGuests?: number;
+  /** @format int32 */
+  totalRespondedRsvpGuests?: number;
+  /** @format int32 */
+  attendingWeddingGuests?: number;
+  /** @format int32 */
+  attending4thGuests?: number;
+  /** @format int32 */
+  interestedGuests?: number;
+  /** @format int32 */
+  declinedGuests?: number;
+  /** @format int32 */
+  pendingWeddingGuests?: number;
+  /** @format int32 */
+  pending4thGuests?: number;
+  /** @format int32 */
+  declined4thGuests?: number;
+  /** @format int32 */
+  babyGuests?: number;
+  /** @format int32 */
+  under13Guests?: number;
+  /** @format int32 */
+  under21Guests?: number;
+  /** @format int32 */
+  adultGuests?: number;
+  /** @format int32 */
+  omnivoreGuests?: number;
+  /** @format int32 */
+  vegetarianGuests?: number;
+  /** @format int32 */
+  veganGuests?: number;
+  allergiesCount?: Record<string, number>;
+  /** @format int32 */
+  manorGuests?: number;
+  /** @format int32 */
+  campingGuests?: number;
+  /** @format int32 */
+  hotelGuests?: number;
+  /** @format int32 */
+  otherAccommodationGuests?: number;
+  /** @format int32 */
+  unknownAccommodationGuests?: number;
+  /** @format int32 */
+  interestedFamilies?: number;
+  /** @format int32 */
+  attendingWeddingFamilies?: number;
+  /** @format int32 */
+  attending4thFamilies?: number;
+  /** @format int32 */
+  declinedFamilies?: number;
+  /** @format int32 */
+  pendingFamilies?: number;
+  /** @format int32 */
+  totalFamilies?: number;
+  /** @format int32 */
+  totalClientInfos?: number;
+  deviceTypesCount?: Record<string, number>;
+  browsers?: Record<string, number>;
+  operatingSystems?: Record<string, number>;
+  screenSizes?: Record<string, number>;
+  languages?: Record<string, number>;
+  connectionTypes?: Record<string, number>;
+  deviceIds?: string[] | null;
+}
+
 export interface StorageSupportInfoDto {
   cookiesEnabled?: boolean | null;
   localStorageEnabled?: boolean | null;
+}
+
+export interface StripePaymentIntentResponseDto {
+  clientSecret?: string | null;
+  paymentIntentId?: string | null;
+  /** @format int64 */
+  amount?: number | null;
+  currency?: string | null;
+  error?: PaymentError;
 }
 
 export enum TwilioOtpStatusEnum {
@@ -1044,13 +1129,47 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags Payment
+     * @name PaymentsIntentCreate
+     * @request POST:/api/payments/intent
+     * @secure
+     */
+    paymentsIntentCreate: (params: RequestParams = {}) =>
+      this.request<StripePaymentIntentResponseDto, ProblemDetails | void>({
+        path: `/api/payments/intent`,
+        method: 'POST',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Payment
+     * @name PaymentsIntentList
+     * @request GET:/api/payments/intent
+     * @secure
+     */
+    paymentsIntentList: (params: RequestParams = {}) =>
+      this.request<StripePaymentIntentResponseDto, ProblemDetails | void>({
+        path: `/api/payments/intent`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Stats
      * @name StatsList
      * @request GET:/api/stats
      * @secure
      */
     statsList: (params: RequestParams = {}) =>
-      this.request<FamilyUnitViewModel[], ProblemDetails | void>({
+      this.request<StatsViewModel, ProblemDetails | void>({
         path: `/api/stats`,
         method: 'GET',
         secure: true,
