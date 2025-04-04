@@ -42,11 +42,11 @@ namespace Wedding.PublicApi.Controllers
         }
         
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FamilyUnitViewModel>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatsViewModel))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<FamilyUnitViewModel>>> GetAllFamilyUnits(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<StatsViewModel>> GetAllFamilyUnits(CancellationToken cancellationToken = default)
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
@@ -57,7 +57,7 @@ namespace Wedding.PublicApi.Controllers
 #endif
             var query = new GetStatsQuery(authContext);
             query.Validate();
-            var result = await _dispatcher.GetAsync<GetStatsQuery, List<FamilyUnitViewModel>>(query, cancellationToken);
+            var result = await _dispatcher.GetAsync<GetStatsQuery, StatsViewModel>(query, cancellationToken);
 
             return Ok(result);
         }
