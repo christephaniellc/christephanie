@@ -39,17 +39,8 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
                 .Build();
 
             _testTokenHelper = new TestTokenHelper(configuration);
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            }
-            );
-
-            _mapper = config.CreateMapper();
+            
+            _mapper = MappingProfileHelper.GetMapper();
 
             _mockDynamoDbProvider.Setup(x =>
                     x.LoadFamilyUnitOnlyAsync(_testTokenHelper.JwtAudience, TestDataHelper.TEST_INVITATION_CODE, It.IsAny<CancellationToken>()))
@@ -158,6 +149,10 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Update
             var command = new AdminPatchGuestCommand(_fakeAuthContext!,
                 TestDataHelper.GUEST_JOHN.InvitationCode,
                 TestDataHelper.GUEST_JOHN.GuestId,
+                TestDataHelper.GUEST_JOHN.FirstName,
+                TestDataHelper.GUEST_JOHN.AdditionalFirstNames,
+                TestDataHelper.GUEST_JOHN.LastName,
+                "Ruby",
                 updatedEmail,
                 updatedPhone,
                 InvitationResponseEnum.Interested,

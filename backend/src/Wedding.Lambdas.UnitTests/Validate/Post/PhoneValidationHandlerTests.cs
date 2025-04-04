@@ -43,17 +43,8 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
         
             _testTokenHelper = new TestTokenHelper(configuration);
         
-            var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-                }
-            );
-        
-            _mapper = config.CreateMapper();
-        
+            _mapper = MappingProfileHelper.GetMapper();
+
             _mockTwilioSmsProvider = new Mock<ITwilioSmsProvider>();
         
             _fakeAuthContext = new AuthContext

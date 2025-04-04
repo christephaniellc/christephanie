@@ -12,6 +12,8 @@ using Wedding.Abstractions.Keys;
 using AutoMapper;
 using Wedding.Abstractions.Enums;
 using Wedding.Common.Multitenancy;
+using System.Globalization;
+using static Wedding.Abstractions.Keys.DynamoKeys;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -342,6 +344,36 @@ namespace Wedding.Common.Helpers.AWS
             //     partitionKey, configSortKey, GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
         }
 
+        #region Payments
+        public async Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, string timestamp, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = PaymentKeys.GetPartitionKey(paymentIntentId);
+            var sortKey = PaymentKeys.GetSortKey(timestamp);
+
+            return await _repository.LoadAsync<PaymentIntentEntity>(partitionKey, sortKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+        }
+
+        public async Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
+        {
+            var queryConfig = GetTableConfig(audience, DatabaseTableEnum.PaymentData);
+            queryConfig.IndexName = "AllByGuestIndex";
+
+            var gsiPartitionKey = PaymentKeys.GetGuestIdGSI(guestId);
+
+            return await _repository.QueryAsync<PaymentIntentEntity>(gsiPartitionKey, queryConfig).GetRemainingAsync(cancellationToken);
+        }
+
+        public async Task<List<PaymentIntentEntity>> GetPaymentsByCategoryAsync(string audience, string giftCategory, CancellationToken cancellationToken = default)
+        {
+            var queryConfig = GetTableConfig(audience, DatabaseTableEnum.PaymentData);
+            queryConfig.IndexName = "AllByCategoryIndex";
+
+            var gsiPartitionKey = PaymentKeys.GetGiftCategoryGSI(giftCategory);
+
+            return await _repository.QueryAsync<PaymentIntentEntity>(gsiPartitionKey, queryConfig).GetRemainingAsync(cancellationToken);
+        }
+        #endregion
+
         public async Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default)
         {
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.GuestData), cancellationToken);
@@ -364,6 +396,24 @@ namespace Wedding.Common.Helpers.AWS
             var configSortKey = DynamoKeys.GetConfigurationInvitationSortKey(DesignConfigurationTypeEnum.Invitation, configurationId);
             await _repository.DeleteAsync<DesignConfigurationEntity>(partitionKey, configSortKey, 
                 GetTableConfig(audience, DatabaseTableEnum.InvitationDesign), cancellationToken);
+        }
+
+        public async Task SavePaymentAsync(string audience, PaymentIntentEntity entity, CancellationToken cancellationToken = default)
+        {
+            entity.PartitionKey = DynamoKeys.PaymentKeys.GetPartitionKey(entity.PaymentIntentId);
+            entity.SortKey = DynamoKeys.PaymentKeys.GetSortKey(entity.Timestamp);
+            entity.GuestIdGSI = DynamoKeys.PaymentKeys.GetGuestIdGSI(entity.GuestId);
+            entity.GuestSortKey = entity.Timestamp;
+            entity.GiftCategoryGSI = DynamoKeys.PaymentKeys.GetGiftCategoryGSI(entity.GiftCategory);
+            entity.CategorySortKey = entity.Timestamp;
+
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+        }
+
+        public async Task DeletePaymentAsync(string audience, string paymentId, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = DynamoKeys.GetPartitionKey(paymentId);
+            await _repository.DeleteAsync<WeddingEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
         }
     }
 }

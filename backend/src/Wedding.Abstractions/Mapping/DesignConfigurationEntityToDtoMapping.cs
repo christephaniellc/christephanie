@@ -15,9 +15,9 @@ namespace Wedding.Abstractions.Mapping
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<Profile> Profiles() => new List<Profile>
-    {
-        new InvitationDesignProfile()
-    };
+        {
+            new InvitationDesignProfile()
+        };
 
         public class InvitationDesignProfile : Profile
         {

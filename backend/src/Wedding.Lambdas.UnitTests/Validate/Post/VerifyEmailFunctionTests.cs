@@ -68,17 +68,8 @@ namespace Wedding.Lambdas.UnitTests.Validate.Post
                 Name = TestDataHelper.GUEST_JOHN.FirstName + " " + TestDataHelper.GUEST_JOHN.LastName,
                 IpAddress = "127.0.0.1"
             };
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            }
-            );
-
-            _mapper = config.CreateMapper();
+            
+            _mapper = MappingProfileHelper.GetMapper();
 
             _lambdaContext = new TestLambdaContext();
 

@@ -30,18 +30,11 @@ namespace Wedding.Lambdas.UnitTests.Guest.Get
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            });
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")
                 .Build();
 
-			_mapper = config.CreateMapper();
+			_mapper = MappingProfileHelper.GetMapper();
             _mockDynamoDbProvider = new Mock<IDynamoDBProvider>();
             var logger = Mock.Of<ILogger<GetGuestMaskedValueHandler>>();
 

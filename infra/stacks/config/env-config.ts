@@ -16,6 +16,7 @@ import * as cdk from 'aws-cdk-lib';
         existingCertificateArn: string | undefined;
         existingDomainNameAliasApi: string | undefined;
         existingDomainNameZoneId: string | undefined;
+        existingGuestTableArn: string | undefined;
         uspsConsumerKey: string | undefined;
         uspsConsumerSecret: string | undefined;
         twilioSid: string | undefined;
@@ -23,5 +24,7 @@ import * as cdk from 'aws-cdk-lib';
         twilioVerifyServiceSid: string | undefined;
         twilioMessagingServiceSid: string | undefined;
         twilioMessagingServicePhone: string | undefined;
+        stripePublicKey: string | undefined;
+        stripeApiSecretKey: string | undefined;
     };
  }
