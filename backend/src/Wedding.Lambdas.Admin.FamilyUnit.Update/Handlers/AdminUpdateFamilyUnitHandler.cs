@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
+using Wedding.Abstractions.Dtos.Auth;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Keys;
@@ -91,6 +92,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 
                 foreach (var guest in guestsToDelete)
                 {
+                    _logger.LogInformation($"Removing guest {guest.FirstName} {guest.LastName} from family unit {command.FamilyUnit.InvitationCode}.");
                     var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
                     await _dynamoDBProvider.DeleteAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode, guestSortKey, cancellationToken);
                 }
@@ -104,8 +106,10 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                         guest.GuestId, 
                         cancellationToken);
 
+                    _logger.LogInformation($"Updating guest: {JsonSerializer.Serialize(existingGuest)}");
+
                     _mapper.Map(guest, existingGuest);
-                    //_mapper.Map(existingGuest, guest);
+                    _logger.LogInformation($"Updated guest: {JsonSerializer.Serialize(existingGuest)}");
                     await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuest!, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
@@ -116,6 +120,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                     guest.GuestNumber = addedGuests.Count + 1;
 
                     var entity = _mapper.Map<WeddingEntity>(guest);
+                    _logger.LogInformation($"Adding guest: {JsonSerializer.Serialize(guest)}");
                     await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, entity, cancellationToken);
                     addedGuests.Add(_mapper.Map<GuestDto>(guest));
                 }
@@ -129,6 +134,8 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
                 existingFamilyUnitEntity!.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
+
+                _logger.LogInformation($"Updated family unit: {JsonSerializer.Serialize(existingFamilyUnitEntity)}");
 
                 await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
             }
