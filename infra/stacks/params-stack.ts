@@ -67,6 +67,13 @@ export class ParamsStack extends cdk.Stack {
                 "Authority": props.env.authAuthority,
                 "Audience": `https://${props.apiUrl}`
                 }) 
+        },
+        { 
+            name: "/config/stripe/api-credentials", 
+            value: JSON.stringify({
+                "PublicKey": `${props.env.stripePublicKey}`,
+                "SecretKey": `${props.env.stripeApiSecretKey}`
+                }) 
         }
     ];
 
