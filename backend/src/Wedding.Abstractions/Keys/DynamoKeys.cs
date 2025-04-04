@@ -10,6 +10,9 @@ namespace Wedding.Abstractions.Keys
         public const string Guest = "GUEST";
         public const string Config = "CONFIG";
         public const string Invitation = "INVITATION";
+        public const string Payment = "PAYMENT";
+        public const string GiftCategory = "CATEGORY";
+        public const string GiftMetadata = "METADATA";
         public const string GuestInfo = "GUESTINFO";
         public const string Rsvp = "RSVP";
         public const string Preferences = "PREFS";
@@ -49,6 +52,30 @@ namespace Wedding.Abstractions.Keys
                 sortKey += $"#{designId}";
             }
             return sortKey;
+        }
+
+        public static string GetPaymentPartitionKey(string guestId)
+        {
+            return $"{DynamoKeys.Guest}#{guestId}";
+        }
+
+        public static string GetPaymentSortKey(GiftCategoryEnum giftCategoryType, string? paymentId = null)
+        {
+            var sortKey = $"{DynamoKeys.Payment}#{giftCategoryType.ToString().ToUpper()}";
+            if (paymentId != null)
+            {
+                sortKey += $"#{paymentId}";
+            }
+            return sortKey;
+        }
+
+        public static class PaymentKeys
+        {
+            public static string GetPartitionKey(string paymentIntentId) => $"{DynamoKeys.Payment}#{paymentIntentId}";
+            public static string GetSortKey(string timestamp) => $"{DynamoKeys.GiftMetadata}#{timestamp}";
+
+            public static string GetGuestIdGSI(string guestId) => $"{DynamoKeys.Guest}#{guestId}";
+            public static string GetGiftCategoryGSI(string category) => $"{DynamoKeys.GiftCategory}#{category}";
         }
     }
 }

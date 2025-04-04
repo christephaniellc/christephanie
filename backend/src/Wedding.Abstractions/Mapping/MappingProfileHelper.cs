@@ -18,6 +18,7 @@ namespace Wedding.Abstractions.Mapping
                 cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
                 cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
                 cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
+                cfg.AddProfiles(PaymentEntityToDtoMapping.Profiles());
             });
         }
     }
