@@ -71,7 +71,7 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                         }
                         else
                         {
-                            if (guest.Rsvp!.Wedding == RsvpEnum.Attending)
+                            if (guest.Rsvp!.Wedding != null && guest.Rsvp!.Wedding == RsvpEnum.Attending)
                             {
                                 stats.AttendingWeddingGuests++;
                                 familyAttendingWedding = true;
@@ -82,18 +82,22 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                                 familyInterested = true;
                             }
                             else if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Declined
-                                     || guest.Rsvp?.Wedding == RsvpEnum.Declined)
+                                     || (guest.Rsvp!.Wedding != null && guest.Rsvp?.Wedding == RsvpEnum.Declined))
                             {
                                 stats.DeclinedGuests++;
                                 familyDeclined = true;
                             }
                             if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending
-                                     && guest.Rsvp.Wedding == RsvpEnum.Pending)
+                                     && (guest.Rsvp?.Wedding == null || guest.Rsvp?.Wedding == RsvpEnum.Pending))
                             {
                                 stats.PendingWeddingGuests++;
                             }
 
-                            if (guest.Rsvp!.FourthOfJuly == RsvpEnum.Attending)
+                            if (guest.Rsvp?.FourthOfJuly == null || guest.Rsvp?.FourthOfJuly == RsvpEnum.Pending)
+                            {
+                                stats.Pending4thGuests++;
+                            }
+                            else if (guest.Rsvp!.FourthOfJuly == RsvpEnum.Attending)
                             {
                                 stats.Attending4thGuests++;
                                 familyAttending4th = true;
@@ -101,10 +105,6 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                             else if (guest.Rsvp!.FourthOfJuly == RsvpEnum.Declined)
                             {
                                 stats.Declined4thGuests++;
-                            }
-                            else if (guest.Rsvp!.FourthOfJuly == RsvpEnum.Pending)
-                            {
-                                stats.Pending4thGuests++;
                             }
                         }
 
