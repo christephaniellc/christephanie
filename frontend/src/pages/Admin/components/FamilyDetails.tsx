@@ -9,7 +9,9 @@ import {
   Skeleton,
   Button,
   TextField,
-  Alert
+  Alert,
+  Dialog,
+  DialogContent
 } from '@mui/material';
 import { AddressDto, FamilyUnitDto, GuestDto, PatchFamilyUnitRequest } from '@/types/api';
 import { useApiContext } from '@/context/ApiContext';
@@ -21,6 +23,7 @@ import { formatDate } from './AdminHelpers';
 // Import components
 import AddressEditor from './AddressEditor';
 import GuestList from './GuestList';
+import GuestEditor from './GuestEditor';
 
 interface FamilyDetailsProps {
   family: FamilyUnitDto | null;
@@ -173,8 +176,28 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
   
   const handleEditGuest = (guest: GuestDto) => {
     setSelectedGuest(guest);
-    // We'll implement the guest editor in a future step
-    console.log('Edit guest:', guest);
+  };
+  
+  const handleCloseGuestEditor = () => {
+    setSelectedGuest(null);
+  };
+  
+  const handleGuestSaved = () => {
+    // Close the editor dialog
+    setSelectedGuest(null);
+    
+    // Notify the parent component to refresh data
+    if (onFamilyUpdate) {
+      onFamilyUpdate();
+    }
+    
+    // Show success message
+    setUpdateSuccess(true);
+    
+    // Reset the success message after a delay
+    setTimeout(() => {
+      setUpdateSuccess(false);
+    }, 3000);
   };
 
   if (loading) {
@@ -207,6 +230,25 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
       flexDirection: 'column', 
       height: '100%' 
     }}>
+      {/* Guest Editor Dialog */}
+      <Dialog 
+        open={!!selectedGuest} 
+        onClose={handleCloseGuestEditor}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogContent>
+          {selectedGuest && family && (
+            <GuestEditor 
+              guest={selectedGuest}
+              family={family}
+              onCancel={handleCloseGuestEditor}
+              onSave={handleGuestSaved}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
           <Typography variant="h6" component="h2">

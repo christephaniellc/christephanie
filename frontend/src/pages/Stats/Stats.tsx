@@ -6,7 +6,7 @@ import {
   Button
 } from '@mui/material';
 
-import { FamilyUnitDto, FamilyUnitViewModel, InvitationResponseEnum } from '@/types/api';
+import { FamilyUnitDto, FamilyUnitViewModel, InvitationResponseEnum, StatsViewModel } from '@/types/api';
 import { useAdminQueries, useStatsQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
@@ -22,7 +22,7 @@ import StatsDashboardCharts from '@/components/StatsDashboardCharts';
 type SortOption = 'lastUpdated' | 'invitationStatus' | 'default';
 
 function Stats() {
-  const [statsData, setStatsData] = useState<FamilyUnitViewModel[]>([]);
+  const [statsData, setStatsData] = useState<StatsViewModel | null>(null);
   const [adminData, setAdminData] = useState<FamilyUnitDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [adminLoading, setAdminLoading] = useState(true);
@@ -220,7 +220,7 @@ function Stats() {
     const fetchStatsData = async () => {
       try {
         // Check if we already have cached data
-        if (getStatsQuery.data && getStatsQuery.data.length > 0) {
+        if (getStatsQuery.data) {
           //console.log('Using cached stats data');
           setStatsData(getStatsQuery.data);
           setLoading(false);
@@ -379,7 +379,7 @@ function Stats() {
       ) : error ? (
         <Typography color="error" sx={{ mb: 4 }}>{error}</Typography>
       ) : (
-        <StatsDashboardCharts families={statsData} loading={false} />
+        <StatsDashboardCharts stats={statsData!} loading={false} />
       )}
       
       {/* Family Cards - only visible to admins */}

@@ -4,7 +4,7 @@ using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NSubstitute;
+using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
@@ -30,15 +30,8 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
         public void SetUp()
         {
             _loggerMock = new Mock<ILogger<DynamoDBProvider>>();
-            var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-                }
-            );
-            _mapper = config.CreateMapper();
+            
+            _mapper = MappingProfileHelper.GetMapper();
             _multitenancySettingsProviderMock = new Mock<IMultitenancySettingsProvider>();
 
             // Configure the multitenancy settings provider to return a dummy table name.
@@ -46,6 +39,8 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
                 .Returns(_testTableName);
             _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, DatabaseTableEnum.RateLimiting))
                 .Returns(_testTableNameRateLimit);
+            _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, DatabaseTableEnum.PaymentData))
+                .Returns(_testTableName);
 
             var serviceCollection = new ServiceCollection();
             var dynamoDbClient = new AmazonDynamoDBClient();
@@ -93,6 +88,100 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             // Fifth request (after waiting, should be allowed again)
             var isRateLimited5 = await Sut.CheckRateLimitAsync(Audience, ipAddress, route, rateLimit, rateLimitPerSeconds);
             Assert.False(isRateLimited5, "Fifth request after delay should be allowed.");
+        }
+
+        [Test]
+        public async Task GetPaymentByIdAsync_ShouldReturnEntity_WhenExists()
+        {
+            var paymentId = "pi_test_123";
+            var timestamp = "2025-04-01T10:00:00Z";
+            var partitionKey = $"PAYMENT#{paymentId}";
+            var sortKey = $"METADATA#{timestamp}";
+            var entity = CreateTestPaymentEntity(timestamp: timestamp);
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.LoadAsync<PaymentIntentEntity>(partitionKey, sortKey,
+                It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var result = await provider.GetPaymentByIdAsync(Audience, paymentId, timestamp);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(paymentId, result.PaymentIntentId);
+            Assert.AreEqual(partitionKey, result.PartitionKey);
+        }
+
+        [Test]
+        public async Task GetPaymentsByGuestIdAsync_ShouldReturnEntities()
+        {
+            var guestId = "guest123";
+            var entity = CreateTestPaymentEntity(guestId: guestId);
+
+            var mockAsyncSearch = new Mock<AsyncSearch<PaymentIntentEntity>>();
+            mockAsyncSearch.Setup(x => x.GetRemainingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PaymentIntentEntity> { entity });
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.QueryAsync<PaymentIntentEntity>($"GUEST#{guestId}",
+                    It.Is<DynamoDBOperationConfig>(cfg => cfg.IndexName == "AllByGuestIndex")))
+                .Returns(mockAsyncSearch.Object);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var results = await provider.GetPaymentsByGuestIdAsync(Audience, guestId);
+
+            Assert.That(results, Is.Not.Null);
+            Assert.That(results.Count, Is.EqualTo(1));
+            Assert.That(results.First().GuestId, Is.EqualTo(guestId));
+        }
+
+        [Test]
+        public async Task GetPaymentsByCategoryAsync_ShouldReturnEntities()
+        {
+            var category = "Registry";
+            var entity = CreateTestPaymentEntity(category: category);
+
+            var mockAsyncSearch = new Mock<AsyncSearch<PaymentIntentEntity>>();
+            mockAsyncSearch.Setup(x => x.GetRemainingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PaymentIntentEntity> { entity });
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.QueryAsync<PaymentIntentEntity>($"CATEGORY#{category}",
+                    It.Is<DynamoDBOperationConfig>(cfg => cfg.IndexName == "AllByCategoryIndex")))
+                .Returns(mockAsyncSearch.Object);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var results = await provider.GetPaymentsByCategoryAsync(Audience, category);
+
+            Assert.That(results, Is.Not.Null);
+            Assert.That(results.Count, Is.EqualTo(1));
+            Assert.That(results.First().GiftCategory, Is.EqualTo(category));
+        }
+
+
+        private PaymentIntentEntity CreateTestPaymentEntity(string guestId = "guest123", string category = "Registry", string timestamp = "2025-04-01T10:00:00Z")
+        {
+            return new PaymentIntentEntity
+            {
+                PaymentIntentId = "pi_test_123",
+                GuestId = guestId,
+                GuestName = "Test Guest",
+                Amount = 5000,
+                Currency = "usd",
+                GiftCategory = category,
+                GiftNotes = "Enjoy!",
+                IsAnonymous = false,
+                Timestamp = timestamp,
+                PartitionKey = $"PAYMENT#pi_test_123",
+                SortKey = $"METADATA#{timestamp}",
+                GuestIdGSI = $"GUEST#{guestId}",
+                GuestSortKey = timestamp,
+                GiftCategoryGSI = $"CATEGORY#{category}",
+                CategorySortKey = timestamp
+            };
         }
     }
 }

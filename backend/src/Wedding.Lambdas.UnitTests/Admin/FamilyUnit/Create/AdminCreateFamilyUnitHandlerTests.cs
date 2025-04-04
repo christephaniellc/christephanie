@@ -32,15 +32,7 @@ namespace Wedding.Lambdas.UnitTests.Admin.FamilyUnit.Create
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                    cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                    cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                    cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-                }
-            );
-            _mapper = config.CreateMapper();
+            _mapper = MappingProfileHelper.GetMapper();
 
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json")

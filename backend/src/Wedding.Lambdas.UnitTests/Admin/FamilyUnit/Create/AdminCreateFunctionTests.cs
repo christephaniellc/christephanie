@@ -37,15 +37,8 @@ public class AdminCreateFunctionTests
         var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json")
             .Build();
-        var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfiles(WeddingEntityToDtoMapping.Profiles());
-                cfg.AddProfile<AddressToDtoMapping.AddressToDtoMappingProfile>();
-                cfg.AddProfiles(ViewModelToDtoMapping.Profiles());
-                cfg.AddProfiles(DesignConfigurationEntityToDtoMapping.Profiles());
-            }
-        );
-        var mapper = config.CreateMapper();
+
+        var mapper = MappingProfileHelper.GetMapper();
 
         _handlerLogger = new Mock<ILogger<AdminCreateFamilyUnitHandler>>();
         _mockLambdaContext = new Mock<ILambdaContext>();
