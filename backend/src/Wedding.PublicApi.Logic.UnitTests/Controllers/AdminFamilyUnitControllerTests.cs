@@ -146,7 +146,7 @@ namespace Wedding.PublicApi.Logic.UnitTests.Controllers
                 .ReturnsAsync(familyUnits);
 
             // Act
-            var result = await _controller.GetFamilyUnits();
+            var result = await _controller.GetAllFamilyUnits();
 
             // Assert
             Assert.IsInstanceOf<ActionResult<List<FamilyUnitDto>>>(result);
