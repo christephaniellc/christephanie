@@ -52,8 +52,17 @@ public class Function
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetContributionsHandler>();
+
+            var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
+            var giftCategory = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "giftCategory");
+
+            var filter = new ContributionQueryFilter
+            {
+                GuestId = guestId,
+                GiftCategory = giftCategory
+            };
             
-            var queryUnits = new GetContributionsQuery(authContext);
+            var queryUnits = new GetContributionsQuery(authContext, filter);
             var results = await handler.GetAsync(queryUnits);
             return results.OkResponse();
 

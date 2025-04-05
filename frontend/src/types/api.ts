@@ -341,6 +341,30 @@ export interface PaymentError {
   decline_code?: string | null;
 }
 
+export enum GiftCategoryEnum {
+  Honeymoon = 'honeymoon',
+  Remodel = 'remodel',
+  Home = 'home',
+  Dogs = 'dogs',
+  Drinks = 'drinks',
+  Custom = 'custom'
+}
+
+export interface GiftMetaData {
+  guestId?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  isAnonymous?: boolean;
+  giftCategory?: string | null;
+  giftNotes?: string | null;
+}
+
+export interface StripePaymentIntentRequestDto {
+  amount: number;
+  currency: string;
+  giftMetaData: GiftMetaData;
+}
+
 export interface PhotoGridItemDto {
   /** @format uuid */
   id?: string;
@@ -1134,11 +1158,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/api/payments/intent
      * @secure
      */
-    paymentsIntentCreate: (params: RequestParams = {}) =>
+    paymentsIntentCreate: (data: StripePaymentIntentRequestDto, params: RequestParams = {}) =>
       this.request<StripePaymentIntentResponseDto, ProblemDetails | void>({
         path: `/api/payments/intent`,
         method: 'POST',
+        body: data,
         secure: true,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),

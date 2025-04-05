@@ -131,6 +131,13 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                 // var updatedResults = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
                 // var updatedFamilyUnit = _mapper.Map<FamilyUnitDto>(updatedResults.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
 
+                // Validate that the family unit IDs match to prevent cross-family updates
+                if (existingFamilyUnitEntity!.PartitionKey != familyUnit.InvitationCode)
+                {
+                    throw new UnauthorizedAccessException(
+                        $"Family unit mismatch: Requested update for {familyUnit.InvitationCode} but found {existingFamilyUnitEntity.PartitionKey}");
+                }
+            
                 _mapper.Map(familyUnit, existingFamilyUnitEntity);
 
                 existingFamilyUnitEntity!.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
