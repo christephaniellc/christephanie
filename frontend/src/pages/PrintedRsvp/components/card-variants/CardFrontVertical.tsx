@@ -432,7 +432,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
                       color: 'rgba(255,255,255,0.85)'
                     }}
                   >
-                    {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}
+                    {selectedFamily.mailingAddress.city}, {selectedFamily.mailingAddress.state} {selectedFamily.mailingAddress.postalCode || selectedFamily.mailingAddress.zipCode}{selectedFamily.mailingAddress.zipPlus4 !== undefined ? '-' : ''}{selectedFamily.mailingAddress.zipPlus4}
                   </Typography>
                 </>
               )}
