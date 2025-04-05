@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -73,12 +74,18 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     GiftNotes = command.GiftMetaData?.GiftNotes ?? string.Empty
                 };
 
+                _logger.LogInformation("Creating payment intent for guest {GuestId} with amount {Amount} and currency {Currency}. Metadata: {MetaData}", 
+                                       command.AuthContext.GuestId, command.Amount, command.Currency, JsonSerializer.Serialize(giftMetaData));
+
                 var result = await _stripePaymentProvider.CreatePaymentIntent(
                     guestDto,
                     command.Amount,
                     command.Currency,
                     giftMetaData, 
                     cancellationToken);
+
+                _logger.LogInformation("Payment result: {Result} with amount {Amount} and currency {Currency}. Metadata: {MetaData}",
+                    JsonSerializer.Serialize(result));
 
                 if (!string.IsNullOrEmpty(result.PaymentIntentId))
                 {
@@ -94,6 +101,9 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         IsAnonymous = giftMetaData.IsAnonymous,
                         Timestamp = DateTime.UtcNow.ToString()
                     };
+
+                    _logger.LogInformation("Saving payment: {Payment}",
+                        JsonSerializer.Serialize(paymentEntity));
 
                     await _dynamoDBProvider.SavePaymentAsync(command.AuthContext.Audience, paymentEntity, cancellationToken);
                 }
