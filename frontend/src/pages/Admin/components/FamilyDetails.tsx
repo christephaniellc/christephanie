@@ -81,6 +81,12 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
 
   // Update edited family when family prop changes
   React.useEffect(() => {
+    // Reset state when family changes
+    setEditMode(false);
+    setUpdateError(null);
+    setUpdateSuccess(false);
+    setSelectedGuest(null);
+    
     if (family) {
       setEditedFamily(family);
     }

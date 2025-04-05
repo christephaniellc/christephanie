@@ -9,5 +9,5 @@ namespace Wedding.Lambdas.Payments.Contributions.Commands
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
     /// <param name="AuthContext">AuthContext of current logged in user</param>
-    public record GetContributionsQuery(AuthContext AuthContext) : IWeddingQuery;
+    public record GetContributionsQuery(AuthContext AuthContext, ContributionQueryFilter? Filter) : IWeddingQuery;
 }

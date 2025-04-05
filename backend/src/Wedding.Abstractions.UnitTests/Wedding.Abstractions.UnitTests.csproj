@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Wedding.Abstractions\Wedding.Abstractions.csproj" />
     <ProjectReference Include="..\Wedding.Common.Utility.Testing\Wedding.Common.Utility.Testing.csproj" />
     <ProjectReference Include="..\Wedding.Common\Wedding.Common.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Payments.Contributions\Wedding.Lambdas.Payments.Contributions.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.UnitTests\Wedding.Lambdas.UnitTests.csproj" />
   </ItemGroup>
 

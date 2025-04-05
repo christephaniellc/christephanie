@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Wedding.Abstractions.Dtos;
-using Wedding.Abstractions.ViewModels;
+using Wedding.Abstractions.Dtos.Stripe;
+using Wedding.Abstractions.Entities;
 using Wedding.Common.Abstractions;
-using Wedding.Common.FeatureFlags;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Lambdas.Payments.Contributions.Commands;
 using Wedding.Lambdas.Payments.Contributions.Validation;
@@ -16,7 +14,7 @@ using Wedding.Lambdas.Payments.Contributions.Validation;
 namespace Wedding.Lambdas.Payments.Contributions.Handlers
 {
     public class GetContributionsHandler : 
-        IAsyncQueryHandler<GetContributionsQuery, List<FamilyUnitViewModel>>
+        IAsyncQueryHandler<GetContributionsQuery, List<ContributionDto>>
     {
         private readonly ILogger<GetContributionsHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -29,24 +27,41 @@ namespace Wedding.Lambdas.Payments.Contributions.Handlers
             _mapper = mapper;
         }
 
-        public async Task<List<FamilyUnitViewModel>> GetAsync(GetContributionsQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<ContributionDto>> GetAsync(GetContributionsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             query.Validate(nameof(query));
 
             try
             {
-                var result = await _dynamoDBProvider.GetFamilyUnitsAsync(query.AuthContext.Audience, cancellationToken);
-                var relevantResults = result
-                    .Where(family => FeatureFlags.TiersToIncludeInStats.Contains(family.Tier))
-                    .ToList();
+                List<PaymentIntentEntity> entities;
 
-                if (result == null)
+                var filter = query.Filter;
+                var audience = query.AuthContext.Audience;
+
+                if (filter != null)
                 {
-                    throw new UnauthorizedAccessException("Stats not found.");
+                    if (!string.IsNullOrEmpty(filter.GuestId))
+                    {
+                        entities = await _dynamoDBProvider.GetPaymentsByGuestIdAsync(audience, filter.GuestId, cancellationToken);
+                    }
+                    else if (!string.IsNullOrEmpty(filter.GiftCategory))
+                    {
+                        entities = await _dynamoDBProvider.GetPaymentsByCategoryAsync(audience, filter.GiftCategory, cancellationToken);
+                    }
+                    else
+                    {
+                        entities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
+                    }
+                }
+                else
+                {
+                    entities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
                 }
 
-                var dtos = _mapper.Map<List<FamilyUnitDto>>(relevantResults);
-                return _mapper.Map<List<FamilyUnitViewModel>>(dtos);
+                var dtos = _mapper.Map<List<ContributionDto>>(entities);
+                ContributionPrivacyHelper.ApplyPrivacyMask(dtos, query.AuthContext.Roles);
+
+                return dtos;
             }
             catch (Exception ex)
             {

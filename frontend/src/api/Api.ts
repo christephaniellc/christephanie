@@ -45,6 +45,19 @@ export default class Api {
   async getStats(): Promise<StatsViewModel> {
     return this.get('/stats');
   }
+  
+  async createPaymentIntent(amount: number, currency: string, giftCategory: string, giftNotes: string = '', guestEmail: string = '', isAnonymous: boolean = false): Promise<{ clientSecret: string; paymentIntentId: string; amount: number; currency: string; error?: any }> {
+    return this.post('/payments/intent', {
+      amount,
+      currency,
+      giftMetaData: {
+        giftCategory,
+        giftNotes,
+        isAnonymous,
+        guestEmail
+      }
+    });
+  }
 
   async adminGetAllFamilies(): Promise<FamilyUnitDto[]> {
     return this.get('/admin/familyunit');

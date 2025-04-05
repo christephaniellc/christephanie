@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import Api, { ApiError } from '@/api/Api';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 import { useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query';
 import {
@@ -21,6 +21,13 @@ import { collectClientInfo } from '@/utils/utils';
 import { familyState, reorderArrayByKey } from '@/store/family';
 import { addressState } from '@/store/address';
 import { useAuth0Queries } from '@/hooks/useAuth0Queries';
+
+// Export a Recoil atom for the API instance
+export const apiState = atom<Api>({
+  key: 'apiState',
+  dangerouslyAllowMutability: true, // API instance has methods and isn't serializable
+  default: new Api(() => Promise.resolve(null))
+});
 
 interface ApiContextProps {
   findUserIdQuery: UseQueryResult<FindUserResponse | undefined, ApiError>;
@@ -80,11 +87,14 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   }, [getAccessTokenSilently]);
 
   const apiRef = React.useRef(new Api(getTokenFunc));
+  const [api, setApi] = useRecoilState(apiState);
 
   useEffect(() => {
-    apiRef.current = new Api(getTokenFunc);
+    const newApi = new Api(getTokenFunc);
+    apiRef.current = newApi;
+    setApi(newApi);
     console.log('API initialized or updated');
-  }, [getTokenFunc]);
+  }, [getTokenFunc, setApi]);
 
   const queryKey = `invitationCode=${user?.invitationCode.trim()}&firstName=${user?.firstName.trim()}`;
   const findUserIdQuery = useQuery<FindUserResponse | undefined, ApiError>({

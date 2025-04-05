@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos.Stripe;
+using Wedding.Abstractions.Entities;
 using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.ThirdParty;
@@ -14,7 +15,7 @@ using Wedding.Lambdas.Payments.Intent.Validation;
 namespace Wedding.Lambdas.Payments.Intent.Handlers
 {
     public class GetPaymentStatusHandler : 
-        IAsyncQueryHandler<GetPaymentStatusQuery, List<StripePaymentIntentResponseDto>>
+        IAsyncQueryHandler<GetPaymentStatusQuery, StripePaymentIntentResponseDto>
     {
         private readonly ILogger<GetPaymentStatusHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -32,12 +33,19 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
             _stripePaymentProvider = stripePaymentProvider;
         }
 
-        public async Task<List<StripePaymentIntentResponseDto>> GetAsync(GetPaymentStatusQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<StripePaymentIntentResponseDto> GetAsync(GetPaymentStatusQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             query.Validate(nameof(query));
 
             try
             {
+
+                if (!string.IsNullOrEmpty(query.PaymentIntentId))// && !string.IsNullOrEmpty(filter.GuestId))
+                {
+                    // You may want to store or retrieve Timestamp from frontend to fully use GetPaymentByIdAsync.
+                    // For now, just scan and find the match:
+                    var result = await _dynamoDBProvider.GetPaymentByIdAsync(query.AuthContext.Audience, query.PaymentIntentId, cancellationToken);
+                }
                 // var result = await _dynamoDBProvider.GetFamilyUnitsAsync(query.AuthContext.Audience, cancellationToken);
                 // var relevantResults = result
                 //     .Where(family => FeatureFlags.TiersToIncludeInStats.Contains(family.Tier))
