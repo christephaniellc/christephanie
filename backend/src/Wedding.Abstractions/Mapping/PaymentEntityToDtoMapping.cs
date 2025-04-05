@@ -2,6 +2,7 @@
 using AutoMapper;
 using Wedding.Abstractions.Dtos.Stripe;
 using Wedding.Abstractions.Entities;
+using Wedding.Abstractions.Keys;
 
 namespace Wedding.Abstractions.Mapping
 {
@@ -32,8 +33,8 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp));
 
                 CreateMap<ContributionDto, PaymentIntentEntity>()
-                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => $"PAYMENT#{src.PaymentIntentId}"))
-                    .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => $"METADATA#{src.Timestamp}"))
+                    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => $"{DynamoKeys.PaymentKeys.GetPartitionKey(src.PaymentIntentId)}"))
+                    .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => $"{DynamoKeys.PaymentKeys.GetSortKey(src.Timestamp)}"))
                     .ForMember(dest => dest.PaymentIntentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                     .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => (long)src.Amount)) // Cast int to long
@@ -43,9 +44,9 @@ namespace Wedding.Abstractions.Mapping
                     .ForMember(dest => dest.GuestName, opt => opt.MapFrom(src => src.GuestName))
                     .ForMember(dest => dest.IsAnonymous, opt => opt.MapFrom(src => src.IsAnonymous))
                     .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp))
-                    .ForMember(dest => dest.GuestIdGSI, opt => opt.MapFrom(src => $"GUEST#{src.GuestId}"))
+                    .ForMember(dest => dest.GuestIdGSI, opt => opt.MapFrom(src => $"{DynamoKeys.PaymentKeys.GetGuestIdGSI(src.GuestId)}"))
                     .ForMember(dest => dest.GuestSortKey, opt => opt.MapFrom(src => src.Timestamp))
-                    .ForMember(dest => dest.GiftCategoryGSI, opt => opt.MapFrom(src => $"CATEGORY#{src.GiftCategory}"))
+                    .ForMember(dest => dest.GiftCategoryGSI, opt => opt.MapFrom(src => $"{DynamoKeys.PaymentKeys.GetGiftCategoryGSI(src.GiftCategory)}"))
                     .ForMember(dest => dest.CategorySortKey, opt => opt.MapFrom(src => src.Timestamp));
             }
         }
