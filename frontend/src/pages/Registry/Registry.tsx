@@ -4,6 +4,8 @@ import {
   Typography, 
   Snackbar,
   Alert,
+  Box,
+  Button,
   styled,
 } from '@mui/material';
 import { useRegistry } from '@/store/registry';
@@ -41,91 +43,122 @@ const PageTitle = styled(Typography)(({ theme }) => ({
  * Business logic is extracted to the useRegistry hook in the store
  */
 const Registry: React.FC = () => {
-  const {
-    giftOptions,
-    selectedAmounts,
-    customAmounts,
-    notification,
-    traditionalRegistry,
-    paymentDialog,
-    successDialog,
-    errorDialog,
-    handleAmountSelect,
-    handleCustomAmountChange,
-    handleContribute,
-    handlePaymentSuccess,
-    handlePaymentError,
-    closePaymentDialog,
-    closeSuccessDialog,
-    closeErrorDialog,
-    closeNotification
-  } = useRegistry();
+  console.log('Rendering Registry component');
+  
+  // Use try-catch to handle any errors during state initialization
+  try {
+    const {
+      giftOptions,
+      customAmounts,
+      notification,
+      traditionalRegistry,
+      paymentDialog,
+      successDialog,
+      errorDialog,
+      handleCustomAmountChange,
+      handleContribute,
+      handlePaymentSuccess,
+      handlePaymentError,
+      closePaymentDialog,
+      closeSuccessDialog,
+      closeErrorDialog,
+      closeNotification
+    } = useRegistry();
+    
+    // Make sure error dialog is closed on initial mount
+    React.useEffect(() => {
+      // If the error dialog is open on initial mount, close it
+      if (errorDialog.open) {
+        console.log('Closing error dialog that was open on mount');
+        closeErrorDialog();
+      }
+    }, [errorDialog.open, closeErrorDialog]);
 
-  return (
-    <RegistryContainer maxWidth="lg">
-      <PageTitle variant="h1">Our Registry</PageTitle>
-      
-      {/* Info section explaining the registry */}
-      <RegistryInfoSection />
-      
-      {/* Gift categories section */}
-      <GiftCategoryList 
-        giftOptions={giftOptions}
-        selectedAmounts={selectedAmounts}
-        customAmounts={customAmounts}
-        onAmountSelect={handleAmountSelect}
-        onCustomAmountChange={handleCustomAmountChange}
-        onContribute={handleContribute}
-      />
-      
-      {/* Traditional registry section */}
-      <TraditionalRegistrySection 
-        title={traditionalRegistry.title}
-        description={traditionalRegistry.description}
-        url={traditionalRegistry.url}
-        icon={traditionalRegistry.icon}
-      />
-      
-      {/* Notification */}
-      <Snackbar 
-        open={notification.show} 
-        autoHideDuration={6000} 
-        onClose={closeNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={closeNotification} 
-          severity={notification.severity} 
-          sx={{ width: '100%' }}
+    return (
+      <RegistryContainer maxWidth="lg">
+        <PageTitle variant="h1">Our Registry</PageTitle>
+        
+        {/* Info section explaining the registry */}
+        <RegistryInfoSection />
+        
+        {/* Gift categories section */}
+        <GiftCategoryList 
+          giftOptions={giftOptions}
+          customAmounts={customAmounts}
+          onCustomAmountChange={handleCustomAmountChange}
+          onContribute={handleContribute}
+        />
+        
+        {/* Traditional registry section */}
+        <TraditionalRegistrySection 
+          title={traditionalRegistry.title}
+          description={traditionalRegistry.description}
+          url={traditionalRegistry.url}
+          icon={traditionalRegistry.icon}
+        />
+        
+        {/* Notification */}
+        <Snackbar 
+          open={notification.show} 
+          autoHideDuration={6000} 
+          onClose={closeNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {notification.message}
-        </Alert>
-      </Snackbar>
-      
-      {/* Payment Dialogs */}
-      <StripePaymentForm
-        open={paymentDialog.open}
-        amount={paymentDialog.amount}
-        category={paymentDialog.category}
-        onClose={closePaymentDialog}
-        onSuccess={handlePaymentSuccess}
-        onError={handlePaymentError}
-      />
-      
-      <PaymentSuccessDialog
-        open={successDialog.open}
-        onClose={closeSuccessDialog}
-        amount={successDialog.amount}
-        category={successDialog.category}
-      />
-      
-      <PaymentErrorDialog
-        open={errorDialog.open}
-        onClose={closeErrorDialog}
-        errorMessage={errorDialog.message}
-      />
-    </RegistryContainer>
-  );
+          <Alert 
+            onClose={closeNotification} 
+            severity={notification.severity} 
+            sx={{ width: '100%' }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+        
+        {/* Payment Dialogs */}
+        <StripePaymentForm
+          open={paymentDialog.open}
+          amount={paymentDialog.amount}
+          category={paymentDialog.category}
+          onClose={closePaymentDialog}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+        />
+        
+        <PaymentSuccessDialog
+          open={successDialog.open}
+          onClose={closeSuccessDialog}
+          amount={successDialog.amount}
+          category={successDialog.category}
+        />
+        
+        <PaymentErrorDialog
+          open={errorDialog.open}
+          onClose={closeErrorDialog}
+          errorMessage={errorDialog.message}
+        />
+      </RegistryContainer>
+    );
+  } catch (error) {
+    console.error('Error rendering Registry page:', error);
+    
+    // Return a simpler component with error message
+    return (
+      <RegistryContainer maxWidth="lg">
+        <PageTitle variant="h1">Our Registry</PageTitle>
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Typography variant="body1" align="center" sx={{ mb: 3 }}>
+            We're experiencing technical difficulties. Please try again.
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            onClick={() => window.location.reload()}
+          >
+            Refresh Page
+          </Button>
+        </Box>
+      </RegistryContainer>
+    );
+  }
 };
 
 export default Registry;

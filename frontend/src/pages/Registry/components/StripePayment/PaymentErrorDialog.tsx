@@ -22,6 +22,12 @@ const PaymentErrorDialog = ({
   onClose: () => void;
   errorMessage: string;
 }) => {
+  // Add console.log to debug dialog open state
+  console.log('PaymentErrorDialog render:', { open, errorMessage });
+  
+  // Only render if actually open to prevent flash of error dialog
+  if (!open) return null;
+  
   return (
     <Dialog
       open={open}
@@ -53,7 +59,7 @@ const PaymentErrorDialog = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="contained" color="primary">
+        <Button onClick={onClose} variant="contained" color="secondary">
           Try Again
         </Button>
       </DialogActions>

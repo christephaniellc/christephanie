@@ -93,7 +93,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     {
                         PaymentIntentId = result.PaymentIntentId,
                         GuestId = command.AuthContext.GuestId,
-                        Amount = command.Amount,
+                        Amount = (long)command.Amount,
                         Currency = command.Currency,
                         GiftCategory = giftMetaData.GiftCategory,
                         GiftNotes = giftMetaData.GiftNotes,
@@ -113,7 +113,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
             catch (Exception ex)
             {
                 // TODO: add stripe exceptions here
-                _logger.LogError(ex, "An error occurred while getting the stats.");
+                _logger.LogError(ex, "An error occurred while creating payment.");
                 throw new UnauthorizedAccessException($"Stats not found. {ex.Message}");
             }
         }
