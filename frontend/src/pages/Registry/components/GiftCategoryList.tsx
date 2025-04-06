@@ -11,22 +11,29 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark,
   textAlign: 'center',
   marginTop: theme.spacing(4),
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.5rem',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(1.5),
+  }
+}));
+
+const GridContainer = styled(Grid)(({ theme }) => ({
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0, 1)
+  }
 }));
 
 interface GiftCategoryListProps {
   giftOptions: GiftOption[];
-  selectedAmounts: Record<string, number | null>;
   customAmounts: Record<string, string>;
-  onAmountSelect: (id: string, amount: number) => void;
   onCustomAmountChange: (id: string, value: string) => void;
   onContribute: (id: string) => void;
 }
 
 const GiftCategoryList: React.FC<GiftCategoryListProps> = ({
   giftOptions,
-  selectedAmounts,
   customAmounts,
-  onAmountSelect,
   onCustomAmountChange,
   onContribute
 }) => {
@@ -34,20 +41,18 @@ const GiftCategoryList: React.FC<GiftCategoryListProps> = ({
     <>
       <SectionTitle variant="h2">Contribute to Our Wedding</SectionTitle>
       
-      <Grid container spacing={3} sx={{ mb: 6 }}>
+      <GridContainer container spacing={2} sx={{ mb: 6 }}>
         {giftOptions.map((option) => (
-          <Grid item xs={12} sm={6} md={4} key={option.id}>
+          <Grid item xs={12} sm={6} md={6} key={option.id}>
             <GiftCategoryCard
               option={option}
-              selectedAmount={selectedAmounts[option.id]}
               customAmount={customAmounts[option.id]}
-              onAmountSelect={onAmountSelect}
               onCustomAmountChange={onCustomAmountChange}
               onContribute={onContribute}
             />
           </Grid>
         ))}
-      </Grid>
+      </GridContainer>
       
       <Divider sx={{ my: 4 }} />
     </>
