@@ -6,12 +6,14 @@ import { useTheme } from '@mui/material/styles';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Paper from '@mui/material/Paper';
+// Import our new components
+import AboutUs from '@/components/DetailsPages/AboutUs';
 import AboutUsCouple from '@/components/Info/AboutUsCouple';
-import Accommodations from '@/components/Info/Accommodations';
-import Travel from '@/components/Info/Travel';
-import Attire from '@/components/Info/Attire';
-import Schedule from '@/components/Info/Schedule';
-import ThingsToDo from '@/components/Info/ThingsToDo';
+import Accommodations from '@/components/DetailsPages/Accommodations';
+import Travel from '@/components/DetailsPages/Travel';
+import Attire from '@/components/DetailsPages/Attire';
+import Schedule from '@/components/DetailsPages/Schedule';
+import ThingsToDo from '@/components/DetailsPages/ThingsToDo';
 import { isFeatureEnabled } from '@/config';
 
 // Type definition for legal items that can be displayed in tabs
@@ -89,7 +91,7 @@ function Detail() {
   const detailItems: DetailItem[] = [
     {
       label: 'Steph & Topher',
-      component: <AboutUsCouple handleTabLink={handleTabLink} />,
+      component: <AboutUs handleTabLink={handleTabLink} />,
       enabled: isFeatureEnabled('ENABLE_DETAILS_ABOUTUS')
     },
     {

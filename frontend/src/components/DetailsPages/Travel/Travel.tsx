@@ -4,16 +4,16 @@ import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { Grid, Link, ListSubheader } from '@mui/material';
+import { Card, CardContent, Divider, Link, ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
 
-interface AboutUsCoupleProps {
+interface TravelProps {
   handleTabLink: (to: string) => void;
 }
 
-function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
+function Travel({handleTabLink}: TravelProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   
@@ -42,120 +42,155 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
     };
   }, []);
 
-  const aboutUsItems: {
+  const accommodationsLink = (
+    <Link onClick={() => handleTabLink('accommodations')}>
+      accommodations page
+    </Link>
+  );
+
+  const travelItems: {
     [key: string]: {
       subheader: string;
       content: { subheader: string; content?: { subheader: string; content: (string | JSX.Element)[] }[] }[];
     };
   } = {
-    titleAboutUs: {
-      subheader: 'Steph & Topher',
+    titleTravel: {
+      subheader: 'Travel Information',
       content: [
         {
           subheader:
-            'Welcome to our wedding website! We\'re so excited to share our special day with you and can\'t wait to celebrate together in September 2025.',
+            'We\'ve put together this guide to help you plan your trip to our wedding. Below you\'ll find information about getting to Brunswick, Maine, navigating the area, and what to expect when you arrive.',
         },
       ],
     },
-    howWeMet: {
-      subheader: 'How We Met',
+    gettingThere: {
+      subheader: 'Getting to Brunswick',
       content: [
-        {
-          subheader:
-            'Our love story began in the summer of 2017 at Burning Man. We were introduced by mutual friends at camp and instantly connected over our shared love of adventure, technology, and terrible puns.',
-        },
         {
           subheader: '',
           content: [
             {
-              subheader: 'First Impressions:',
+              subheader: 'By Air:',
               content: [
-                'Topher: "I was immediately drawn to Steph\'s infectious laugh and brilliant mind. She was building an interactive light installation, and I couldn\'t help but be impressed."',
-                'Steph: "I thought Topher was both hilarious and surprisingly practical for someone wearing a shark onesie in the desert. His kind heart and genuine curiosity stood out immediately."'
+                'The closest airport is Portland International Jetport (PWM), about 30 minutes from Brunswick.',
+                'Boston Logan International Airport (BOS) is about 2.5 hours from Brunswick and typically offers more flight options.',
+                'We recommend renting a car at either airport for the most flexibility during your stay.'
               ],
             },
             {
-              subheader: 'Our Early Days:',
+              subheader: 'By Train:',
               content: [
-                'After returning from the desert, we discovered we both lived in Seattle just a few miles apart.',
-                'Our first official date was at a tiny ramen shop in the International District, where we talked for hours until they had to kindly ask us to leave so they could close.',
-                'Within a few months, we were practically inseparable, bonding over our love of hiking, coding projects, and exploring Seattle\'s food scene.'
+                'Amtrak\'s Downeaster train serves Brunswick directly, with several daily trips from Boston.',
+                'The Brunswick train station is located in downtown Brunswick, within walking distance of many restaurants and shops.',
+                'Travel time from Boston is approximately 3 hours.'
+              ],
+            },
+            {
+              subheader: 'By Car:',
+              content: [
+                'Brunswick is located just off Interstate 295, about 30 minutes north of Portland, Maine.',
+                'From Boston: Take I-95 North to I-295 North. Follow I-295 to Brunswick (Exit 28).',
+                'From NYC: Take I-95 North through Connecticut, Rhode Island, Massachusetts and into Maine. Expect 6-7 hours of driving time.',
+                'Parking is available at all recommended accommodation options.'
               ],
             }
           ],
         }
       ],
     },
-    engagementStory: {
-      subheader: 'Our Engagement',
+    venueDirections: {
+      subheader: 'Wedding Venue Information',
+      content: [
+        {
+          subheader: 'The Barn at Autumn Lane',
+          content: [
+            {
+              subheader: 'Address:',
+              content: [
+                '155 Autumn Lane, Brunswick, ME 04011'
+              ],
+            },
+            {
+              subheader: 'Directions from Downtown Brunswick:',
+              content: [
+                '1. Head east on Maine Street toward Bath Road',
+                '2. Turn right onto Bath Road/Route 24',
+                '3. After 3.5 miles, turn left onto Autumn Lane',
+                '4. Continue to the end of the road where you\'ll find the venue',
+                'Travel time from downtown: Approximately 10-12 minutes'
+              ],
+            }
+          ],
+        }
+      ],
+    },
+    localTransportation: {
+      subheader: 'Local Transportation',
       content: [
         {
           subheader:
-            'After five wonderful years together, Topher proposed during a trip to Norway in July 2022. The proposal happened under the midnight sun while hiking in the Lofoten Islands.',
+            'Transportation options in Brunswick and the surrounding area:',
         },
         {
           subheader: '',
           content: [
             {
-              subheader: 'The Proposal:',
+              subheader: 'Rental Cars:',
               content: [
-                'Topher had been carrying the ring throughout our week-long hiking trip, waiting for the perfect moment.',
-                'At the summit of Reinebringen with a view of the fjords below, he got down on one knee as the midnight sun cast a golden glow across the mountains.',
-                'Steph was completely surprised and (after a moment of shock) said yes! We celebrated with the small group of hikers who had gathered for the midnight sun, complete with a bottle of champagne that Topher had somehow managed to carry up the mountain without Steph noticing.'
+                'Enterprise Rent-A-Car: Located in downtown Brunswick. (207-729-6464)',
+                'Hertz: Available at Portland Jetport. (207-774-6364)',
+                'Avis/Budget: Available at Portland Jetport. (207-775-5434)'
+              ],
+            },
+            {
+              subheader: 'Taxis & Ride Services:',
+              content: [
+                'Brunswick Taxi: Local taxi service. (207-729-3688)',
+                'Uber & Lyft: Limited availability in Brunswick, more reliable in Portland.',
+                'Mid Coast Limousine: For pre-arranged transportation. (207-443-8210)'
+              ],
+            },
+            {
+              subheader: 'Wedding Day Shuttle:',
+              content: [
+                'We will provide shuttle service between our recommended hotels and the venue. See the ' + accommodationsLink + ' for details.',
+                'Shuttles will run from 3:00 PM until 11:30 PM on the wedding day.',
+                'If you plan to drive yourself, please consider designating a driver or arranging transportation back to your accommodations.'
               ],
             }
           ],
         }
       ],
     },
-    funFacts: {
-      subheader: 'Fun Facts About Us',
+    weatherInfo: {
+      subheader: 'Weather Information',
       content: [
+        {
+          subheader:
+            'Maine weather in September is typically very pleasant, but can be variable. Here\'s what to expect:',
+        },
         {
           subheader: '',
           content: [
             {
-              subheader: 'Travels Together:',
+              subheader: 'Typical Conditions:',
               content: [
-                'We\'ve visited 14 countries together, including Thailand, Mexico, Germany, and Canada.',
-                'Our longest road trip was 3,500 miles through the American Southwest.',
-                'We\'ve attended Burning Man together three times.'
-              ],
-            },
-            {
-              subheader: 'At Home:',
-              content: [
-                'We love hosting dinner parties and game nights with friends.',
-                'We\'ve built several home automation projects together, including an overly complicated system just to feed our cats.',
-                'We maintain a small urban garden and are unreasonably proud of our homegrown tomatoes.'
-              ],
-            },
-            {
-              subheader: 'Little Known Facts:',
-              content: [
-                'Topher can solve a Rubik\'s cube in under a minute.',
-                'Steph speaks conversational Thai and is learning German.',
-                'We have a growing collection of board games that has now taken over an entire closet.'
+                'Average high: 70°F (21°C)',
+                'Average low: 50°F (10°C)',
+                'Precipitation: Moderate chance of light rain',
+                'Recommended: Bring layers, as evenings can be cool, and a light raincoat just in case'
               ],
             }
           ],
         }
       ],
     },
-    photos: {
-      subheader: 'Photo Gallery',
-      content: [
-        {
-          subheader: 'Some of our favorite moments together',
-        }
-      ],
-    },
-    contactUs: {
-      subheader: 'Contact Us',
+    contactInfo: {
+      subheader: 'Travel Assistance',
       content: [
         {
           subheader:
-            'Have questions about the wedding? Feel free to reach out to us!',
+            'If you need any assistance with your travel plans or have questions, please don\'t hesitate to reach out:',
         },
         {
           subheader: 'Email',
@@ -163,7 +198,18 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
             {
               subheader: '',
               content: [
-                'steph-and-topher@wedding.christephanie.com',
+                'travel@wedding.christephanie.com',
+              ],
+            },
+          ],
+        },
+        {
+          subheader: 'Emergency Contact (Day of Wedding)',
+          content: [
+            {
+              subheader: '',
+              content: [
+                'Jordan (Best Man): (207) 555-1234',
               ],
             },
           ],
@@ -205,15 +251,6 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
     ...commonHeaderStyle,
     zIndex: 12,
   };
-
-  const photoGalleryImages = [
-    '/src/assets/engagement-photos/topher_and_steph_rsvp1.jpg',
-    '/src/assets/engagement-photos/bremerhaven.jpg',
-    '/src/assets/engagement-photos/burn_night.jpg',
-    '/src/assets/engagement-photos/hammock.jpg',
-    '/src/assets/engagement-photos/oktoberfest.jpg',
-    '/src/assets/engagement-photos/roadtrip.jpg',
-  ];
   
   return (
     <Container
@@ -239,7 +276,7 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
         <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
             mt: 2,
             fontSize: '2rem'}}>
-          {aboutUsItems.titleAboutUs.subheader}
+          {travelItems.titleTravel.subheader}
         </StephsActualFavoriteTypography>
         
         <Box
@@ -271,7 +308,7 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
 
         <Typography variant="body1" 
           sx={{ mt: 2, fontSize: '0.9rem' }}>
-          {aboutUsItems.titleAboutUs.content[0].subheader}
+          {travelItems.titleTravel.content[0].subheader}
         </Typography>
       </Box>
       <List sx={{ 
@@ -285,7 +322,45 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
         position: 'relative',
         zIndex: 1, // Lower z-index than headers
       }}>
-        {Object.entries(aboutUsItems)
+        {/* Map Embed */}
+        <Box
+          sx={{ 
+            flexWrap: 'wrap', 
+            width: '100%',
+            backgroundColor: 'rgba(0,0,0,.1)',
+            padding: '16px',
+            mb: 2,
+          }}
+        >
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Venue Location
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Box
+                component="iframe"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11381.307986356357!2d-69.95323513238347!3d43.910803135726685!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cb28a1b4d493e97%3A0x8fbea66e5fa60cbb!2sBrunswick%2C%20ME!5e0!3m2!1sen!2sus!4v1617391369978!5m2!1sen!2sus"
+                width="100%"
+                height="300"
+                style={{
+                  border: 0,
+                  borderRadius: '4px',
+                  marginBottom: '16px',
+                }}
+                allowFullScreen
+                loading="lazy"
+                title="Venue Location Map"
+              />
+              <Typography variant="body2" color="text.secondary">
+                The Barn at Autumn Lane, 155 Autumn Lane, Brunswick, ME 04011
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+        
+        {/* Other Sections */}
+        {Object.entries(travelItems)
           .slice(1)
           .map(([key, value]) => (
             <Box
@@ -333,30 +408,6 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
                         </List>
                       </>
                     )}
-                    {key === 'photos' && (
-                      <Grid container spacing={2} sx={{ padding: '16px' }}>
-                        {photoGalleryImages.map((image, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box 
-                              component="img" 
-                              src={image}
-                              alt={`Steph and Topher photo ${index + 1}`}
-                              sx={{
-                                width: '100%',
-                                height: '200px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                                transition: 'transform 0.3s ease',
-                                '&:hover': {
-                                  transform: 'scale(1.05)',
-                                },
-                              }}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
                   </Box>
                 ))}
               </List>
@@ -367,4 +418,4 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
   );
 }
 
-export default AboutUsCouple;
+export default Travel;

@@ -2,15 +2,17 @@ import { Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
-import routes from '..';
+import routes, { detailsRoutes } from '..';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { Pages as PageEnum } from '@/routes/types';
 import ProtectedRoute from '@/routes/ProtectedRoute';
-import AppVersionFooter from '@/components/VersionHash';
 
 function Pages() {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
+
+  // Get the Details component from routes
+  const DetailsComponent = routes[PageEnum.Details].component;
 
   return (
     <Box>
@@ -23,6 +25,16 @@ function Pages() {
         }}
       >
         <Routes>
+          {/* Add detail sub-routes */}
+          {Object.values(detailsRoutes).map(({ path, tabIndex }) => (
+            <Route 
+              key={path} 
+              path={path} 
+              element={<DetailsComponent />} 
+            />
+          ))}
+          
+          {/* Add main routes */}
           {Object.entries(routes).map(([pageKey, { path, component: Component }]) => {
             const page = parseInt(pageKey) as PageEnum;
             
@@ -59,7 +71,6 @@ function Pages() {
           })}
         </Routes>
       </Box>
-      {/* Removed AppVersionFooter from here since it's already in BottomNav */}
     </Box>
   );
 }

@@ -9,11 +9,11 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
 
-interface AboutUsCoupleProps {
+interface AboutUsProps {
   handleTabLink: (to: string) => void;
 }
 
-function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
+function AboutUs({handleTabLink}: AboutUsProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   
@@ -367,4 +367,4 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
   );
 }
 
-export default AboutUsCouple;
+export default AboutUs;
