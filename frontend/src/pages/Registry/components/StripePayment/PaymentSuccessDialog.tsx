@@ -24,6 +24,12 @@ const PaymentSuccessDialog = ({
   amount: number;
   category: string;
 }) => {
+  // Add console.log to debug dialog open state
+  console.log('PaymentSuccessDialog render:', { open, amount, category });
+  
+  // Only render if actually open to prevent flash of success dialog
+  if (!open) return null;
+  
   return (
     <Dialog
       open={open}
@@ -55,7 +61,7 @@ const PaymentSuccessDialog = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="contained" color="primary">
+        <Button onClick={onClose} variant="contained" color="secondary">
           Close
         </Button>
       </DialogActions>
