@@ -37,7 +37,8 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<GetPaymentStatusHandler>();
-        
+        serviceCollection.AddScoped<CreatePaymentIntentHandler>();
+
         serviceCollection.AddSingleton<Lazy<Task<IStripePaymentProvider>>>(sp =>
         {
             return new Lazy<Task<IStripePaymentProvider>>(async () =>
