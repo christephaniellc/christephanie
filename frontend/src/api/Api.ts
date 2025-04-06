@@ -47,16 +47,51 @@ export default class Api {
   }
   
   async createPaymentIntent(amount: number, currency: string, giftCategory: string, giftNotes: string = '', guestEmail: string = '', isAnonymous: boolean = false): Promise<{ clientSecret: string; paymentIntentId: string; amount: number; currency: string; error?: any }> {
-    return this.post('/payments/intent', {
-      amount,
-      currency,
-      giftMetaData: {
+    try {
+      // First, get the current user info to fill in any missing data
+      const currentUser = await this.getMe();
+      
+      // Prepare metadata with all required fields
+      const metadata = {
         giftCategory,
-        giftNotes,
-        isAnonymous,
-        guestEmail
+        giftNotes: giftNotes || '',
+        isAnonymous: isAnonymous || false,
+        // Use provided email or fall back to user email value if available
+        guestEmail: guestEmail || (currentUser.email ? currentUser.email.value : ''),
+        // Make sure we include the guest ID and name which are required
+        guestId: currentUser.guestId || '',
+        guestName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
+      };
+      
+      console.log('Creating payment intent with data:', {
+        amount,
+        currency,
+        giftMetaData: metadata
+      });
+      
+      const response = await this.post<{ 
+        clientSecret: string; 
+        paymentIntentId: string; 
+        amount: number; 
+        currency: string; 
+        error?: any 
+      }>('/payments/intent', {
+        amount,
+        currency,
+        giftMetaData: metadata
+      });
+      
+      console.log('Payment intent creation response:', response);
+      
+      if (response && 'error' in response && response.error) {
+        console.error('Server returned error in payment intent creation:', response.error);
       }
-    });
+      
+      return response;
+    } catch (error) {
+      console.error('Error in createPaymentIntent:', error);
+      throw error;
+    }
   }
 
   async adminGetAllFamilies(): Promise<FamilyUnitDto[]> {
