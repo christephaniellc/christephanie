@@ -27,8 +27,8 @@ export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { user: auth0User, loginWithRedirect } = useAuth0();  
-  const { logOutFromAuth0 } = useAuth0Queries();  
+  const { user: auth0User, loginWithRedirect } = useAuth0();
+  const { logOutFromAuth0 } = useAuth0Queries();
   const currentUser = useRecoilValue(userState);
   const userIsAdmin = isAdmin(currentUser);
 
@@ -46,18 +46,18 @@ export const BottomNav = () => {
     if (path === routes[Pages.PrintedRsvp].path) return 8;
     return -1; // No tab selected
   };
-  
+
   const [activeTab, setActiveTab] = useState(getCurrentTab());
 
   // Update active tab when location changes
   useEffect(() => {
     setActiveTab(getCurrentTab());
   }, [location.pathname]);
-  
+
   // Handle tab change
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     switch (newValue) {
-      case 0: 
+      case 0:
         navigate(routes[Pages.Welcome].path!);
         break;
       case 1:
@@ -94,7 +94,7 @@ export const BottomNav = () => {
               prompt: 'login',
               screen_hint: 'login',
               redirect_uri: window.location.origin,
-            }
+            },
           });
         }
         break;
@@ -104,66 +104,56 @@ export const BottomNav = () => {
   return (
     <Box>
       {/* AppVersionFooter positioned above the BottomNav */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'fixed',
-          bottom: '65px',  // Position right above the BottomNav height
+          bottom: '65px', // Position right above the BottomNav height
           width: '100%',
-          zIndex: 999,     // Just below BottomNav zIndex
-          padding: '0px 8px 2px 0px',  // Slight adjustment to padding
+          zIndex: 999, // Just below BottomNav zIndex
+          padding: '0px 8px 2px 0px', // Slight adjustment to padding
           background: 'transparent',
           display: 'flex',
-          justifyContent: 'flex-end' // Ensure alignment to right side
+          justifyContent: 'flex-end', // Ensure alignment to right side
         }}
       >
         <AppVersionFooter />
       </Box>
-      
-      <Box 
-        position="fixed" 
-        bottom={0} 
-        width="100%" 
-        sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }} 
-        component={Paper} 
+
+      <Box
+        position="fixed"
+        bottom={0}
+        width="100%"
+        sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }}
+        component={Paper}
         elevation={5}
         role="navigation"
         aria-label="Main navigation"
       >
         <BottomNavigation
-          sx={{ 
-            backgroundColor: 'rgba(0,0,0,.7)', 
-            backdropFilter: 'blur(20px)', 
-            borderTop: '4px solid rgba(255,255,255,.1)', 
+          sx={{
+            backgroundColor: 'rgba(0,0,0,.7)',
+            backdropFilter: 'blur(20px)',
+            borderTop: '4px solid rgba(255,255,255,.1)',
             height: 65,
             boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
             borderRadius: 0,
-            "& .MuiBottomNavigationAction-root.Mui-selected": {
+            '& .MuiBottomNavigationAction-root.Mui-selected': {
               backgroundColor: theme.palette.primary.main,
-              color: "white",
+              color: 'white',
             },
-            "& .MuiBottomNavigationAction-root": {
+            '& .MuiBottomNavigationAction-root': {
               minWidth: '42px',
               padding: '0 0',
               fontSize: '0.6rem',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              MozUserSelect: 'none',
               '@media (min-width: 400px)': {
                 minWidth: '56px',
-                padding: '0 1px'
+                padding: '0 1px',
               },
               '@media (min-width: 600px)': {
                 minWidth: '65px',
-                padding: '0 2px'
-              }
+                padding: '0 2px',
+              },
             },
-            "& .MuiBottomNavigationAction-label": {
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              MozUserSelect: 'none',
-              pointerEvents: 'none', // Prevents text selection and interaction
-              contentEditable: 'false', // Explicitly prevent contentEditable
-            }
           }}
           value={activeTab}
           onChange={handleChange}
@@ -177,28 +167,14 @@ export const BottomNav = () => {
             icon={<HomeIcon />}
             aria-label="Go to home page"
             disabled={false}
-            contentEditable="false"
-            sx={{ 
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
-            }}
           />
-          
+
           {/* Survey (only for authenticated users) */}
           <BottomNavigationAction
             label="Survey"
             icon={<ConnectWithoutContactIcon />}
             aria-label="Go to Save the Date Survey page"
             disabled={!auth0User}
-            contentEditable="false"
-            sx={{ 
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
-            }}
           />
 
           {/* RSVP (only for authenticated users) */}
@@ -207,13 +183,8 @@ export const BottomNav = () => {
             icon={<SaveAsIcon />}
             aria-label="Go to RSVP pages"
             disabled={!auth0User}
-            contentEditable="false"
-            sx={{ 
+            sx={{
               display: isFeatureEnabled('ENABLE_RSVP') ? 'flex' : 'none',
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
             }}
           />
 
@@ -223,13 +194,8 @@ export const BottomNav = () => {
             icon={<AutoAwesomeIcon />}
             aria-label="Go to detail pages"
             disabled={!auth0User}
-            contentEditable="false"
-            sx={{ 
+            sx={{
               display: isFeatureEnabled('ENABLE_DETAILS') ? 'flex' : 'none',
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
             }}
           />
 
@@ -239,44 +205,25 @@ export const BottomNav = () => {
             icon={<GiftCardIcon />}
             aria-label="Go to registry page"
             disabled={!auth0User}
-            contentEditable="false"
-            sx={{ 
+            sx={{
               display: isFeatureEnabled('ENABLE_REGISTRY') ? 'flex' : 'none',
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
             }}
           />
-          
+
           {/* Bureaucracy */}
           <BottomNavigationAction
             label="Bureaucracy"
             icon={<GavelIcon />}
             aria-label="View legal information and bureaucracy pages"
             disabled={false}
-            contentEditable="false"
-            sx={{ 
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
-            }}
           />
-          
+
           {/* Stats (only for authenticated users) */}
           <BottomNavigationAction
             label="Stats"
             icon={<BarChartIcon />}
             aria-label="View wedding statistics"
             disabled={!auth0User}
-            contentEditable="false"
-            sx={{ 
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
-            }}
           />
 
           {/* Admin Updates (only for admin users) */}
@@ -285,44 +232,27 @@ export const BottomNav = () => {
             icon={<AutoFixHighIcon />}
             aria-label="Update Users"
             disabled={!userIsAdmin}
-            contentEditable="false"
-            sx={{ 
+            sx={{
               display: userIsAdmin ? 'flex' : 'none',
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
             }}
           />
-          
+
           {/* Printed RSVP (only for admin users) */}
           <BottomNavigationAction
             label="Printed RSVP"
             icon={<PrintIcon />}
             aria-label="View Printed RSVP"
             disabled={!userIsAdmin}
-            contentEditable="false"
-            sx={{ 
+            sx={{
               display: userIsAdmin ? 'flex' : 'none',
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
             }}
           />
-          
+
           {/* Login/Logout button */}
           <BottomNavigationAction
             label={auth0User ? 'Logout' : 'Login'}
             icon={<ProfileIcon color={auth0User ? 'inherit' : 'secondary'} />}
             aria-label={auth0User ? 'Log out of your account' : 'Log in to your account'}
-            contentEditable="false"
-            sx={{ 
-              "& .MuiBottomNavigationAction-label": { 
-                contentEditable: "false",
-                userSelect: "none" 
-              } 
-            }}
           />
         </BottomNavigation>
       </Box>
