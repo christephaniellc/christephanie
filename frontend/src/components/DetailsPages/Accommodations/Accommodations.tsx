@@ -1,412 +1,397 @@
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import React, { useEffect } from 'react';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import { Button, Card, CardActions, CardContent, CardMedia, Grid, Link, ListSubheader } from '@mui/material';
+import React from 'react';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Stack,
+  alpha,
+  useTheme,
+  Card,
+  CardMedia,
+  CardContent,
+  Button,
+  Chip,
+  Grid,
+} from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
-import { useTheme } from '@mui/material/styles';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { DirectionsBus, NoTransfer, OpenInNew, HotelOutlined, Star } from '@mui/icons-material';
+import RatingComponent from '@/components/RatingComponent/RatingComponent';
+
+// Import images directly
+import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
+import charlestownHotel from '@/assets/holiday-inn-express-charlestown.jpg';
 
 interface AccommodationsProps {
   handleTabLink: (to: string) => void;
 }
 
-function Accommodations({handleTabLink}: AccommodationsProps) {
+const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
-  
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+  // Create an array to track expanded state of each hotel
+  const [expandedHotels, setExpandedHotels] = React.useState<boolean[]>([true, true, true]);
 
-    // Example of an async operation that respects the AbortController
-    const fetchData = async () => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-        if (!signal.aborted) {
-          // Data fetched successfully
-        }
-      } catch (error) {
-        if (signal.aborted) {
-          console.log('Fetch aborted due to navigation.');
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  const accommodationsItems: {
-    [key: string]: {
-      subheader: string;
-      content: { subheader: string; content?: { subheader: string; content: (string | JSX.Element)[] }[] }[];
-    };
-  } = {
-    titleAccommodations: {
-      subheader: 'Accommodations',
-      content: [
-        {
-          subheader:
-            'We\'ve arranged some convenient lodging options to make your trip to our wedding as comfortable as possible. Below you\'ll find information about our hotel room blocks and other accommodation options in the area.',
-        },
-      ],
-    },
-    hotelBlocks: {
-      subheader: 'Hotel Room Blocks',
-      content: [
-        {
-          subheader:
-            'We\'ve reserved blocks of rooms at the following hotels for our wedding guests. When booking, please mention the "Steph & Topher Wedding" to receive our special group rate.',
-        },
-      ],
-    },
-    alternativeOptions: {
-      subheader: 'Alternative Accommodations',
-      content: [
-        {
-          subheader: '',
-          content: [
-            {
-              subheader: 'Vacation Rentals:',
-              content: [
-                'Airbnb and VRBO have many options in Brunswick and surrounding areas.',
-                'For larger families or groups, consider booking a house together for a more economical and communal experience.',
-                'Most vacation rentals in the area are within a 15-20 minute drive to the wedding venue.'
-              ],
-            },
-            {
-              subheader: 'Bed & Breakfasts:',
-              content: [
-                'The Captain\'s House Inn - A charming historic B&B with excellent breakfast (207-555-1212)',
-                'Harborview B&B - Coastal views and walking distance to downtown (207-555-2323)',
-                'Brunswick Inn - Historic property in the heart of Brunswick (207-555-3434)'
-              ],
-            },
-            {
-              subheader: 'Camping Options:',
-              content: [
-                'Thomas Point Beach Campground - Beachfront camping with full facilities, 10 minutes from venue',
-                'Winslow Memorial Park - Beautiful oceanfront camping, 20 minutes from venue',
-                'Bradbury Mountain State Park - For the more adventurous, 30 minutes from venue'
-              ],
-            }
-          ],
-        }
-      ],
-    },
-    transportation: {
-      subheader: 'Transportation',
-      content: [
-        {
-          subheader:
-            'For those staying at our partner hotels, we\'ll be providing a shuttle service to and from the wedding venue. The shuttle schedule will be posted in the hotel lobbies and included in your welcome packet.',
-        },
-        {
-          subheader: '',
-          content: [
-            {
-              subheader: 'Shuttle Service:',
-              content: [
-                'Pick-up from Holiday Inn Express Brunswick: 3:30pm and 4:00pm',
-                'Pick-up from Holiday Inn Express Charlestown: 3:15pm and 3:45pm',
-                'Return shuttles will run at 10:00pm, 10:30pm, and 11:00pm'
-              ],
-            },
-            {
-              subheader: 'Local Transportation Options:',
-              content: [
-                'Uber and Lyft are available in the Brunswick area, but may have limited availability',
-                'Brunswick Taxi Service: 207-555-8787',
-                'Maine Coastal Limo: 207-555-9898 (advance reservation required)'
-              ],
-            }
-          ],
-        }
-      ],
-    },
-    contactInfo: {
-      subheader: 'Questions?',
-      content: [
-        {
-          subheader:
-            'If you have any questions about accommodations or need assistance with your booking, please don\'t hesitate to contact us:',
-        },
-        {
-          subheader: 'Email',
-          content: [
-            {
-              subheader: '',
-              content: [
-                'accommodations@wedding.christephanie.com',
-              ],
-            },
-          ],
-        },
-      ],
-    }
+  const handleToggleHotelDetails = (index: number) => {
+    const newExpandedHotels = [...expandedHotels];
+    newExpandedHotels[index] = !newExpandedHotels[index];
+    setExpandedHotels(newExpandedHotels);
   };
-  
-  // Hotel data
-  const hotels = [
+
+  const getImageSrc = (imagePath: string | undefined) => {
+    if (!imagePath) return '';
+    
+    // Use the imported images based on the path
+    if (imagePath.includes('brunswick')) {
+      return brunswickHotel;
+    } else if (imagePath.includes('charlestown')) {
+      return charlestownHotel;
+    }
+    
+    return imagePath;
+  };
+
+  // Hotel data from CampingPreferences
+  const hotelOptions = [
     {
-      name: 'Holiday Inn Express Brunswick',
-      image: '/src/assets/holiday-inn-express-brunswick.jpg',
-      address: '185 Park Row, Brunswick, ME 04011',
-      phone: '(207) 721-0006',
-      price: '$159-189 per night',
-      distance: '2 miles from venue',
-      amenities: 'Free breakfast, pool, fitness center, free Wi-Fi',
-      blockDetails: 'Group rate available until August 15, 2025',
-      website: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/brunswick/bwkme/hoteldetail',
-      notes: 'This is our primary hotel block with the most rooms available. Located in downtown Brunswick with walking distance to shops and restaurants.',
+      name: 'Holiday Inn Express Suites - Brunswick, MD',
+      image: '.../assets/holiday-inn-express-brunswick.jpg',
+      googleRating: 4.6,
+      phoneNumber: "(301) 969-8020",
+      numberOfRatings: 195,
+      hotelQuality: 3,
+      onShuttleRoute: true,
+      driveMinsFromWedding: 18,
+      hotelBlock: false,
+      bookingNote: "This hotel does not do formal wedding blocks, but they will give you a discount if you ask for the 'wedding rate'"
     },
     {
-      name: 'Holiday Inn Express Charlestown',
-      image: '/src/assets/holiday-inn-express-charlestown.jpg',
-      address: '110 Main Street, Charlestown, ME 04033',
-      phone: '(207) 555-1234',
-      price: '$139-169 per night',
-      distance: '5 miles from venue',
-      amenities: 'Free breakfast, indoor pool, fitness center, free Wi-Fi',
-      blockDetails: 'Group rate available until August 1, 2025',
-      website: 'https://www.ihg.com/holidayinnexpress',
-      notes: 'Our secondary hotel option with a slightly lower price point. Newly renovated with comfortable rooms and convenient access to the highway.',
-    }
+      name: 'Holiday Inn Express Charles Town, Ranson, WV',
+      image: '.../assets/holiday-inn-express-charlestown.jpg',
+      googleRating: 4.5,
+      phoneNumber: "(304) 725-1330",
+      numberOfRatings: 755,
+      hotelQuality: 2,
+      onShuttleRoute: true,
+      driveMinsFromWedding: 23,
+      hotelBlock: true,
+      bookingNote: "We have reserved a block of hotel rooms here: ask for the 'Stubler Wedding block rate'"
+    },
+    {
+      name: 'Lovettsville Area Hotels',
+      image: undefined,
+      googleRating: 0,
+      phoneNumber: undefined,
+      numberOfRatings: 0,
+      hotelQuality: 0,
+      onShuttleRoute: false,
+      driveMinsFromWedding: 0,
+      hotelBlock: false,
+      bookingNote: "Search for hotels in Lovettsville, VA and surrounding areas like Purcellville and Leesburg"
+    },
   ];
-  
-  // Get the semi-transparent background color like in AttendanceButton
-  const semiTransparentBackgroundColor = themePaletteToRgba(theme.palette.primary.main, 0.1);
-  
-  // Common styles for all headers to mimic the "Interested" box styling
-  const commonHeaderStyle = {
-    width: '100%',
-    maxWidth: '100%',
-    position: 'sticky' as const,
-    backdropFilter: 'blur(16px)',
-    border: `2px solid ${semiTransparentBackgroundColor}`,
-    backgroundColor: semiTransparentBackgroundColor,
-    color: theme.palette.primary.contrastText,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-    left: 0,
-    right: 0,
-    top: 0, // Ensure headers stick to top
-  };
-  
-  // Styles for subheaders with different z-index values - lower level headers have higher z-index
-  const mainHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 10,
-  };
-  
-  const subHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 11,
-  };
-  
-  const subSubHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 12,
-  };
-  
+
   return (
     <Container
       sx={{
         width: '100%',
         height: contentHeight,
-        overflow: 'hidden',
-        borderRadius: 'sm',
+        overflow: 'auto',
         display: 'flex',
-        flexWrap: 'wrap',
+        flexDirection: 'column',
         position: 'relative',
         paddingBottom: '80px', // Added padding to ensure content doesn't get hidden behind BottomNav
       }}
     >
-      <Box my={2} sx={{ 
-        backdropFilter: 'blur(16px)',
-        width: '100%',
-        px: 2,
-        mt: 2,
-        pb: 2,
-        zIndex: 5, // Lower z-index than headers
-      }}>
-        <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
-            mt: 2,
-            fontSize: '2rem'}}>
-          {accommodationsItems.titleAccommodations.subheader}
-        </StephsActualFavoriteTypography>
-        
-        <Box
+      <Box
+        my={2}
+        sx={{
+          width: '100%',
+          px: 2,
+          mt: 2,
+          pb: 2,
+          zIndex: 5,
+        }}
+      >
+        <StephsActualFavoriteTypography
+          variant="h4"
           sx={{
-            width: '100%',
-            height: '120px',
-            overflow: 'hidden',
-            position: 'relative',
-            '@keyframes rollLogo': {
-              '0%, 10%': { left: 0, transform: 'rotate(0deg)' },
-              '30%': { left: 'calc(100% - 120px)', transform: 'rotate(360deg)' },
-              '50%, 60%': { left: 0, transform: 'rotate(0deg)' },
-              '80%': { left: 'calc(100% - 120px)', transform: 'rotate(-360deg)' },
-              '100%': { left: 0, transform: 'rotate(0deg)' }
-            },
-            '& img': {
-              position: 'absolute',
-              height: '120px',
-              width: '120px',
-              animation: 'rollLogo 8s infinite',
-            }
+            textAlign: 'center',
+            mt: 2,
+            fontSize: '2rem',
           }}
         >
-          <img 
-            src="/favicon_big_art_transparent.png" 
-            alt="Wedding Logo" 
-          />
-        </Box>
+          Accommodations
+        </StephsActualFavoriteTypography>
 
-        <Typography variant="body1" 
-          sx={{ mt: 2, fontSize: '0.9rem' }}>
-          {accommodationsItems.titleAccommodations.content[0].subheader}
+        <Typography variant="body1" sx={{ mt: 2, textAlign: 'center' }}>
+          We've arranged some convenient lodging options to make your trip to our wedding as comfortable as possible. 
+          The wedding venue is located in Lovettsville, Virginia.
         </Typography>
       </Box>
-      <List sx={{ 
-        overflow: 'auto', 
-        pt: 0,
-        my: 2, 
-        height: 'calc(100% - 300px)', 
-        backgroundColor: 'rgba(0,0,0,.1)', 
-        width: '100%',
-        pb: 16, // Increased padding at bottom to avoid content being cut off behind BottomNav
-        position: 'relative',
-        zIndex: 1, // Lower z-index than headers
-      }}>
-        {/* Hotel Room Blocks Section */}
-        <Box
-          data-testid="list-item-hotelBlocks"
-          sx={{ 
-            flexWrap: 'wrap', 
-            width: '100%',
+
+      <Stack
+        display="flex"
+        width="100%"
+        my="auto"
+        justifyContent="center"
+        alignItems="center"
+        px={2}
+      >
+        <Paper
+          elevation={5}
+          sx={{
+            backdropFilter: 'blur(20px)',
             backgroundColor: 'rgba(0,0,0,.1)',
-            padding: 0,
-            mb: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            overflow: 'hidden',
           }}
-        >
-          <ListSubheader sx={mainHeaderStyle}>
-            {accommodationsItems.hotelBlocks.subheader}
-          </ListSubheader>
-          <Typography sx={{ padding: '16px 16px 0 16px' }}>
-            {accommodationsItems.hotelBlocks.content[0].subheader}
-          </Typography>
-          
-          {/* Hotel Cards */}
-          <Grid container spacing={2} sx={{ padding: '16px' }}>
-            {hotels.map((hotel, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={hotel.image}
-                    alt={hotel.name}
-                  />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {hotel.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      {hotel.address}
-                    </Typography>
-                    <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                      <strong>Price:</strong> {hotel.price}
-                    </Typography>
-                    <Typography variant="body2" component="div">
-                      <strong>Distance:</strong> {hotel.distance}
-                    </Typography>
-                    <Typography variant="body2" component="div">
-                      <strong>Amenities:</strong> {hotel.amenities}
-                    </Typography>
-                    <Typography variant="body2" component="div">
-                      <strong>Block Details:</strong> {hotel.blockDetails}
-                    </Typography>
-                    <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                      {hotel.notes}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button size="small" component="a" href={hotel.website} target="_blank" rel="noopener noreferrer">
-                      Book Now
-                    </Button>
-                    <Button size="small" component="a" href={`tel:${hotel.phone}`}>
-                      Call: {hotel.phone}
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-        
-        {/* Render other sections */}
-        {Object.entries(accommodationsItems)
-          .filter(([key]) => !['titleAccommodations', 'hotelBlocks'].includes(key))
-          .map(([key, value]) => (
-            <Box
-              data-testid={`list-item-${key}`}
-              key={key}
-              sx={{ flexWrap: 'wrap', width: '100%',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                padding: 0,
-                mb: 2, // Add margin between sections
-            }}
+        >   
+          <Box sx={{ 
+            p: 2, 
+            pb: 1, 
+            background: alpha(theme.palette.background.paper, 0.9),
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
+          }}>
+            <Typography 
+              variant="h6" 
+              fontWeight="500" 
+              color="secondary"
             >
-              <ListSubheader sx={mainHeaderStyle}>
-                {value.subheader}
-              </ListSubheader>
-              <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                {value.content.map((content, index) => (
-                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                    {content.subheader && !content.content && (
-                      <Typography sx={{ padding: '8px 16px' }}>
-                        {content.subheader}
+              Hotel options: click each for more info
+            </Typography>
+          </Box>    
+          
+          {/* Hotel options list */}
+          <Stack
+            spacing={1}
+            sx={{
+              p: 1,
+              width: '100%',
+            }}
+          >
+            {hotelOptions.map((hotel, index) => (
+              <Paper
+                key={index}
+                elevation={1}
+                sx={{
+                  overflow: 'hidden',
+                  backgroundColor: 'rgba(0,0,0,.4)',
+                  width: '100%',
+                }}
+              >
+                <Button
+                  fullWidth
+                  variant="text"
+                  color="secondary"
+                  sx={{
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    py: 1,
+                    px: 2,
+                    borderRadius: 0,
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,255,255,.05)',
+                    }
+                  }}
+                  endIcon={<OpenInNew />}
+                  startIcon={<HotelOutlined />}
+                  onClick={() => handleToggleHotelDetails(index)}
+                >
+                  <Box display="flex" alignItems="center" justifyContent="space-between" width="1">
+                    <Box display="flex" alignItems="center">
+                      <Typography
+                        component="span"
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 'bold',
+                          textAlign: 'left',
+                          mr: 1,
+                        }}
+                      >
+                        {hotel.name}
                       </Typography>
-                    )}
-                    {content.content && (
-                      <>
-                        {content.subheader && (
-                          <ListSubheader disableSticky={false} key={index} sx={subHeaderStyle}>
-                            {content.subheader}
-                          </ListSubheader>
-                        )}
-                        <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                          {content.content.map((subContent, index) => (
-                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                              {subContent.subheader && (
-                                <ListSubheader sx={subSubHeaderStyle}>
-                                  {subContent.subheader}
-                                </ListSubheader>
-                              )}
-                              <List sx={{ width: '100%', padding: '8px 16px' }}>
-                                {subContent.content?.map((paragraph, pIndex) => (
-                                  <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
-                                ))}
-                              </List>
-                            </Box>
-                          ))}
-                        </List>
-                      </>
+                      {hotel.googleRating > 0 && (
+                        <Box display="flex" alignItems="center">
+                          <Star sx={{ color: 'secondary.main', fontSize: '1rem', mr: 0.3 }} />
+                          <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                            {hotel.googleRating}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    
+                    {hotel.onShuttleRoute && (
+                      <Chip
+                        icon={<DirectionsBus sx={{ color: 'primary.contrastText', fontSize: '1rem' }} />}
+                        label="Shuttle"
+                        size="small"
+                        sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText', fontWeight: 'bold' }}
+                      />
                     )}
                   </Box>
-                ))}
-              </List>
-            </Box>
-          ))}
-      </List>
+                </Button>
+                
+                {/* Expanded hotel details */}
+                {expandedHotels[index] && (
+                  <Box sx={{ p: 2 }}>
+                    <Card sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      backgroundColor: 'rgba(0,0,0,0.4)',
+                      borderRadius: 2,
+                    }}>
+                      {/* Hotel Image */}
+                      {hotel.image && (
+                        <CardMedia
+                          component="img"
+                          image={getImageSrc(hotel.image)}
+                          alt={hotel.name}
+                          sx={{ 
+                            height: 140, 
+                            objectFit: 'cover',
+                          }}
+                        />
+                      )}
+                      
+                      <CardContent sx={{ flex: 1, p: 2 }}>
+                        {/* Hotel name */}
+                        <Typography variant="h6" component="h2" gutterBottom>
+                          {hotel.name}
+                        </Typography>
+                        
+                        {/* Rating */}
+                        {hotel.googleRating > 0 && (
+                          <Box sx={{ mb: 2 }}>
+                            <RatingComponent
+                              score={hotel.googleRating}
+                              numberOfRatings={hotel.numberOfRatings}
+                            />
+                          </Box>
+                        )}
+                        
+                        <Stack spacing={1.5}>
+                          {/* Phone number */}
+                          {hotel.phoneNumber && (
+                            <Typography variant="body2">
+                              <strong>Phone:</strong> {hotel.phoneNumber}
+                            </Typography>
+                          )}
+                          
+                          {/* Drive time */}
+                          {hotel.driveMinsFromWedding > 0 && (
+                            <Typography variant="body2">
+                              <strong>Drive time to venue:</strong> {hotel.driveMinsFromWedding} minutes
+                            </Typography>
+                          )}
+                          
+                          {/* Rate info */}
+                          {hotel.bookingNote && (
+                            <Typography variant="body2" color="primary.light">
+                              <span style={{ color: "#FFFFFF" }}><strong>Booking note:</strong></span><br/>
+                              {hotel.bookingNote}
+                            </Typography>
+                          )}
+                          
+                          {/* Shuttle info */}
+                          {hotel.onShuttleRoute ? (
+                            <Chip
+                              icon={<DirectionsBus />}
+                              label="Shuttle Available"
+                              color="primary"
+                              size="small"
+                              sx={{ alignSelf: 'flex-start', mt: 1 }}
+                            />
+                          ) : (
+                            <Chip
+                              icon={<NoTransfer />}
+                              label="No Shuttle Service"
+                              color="error"
+                              variant="outlined"
+                              size="small"
+                              sx={{ alignSelf: 'flex-start', mt: 1 }}
+                            />
+                          )}
+                          
+                          {/* Google search button */}
+                          <Button
+                            variant="outlined"
+                            color="secondary"
+                            size="small"
+                            endIcon={<OpenInNew />}
+                            onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
+                            sx={{ mt: 1, alignSelf: 'flex-start' }}
+                          >
+                            Search on Google
+                          </Button>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Box>
+                )}
+              </Paper>
+            ))}
+          </Stack>
+        </Paper>
+      </Stack>
+
+      {/* Additional Information Section */}
+      <Box mt={4} mb={8} px={2}>
+        <Paper
+          elevation={5}
+          sx={{
+            backdropFilter: 'blur(20px)',
+            backgroundColor: 'rgba(0,0,0,.1)',
+            p: 3,
+          }}
+        >
+          <Typography variant="h5" color="secondary" gutterBottom>
+            Transportation Information
+          </Typography>
+          
+          <Typography variant="body1" paragraph>
+            For those staying at our partner hotels, we'll be providing a shuttle service to and from the wedding venue.
+          </Typography>
+          
+          <Typography variant="h6" gutterBottom>
+            Shuttle Schedule:
+          </Typography>
+          
+          <Typography component="div" variant="body2">
+            <ul>
+              <li>Pick-up from Holiday Inn Express Brunswick: 3:30pm and 4:00pm</li>
+              <li>Pick-up from Holiday Inn Express Charles Town: 3:15pm and 3:45pm</li>
+              <li>Return shuttles will run at 10:00pm, 10:30pm, and 11:00pm</li>
+            </ul>
+          </Typography>
+          
+          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+            Alternative Transportation Options:
+          </Typography>
+          
+          <Typography component="div" variant="body2">
+            <ul>
+              <li>Uber and Lyft are available in the area, but availability may be limited</li>
+              <li>Local taxi services are available (we recommend booking in advance)</li>
+              <li>We encourage carpooling with other guests when possible</li>
+            </ul>
+          </Typography>
+          
+          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+            Questions?
+          </Typography>
+          
+          <Typography variant="body2">
+            If you have any questions about accommodations or transportation, please contact us at:<br />
+            <strong>accommodations@wedding.christephanie.com</strong>
+          </Typography>
+        </Paper>
+      </Box>
     </Container>
   );
-}
+};
 
 export default Accommodations;
