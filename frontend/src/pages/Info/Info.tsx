@@ -8,11 +8,12 @@ import Tab from '@mui/material/Tab';
 import Paper from '@mui/material/Paper';
 // Import our new components
 import AboutUs from '@/components/DetailsPages/AboutUs';
-import AboutUsCouple from '@/components/Info/AboutUsCouple';
+// Comment out missing component
+// import AboutUsCouple from '@/components/Info/AboutUsCouple';
 import Accommodations from '@/components/DetailsPages/Accommodations';
-import Travel from '@/components/DetailsPages/Travel';
-import Attire from '@/components/DetailsPages/Attire';
-import Schedule from '@/components/DetailsPages/Schedule';
+import Travel from '@/components/DetailsPages/Travel/Travel';
+import Attire from '@/components/DetailsPages/Attire/Attire';
+import Schedule from '@/components/DetailsPages/Schedule/Schedule';
 import ThingsToDo from '@/components/DetailsPages/ThingsToDo';
 import { isFeatureEnabled } from '@/config';
 
