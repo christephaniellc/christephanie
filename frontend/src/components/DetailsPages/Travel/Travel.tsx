@@ -59,12 +59,12 @@ function Travel({handleTabLink}: TravelProps) {
       content: [
         {
           subheader:
-            'We\'ve put together this guide to help you plan your trip to our wedding. Below you\'ll find information about getting to Brunswick, Maine, navigating the area, and what to expect when you arrive.',
+            'We\'ve put together this guide to help you plan your trip to our wedding. Below you\'ll find information about getting to Lovettsville, Virginia, navigating the area, and what to expect when you arrive.',
         },
       ],
     },
     gettingThere: {
-      subheader: 'Getting to Brunswick',
+      subheader: 'Getting to Lovettsville',
       content: [
         {
           subheader: '',
@@ -72,26 +72,27 @@ function Travel({handleTabLink}: TravelProps) {
             {
               subheader: 'By Air:',
               content: [
-                'The closest airport is Portland International Jetport (PWM), about 30 minutes from Brunswick.',
-                'Boston Logan International Airport (BOS) is about 2.5 hours from Brunswick and typically offers more flight options.',
-                'We recommend renting a car at either airport for the most flexibility during your stay.'
+                'The closest airport is Dulles International Airport (IAD), about 45 minutes from Lovettsville.',
+                'Reagan National Airport (DCA) is about 1.5 hours from Lovettsville.',
+                'Baltimore-Washington International Airport (BWI) is about 1.5 hours from Lovettsville.',
+                'We recommend renting a car at any of these airports for the most flexibility during your stay.'
               ],
             },
             {
               subheader: 'By Train:',
               content: [
-                'Amtrak\'s Downeaster train serves Brunswick directly, with several daily trips from Boston.',
-                'The Brunswick train station is located in downtown Brunswick, within walking distance of many restaurants and shops.',
-                'Travel time from Boston is approximately 3 hours.'
+                'Amtrak serves the DC area with stations in Washington DC, Alexandria, and other locations.',
+                'The closest Amtrak station is Harpers Ferry, WV, about 20 minutes from Lovettsville.',
+                'You will need to arrange transportation from the train station to Lovettsville.'
               ],
             },
             {
               subheader: 'By Car:',
               content: [
-                'Brunswick is located just off Interstate 295, about 30 minutes north of Portland, Maine.',
-                'From Boston: Take I-95 North to I-295 North. Follow I-295 to Brunswick (Exit 28).',
-                'From NYC: Take I-95 North through Connecticut, Rhode Island, Massachusetts and into Maine. Expect 6-7 hours of driving time.',
-                'Parking is available at all recommended accommodation options.'
+                'Lovettsville is located in northern Virginia, about 15 miles north of Leesburg.',
+                'From DC: Take Route 7 West to Route 9 North, then to Route 287 North to Lovettsville.',
+                'From Baltimore: Take I-70 West to US-340 West, then to Route 17 South to Lovettsville.',
+                'Parking is available at all recommended accommodation options and at the venue.'
               ],
             }
           ],
@@ -102,22 +103,22 @@ function Travel({handleTabLink}: TravelProps) {
       subheader: 'Wedding Venue Information',
       content: [
         {
-          subheader: 'The Barn at Autumn Lane',
+          subheader: 'Stone Manor Inn',
           content: [
             {
               subheader: 'Address:',
               content: [
-                '155 Autumn Lane, Brunswick, ME 04011'
+                '13193 Mountain Rd, Lovettsville, VA 20180'
               ],
             },
             {
-              subheader: 'Directions from Downtown Brunswick:',
+              subheader: 'Directions from Leesburg:',
               content: [
-                '1. Head east on Maine Street toward Bath Road',
-                '2. Turn right onto Bath Road/Route 24',
-                '3. After 3.5 miles, turn left onto Autumn Lane',
-                '4. Continue to the end of the road where you\'ll find the venue',
-                'Travel time from downtown: Approximately 10-12 minutes'
+                '1. Head north on US-15 N',
+                '2. Take Route 690 West to Lovettsville',
+                '3. Turn right onto Mountain Road',
+                '4. Stone Manor Inn will be on your right',
+                'Travel time from Leesburg: Approximately 25-30 minutes'
               ],
             }
           ],
@@ -129,7 +130,7 @@ function Travel({handleTabLink}: TravelProps) {
       content: [
         {
           subheader:
-            'Transportation options in Brunswick and the surrounding area:',
+            'Transportation options in Lovettsville and the surrounding area:',
         },
         {
           subheader: '',
@@ -137,17 +138,17 @@ function Travel({handleTabLink}: TravelProps) {
             {
               subheader: 'Rental Cars:',
               content: [
-                'Enterprise Rent-A-Car: Located in downtown Brunswick. (207-729-6464)',
-                'Hertz: Available at Portland Jetport. (207-774-6364)',
-                'Avis/Budget: Available at Portland Jetport. (207-775-5434)'
+                'Enterprise Rent-A-Car: Available at all major airports. (1-800-261-7331)',
+                'Hertz: Available at all major airports. (1-800-654-3131)',
+                'Avis/Budget: Available at all major airports.'
               ],
             },
             {
               subheader: 'Taxis & Ride Services:',
               content: [
-                'Brunswick Taxi: Local taxi service. (207-729-3688)',
-                'Uber & Lyft: Limited availability in Brunswick, more reliable in Portland.',
-                'Mid Coast Limousine: For pre-arranged transportation. (207-443-8210)'
+                'Uber & Lyft: Available in Leesburg and surrounding areas.',
+                'Local taxi services are available but may need to be booked in advance.',
+                'We recommend arranging transportation ahead of time if not using the shuttle service.'
               ],
             },
             {
@@ -167,7 +168,7 @@ function Travel({handleTabLink}: TravelProps) {
       content: [
         {
           subheader:
-            'Maine weather in September is typically very pleasant, but can be variable. Here\'s what to expect:',
+            'Northern Virginia weather in July is typically warm and humid. Here\'s what to expect:'
         },
         {
           subheader: '',
@@ -175,10 +176,11 @@ function Travel({handleTabLink}: TravelProps) {
             {
               subheader: 'Typical Conditions:',
               content: [
-                'Average high: 70°F (21°C)',
-                'Average low: 50°F (10°C)',
-                'Precipitation: Moderate chance of light rain',
-                'Recommended: Bring layers, as evenings can be cool, and a light raincoat just in case'
+                'Average high: 87°F (31°C)',
+                'Average low: 68°F (20°C)',
+                'Humidity: Usually high',
+                'Precipitation: Possibility of afternoon thunderstorms',
+                'Recommended: Light, breathable clothing and maybe a light jacket for the evening'
               ],
             }
           ],
@@ -209,7 +211,7 @@ function Travel({handleTabLink}: TravelProps) {
             {
               subheader: '',
               content: [
-                'Jordan (Best Man): (207) 555-1234',
+                'Jordan (Best Man): (703) 555-1234',
               ],
             },
           ],
@@ -278,33 +280,6 @@ function Travel({handleTabLink}: TravelProps) {
             fontSize: '2rem'}}>
           {travelItems.titleTravel.subheader}
         </StephsActualFavoriteTypography>
-        
-        <Box
-          sx={{
-            width: '100%',
-            height: '120px',
-            overflow: 'hidden',
-            position: 'relative',
-            '@keyframes rollLogo': {
-              '0%, 10%': { left: 0, transform: 'rotate(0deg)' },
-              '30%': { left: 'calc(100% - 120px)', transform: 'rotate(360deg)' },
-              '50%, 60%': { left: 0, transform: 'rotate(0deg)' },
-              '80%': { left: 'calc(100% - 120px)', transform: 'rotate(-360deg)' },
-              '100%': { left: 0, transform: 'rotate(0deg)' }
-            },
-            '& img': {
-              position: 'absolute',
-              height: '120px',
-              width: '120px',
-              animation: 'rollLogo 8s infinite',
-            }
-          }}
-        >
-          <img 
-            src="/favicon_big_art_transparent.png" 
-            alt="Wedding Logo" 
-          />
-        </Box>
 
         <Typography variant="body1" 
           sx={{ mt: 2, fontSize: '0.9rem' }}>
@@ -340,7 +315,7 @@ function Travel({handleTabLink}: TravelProps) {
               <Divider sx={{ mb: 2 }} />
               <Box
                 component="iframe"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11381.307986356357!2d-69.95323513238347!3d43.910803135726685!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cb28a1b4d493e97%3A0x8fbea66e5fa60cbb!2sBrunswick%2C%20ME!5e0!3m2!1sen!2sus!4v1617391369978!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12383.86570043533!2d-77.64746721193069!3d39.269444801101574!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89b606193970ec5d%3A0x2c2c11c2aeded12c!2sStone%20Manor%20Boutique%20Inn!5e0!3m2!1sen!2sus!4v1704496957511!5m2!1sen!2sus"
                 width="100%"
                 height="300"
                 style={{
@@ -353,7 +328,7 @@ function Travel({handleTabLink}: TravelProps) {
                 title="Venue Location Map"
               />
               <Typography variant="body2" color="text.secondary">
-                The Barn at Autumn Lane, 155 Autumn Lane, Brunswick, ME 04011
+                Stone Manor Inn, 13193 Mountain Rd, Lovettsville, VA 20180
               </Typography>
             </CardContent>
           </Card>

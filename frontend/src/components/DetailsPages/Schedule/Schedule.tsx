@@ -87,7 +87,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
       ],
     },
     fridayEvents: {
-      subheader: 'Friday, September 20, 2025',
+      subheader: 'Friday, July 4, 2025',
       content: [
         {
           subheader: 'Welcome Dinner',
@@ -96,8 +96,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
               subheader: 'Time & Location:',
               content: [
                 '6:00 PM - 9:00 PM',
-                'Flight Deck Brewing Co.',
-                '11 Atlantic Ave, Brunswick, ME 04011'
+                'Local Brewery & Restaurant',
+                'Lovettsville, VA 20180'
               ],
             },
             {
@@ -114,7 +114,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
       ],
     },
     saturdayEvents: {
-      subheader: 'Saturday, September 21, 2025 - Wedding Day',
+      subheader: 'Saturday, July 5, 2025 - Wedding Day',
       content: [
         {
           subheader: 'Ceremony',
@@ -123,8 +123,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
               subheader: 'Time & Location:',
               content: [
                 '4:30 PM - 5:15 PM',
-                'The Barn at Autumn Lane (Outdoor Garden)',
-                '155 Autumn Lane, Brunswick, ME 04011'
+                'Stone Manor Inn (Outdoor Garden)',
+                '13193 Mountain Rd, Lovettsville, VA 20180'
               ],
             },
             {
@@ -145,7 +145,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
               subheader: 'Time & Location:',
               content: [
                 '5:15 PM - 6:30 PM',
-                'The Barn at Autumn Lane (Patio & Lower Level)'
+                'Stone Manor Inn (Patio & Lower Level)'
               ],
             },
             {
@@ -153,7 +153,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
               content: [
                 'Hors d\'oeuvres will be served',
                 'Open bar with signature cocktails',
-                'Live music by The Maine String Quartet'
+                'Live music by The Virginia String Quartet'
               ],
             }
           ],
@@ -165,7 +165,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
               subheader: 'Time & Location:',
               content: [
                 '6:30 PM - 11:00 PM',
-                'The Barn at Autumn Lane (Main Hall)'
+                'Stone Manor Inn (Main Hall)'
               ],
             },
             {
@@ -189,8 +189,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
               subheader: 'Time & Location:',
               content: [
                 '11:30 PM - 1:00 AM',
-                'Flight Deck Brewing Co. (Private Room)',
-                '11 Atlantic Ave, Brunswick, ME 04011'
+                'Local Brewery & Restaurant (Private Room)',
+                'Lovettsville, VA 20180'
               ],
             },
             {
@@ -207,7 +207,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
       ],
     },
     sundayEvents: {
-      subheader: 'Sunday, September 22, 2025',
+      subheader: 'Sunday, July 6, 2025',
       content: [
         {
           subheader: 'Farewell Brunch',
@@ -217,7 +217,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
               content: [
                 '10:00 AM - 12:00 PM',
                 'Holiday Inn Express Brunswick (Function Room)',
-                '185 Park Row, Brunswick, ME 04011'
+                'Brunswick, MD'
               ],
             },
             {
@@ -282,7 +282,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
             {
               subheader: '',
               content: [
-                'Cell: (207) 555-1234',
+                'Cell: (703) 555-1234',
                 'Email: jordan@wedding.christephanie.com'
               ],
             },

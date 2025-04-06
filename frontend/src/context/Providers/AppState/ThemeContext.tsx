@@ -48,20 +48,6 @@ export const ChristephanieThemeProvider: React.FC<{ children: ReactNode }> = ({ 
             WebkitTextFillColor: theme.palette.text.primary,
             transition: "background-color 5000s ease-in-out 0s",
           },
-          // Make all bottom navigation labels non-editable
-          ".MuiBottomNavigation-root .MuiBottomNavigationAction-label": {
-            userSelect: "none",
-            WebkitUserSelect: "none",
-            MozUserSelect: "none",
-            msUserSelect: "none",
-            contentEditable: "false",
-            pointerEvents: "none"
-          },
-          // Specific class for making elements non-editable
-          ".non-editable-nav *": {
-            contentEditable: "false !important",
-            userSelect: "none !important"
-          }
         }}
       />
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
