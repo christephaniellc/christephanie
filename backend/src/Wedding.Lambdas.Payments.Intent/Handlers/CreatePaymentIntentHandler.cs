@@ -85,7 +85,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     cancellationToken);
 
                 _logger.LogInformation("Payment result: {Result} with amount {Amount} and currency {Currency}. Metadata: {MetaData}",
-                    JsonSerializer.Serialize(result));
+                    JsonSerializer.Serialize(result), command.Amount, command.Currency, JsonSerializer.Serialize(giftMetaData));
 
                 if (!string.IsNullOrEmpty(result.PaymentIntentId))
                 {
@@ -114,7 +114,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
             {
                 // TODO: add stripe exceptions here
                 _logger.LogError(ex, "An error occurred while creating payment.");
-                throw new UnauthorizedAccessException($"Stats not found. {ex.Message}");
+                throw new UnauthorizedAccessException($"{ex.Message}");
             }
         }
     }

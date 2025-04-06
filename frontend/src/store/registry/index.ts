@@ -90,25 +90,42 @@ export const paymentDialogState = atom<PaymentDialogState>({
   }
 });
 
-export const paymentSuccessDialogState = atom<{open: boolean; amount: number; category: string}>({
+export const paymentSuccessDialogState = atom<{
+  open: boolean; 
+  amount: number; 
+  category: string;
+  paymentIntentId: string;
+  email: string;
+  timestamp: string;
+}>({
   key: 'paymentSuccessDialogState',
   default: {
     open: false,
     amount: 0,
-    category: ''
+    category: '',
+    paymentIntentId: '',
+    email: '',
+    timestamp: ''
   }
 });
 
-export const paymentErrorDialogState = atom<{open: boolean; message: string}>({
+export const paymentErrorDialogState = atom<{
+  open: boolean; 
+  message: string;
+  errorCode: string;
+  errorType: string;
+}>({
   key: 'paymentErrorDialogState',
   default: {
     open: false,
-    message: ''
+    message: '',
+    errorCode: '',
+    errorType: ''
   },
   // Force reset of error state on page refresh
   effects: [
     ({ setSelf }) => {
-      setSelf({ open: false, message: '' });
+      setSelf({ open: false, message: '', errorCode: '', errorType: '' });
     }
   ]
 });
@@ -166,7 +183,11 @@ export const useRegistry = () => {
     });
   };
   
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (details: { 
+    paymentIntentId: string; 
+    email: string; 
+    timestamp: string 
+  }) => {
     const { amount, category, categoryId } = paymentDialog;
     
     // Close payment dialog
@@ -175,11 +196,14 @@ export const useRegistry = () => {
       open: false
     }));
     
-    // Show success dialog
+    // Show success dialog with transaction details
     setSuccessDialog({
       open: true,
       amount,
-      category
+      category,
+      paymentIntentId: details.paymentIntentId,
+      email: details.email,
+      timestamp: details.timestamp
     });
     
     // Reset the form
@@ -187,19 +211,60 @@ export const useRegistry = () => {
       ...prev,
       [categoryId]: ''
     }));
+    
+    // Log transaction for debugging
+    console.log('Payment successful:', {
+      amount,
+      category,
+      ...details
+    });
   };
   
-  const handlePaymentError = (message: string) => {
-    // Close payment dialog
+  const handlePaymentError = (message: string, errorCode: string = '', errorType: string = '') => {
+    console.log('handlePaymentError called with:', { message, errorCode, errorType });
+    
+    // Close payment dialog immediately
     setPaymentDialog(prev => ({
       ...prev,
       open: false
     }));
     
-    // Show error dialog
+    // Show a notification for immediate feedback
+    setNotification({
+      show: true,
+      message: `Payment error: ${message}`,
+      severity: 'error'
+    });
+    
+    // Show detailed error dialog immediately
+    console.log('Setting error dialog state to:', {
+      open: true,
+      message,
+      errorCode,
+      errorType
+    });
+    
     setErrorDialog({
       open: true,
-      message
+      message,
+      errorCode,
+      errorType
+    });
+    
+    // Also force an update with a small delay to handle any race conditions
+    setTimeout(() => {
+      console.log('Re-setting error dialog just to be safe');
+      setErrorDialog(prev => ({
+        ...prev,
+        open: true
+      }));
+    }, 500);
+    
+    // Log error for debugging
+    console.error('Payment failed:', {
+      message,
+      errorCode,
+      errorType
     });
   };
   
@@ -218,10 +283,13 @@ export const useRegistry = () => {
   };
   
   const closeErrorDialog = () => {
-    setErrorDialog(prev => ({
-      ...prev,
-      open: false
-    }));
+    console.log('Closing error dialog');
+    setErrorDialog({
+      open: false,
+      message: '',
+      errorCode: '',
+      errorType: ''
+    });
   };
 
   const closeNotification = () => {
