@@ -1,30 +1,32 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import React, { useEffect } from 'react';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import React, { useState } from 'react';
 import { 
-  Divider, 
-  Grid, 
-  Link, 
-  ListSubheader, 
   Paper, 
-  Step, 
-  StepContent, 
-  StepLabel, 
-  Stepper
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  alpha,
+  Fade,
+  Grow
 } from '@mui/material';
-import Timeline from '@mui/lab/Timeline';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import {
+  CalendarToday,
+  EmojiEvents,
+  Fastfood,
+  LocalBar,
+  MusicNote,
+  Celebration,
+  DirectionsBus,
+  Hotel,
+  Cake,
+  FlightTakeoff
+} from '@mui/icons-material';
 
 interface ScheduleProps {
   handleTabLink: (to: string) => void;
@@ -33,535 +35,408 @@ interface ScheduleProps {
 function Schedule({handleTabLink}: ScheduleProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
+  const [selectedDay, setSelectedDay] = useState('day2');
   
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    // Example of an async operation that respects the AbortController
-    const fetchData = async () => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-        if (!signal.aborted) {
-          // Data fetched successfully
-        }
-      } catch (error) {
-        if (signal.aborted) {
-          console.log('Fetch aborted due to navigation.');
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  const travelLink = (
-    <Link onClick={() => handleTabLink('travel')}>
-      Travel page
-    </Link>
-  );
-
-  const accommodationsLink = (
-    <Link onClick={() => handleTabLink('accommodations')}>
-      Accommodations page
-    </Link>
-  );
-
-  const scheduleItems: {
-    [key: string]: {
-      subheader: string;
-      content: { subheader: string; content?: { subheader: string; content: (string | JSX.Element)[] }[] }[];
-    };
-  } = {
-    titleSchedule: {
-      subheader: 'Wedding Schedule',
-      content: [
+  // Event data
+  const events = {
+    day1: {
+      title: 'Friday, July 4, 2025',
+      subtitle: 'Pre-Wedding Events',
+      events: [
         {
-          subheader:
-            'Here\'s what to expect for our wedding weekend. We\'re so excited to celebrate with you!',
-        },
-      ],
+          id: 'welcome-dinner',
+          name: 'Welcome Dinner',
+          time: '6:00 PM - 9:00 PM',
+          location: 'Local Brewery & Restaurant, Lovettsville, VA',
+          description: 'Join us for a casual dinner. Jeans welcome!',
+          details: ['Meet other guests', 'Food and drinks', 'Casual attire'],
+          icon: <Fastfood />
+        }
+      ]
     },
-    fridayEvents: {
-      subheader: 'Friday, July 4, 2025',
-      content: [
+    day2: {
+      title: 'Saturday, July 5, 2025',
+      subtitle: 'Wedding Day',
+      events: [
         {
-          subheader: 'Welcome Dinner',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '6:00 PM - 9:00 PM',
-                'Local Brewery & Restaurant',
-                'Lovettsville, VA 20180'
-              ],
-            },
-            {
-              subheader: 'Details:',
-              content: [
-                'Casual dinner for out-of-town guests and wedding party',
-                'Food provided, cash bar available',
-                'No need to RSVP - just come if you\'re in town!',
-                'Casual attire - jeans welcome'
-              ],
-            }
-          ],
+          id: 'ceremony',
+          name: 'Wedding Ceremony',
+          time: '4:30 PM - 5:15 PM',
+          location: 'Stone Manor Inn (Outdoor Garden)',
+          description: 'Topher and Steph exchange vows. Please arrive 15-30 minutes early.',
+          details: ['Outdoor ceremony (weather permitting)', 'Seating provided'],
+          icon: <EmojiEvents />
+        },
+        {
+          id: 'cocktail',
+          name: 'Cocktail Hour',
+          time: '5:15 PM - 6:30 PM',
+          location: 'Stone Manor Inn (Patio & Lower Level)',
+          description: 'Enjoy drinks and appetizers while mingling with other guests.',
+          details: ['Hors d\'oeuvres', 'Signature cocktails', 'Live music by The Virginia String Quartet'],
+          icon: <LocalBar />
+        },
+        {
+          id: 'reception',
+          name: 'Dinner Reception',
+          time: '6:30 PM - 8:30 PM',
+          location: 'Stone Manor Inn (Main Hall)',
+          description: 'Dinner, speeches, toasts, and cake cutting.',
+          details: ['Full dinner service', 'Cake', 'Toasts and speeches'],
+          icon: <Cake />
+        },
+        {
+          id: 'dancing',
+          name: 'Dancing & Celebration',
+          time: '8:30 PM - 11:00 PM',
+          location: 'Stone Manor Inn (Main Hall)',
+          description: 'Dance the night away! Topher and Steph will change into more comfortable attire for this portion.',
+          details: ['DJ and dancing', 'Photo booth', 'Dessert table'],
+          icon: <MusicNote />
+        },
+        {
+          id: 'after-party',
+          name: 'After Party (Optional)',
+          time: '11:30 PM - 1:00 AM',
+          location: 'Local Brewery & Restaurant (Private Room)',
+          description: 'For night owls who want to continue the celebration!',
+          details: ['Late night snacks', 'Cash bar', 'Casual atmosphere'],
+          icon: <Celebration />
         }
-      ],
+      ]
     },
-    saturdayEvents: {
-      subheader: 'Saturday, July 5, 2025 - Wedding Day',
-      content: [
+    day3: {
+      title: 'Sunday, July 6, 2025',
+      subtitle: 'Post-Wedding Gathering',
+      events: [
         {
-          subheader: 'Ceremony',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '4:30 PM - 5:15 PM',
-                'Stone Manor Inn (Outdoor Garden)',
-                '13193 Mountain Rd, Lovettsville, VA 20180'
-              ],
-            },
-            {
-              subheader: 'Details:',
-              content: [
-                'Please arrive 15-30 minutes early for seating',
-                'The ceremony will take place outdoors, weather permitting',
-                'In case of inclement weather, the ceremony will be moved indoors',
-                'Parking attendants will direct you upon arrival'
-              ],
-            }
-          ],
-        },
-        {
-          subheader: 'Cocktail Hour',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '5:15 PM - 6:30 PM',
-                'Stone Manor Inn (Patio & Lower Level)'
-              ],
-            },
-            {
-              subheader: 'Details:',
-              content: [
-                'Hors d\'oeuvres will be served',
-                'Open bar with signature cocktails',
-                'Live music by The Virginia String Quartet'
-              ],
-            }
-          ],
-        },
-        {
-          subheader: 'Reception',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '6:30 PM - 11:00 PM',
-                'Stone Manor Inn (Main Hall)'
-              ],
-            },
-            {
-              subheader: 'Schedule:',
-              content: [
-                '6:30 PM - Grand entrance and welcome',
-                '7:00 PM - Dinner service begins',
-                '8:00 PM - Toasts and cake cutting',
-                '8:30 PM - First dance and parent dances',
-                '8:45 PM - Dance floor opens',
-                '10:45 PM - Last call at the bar',
-                '11:00 PM - Reception concludes'
-              ],
-            }
-          ],
-        },
-        {
-          subheader: 'After Party',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '11:30 PM - 1:00 AM',
-                'Local Brewery & Restaurant (Private Room)',
-                'Lovettsville, VA 20180'
-              ],
-            },
-            {
-              subheader: 'Details:',
-              content: [
-                'Casual gathering for those who want to continue the celebration',
-                'Light late-night snacks provided',
-                'Cash bar available',
-                'Shuttles will be running between the venue, after party, and hotels'
-              ],
-            }
-          ],
+          id: 'brunch',
+          name: 'Farewell Brunch',
+          time: '10:00 AM - 12:00 PM',
+          location: 'Holiday Inn Express Brunswick (Function Room)',
+          description: 'Casual gathering to say goodbyes before everyone departs.',
+          details: ['Continental breakfast', 'Coffee', 'Final farewells'],
+          icon: <Hotel />
         }
-      ],
-    },
-    sundayEvents: {
-      subheader: 'Sunday, July 6, 2025',
-      content: [
-        {
-          subheader: 'Farewell Brunch',
-          content: [
-            {
-              subheader: 'Time & Location:',
-              content: [
-                '10:00 AM - 12:00 PM',
-                'Holiday Inn Express Brunswick (Function Room)',
-                'Brunswick, MD'
-              ],
-            },
-            {
-              subheader: 'Details:',
-              content: [
-                'Casual brunch to say goodbye to out-of-town guests',
-                'Continental breakfast and coffee',
-                'Drop in anytime between 10:00 AM and 12:00 PM',
-                'No RSVP required'
-              ],
-            }
-          ],
-        }
-      ],
-    },
-    transportation: {
-      subheader: 'Transportation',
-      content: [
-        {
-          subheader:
-            'We will be providing shuttle service between our recommended hotels and the wedding venue/after party. For more details, please see the ' + accommodationsLink + ' and ' + travelLink + '.',
-        },
-        {
-          subheader: 'Saturday Shuttle Schedule',
-          content: [
-            {
-              subheader: 'To the Ceremony:',
-              content: [
-                'From Holiday Inn Express Brunswick: 3:30 PM and 4:00 PM',
-                'From Holiday Inn Express Charlestown: 3:15 PM and 3:45 PM'
-              ],
-            },
-            {
-              subheader: 'From the Reception:',
-              content: [
-                'To Holiday Inn Express Brunswick: 10:00 PM, 10:30 PM, and 11:00 PM',
-                'To Holiday Inn Express Charlestown: 10:00 PM, 10:30 PM, and 11:00 PM',
-                'To After Party: 11:00 PM and 11:15 PM'
-              ],
-            },
-            {
-              subheader: 'From the After Party:',
-              content: [
-                'To Holiday Inn Express Brunswick: 12:00 AM, 12:30 AM, and 1:00 AM',
-                'To Holiday Inn Express Charlestown: 12:00 AM, 12:30 AM, and 1:00 AM'
-              ],
-            }
-          ],
-        }
-      ],
-    },
-    contact: {
-      subheader: 'Day-of Coordination',
-      content: [
-        {
-          subheader:
-            'If you have any questions or issues on the wedding day, please contact our day-of coordinator:',
-        },
-        {
-          subheader: 'Jordan (Best Man)',
-          content: [
-            {
-              subheader: '',
-              content: [
-                'Cell: (703) 555-1234',
-                'Email: jordan@wedding.christephanie.com'
-              ],
-            },
-          ],
-        },
-      ],
+      ]
     }
   };
   
-  // Get the semi-transparent background color like in AttendanceButton
-  const semiTransparentBackgroundColor = themePaletteToRgba(theme.palette.primary.main, 0.1);
-  
-  // Common styles for all headers to mimic the "Interested" box styling
-  const commonHeaderStyle = {
-    width: '100%',
-    maxWidth: '100%',
-    position: 'sticky' as const,
-    backdropFilter: 'blur(16px)',
-    border: `2px solid ${semiTransparentBackgroundColor}`,
-    backgroundColor: semiTransparentBackgroundColor,
-    color: theme.palette.primary.contrastText,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-    left: 0,
-    right: 0,
-    top: 0, // Ensure headers stick to top
+  // Transportation info
+  const transportInfo = {
+    id: 'transport',
+    name: 'Shuttle Information',
+    description: 'Shuttle services will be available between the recommended hotels and wedding venue.',
+    icon: <DirectionsBus />,
+    details: [
+      {
+        title: 'To the Ceremony',
+        schedule: [
+          'From Holiday Inn Express Brunswick: 3:30 PM and 4:00 PM',
+          'From Holiday Inn Express Charles Town: 3:15 PM and 3:45 PM'
+        ]
+      },
+      {
+        title: 'Return Shuttles',
+        schedule: [
+          'To both hotels: 10:00 PM, 10:30 PM, and 11:00 PM',
+          'To After Party location: 11:00 PM and 11:15 PM'
+        ]
+      },
+      {
+        title: 'From After Party',
+        schedule: [
+          'To both hotels: 12:00 AM, 12:30 AM, and 1:00 AM'
+        ]
+      }
+    ]
   };
   
-  // Styles for subheaders with different z-index values - lower level headers have higher z-index
-  const mainHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 10,
+  // Help/support contact info
+  const supportContact = {
+    name: 'Wedding Day Contact',
+    contact: 'K Town',
+    email: 'ktown@christephanie.com'
   };
   
-  const subHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 11,
-  };
+  // Styled button for day selection
+  const DayButton = ({ day, selected, onClick, children }) => (
+    <Button
+      variant={selected ? "contained" : "outlined"}
+      color={selected ? "secondary" : "primary"}
+      onClick={onClick}
+      sx={{
+        border: selected ? 'none' : '2px solid',
+        borderColor: theme.palette.primary.main,
+        borderRadius: '4px',
+        fontWeight: 'bold',
+        px: 2,
+        py: 1,
+        mx: 0.5,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: selected 
+          ? `0 4px 0 ${alpha(theme.palette.secondary.dark, 0.8)}`
+          : `0 4px 0 ${alpha(theme.palette.primary.dark, 0.8)}`,
+        transform: selected ? 'translateY(2px)' : 'translateY(0)',
+        transition: 'transform 0.1s, box-shadow 0.1s',
+        '&:hover': {
+          boxShadow: selected 
+            ? `0 2px 0 ${alpha(theme.palette.secondary.dark, 0.8)}`
+            : `0 2px 0 ${alpha(theme.palette.primary.dark, 0.8)}`,
+          transform: 'translateY(2px)'
+        },
+        '&::after': selected ? {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: `linear-gradient(45deg, ${alpha(theme.palette.secondary.main, 0)} 85%, ${alpha(theme.palette.secondary.light, 0.3)} 90%, ${alpha(theme.palette.secondary.main, 0)} 95%)`,
+        } : {}
+      }}
+    >
+      {children}
+    </Button>
+  );
   
-  const subSubHeaderStyle = {
-    ...commonHeaderStyle,
-    zIndex: 12,
-  };
+  // Event card component
+  const EventCard = ({ event, delay = 0 }) => (
+    <Grow in={true} timeout={500 + delay * 200}>
+      <Card sx={{ 
+        mb: 2, 
+        backgroundColor: alpha(theme.palette.background.paper, 0.15),
+        backdropFilter: 'blur(5px)',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+        position: 'relative',
+        '&:hover': {
+          boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+        }
+      }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+            <Box sx={{ 
+              backgroundColor: alpha(theme.palette.primary.main, 0.2),
+              width: 40,
+              height: 40,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: '8px',
+              mr: 2
+            }}>
+              {event.icon}
+            </Box>
+            <Box>
+              <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
+                {event.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {event.time}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                {event.location}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Typography variant="body2" paragraph>
+            {event.description}
+          </Typography>
+          
+          {event.details && (
+            <>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 1, color: theme.palette.secondary.main }}>
+                Details:
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
+                {event.details.map((detail, i) => (
+                  <Typography component="li" variant="body2" key={i}>
+                    {detail}
+                  </Typography>
+                ))}
+              </Box>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </Grow>
+  );
   
-  // Wedding day timeline events for visual representation
-  const timelineEvents = [
-    { time: '4:30 PM', event: 'Ceremony', description: 'Outdoor Garden' },
-    { time: '5:15 PM', event: 'Cocktail Hour', description: 'Patio & Lower Level' },
-    { time: '6:30 PM', event: 'Dinner Reception', description: 'Main Hall' },
-    { time: '8:00 PM', event: 'Toasts & Cake Cutting', description: '' },
-    { time: '8:45 PM', event: 'Dancing Begins', description: '' },
-    { time: '11:00 PM', event: 'Reception Ends', description: '' },
-    { time: '11:30 PM', event: 'After Party', description: 'Flight Deck Brewing' },
-  ];
+  // Transportation info card
+  const TransportationCard = () => (
+    <Grow in={true} timeout={800}>
+      <Card sx={{ 
+        mb: 2, 
+        backgroundColor: alpha(theme.palette.primary.dark, 0.25),
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+      }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+            <Box sx={{ 
+              backgroundColor: alpha(theme.palette.primary.main, 0.3),
+              width: 40,
+              height: 40,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: '8px',
+              mr: 2
+            }}>
+              {transportInfo.icon}
+            </Box>
+            <Box>
+              <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
+                {transportInfo.name}
+              </Typography>
+              <Typography variant="body2">
+                {transportInfo.description}
+              </Typography>
+            </Box>
+          </Box>
+          
+          {transportInfo.details.map((detail, i) => (
+            <Box key={i} sx={{ mb: i === transportInfo.details.length - 1 ? 0 : 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
+                {detail.title}:
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
+                {detail.schedule.map((item, j) => (
+                  <Typography component="li" variant="body2" key={j}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          ))}
+        </CardContent>
+      </Card>
+    </Grow>
+  );
   
   return (
     <Container
       sx={{
         width: '100%',
         height: contentHeight,
-        overflow: 'hidden',
+        overflow: 'auto',
         borderRadius: 'sm',
         display: 'flex',
-        flexWrap: 'wrap',
+        flexDirection: 'column',
         position: 'relative',
-        paddingBottom: '80px', // Added padding to ensure content doesn't get hidden behind BottomNav
+        paddingBottom: '80px',
+        background: 'radial-gradient(circle, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
-      <Box my={2} sx={{ 
-        backdropFilter: 'blur(16px)',
-        width: '100%',
+      {/* Header Section */}
+      <Box sx={{ 
+        width: '100%', 
+        pt: 2, 
+        pb: 1,
         px: 2,
-        mt: 2,
-        pb: 2,
-        zIndex: 5, // Lower z-index than headers
+        textAlign: 'center',
+        background: `linear-gradient(to bottom, ${alpha(theme.palette.background.paper, 0)}, ${alpha(theme.palette.background.paper, 0.1)})`
       }}>
-        <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
-            mt: 2,
-            fontSize: '2rem'}}>
-          {scheduleItems.titleSchedule.subheader}
+        {/* Title */}
+        <StephsActualFavoriteTypography 
+          variant="h4" 
+          sx={{ 
+            textAlign: 'center',
+            fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+            textShadow: `0 0 10px ${theme.palette.primary.main}`,
+            mb: 2
+          }}
+        >
+          WEDDING SCHEDULE
         </StephsActualFavoriteTypography>
         
-        <Box
-          sx={{
-            width: '100%',
-            height: '120px',
-            overflow: 'hidden',
-            position: 'relative',
-            '@keyframes rollLogo': {
-              '0%, 10%': { left: 0, transform: 'rotate(0deg)' },
-              '30%': { left: 'calc(100% - 120px)', transform: 'rotate(360deg)' },
-              '50%, 60%': { left: 0, transform: 'rotate(0deg)' },
-              '80%': { left: 'calc(100% - 120px)', transform: 'rotate(-360deg)' },
-              '100%': { left: 0, transform: 'rotate(0deg)' }
-            },
-            '& img': {
-              position: 'absolute',
-              height: '120px',
-              width: '120px',
-              animation: 'rollLogo 8s infinite',
-            }
-          }}
-        >
-          <img 
-            src="/favicon_big_art_transparent.png" 
-            alt="Wedding Logo" 
-          />
-        </Box>
-
-        <Typography variant="body1" 
-          sx={{ mt: 2, fontSize: '0.9rem' }}>
-          {scheduleItems.titleSchedule.content[0].subheader}
-        </Typography>
-      </Box>
-      <List sx={{ 
-        overflow: 'auto', 
-        pt: 0,
-        my: 2, 
-        height: 'calc(100% - 300px)', 
-        backgroundColor: 'rgba(0,0,0,.1)', 
-        width: '100%',
-        pb: 16, // Increased padding at bottom to avoid content being cut off behind BottomNav
-        position: 'relative',
-        zIndex: 1, // Lower z-index than headers
-      }}>
-        {/* Regular Schedule Sections */}
-        {Object.entries(scheduleItems)
-          .slice(1, 4) // Friday, Saturday, Sunday events
-          .map(([key, value]) => (
-            <Box
-              data-testid={`list-item-${key}`}
-              key={key}
-              sx={{ flexWrap: 'wrap', width: '100%',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                padding: 0,
-                mb: 2, // Add margin between sections
-            }}
-            >
-              <ListSubheader sx={mainHeaderStyle}>
-                {value.subheader}
-              </ListSubheader>
-              <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                {value.content.map((content, index) => (
-                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                    {content.subheader && !content.content && (
-                      <Typography sx={{ padding: '8px 16px' }}>
-                        {content.subheader}
-                      </Typography>
-                    )}
-                    {content.content && (
-                      <>
-                        {content.subheader && (
-                          <ListSubheader disableSticky={false} key={index} sx={subHeaderStyle}>
-                            {content.subheader}
-                          </ListSubheader>
-                        )}
-                        <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                          {content.content.map((subContent, index) => (
-                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                              {subContent.subheader && (
-                                <ListSubheader sx={subSubHeaderStyle}>
-                                  {subContent.subheader}
-                                </ListSubheader>
-                              )}
-                              <List sx={{ width: '100%', padding: '8px 16px' }}>
-                                {subContent.content?.map((paragraph, pIndex) => (
-                                  <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
-                                ))}
-                              </List>
-                            </Box>
-                          ))}
-                        </List>
-                      </>
-                    )}
-                  </Box>
-                ))}
-              </List>
-            </Box>
-          ))}
-          
-        {/* Visual Timeline */}
-        <Box
-          sx={{ 
-            flexWrap: 'wrap', 
-            width: '100%',
-            backgroundColor: 'rgba(0,0,0,.1)',
-            padding: 0,
-            mb: 2,
-          }}
-        >
-          <ListSubheader sx={mainHeaderStyle}>
-            Wedding Day Timeline
-          </ListSubheader>
-          <Paper 
-            elevation={0}
-            sx={{ 
-              padding: 2, 
-              margin: 2, 
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              maxWidth: '100%',
-              overflowX: 'auto'
-            }}
+        {/* Day selection buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+          <DayButton
+            day="day1"
+            selected={selectedDay === 'day1'}
+            onClick={() => setSelectedDay('day1')}
           >
-            <Timeline position="alternate">
-              {timelineEvents.map((event, index) => (
-                <TimelineItem key={index}>
-                  <TimelineOppositeContent color="text.secondary">
-                    {event.time}
-                  </TimelineOppositeContent>
-                  <TimelineSeparator>
-                    <TimelineDot color={index === 0 ? "secondary" : "primary"} />
-                    {index < timelineEvents.length - 1 && <TimelineConnector />}
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <Typography variant="h6" component="span">
-                      {event.event}
-                    </Typography>
-                    <Typography>{event.description}</Typography>
-                  </TimelineContent>
-                </TimelineItem>
-              ))}
-            </Timeline>
-          </Paper>
+            <CalendarToday sx={{ mr: 1, fontSize: '1rem' }} />
+            Fri, Jul 4
+          </DayButton>
+          
+          <DayButton
+            day="day2"
+            selected={selectedDay === 'day2'}
+            onClick={() => setSelectedDay('day2')}
+          >
+            <EmojiEvents sx={{ mr: 1, fontSize: '1rem' }} />
+            Sat, Jul 5
+          </DayButton>
+          
+          <DayButton
+            day="day3"
+            selected={selectedDay === 'day3'}
+            onClick={() => setSelectedDay('day3')}
+          >
+            <FlightTakeoff sx={{ mr: 1, fontSize: '1rem' }} />
+            Sun, Jul 6
+          </DayButton>
         </Box>
+      </Box>
+      
+      {/* Main content area */}
+      <Box sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
+        {/* Day title and subtitle */}
+        <Fade in={true} timeout={500}>
+          <Paper sx={{ 
+            p: 2, 
+            mb: 3, 
+            textAlign: 'center',
+            backgroundColor: alpha(theme.palette.background.paper, 0.15),
+            backdropFilter: 'blur(5px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
+              {events[selectedDay].title}
+            </Typography>
+            <Typography variant="body1" color="secondary.light">
+              {events[selectedDay].subtitle}
+            </Typography>
+          </Paper>
+        </Fade>
         
-        {/* Remaining Sections */}
-        {Object.entries(scheduleItems)
-          .slice(4) // Transportation and Contact
-          .map(([key, value]) => (
-            <Box
-              data-testid={`list-item-${key}`}
-              key={key}
-              sx={{ flexWrap: 'wrap', width: '100%',
-                backgroundColor: 'rgba(0,0,0,.1)',
-                padding: 0,
-                mb: 2, // Add margin between sections
-            }}
-            >
-              <ListSubheader sx={mainHeaderStyle}>
-                {value.subheader}
-              </ListSubheader>
-              <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                {value.content.map((content, index) => (
-                  <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                    {content.subheader && !content.content && (
-                      <Typography sx={{ padding: '8px 16px' }}>
-                        {content.subheader}
-                      </Typography>
-                    )}
-                    {content.content && (
-                      <>
-                        {content.subheader && (
-                          <ListSubheader disableSticky={false} key={index} sx={subHeaderStyle}>
-                            {content.subheader}
-                          </ListSubheader>
-                        )}
-                        <List sx={{ position: 'relative', width: '100%', padding: 0 }}>
-                          {content.content.map((subContent, index) => (
-                            <Box key={index} sx={{ flexWrap: 'wrap', width: '100%', padding: 0, mt: 1 }}>
-                              {subContent.subheader && (
-                                <ListSubheader sx={subSubHeaderStyle}>
-                                  {subContent.subheader}
-                                </ListSubheader>
-                              )}
-                              <List sx={{ width: '100%', padding: '8px 16px' }}>
-                                {subContent.content?.map((paragraph, pIndex) => (
-                                  <ListItem key={pIndex} sx={{ padding: '4px 0' }}>{paragraph}</ListItem>
-                                ))}
-                              </List>
-                            </Box>
-                          ))}
-                        </List>
-                      </>
-                    )}
-                  </Box>
-                ))}
-              </List>
-            </Box>
-          ))}
-      </List>
+        {/* Event cards */}
+        {events[selectedDay].events.map((event, index) => (
+          <EventCard key={event.id} event={event} delay={index} />
+        ))}
+        
+        {/* Transportation card - show only on main wedding day */}
+        {selectedDay === 'day2' && <TransportationCard />}
+        
+        {/* Wedding Support Section */}
+        <Grow in={true} timeout={1000}>
+          <Card sx={{ 
+            mt: 3,
+            backgroundColor: alpha(theme.palette.background.paper, 0.1),
+            backdropFilter: 'blur(5px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ color: theme.palette.secondary.main }}>
+                Contact Information
+              </Typography>
+              <Typography variant="body2" paragraph>
+                If you need assistance with wedding details, please contact:
+              </Typography>
+              <Typography variant="body2">
+                <strong>{supportContact.contact}</strong><br />
+                Email: {supportContact.email}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grow>
+      </Box>
     </Container>
   );
 }

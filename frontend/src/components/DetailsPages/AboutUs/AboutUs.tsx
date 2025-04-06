@@ -1,4 +1,10 @@
-const AboutUs: React.FC = () => {
+import React from 'react';
+
+interface AboutUsProps {
+  handleTabLink: (to: string) => void;
+}
+
+const AboutUs: React.FC<AboutUsProps> = ({handleTabLink}) => {
   return (
     <div>
       <h1>About Us</h1>
