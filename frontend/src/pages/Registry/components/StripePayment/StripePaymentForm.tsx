@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Paper,
   TextField,
   Typography,
@@ -23,6 +24,7 @@ import { getConfig } from '@/auth_config';
 import { useRecoilValue } from 'recoil';
 import { apiState } from '@/context/ApiContext';
 import theme from '@/store/theme';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyNoDropWhite } from '@/components/AttendanceButton/AttendanceButton';
 
 // Stripe styled components
 const CardElementContainer = styled(Paper)(({ theme }) => ({
@@ -74,8 +76,8 @@ function PaymentForm({
 }: { 
   amount: number;
   category: string;
-  onSuccess: () => void;
-  onError: (message: string) => void;
+  onSuccess: (details: { paymentIntentId: string; email: string; timestamp: string }) => void;
+  onError: (message: string, errorCode?: string, errorType?: string) => void;
   onCancel: () => void;
 }) {
   const stripe = useStripe();
@@ -150,7 +152,15 @@ function PaymentForm({
         return null;
       }
       
-      console.log('Creating payment intent with email:', email);
+      console.log('Creating payment intent with data:', {
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        category,
+        notes,
+        email,
+        isAnonymous,
+        name
+      });
       
       // Get the payment intent from our backend
       const { clientSecret: secret, error: paymentError } = await api.createPaymentIntent(
@@ -158,8 +168,8 @@ function PaymentForm({
         Math.round(amount * 100),
         'usd',
         category,
-        notes,
-        email, // Pass email for receipt
+        notes || '', // Ensure notes is never undefined
+        email || '', // Ensure email is never undefined
         isAnonymous
       );
 
@@ -215,7 +225,12 @@ function PaymentForm({
       const secret = await getPaymentIntent();
       
       if (!secret) {
-        throw new Error("Could not create payment intent");
+        const errorMsg = "Could not create payment intent";
+        console.error(errorMsg);
+        // Call onError directly to ensure error is shown
+        onError(errorMsg);
+        // Also throw the error to make sure the payment stops
+        throw new Error(errorMsg);
       }
       
       // Then confirm the payment
@@ -230,11 +245,24 @@ function PaymentForm({
       });
 
       if (paymentError) {
+        setProcessing(false);
+        // Pass detailed error information
+        onError(
+          paymentError.message || 'Payment failed',
+          paymentError.code || '',
+          paymentError.type || ''
+        );
+        // Throwing error to break out of the function completely
         throw new Error(paymentError.message || 'Payment failed');
       }
 
       if (paymentIntent.status === 'succeeded') {
-        onSuccess();
+        // Pass payment details to success handler
+        onSuccess({
+          paymentIntentId: paymentIntent.id,
+          email: email,
+          timestamp: new Date().toISOString()
+        });
       } else {
         throw new Error(`Payment status: ${paymentIntent.status}`);
       }
@@ -242,7 +270,20 @@ function PaymentForm({
       setProcessing(false);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       setError(message);
-      onError(message);
+      
+      // Extract error details if available (for Stripe errors)
+      let errorCode = '';
+      let errorType = '';
+      
+      if (err && typeof err === 'object' && 'code' in err) {
+        errorCode = String(err.code || '');
+      }
+      
+      if (err && typeof err === 'object' && 'type' in err) {
+        errorType = String(err.type || '');
+      }
+      
+      onError(message, errorCode, errorType);
     }
   };
 
@@ -257,32 +298,33 @@ function PaymentForm({
         required
         placeholder="Your full name"
         variant="outlined"
+        disabled={true}
         InputLabelProps={{
           shrink: true,
         }}
       />
       
-      {!userHasEmail && (
-        <TextField
-          label="Email for Receipt"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            validateEmail(e.target.value);
-          }}
-          error={!!emailError}
-          helperText={emailError || "We'll send your receipt to this email"}
-          fullWidth
-          margin="normal"
-          required
-          placeholder="your.email@example.com"
-          variant="outlined"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-      )}
+      <TextField
+        label="Email for Receipt"
+        type="email"
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          validateEmail(e.target.value);
+        }}
+        error={!!emailError}
+        helperText={emailError || "We'll send your receipt to this email"}
+        fullWidth
+        margin="normal"
+        required
+        placeholder="your.email@example.com"
+        variant="outlined"
+        color={userHasEmail ? "info" : "secondary"}
+        disabled={userHasEmail}
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
       
       <TextField
         label="Gift Notes"
@@ -296,6 +338,36 @@ function PaymentForm({
         variant="outlined"
         InputLabelProps={{
           shrink: true,
+        }}
+      />
+      
+      {/* Amount field */}
+      <TextField
+        label="Amount"
+        value={amount}
+        disabled={true}
+        fullWidth
+        margin="normal"
+        variant="outlined"
+        helperText={<Typography variant='caption' color='#E9950C'>toward {category}</Typography>}
+        InputProps={{
+          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          endAdornment: 
+          <InputAdornment position="end">
+            <Typography variant="body2" sx={{ color: '#E9950C' }}>USD</Typography>
+          </InputAdornment>,
+          readOnly: true,
+        }}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        sx={{
+          '& .MuiInputBase-input.Mui-disabled': {
+            WebkitTextFillColor: muiTheme.palette.secondary.main,
+            color: muiTheme.palette.secondary.main,
+            fontWeight: 'bold',
+          },
+          bgcolor: 'rgba(0, 0, 0, 0.03)',
         }}
       />
       
@@ -393,10 +465,13 @@ function StripePaymentForm({
   amount: number;
   category: string;
   onClose: () => void;
-  onSuccess: () => void;
-  onError: (message: string) => void;
+  onSuccess: (details: { paymentIntentId: string; email: string; timestamp: string }) => void;
+  onError: (message: string, errorCode?: string, errorType?: string) => void;
 }) {
-  // No need for theme here anymore, using hardcoded values in options
+  // Reset Elements when component re-renders to avoid stale state issues
+  // Adding a unique key forces React to recreate the Elements component
+  const elementsKey = React.useMemo(() => `stripe-elements-${Date.now()}`, [open]);
+  const theme = useTheme();
   
   // Options for Stripe Elements that match the expected StripeElementsOptions type
   // Simplified options to avoid potential theme-related errors
@@ -425,14 +500,18 @@ function StripePaymentForm({
       fullWidth
       maxWidth="sm"
     >
-      <DialogTitle>
-        Contribute to {category}
-      </DialogTitle>
+      <StephsActualFavoriteTypographyNoDrop  
+        color={theme.palette.primary.main}
+        sx={{
+          textAlign: 'center',
+          fontSize: '1.8rem',
+          pt: 2
+        }}
+        >
+        Complete Your Contribution
+      </StephsActualFavoriteTypographyNoDrop>
       <DialogContent>
-        <Typography variant="body1" gutterBottom>
-          You're contributing ${amount} to help with our {category.toLowerCase()}.
-        </Typography>
-        <Elements stripe={stripePromise} options={options}>
+        <Elements stripe={stripePromise} options={options} key={elementsKey}>
           <PaymentForm 
             amount={amount}
             category={category}
