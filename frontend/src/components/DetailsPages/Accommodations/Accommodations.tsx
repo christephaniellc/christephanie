@@ -4,16 +4,16 @@ import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { Grid, Link, ListSubheader } from '@mui/material';
+import { Button, Card, CardActions, CardContent, CardMedia, Grid, Link, ListSubheader } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography, themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
 
-interface AboutUsCoupleProps {
+interface AccommodationsProps {
   handleTabLink: (to: string) => void;
 }
 
-function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
+function Accommodations({handleTabLink}: AccommodationsProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   
@@ -42,120 +42,100 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
     };
   }, []);
 
-  const aboutUsItems: {
+  const accommodationsItems: {
     [key: string]: {
       subheader: string;
       content: { subheader: string; content?: { subheader: string; content: (string | JSX.Element)[] }[] }[];
     };
   } = {
-    titleAboutUs: {
-      subheader: 'Steph & Topher',
+    titleAccommodations: {
+      subheader: 'Accommodations',
       content: [
         {
           subheader:
-            'Welcome to our wedding website! We\'re so excited to share our special day with you and can\'t wait to celebrate together in September 2025.',
+            'We\'ve arranged some convenient lodging options to make your trip to our wedding as comfortable as possible. Below you\'ll find information about our hotel room blocks and other accommodation options in the area.',
         },
       ],
     },
-    howWeMet: {
-      subheader: 'How We Met',
+    hotelBlocks: {
+      subheader: 'Hotel Room Blocks',
       content: [
         {
           subheader:
-            'Our love story began in the summer of 2017 at Burning Man. We were introduced by mutual friends at camp and instantly connected over our shared love of adventure, technology, and terrible puns.',
+            'We\'ve reserved blocks of rooms at the following hotels for our wedding guests. When booking, please mention the "Steph & Topher Wedding" to receive our special group rate.',
         },
+      ],
+    },
+    alternativeOptions: {
+      subheader: 'Alternative Accommodations',
+      content: [
         {
           subheader: '',
           content: [
             {
-              subheader: 'First Impressions:',
+              subheader: 'Vacation Rentals:',
               content: [
-                'Topher: "I was immediately drawn to Steph\'s infectious laugh and brilliant mind. She was building an interactive light installation, and I couldn\'t help but be impressed."',
-                'Steph: "I thought Topher was both hilarious and surprisingly practical for someone wearing a shark onesie in the desert. His kind heart and genuine curiosity stood out immediately."'
+                'Airbnb and VRBO have many options in Brunswick and surrounding areas.',
+                'For larger families or groups, consider booking a house together for a more economical and communal experience.',
+                'Most vacation rentals in the area are within a 15-20 minute drive to the wedding venue.'
               ],
             },
             {
-              subheader: 'Our Early Days:',
+              subheader: 'Bed & Breakfasts:',
               content: [
-                'After returning from the desert, we discovered we both lived in Seattle just a few miles apart.',
-                'Our first official date was at a tiny ramen shop in the International District, where we talked for hours until they had to kindly ask us to leave so they could close.',
-                'Within a few months, we were practically inseparable, bonding over our love of hiking, coding projects, and exploring Seattle\'s food scene.'
+                'The Captain\'s House Inn - A charming historic B&B with excellent breakfast (207-555-1212)',
+                'Harborview B&B - Coastal views and walking distance to downtown (207-555-2323)',
+                'Brunswick Inn - Historic property in the heart of Brunswick (207-555-3434)'
+              ],
+            },
+            {
+              subheader: 'Camping Options:',
+              content: [
+                'Thomas Point Beach Campground - Beachfront camping with full facilities, 10 minutes from venue',
+                'Winslow Memorial Park - Beautiful oceanfront camping, 20 minutes from venue',
+                'Bradbury Mountain State Park - For the more adventurous, 30 minutes from venue'
               ],
             }
           ],
         }
       ],
     },
-    engagementStory: {
-      subheader: 'Our Engagement',
+    transportation: {
+      subheader: 'Transportation',
       content: [
         {
           subheader:
-            'After five wonderful years together, Topher proposed during a trip to Norway in July 2022. The proposal happened under the midnight sun while hiking in the Lofoten Islands.',
+            'For those staying at our partner hotels, we\'ll be providing a shuttle service to and from the wedding venue. The shuttle schedule will be posted in the hotel lobbies and included in your welcome packet.',
         },
         {
           subheader: '',
           content: [
             {
-              subheader: 'The Proposal:',
+              subheader: 'Shuttle Service:',
               content: [
-                'Topher had been carrying the ring throughout our week-long hiking trip, waiting for the perfect moment.',
-                'At the summit of Reinebringen with a view of the fjords below, he got down on one knee as the midnight sun cast a golden glow across the mountains.',
-                'Steph was completely surprised and (after a moment of shock) said yes! We celebrated with the small group of hikers who had gathered for the midnight sun, complete with a bottle of champagne that Topher had somehow managed to carry up the mountain without Steph noticing.'
+                'Pick-up from Holiday Inn Express Brunswick: 3:30pm and 4:00pm',
+                'Pick-up from Holiday Inn Express Charlestown: 3:15pm and 3:45pm',
+                'Return shuttles will run at 10:00pm, 10:30pm, and 11:00pm'
+              ],
+            },
+            {
+              subheader: 'Local Transportation Options:',
+              content: [
+                'Uber and Lyft are available in the Brunswick area, but may have limited availability',
+                'Brunswick Taxi Service: 207-555-8787',
+                'Maine Coastal Limo: 207-555-9898 (advance reservation required)'
               ],
             }
           ],
         }
       ],
     },
-    funFacts: {
-      subheader: 'Fun Facts About Us',
-      content: [
-        {
-          subheader: '',
-          content: [
-            {
-              subheader: 'Travels Together:',
-              content: [
-                'We\'ve visited 14 countries together, including Thailand, Mexico, Germany, and Canada.',
-                'Our longest road trip was 3,500 miles through the American Southwest.',
-                'We\'ve attended Burning Man together three times.'
-              ],
-            },
-            {
-              subheader: 'At Home:',
-              content: [
-                'We love hosting dinner parties and game nights with friends.',
-                'We\'ve built several home automation projects together, including an overly complicated system just to feed our cats.',
-                'We maintain a small urban garden and are unreasonably proud of our homegrown tomatoes.'
-              ],
-            },
-            {
-              subheader: 'Little Known Facts:',
-              content: [
-                'Topher can solve a Rubik\'s cube in under a minute.',
-                'Steph speaks conversational Thai and is learning German.',
-                'We have a growing collection of board games that has now taken over an entire closet.'
-              ],
-            }
-          ],
-        }
-      ],
-    },
-    photos: {
-      subheader: 'Photo Gallery',
-      content: [
-        {
-          subheader: 'Some of our favorite moments together',
-        }
-      ],
-    },
-    contactUs: {
-      subheader: 'Contact Us',
+    contactInfo: {
+      subheader: 'Questions?',
       content: [
         {
           subheader:
-            'Have questions about the wedding? Feel free to reach out to us!',
+            'If you have any questions about accommodations or need assistance with your booking, please don\'t hesitate to contact us:',
         },
         {
           subheader: 'Email',
@@ -163,7 +143,7 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
             {
               subheader: '',
               content: [
-                'steph-and-topher@wedding.christephanie.com',
+                'accommodations@wedding.christephanie.com',
               ],
             },
           ],
@@ -171,6 +151,34 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
       ],
     }
   };
+  
+  // Hotel data
+  const hotels = [
+    {
+      name: 'Holiday Inn Express Brunswick',
+      image: '/src/assets/holiday-inn-express-brunswick.jpg',
+      address: '185 Park Row, Brunswick, ME 04011',
+      phone: '(207) 721-0006',
+      price: '$159-189 per night',
+      distance: '2 miles from venue',
+      amenities: 'Free breakfast, pool, fitness center, free Wi-Fi',
+      blockDetails: 'Group rate available until August 15, 2025',
+      website: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/brunswick/bwkme/hoteldetail',
+      notes: 'This is our primary hotel block with the most rooms available. Located in downtown Brunswick with walking distance to shops and restaurants.',
+    },
+    {
+      name: 'Holiday Inn Express Charlestown',
+      image: '/src/assets/holiday-inn-express-charlestown.jpg',
+      address: '110 Main Street, Charlestown, ME 04033',
+      phone: '(207) 555-1234',
+      price: '$139-169 per night',
+      distance: '5 miles from venue',
+      amenities: 'Free breakfast, indoor pool, fitness center, free Wi-Fi',
+      blockDetails: 'Group rate available until August 1, 2025',
+      website: 'https://www.ihg.com/holidayinnexpress',
+      notes: 'Our secondary hotel option with a slightly lower price point. Newly renovated with comfortable rooms and convenient access to the highway.',
+    }
+  ];
   
   // Get the semi-transparent background color like in AttendanceButton
   const semiTransparentBackgroundColor = themePaletteToRgba(theme.palette.primary.main, 0.1);
@@ -205,15 +213,6 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
     ...commonHeaderStyle,
     zIndex: 12,
   };
-
-  const photoGalleryImages = [
-    '/src/assets/engagement-photos/topher_and_steph_rsvp1.jpg',
-    '/src/assets/engagement-photos/bremerhaven.jpg',
-    '/src/assets/engagement-photos/burn_night.jpg',
-    '/src/assets/engagement-photos/hammock.jpg',
-    '/src/assets/engagement-photos/oktoberfest.jpg',
-    '/src/assets/engagement-photos/roadtrip.jpg',
-  ];
   
   return (
     <Container
@@ -239,7 +238,7 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
         <StephsActualFavoriteTypography variant="h4" sx={{ textAlign: 'center',
             mt: 2,
             fontSize: '2rem'}}>
-          {aboutUsItems.titleAboutUs.subheader}
+          {accommodationsItems.titleAccommodations.subheader}
         </StephsActualFavoriteTypography>
         
         <Box
@@ -271,7 +270,7 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
 
         <Typography variant="body1" 
           sx={{ mt: 2, fontSize: '0.9rem' }}>
-          {aboutUsItems.titleAboutUs.content[0].subheader}
+          {accommodationsItems.titleAccommodations.content[0].subheader}
         </Typography>
       </Box>
       <List sx={{ 
@@ -285,8 +284,75 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
         position: 'relative',
         zIndex: 1, // Lower z-index than headers
       }}>
-        {Object.entries(aboutUsItems)
-          .slice(1)
+        {/* Hotel Room Blocks Section */}
+        <Box
+          data-testid="list-item-hotelBlocks"
+          sx={{ 
+            flexWrap: 'wrap', 
+            width: '100%',
+            backgroundColor: 'rgba(0,0,0,.1)',
+            padding: 0,
+            mb: 2,
+          }}
+        >
+          <ListSubheader sx={mainHeaderStyle}>
+            {accommodationsItems.hotelBlocks.subheader}
+          </ListSubheader>
+          <Typography sx={{ padding: '16px 16px 0 16px' }}>
+            {accommodationsItems.hotelBlocks.content[0].subheader}
+          </Typography>
+          
+          {/* Hotel Cards */}
+          <Grid container spacing={2} sx={{ padding: '16px' }}>
+            {hotels.map((hotel, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={hotel.image}
+                    alt={hotel.name}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {hotel.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {hotel.address}
+                    </Typography>
+                    <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                      <strong>Price:</strong> {hotel.price}
+                    </Typography>
+                    <Typography variant="body2" component="div">
+                      <strong>Distance:</strong> {hotel.distance}
+                    </Typography>
+                    <Typography variant="body2" component="div">
+                      <strong>Amenities:</strong> {hotel.amenities}
+                    </Typography>
+                    <Typography variant="body2" component="div">
+                      <strong>Block Details:</strong> {hotel.blockDetails}
+                    </Typography>
+                    <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                      {hotel.notes}
+                    </Typography>
+                  </CardContent>
+                  <CardActions>
+                    <Button size="small" component="a" href={hotel.website} target="_blank" rel="noopener noreferrer">
+                      Book Now
+                    </Button>
+                    <Button size="small" component="a" href={`tel:${hotel.phone}`}>
+                      Call: {hotel.phone}
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+        
+        {/* Render other sections */}
+        {Object.entries(accommodationsItems)
+          .filter(([key]) => !['titleAccommodations', 'hotelBlocks'].includes(key))
           .map(([key, value]) => (
             <Box
               data-testid={`list-item-${key}`}
@@ -333,30 +399,6 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
                         </List>
                       </>
                     )}
-                    {key === 'photos' && (
-                      <Grid container spacing={2} sx={{ padding: '16px' }}>
-                        {photoGalleryImages.map((image, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box 
-                              component="img" 
-                              src={image}
-                              alt={`Steph and Topher photo ${index + 1}`}
-                              sx={{
-                                width: '100%',
-                                height: '200px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                                transition: 'transform 0.3s ease',
-                                '&:hover': {
-                                  transform: 'scale(1.05)',
-                                },
-                              }}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
                   </Box>
                 ))}
               </List>
@@ -367,4 +409,4 @@ function AboutUsCouple({handleTabLink}: AboutUsCoupleProps) {
   );
 }
 
-export default AboutUsCouple;
+export default Accommodations;

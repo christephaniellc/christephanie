@@ -16,7 +16,8 @@ enum Pages {
   VerifyEmail,
   PrintedRsvp,
   Debug,
-  NotFound
+  NotFound,
+  BachelorParty, // Added for bachelor party page
 }
 
 type PathRouteCustomProps = {
@@ -27,5 +28,16 @@ type PathRouteCustomProps = {
 
 type Routes = Record<Pages, PathRouteProps & PathRouteCustomProps>;
 
-export type { Routes };
+// Type for details sub-routes
+type DetailRouteProps = {
+  path: string;
+  title: string;
+  icon: FC<SvgIconProps>;
+  tabIndex: number;
+};
+
+// Type for all details routes
+type DetailsRoutes = Record<string, DetailRouteProps>;
+
+export type { Routes, DetailsRoutes, DetailRouteProps };
 export { Pages };
