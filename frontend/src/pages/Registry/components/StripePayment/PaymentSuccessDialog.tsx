@@ -17,18 +17,33 @@ const PaymentSuccessDialog = ({
   open,
   onClose,
   amount,
-  category
+  category,
+  paymentIntentId = '',
+  email = '',
+  timestamp = new Date().toISOString()
 }: {
   open: boolean;
   onClose: () => void;
   amount: number;
   category: string;
+  paymentIntentId?: string;
+  email?: string;
+  timestamp?: string;
 }) => {
   // Add console.log to debug dialog open state
-  console.log('PaymentSuccessDialog render:', { open, amount, category });
+  console.log('PaymentSuccessDialog render:', { open, amount, category, paymentIntentId, email });
   
   // Only render if actually open to prevent flash of success dialog
   if (!open) return null;
+  
+  // Format timestamp for display
+  const formattedDate = new Date(timestamp).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   
   return (
     <Dialog
@@ -55,7 +70,45 @@ const PaymentSuccessDialog = ({
           <Typography variant="body1" align="center" paragraph>
             Your contribution of ${amount} to our {category.toLowerCase()} has been received.
           </Typography>
-          <Typography variant="body2" align="center" color="text.secondary">
+          
+          {/* Transaction Details */}
+          <Box sx={{ 
+            width: '100%', 
+            mt: 2, 
+            p: 2, 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1
+          }}>
+            <Typography variant="subtitle2" gutterBottom>Transaction Details:</Typography>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">Transaction ID:</Typography>
+              <Typography variant="body2" fontWeight="medium">
+                {paymentIntentId ? paymentIntentId.slice(-8) : 'Processing'}
+              </Typography>
+            </Box>
+            
+            {email && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">Receipt sent to:</Typography>
+                <Typography variant="body2" fontWeight="medium">{email}</Typography>
+              </Box>
+            )}
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">Date:</Typography>
+              <Typography variant="body2" fontWeight="medium">{formattedDate}</Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="body2" color="text.secondary">Amount:</Typography>
+              <Typography variant="body2" fontWeight="medium">${amount}</Typography>
+            </Box>
+          </Box>
+          
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 2 }}>
             You will receive a confirmation email shortly with the details of your gift.
           </Typography>
         </Box>
