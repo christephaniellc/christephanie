@@ -227,7 +227,6 @@ export const BottomNav = () => {
             icon={<BarChartIcon />}
             aria-label="View wedding statistics"
             disabled={!auth0User}
-            contentEditable="false"
             sx={{ 
               display: auth0User ? 'flex' : 'none',
             }}
