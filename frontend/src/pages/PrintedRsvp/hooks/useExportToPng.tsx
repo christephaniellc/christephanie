@@ -111,8 +111,8 @@ export const useExportToPng = () => {
           const rect = paper.getBoundingClientRect();
           console.log(`Paper element dimensions: ${rect.width}x${rect.height}`);
           
-          const expectedWidth = orientation === 'horizontal' ? 576 : 384; // 6" or 4" @ 96dpi
-          const expectedHeight = orientation === 'horizontal' ? 384 : 576; // 4" or 6" @ 96dpi
+          const expectedWidth = orientation === 'horizontal' ? 672 : 480; // 7" or 5" @ 96dpi
+          const expectedHeight = orientation === 'horizontal' ? 480 : 672; // 5" or 7" @ 96dpi
           
           // Allow for more variations in size for the modal view
           const widthMatch = Math.abs(rect.width - expectedWidth) < 50;
@@ -135,11 +135,11 @@ export const useExportToPng = () => {
       
       console.log(`Found card element: `, cardElement);
       
-      // Calculate dimensions for 300 DPI (4"x6" at 300dpi = 1200x1800 pixels)
+      // Calculate dimensions for 300 DPI (5"x7" at 300dpi = 1500x2100 pixels)
       // This is a 3.125x scale from the 96dpi default (300/96)
       // For 300 DPI output:
-      // Portrait: 4"x6" = 1200x1800 pixels 
-      // Landscape: 6"x4" = 1800x1200 pixels
+      // Portrait: 5"x7" = 1500x2100 pixels 
+      // Landscape: 7"x5" = 2100x1500 pixels
       const scale = 4.0; // Increased for higher quality output
       
       // Create a function to handle the download - simplifying our logic
@@ -299,8 +299,8 @@ export const useExportToPng = () => {
           console.log(`Creating canvas with scale: ${scale}`);
           
           // Calculate pixel dimensions based on orientation for high-resolution output
-          const canvasTargetWidth = orientation === 'horizontal' ? 1800 : 1200; // 6"x300dpi or 4"x300dpi
-          const canvasTargetHeight = orientation === 'horizontal' ? 1200 : 1800; // 4"x300dpi or 6"x300dpi
+          const canvasTargetWidth = orientation === 'horizontal' ? 2100 : 1500; // 7"x300dpi or 5"x300dpi
+          const canvasTargetHeight = orientation === 'horizontal' ? 1500 : 2100; // 5"x300dpi or 7"x300dpi
           
           // Log the target dimensions
           console.log(`Target dimensions: ${canvasTargetWidth}x${canvasTargetHeight} pixels at 300 DPI`);
