@@ -71,8 +71,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
       className={`card-front-vertical`}
       data-card-type={`front-vertical`}
       sx={{
-        width: isExporting ? 1200 : 384, // 4 inches @ 300ppi for export, 96ppi for display
-        height: isExporting ? 1800 : 576, // 6 inches @ 300ppi for export, 96ppi for display
+        width: isExporting ? 1500 : 480, // 5 inches @ 300ppi for export, 96ppi for display
+        height: isExporting ? 2100 : 672, // 7 inches @ 300ppi for export, 96ppi for display
         backgroundColor: '#121212', // Dark background matching the back side
         backgroundImage: `radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 70%)`,
         display: 'flex',
@@ -88,8 +88,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         color: 'white',
         // For print media
         '@media print': {
-          width: '4in',
-          height: '6in'
+          width: '5in',
+          height: '7in'
         }
       }}
     >
@@ -133,18 +133,21 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontSize: '1.5rem', 
             lineHeight: '1.5rem',
             color: theme.palette.secondary.main,
-            mb: 2
+            mb: 2,
+            mr: 7
           }}
         >
           Steph Stubler<br/>Topher Sikorra
         </StephsActualFavoriteTypographyNoDrop>
+
+        {/* And symbol */}
         <StephsActualFavoriteTypographyNoDrop 
           variant="h5" 
           sx={{ 
             position: 'absolute',
-            top: '26px',
-            left: '94px',
-            fontSize: '1.5rem', 
+            top: '14px',
+            right: '7px',
+            fontSize: '3.6rem', 
             lineHeight: '1.2rem',
             zIndex: -10,
             color: '#9c27b0',
