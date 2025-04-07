@@ -14,6 +14,9 @@ namespace Wedding.Abstractions.Entities
         public required string PaymentIntentId { get; set; } = "";
 
         [DynamoDBProperty]
+        public required string InvitationCode { get; set; } = "";
+
+        [DynamoDBProperty]
         public required string GuestId { get; set; } = "";
 
         [DynamoDBProperty]
