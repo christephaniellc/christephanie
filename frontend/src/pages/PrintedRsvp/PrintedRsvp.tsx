@@ -109,7 +109,7 @@ const PrintedRsvp: React.FC = () => {
       sx={{ 
         px: 4, 
         pt: 3,
-        pb: 2,
+        pb: 1, // Reduced bottom padding to fix the gap with footer
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
@@ -173,13 +173,13 @@ const PrintedRsvp: React.FC = () => {
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-            Card size: 6.0" × 4.0"
+            Card size: 5.0" × 7.0"
           </Typography>
         </Box>
       </Box>
       
       {/* Main content area with families list on left and card preview on right */}
-      <Box sx={{ display: 'flex', flexGrow: 1, gap: 3, height: `calc(100vh - 250px)` }}>
+      <Box sx={{ display: 'flex', flexGrow: 1, gap: 3, height: `calc(100vh - 220px)` }}>
         {/* Left side - Families List */}
         <FamilyList 
           familyStats={familyStats}
@@ -305,12 +305,23 @@ const PrintedRsvp: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+	      flexDirection: 'column',
               overflow: 'auto',
-              maxHeight: 'calc(100vh - 250px)'
+              maxHeight: 'calc(100vh - 220px)',
+              // Add padding to ensure full card visibility with scrolling
+              py: 2
             }}
           >
             {selectedFamily ? (
-              <Box>
+              <Box sx={{ 
+                //display: 'flex', 
+                //flexDirection: 'column',
+                //alignItems: 'center',
+                //justifyContent: 'flex-start', // Start at the top to show the full card
+                minHeight: '100%',
+                pt: 2, // Add top padding to ensure card is fully visible
+                pb: 4  // Add bottom padding to ensure space after the card
+              }}>
                 {cardSide === 'front' && frontOrientation === 'horizontal' && (
                   <CardFrontHorizontal selectedFamily={selectedFamily} />
                 )}
@@ -325,7 +336,7 @@ const PrintedRsvp: React.FC = () => {
                 )}
                 
                 {/* Caption */}
-                <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: 'gray' }}>
+                <Typography variant="caption" sx={{ display: 'block', mt: 2, mb: 2, textAlign: 'center', color: 'gray' }}>
                   {cardSide === 'front' ? 'Address' : 'Picture'} side • {currentOrientation === 'horizontal' ? 'Landscape' : 'Portrait'} orientation
                 </Typography>
               </Box>
