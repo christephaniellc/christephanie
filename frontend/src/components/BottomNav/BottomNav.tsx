@@ -175,6 +175,9 @@ export const BottomNav = () => {
             icon={<ConnectWithoutContactIcon />}
             aria-label="Go to Save the Date Survey page"
             disabled={!auth0User}
+            sx={{ 
+              display: !isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none'
+            }}
           />
 
           {/* RSVP (only for authenticated users) */}
@@ -183,8 +186,8 @@ export const BottomNav = () => {
             icon={<SaveAsIcon />}
             aria-label="Go to RSVP pages"
             disabled={!auth0User}
-            sx={{
-              display: isFeatureEnabled('ENABLE_RSVP') ? 'flex' : 'none',
+            sx={{ 
+              display: isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none'
             }}
           />
 
@@ -195,7 +198,7 @@ export const BottomNav = () => {
             aria-label="Go to detail pages"
             disabled={!auth0User}
             sx={{
-              display: isFeatureEnabled('ENABLE_DETAILS') ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_DETAILS') && auth0User  ? 'flex' : 'none'
             }}
           />
 
@@ -206,7 +209,7 @@ export const BottomNav = () => {
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{
-              display: isFeatureEnabled('ENABLE_REGISTRY') ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User ? 'flex' : 'none',
             }}
           />
 
@@ -224,6 +227,10 @@ export const BottomNav = () => {
             icon={<BarChartIcon />}
             aria-label="View wedding statistics"
             disabled={!auth0User}
+            contentEditable="false"
+            sx={{ 
+              display: auth0User ? 'flex' : 'none',
+            }}
           />
 
           {/* Admin Updates (only for admin users) */}
