@@ -194,6 +194,7 @@ export const BottomNav = () => {
             disabled={!auth0User}
             contentEditable="false"
             sx={{ 
+              display: !isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none',
               "& .MuiBottomNavigationAction-label": { 
                 contentEditable: "false",
                 userSelect: "none" 
@@ -209,7 +210,7 @@ export const BottomNav = () => {
             disabled={!auth0User}
             contentEditable="false"
             sx={{ 
-              display: isFeatureEnabled('ENABLE_RSVP') ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none',
               "& .MuiBottomNavigationAction-label": { 
                 contentEditable: "false",
                 userSelect: "none" 
@@ -225,7 +226,7 @@ export const BottomNav = () => {
             disabled={!auth0User}
             contentEditable="false"
             sx={{ 
-              display: isFeatureEnabled('ENABLE_DETAILS') ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_DETAILS') && auth0User ? 'flex' : 'none',
               "& .MuiBottomNavigationAction-label": { 
                 contentEditable: "false",
                 userSelect: "none" 
@@ -241,7 +242,7 @@ export const BottomNav = () => {
             disabled={!auth0User}
             contentEditable="false"
             sx={{ 
-              display: isFeatureEnabled('ENABLE_REGISTRY') ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User ? 'flex' : 'none',
               "& .MuiBottomNavigationAction-label": { 
                 contentEditable: "false",
                 userSelect: "none" 
@@ -272,6 +273,7 @@ export const BottomNav = () => {
             disabled={!auth0User}
             contentEditable="false"
             sx={{ 
+              display: auth0User ? 'flex' : 'none',
               "& .MuiBottomNavigationAction-label": { 
                 contentEditable: "false",
                 userSelect: "none" 
