@@ -93,6 +93,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     {
                         PaymentIntentId = result.PaymentIntentId,
                         GuestId = command.AuthContext.GuestId,
+                        InvitationCode = command.AuthContext.InvitationCode,
                         Amount = (long)command.Amount,
                         Currency = command.Currency,
                         GiftCategory = giftMetaData.GiftCategory,
