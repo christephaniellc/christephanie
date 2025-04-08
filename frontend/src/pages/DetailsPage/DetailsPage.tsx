@@ -57,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                backgroundImage: 'url(/src/assets/engagement-photos/topher_and_steph_rsvp3.jpg)',
+                backgroundImage: 'url(/src/assets/engagement-photos/topher_and_steph_rsvp2.jpg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 opacity: 0.1,
