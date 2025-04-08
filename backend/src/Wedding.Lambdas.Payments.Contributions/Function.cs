@@ -55,6 +55,14 @@ public class Function
 
             var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
             var giftCategory = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "giftCategory");
+            var filterParam = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "filter");
+            
+            // If filter is "current", use the current user's guestId
+            if (string.Equals(filterParam, "current", StringComparison.OrdinalIgnoreCase))
+            {
+                guestId = authContext.GuestId;
+                context.Logger.LogInformation($"Using current user's guestId: {guestId}");
+            }
 
             var filter = new ContributionQueryFilter
             {

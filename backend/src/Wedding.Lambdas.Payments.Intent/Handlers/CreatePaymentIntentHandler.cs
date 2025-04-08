@@ -103,8 +103,8 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         GiftNotes = giftMetaData.GiftNotes,
                         GuestName = giftMetaData.GuestName,
                         IsAnonymous = giftMetaData.IsAnonymous,
-                        Timestamp = DateTime.UtcNow.ToString()
-                    };
+                        Timestamp = DateTime.UtcNow.ToString("o")
+                };
 
                     _logger.LogInformation("Saving payment: {Payment}",
                         JsonSerializer.Serialize(paymentEntity));
