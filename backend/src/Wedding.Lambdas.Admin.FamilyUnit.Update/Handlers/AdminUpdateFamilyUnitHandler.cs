@@ -63,7 +63,7 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
                         $"Family unit mismatch: Requested update for {command.FamilyUnit.InvitationCode} but found {existingFamilyUnitEntity.PartitionKey}");
                 }
 
-                _logger.LogInformation($"Existing family unit: {JsonSerializer.Serialize(command.FamilyUnit)}");
+                _logger.LogInformation($"Existing family unit: {JsonSerializer.Serialize(existingFamilyUnitEntity)}");
                 _mapper.Map(command.FamilyUnit, existingFamilyUnitEntity);
 
                 await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
