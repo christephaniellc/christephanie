@@ -1,4 +1,4 @@
-import { AddressDto, AdminPatchGuestRequest, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, StatsViewModel, VerifyEmailResponse } from '@/types/api';
+import { AddressDto, AdminPatchGuestRequest, ClientInfoDto, ContributionDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, StatsViewModel, VerifyEmailResponse } from '@/types/api';
 import { SavedPhotoConfiguration } from '@/pages/PrintedRsvp/types/types';
 import { getConfig } from '@/auth_config';
 
@@ -44,6 +44,10 @@ export default class Api {
   
   async getStats(): Promise<StatsViewModel> {
     return this.get('/stats');
+  }
+  
+  async getMyContributions(): Promise<ContributionDto[]> {
+    return this.get('/payments/contributions?filter=current');
   }
   
   async createPaymentIntent(amount: number, currency: string, giftCategory: string, giftNotes: string = '', guestEmail: string = '', isAnonymous: boolean = false): Promise<{ clientSecret: string; paymentIntentId: string; amount: number; currency: string; error?: any }> {

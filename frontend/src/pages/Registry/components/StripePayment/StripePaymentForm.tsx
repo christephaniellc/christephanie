@@ -261,6 +261,7 @@ function PaymentForm({
         onSuccess({
           paymentIntentId: paymentIntent.id,
           email: email,
+          notes: notes,
           timestamp: new Date().toISOString()
         });
       } else {
@@ -449,7 +450,7 @@ function PaymentForm({
 const stripePromise = loadStripe(
   import.meta.env.STRIPE_PUBLIC_KEY || 
   // Fallback test key for development
-  'pk_test_51OHCKnKsQR10MdgmrKZAh91Ufz6BnXFQBHNsYbVW2uIKmHpWjTq0zJZU9MZ4yVs0g2oXAD9dkSLkPGDfuAqZlMHH00lRQrReDj'
+  'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno'
 );
 
 // Main payment dialog component that wraps the form in Stripe Elements
