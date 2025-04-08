@@ -76,7 +76,7 @@ function PaymentForm({
 }: { 
   amount: number;
   category: string;
-  onSuccess: (details: { paymentIntentId: string; email: string; timestamp: string }) => void;
+  onSuccess: (details: { paymentIntentId: string; email: string; notes?: string; timestamp: string }) => void;
   onError: (message: string, errorCode?: string, errorType?: string) => void;
   onCancel: () => void;
 }) {
@@ -466,7 +466,7 @@ function StripePaymentForm({
   amount: number;
   category: string;
   onClose: () => void;
-  onSuccess: (details: { paymentIntentId: string; email: string; timestamp: string }) => void;
+  onSuccess: (details: { paymentIntentId: string; email: string; notes?: string; timestamp: string }) => void;
   onError: (message: string, errorCode?: string, errorType?: string) => void;
 }) {
   // Reset Elements when component re-renders to avoid stale state issues
