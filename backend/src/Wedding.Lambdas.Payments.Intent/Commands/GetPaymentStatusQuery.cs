@@ -9,5 +9,5 @@ namespace Wedding.Lambdas.Payments.Intent.Commands
     /// </summary>
     /// <seealso cref="IWeddingQuery" />
     /// <param name="AuthContext">AuthContext of current logged in user</param>
-    public record GetPaymentStatusQuery(AuthContext AuthContext) : IWeddingQuery;
+    public record GetPaymentStatusQuery(AuthContext AuthContext, string PaymentIntentId) : IWeddingQuery;
 }

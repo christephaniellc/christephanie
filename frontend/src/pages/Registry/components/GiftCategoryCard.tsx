@@ -29,7 +29,13 @@ const RegistryCard = styled(Card)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
   borderRadius: theme.shape.borderRadius * 2,
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  // Better mobile optimization
+  maxWidth: '400px',
+  margin: '0 auto',
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: 'none'
+  }
 }));
 
 const CardContentStyled = styled(CardContent)(({ theme }) => ({
@@ -47,24 +53,6 @@ const IconWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-// Define selected property interface for AmountButton
-interface AmountButtonProps {
-  selected?: boolean;
-}
-
-const AmountButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== 'selected',
-})<AmountButtonProps>(({ theme, selected }) => ({
-  margin: theme.spacing(0.5),
-  fontWeight: selected ? 'bold' : 'normal',
-  backgroundColor: selected ? theme.palette.primary.main : 'transparent',
-  color: selected ? '#fff' : theme.palette.text.primary,
-  border: `1px solid ${selected ? theme.palette.primary.main : theme.palette.divider}`,
-  '&:hover': {
-    backgroundColor: selected ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1),
-  },
-}));
-
 const CardDescription = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   textAlign: 'center',
@@ -72,18 +60,14 @@ const CardDescription = styled(Typography)(({ theme }) => ({
 
 interface GiftCategoryCardProps {
   option: GiftOption;
-  selectedAmount: number | null;
   customAmount: string;
-  onAmountSelect: (id: string, amount: number) => void;
   onCustomAmountChange: (id: string, value: string) => void;
   onContribute: (id: string) => void;
 }
 
 const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
   option,
-  selectedAmount,
   customAmount,
-  onAmountSelect,
   onCustomAmountChange,
   onContribute
 }) => {
@@ -102,22 +86,9 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
         <CardDescription variant="body2" color="textSecondary">
           {option.description}
         </CardDescription>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', mb: 2 }}>
-          {option.suggestedAmounts.map((amount) => (
-            <AmountButton 
-              key={amount} 
-              variant="outlined" 
-              size="small"
-              selected={selectedAmount === amount}
-              onClick={() => onAmountSelect(option.id, amount)}
-            >
-              ${amount}
-            </AmountButton>
-          ))}
-        </Box>
         <TextField
           fullWidth
-          label="Custom Amount"
+          label="Amount"
           variant="outlined"
           size="small"
           value={customAmount || ''}
@@ -131,8 +102,8 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
       <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
         <Button 
           variant="contained" 
-          color="primary"
-          disabled={!selectedAmount && !customAmount}
+          color="secondary"
+          disabled={!customAmount}
           onClick={() => onContribute(option.id)}
         >
           Contribute

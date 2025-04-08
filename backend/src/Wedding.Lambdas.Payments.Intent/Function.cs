@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos.Stripe;
 using Wedding.Common.Configuration;
+using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Serialization;
@@ -37,7 +38,8 @@ public class Function
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
         serviceCollection.AddScoped<GetPaymentStatusHandler>();
-        
+        serviceCollection.AddScoped<CreatePaymentIntentHandler>();
+
         serviceCollection.AddSingleton<Lazy<Task<IStripePaymentProvider>>>(sp =>
         {
             return new Lazy<Task<IStripePaymentProvider>>(async () =>
@@ -51,6 +53,21 @@ public class Function
         serviceCollection.AddScoped<IStripePaymentProvider>(sp =>
         {
             var lazyProvider = sp.GetRequiredService<Lazy<Task<IStripePaymentProvider>>>();
+            return lazyProvider.Value.GetAwaiter().GetResult();
+        });
+        
+        serviceCollection.AddSingleton<Lazy<Task<IAwsSesHelper>>>(sp =>
+        {
+            return new Lazy<Task<IAwsSesHelper>>(async () =>
+            {
+                var config = await AwsParameterCache.GetConfigAsync<ApplicationConfiguration>();
+                return new AwsSesHelper(config);
+            });
+        });
+
+        serviceCollection.AddScoped<IAwsSesHelper>(sp =>
+        {
+            var lazyProvider = sp.GetRequiredService<Lazy<Task<IAwsSesHelper>>>();
             return lazyProvider.Value.GetAwaiter().GetResult();
         });
 

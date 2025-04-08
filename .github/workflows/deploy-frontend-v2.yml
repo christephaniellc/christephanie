@@ -55,6 +55,7 @@ jobs:
             echo "RETURN_TO=${{ secrets.PROD_RETURN_TO }}" >> $GITHUB_ENV
             echo "S3_BUCKET=${{ vars.PROD_S3_BUCKET }}" >> $GITHUB_ENV
             echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+            echo "STRIPE_PUBLIC_KEY=${{ vars.PROD_STRIPE_PUBLIC_KEY }}" >> $GITHUB_ENV
           else
             echo "VITE_ENV=development" >> $GITHUB_ENV
             echo "AWS_ROLE=${{ secrets.DEV_AWS_ROLE_ARN }}" >> $GITHUB_ENV
@@ -65,6 +66,7 @@ jobs:
             echo "RETURN_TO=${{ secrets.DEV_RETURN_TO }}" >> $GITHUB_ENV
             echo "S3_BUCKET=${{ vars.DEV_S3_BUCKET }}" >> $GITHUB_ENV
             echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+            echo "STRIPE_PUBLIC_KEY=${{ vars.DEV_STRIPE_PUBLIC_KEY }}" >> $GITHUB_ENV
           fi
 
       - name: Debug Loaded Vars
@@ -80,6 +82,7 @@ jobs:
           echo "RETURN_TO: $RETURN_TO"
           echo "S3_BUCKET: $S3_BUCKET"
           echo "CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID"
+          echo "STRIPE_PUBLIC_KEY: $STRIPE_PUBLIC_KEY"
 
       - name: Reset OIDC Token
         run: rm -rf ~/.aws/
@@ -120,6 +123,7 @@ jobs:
           AUDIENCE: "${{ env.AUDIENCE }}"
           WEBSERVICE_URL: "${{ env.WEBSERVICE_URL }}"
           RETURN_TO: "${{ env.WEBSERVICE_URL }}"
+          STRIPE_PUBLIC_KEY: "${{ env.STRIPE_PUBLIC_KEY }}"
 
       - name: Deploy to S3
         run: aws s3 sync frontend/dist s3://$S3_BUCKET --delete

@@ -66,6 +66,10 @@ namespace Wedding.Common.Multitenancy
                     {
                         databaseTable = $"christephanie-wedding-invitation-design";
                     }
+                    else if (table == DatabaseTableEnum.PaymentData)
+                    {
+                        databaseTable = $"christephanie-wedding-payments";
+                    }
                     else
                     {
                         databaseTable = $"christephanie-wedding-guests-prod";
@@ -86,6 +90,10 @@ namespace Wedding.Common.Multitenancy
                     else if (table == DatabaseTableEnum.InvitationDesign)
                     {
                         databaseTable = $"christephanie-wedding-invitation-design";
+                    }
+                    else if (table == DatabaseTableEnum.PaymentData)
+                    {
+                        databaseTable = $"christephanie-wedding-payments";
                     }
                     else
                     {

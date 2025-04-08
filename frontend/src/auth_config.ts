@@ -8,6 +8,7 @@ export type Config = {
   audience: string;
   webserviceUrl: string;
   returnTo: string;
+  stripePublicKey: string;
 }
 
 // Fixed development config - used in Jest environment
@@ -16,7 +17,8 @@ const DEV_CONFIG: Config = {
   clientId: "sAJY1fIiPwOLa0z1SUzXZzD3Hp1vjuV5",
   audience: "https://fianceapi.dev.wedding.christephanie.com",
   webserviceUrl: "https://fianceapi.dev.wedding.christephanie.com",
-  returnTo: "https://www.dev.wedding.christephanie.com"
+  returnTo: "https://www.dev.wedding.christephanie.com",
+  stripePublicKey: "pk_test_devvvvvvvvvvvvvvvvvvvvvvv"
 };
 
 const PROD_CONFIG: Config = {
@@ -24,7 +26,8 @@ const PROD_CONFIG: Config = {
   clientId: "wWcIuy2ILD0fvUucUzJlicIPUEHSa2f6",
   audience: "https://fianceapi.wedding.christephanie.com",
   webserviceUrl: "https://fianceapi.wedding.christephanie.com",
-  returnTo: "https://www.wedding.christephanie.com"
+  returnTo: "https://www.wedding.christephanie.com",
+  stripePublicKey: "pk_test_proddddddddddddd"
 };
 
 // Test config that is used in automated tests
@@ -33,7 +36,8 @@ export const TEST_CONFIG: Config = {
   clientId: "test-client-id", 
   audience: "https://test-api.example.com",
   webserviceUrl: "https://test-api.example.com",
-  returnTo: "https://test-return.example.com"
+  returnTo: "https://test-return.example.com",
+  stripePublicKey: "pk_test_testttttttttttttttttttttttt"
 };
 
 // Environment-specific config using Vite environment variables from CI
@@ -44,13 +48,15 @@ const ENV_CONFIG: Config | null = (() => {
         import.meta.env.CLIENT_ID && 
         import.meta.env.AUDIENCE && 
         import.meta.env.WEBSERVICE_URL && 
-        import.meta.env.RETURN_TO) {
+        import.meta.env.RETURN_TO &&
+        import.meta.env.STRIPE_PUBLIC_KEY) {
       return {
         domain: import.meta.env.DOMAIN,
         clientId: import.meta.env.CLIENT_ID,
         audience: import.meta.env.AUDIENCE,
         webserviceUrl: import.meta.env.WEBSERVICE_URL,
-        returnTo: import.meta.env.RETURN_TO
+        returnTo: import.meta.env.RETURN_TO,
+        stripePublicKey: import.meta.env.STRIPE_PUBLIC_KEY
       };
     }
   }

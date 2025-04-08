@@ -1,10 +1,8 @@
 import { atom, selector, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import ConstructionIcon from '@mui/icons-material/Construction';
-import Dog from '@mui/icons-material/Pets';
-import HouseIcon from '@mui/icons-material/House';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import Flight from '@mui/icons-material/Flight';
-import WineBar from '@mui/icons-material/WineBar';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 
 import { SvgIconComponent } from '@mui/icons-material';
@@ -15,7 +13,6 @@ export type GiftOption = {
   title: string;
   description: string;
   icon: SvgIconComponent; // React icon component
-  suggestedAmounts: number[];
 };
 
 // Registry notification type
@@ -38,44 +35,26 @@ export const giftOptionsData: GiftOption[] = [
   {
     id: 'honeymoon',
     title: 'Honeymoon Fund',
-    description: 'Help us create unforgettable memories on our honeymoon adventure.',
-    icon: Flight,
-    suggestedAmounts: [25, 50, 100, 200]
+    description: 'Help us create hot-ballooning (or similiarly ridiculous) memories on our honeymoon adventure.',
+    icon: Flight
   },
   {
     id: 'remodel',
     title: 'Remodelling Our House',
-    description: 'Our little 125 year old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube!). Help us prevent zapping fires :)',
-    icon: ConstructionIcon,
-    suggestedAmounts: [20, 50, 75, 100]
+    description: 'Our 105 year-old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube!). Help us prevent zapping fires!',
+    icon: ConstructionIcon
   },
   {
-    id: 'home',
-    title: 'Home Down Payment',
-    description: 'Help us invest in a future family home!',
-    icon: HouseIcon,
-    suggestedAmounts: [30, 60, 100, 150]
-  },
-  {
-    id: 'dogs',
-    title: 'Creature Care',
-    description: 'Help us spoil our two furry bodyguard housemates.',
-    icon: Dog,
-    suggestedAmounts: [15, 25, 50, 75]
-  },
-  {
-    id: 'drinks',
-    title: 'Drinks & Toasts',
-    description: 'Contribute to refreshments and celebratory toasts.',
-    icon: WineBar,
-    suggestedAmounts: [15, 30, 50, 100]
+    id: 'garden',
+    title: 'Garden and Project Fund',
+    description: 'Help us become Seattle-level environmentally crunchy with solar panels! Or shall we add a pollinator garden and pizza oven? ',
+    icon: LocalFloristIcon
   },
   {
     id: 'custom',
     title: 'Custom',
     description: 'Contribute in your own way!',
-    icon: CelebrationIcon,
-    suggestedAmounts: [15, 30, 50, 100]
+    icon: CelebrationIcon
   },
 ];
 
@@ -85,10 +64,7 @@ export const giftOptionsState = atom<GiftOption[]>({
   default: giftOptionsData
 });
 
-export const selectedAmountsState = atom<Record<string, number | null>>({
-  key: 'selectedAmountsState',
-  default: {}
-});
+// Remove selectedAmountsState as it's no longer needed
 
 export const customAmountsState = atom<Record<string, string>>({
   key: 'customAmountsState',
@@ -114,21 +90,46 @@ export const paymentDialogState = atom<PaymentDialogState>({
   }
 });
 
-export const paymentSuccessDialogState = atom<{open: boolean; amount: number; category: string}>({
+export const paymentSuccessDialogState = atom<{
+  open: boolean; 
+  amount: number; 
+  category: string;
+  paymentIntentId: string;
+  email: string;
+  notes: string;
+  timestamp: string;
+}>({
   key: 'paymentSuccessDialogState',
   default: {
     open: false,
     amount: 0,
-    category: ''
+    category: '',
+    paymentIntentId: '',
+    email: '',
+    notes: '',
+    timestamp: ''
   }
 });
 
-export const paymentErrorDialogState = atom<{open: boolean; message: string}>({
+export const paymentErrorDialogState = atom<{
+  open: boolean; 
+  message: string;
+  errorCode: string;
+  errorType: string;
+}>({
   key: 'paymentErrorDialogState',
   default: {
     open: false,
-    message: ''
-  }
+    message: '',
+    errorCode: '',
+    errorType: ''
+  },
+  // Force reset of error state on page refresh
+  effects: [
+    ({ setSelf }) => {
+      setSelf({ open: false, message: '', errorCode: '', errorType: '' });
+    }
+  ]
 });
 
 // Selectors
@@ -141,8 +142,8 @@ export const traditionalRegistryState = atom<{
   key: 'traditionalRegistryState',
   default: {
     title: 'Physical Gifts',
-    description: 'If you prefer to give a traditional gift, we\'ve created a registry at our favorite store.',
-    url: 'https://www.amazon.com/wedding/registry', // Replace with actual registry URL
+    description: 'If you prefer to give a traditional gift, we\'ve created a registry.',
+    url: 'https://www.myregistry.com/giftlist/christephanie', // Replace with actual registry URL
     icon: CardGiftcard
   }
 });
@@ -150,22 +151,10 @@ export const traditionalRegistryState = atom<{
 // Custom hooks for registry state management
 export const useRegistry = () => {
   const giftOptions = useRecoilValue(giftOptionsState);
-  const [selectedAmounts, setSelectedAmounts] = useRecoilState(selectedAmountsState);
+  // Removed selectedAmounts state
   const [customAmounts, setCustomAmounts] = useRecoilState(customAmountsState);
   const [notification, setNotification] = useRecoilState(notificationState);
   const traditionalRegistry = useRecoilValue(traditionalRegistryState);
-
-  const handleAmountSelect = (id: string, amount: number) => {
-    setSelectedAmounts(prev => ({
-      ...prev,
-      [id]: amount
-    }));
-    // Clear custom amount when preset is selected
-    setCustomAmounts(prev => ({
-      ...prev,
-      [id]: ''
-    }));
-  };
 
   const handleCustomAmountChange = (id: string, value: string) => {
     // Allow only numbers
@@ -174,13 +163,6 @@ export const useRegistry = () => {
         ...prev,
         [id]: value
       }));
-      // Clear preset selection when custom is entered
-      if (value) {
-        setSelectedAmounts(prev => ({
-          ...prev,
-          [id]: null
-        }));
-      }
     }
   };
 
@@ -189,7 +171,7 @@ export const useRegistry = () => {
   const [errorDialog, setErrorDialog] = useRecoilState(paymentErrorDialogState);
 
   const handleContribute = (id: string) => {
-    const amount = parseInt(customAmounts[id]) || selectedAmounts[id] || 0;
+    const amount = parseInt(customAmounts[id]) || 0;
     const category = giftOptions.find(option => option.id === id)?.title || '';
     
     if (amount <= 0) return;
@@ -203,7 +185,12 @@ export const useRegistry = () => {
     });
   };
   
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (details: { 
+    paymentIntentId: string; 
+    email: string; 
+    notes?: string;
+    timestamp: string 
+  }) => {
     const { amount, category, categoryId } = paymentDialog;
     
     // Close payment dialog
@@ -212,35 +199,76 @@ export const useRegistry = () => {
       open: false
     }));
     
-    // Show success dialog
+    // Show success dialog with transaction details
     setSuccessDialog({
       open: true,
       amount,
-      category
+      category,
+      paymentIntentId: details.paymentIntentId,
+      email: details.email,
+      notes: details.notes || '',
+      timestamp: details.timestamp
     });
     
     // Reset the form
-    setSelectedAmounts(prev => ({
-      ...prev,
-      [categoryId]: null
-    }));
     setCustomAmounts(prev => ({
       ...prev,
       [categoryId]: ''
     }));
+    
+    // Log transaction for debugging
+    console.log('Payment successful:', {
+      amount,
+      category,
+      ...details
+    });
   };
   
-  const handlePaymentError = (message: string) => {
-    // Close payment dialog
+  const handlePaymentError = (message: string, errorCode: string = '', errorType: string = '') => {
+    console.log('handlePaymentError called with:', { message, errorCode, errorType });
+    
+    // Close payment dialog immediately
     setPaymentDialog(prev => ({
       ...prev,
       open: false
     }));
     
-    // Show error dialog
+    // Show a notification for immediate feedback
+    setNotification({
+      show: true,
+      message: `Payment error: ${message}`,
+      severity: 'error'
+    });
+    
+    // Show detailed error dialog immediately
+    console.log('Setting error dialog state to:', {
+      open: true,
+      message,
+      errorCode,
+      errorType
+    });
+    
     setErrorDialog({
       open: true,
-      message
+      message,
+      errorCode,
+      errorType
+    });
+    
+    // Also force an update with a small delay to handle any race conditions
+    setTimeout(() => {
+      console.log('Re-setting error dialog just to be safe');
+      setErrorDialog(prev => ({
+        ...prev,
+        open: true
+      }));
+    }, 500);
+    
+    // Log error for debugging
+    console.error('Payment failed:', {
+      message,
+      errorCode,
+      errorType
     });
   };
   
@@ -259,10 +287,13 @@ export const useRegistry = () => {
   };
   
   const closeErrorDialog = () => {
-    setErrorDialog(prev => ({
-      ...prev,
-      open: false
-    }));
+    console.log('Closing error dialog');
+    setErrorDialog({
+      open: false,
+      message: '',
+      errorCode: '',
+      errorType: ''
+    });
   };
 
   const closeNotification = () => {
@@ -274,14 +305,12 @@ export const useRegistry = () => {
 
   return {
     giftOptions,
-    selectedAmounts,
     customAmounts,
     notification,
     traditionalRegistry,
     paymentDialog,
     successDialog,
     errorDialog,
-    handleAmountSelect,
     handleCustomAmountChange,
     handleContribute,
     handlePaymentSuccess,
