@@ -20,6 +20,7 @@ const PaymentSuccessDialog = ({
   category,
   paymentIntentId = '',
   email = '',
+  notes = '',
   timestamp = new Date().toISOString()
 }: {
   open: boolean;
@@ -28,10 +29,11 @@ const PaymentSuccessDialog = ({
   category: string;
   paymentIntentId?: string;
   email?: string;
+  notes?: string;
   timestamp?: string;
 }) => {
   // Add console.log to debug dialog open state
-  console.log('PaymentSuccessDialog render:', { open, amount, category, paymentIntentId, email });
+  console.log('PaymentSuccessDialog render:', { open, amount, category, paymentIntentId, email, notes });
   
   // Only render if actually open to prevent flash of success dialog
   if (!open) return null;
@@ -68,7 +70,7 @@ const PaymentSuccessDialog = ({
             Payment Successful
           </Typography>
           <Typography variant="body1" align="center" paragraph>
-            Your contribution of ${amount} to our {category.toLowerCase()} has been received.
+            Your contribution of ${amount} to our {category.toLowerCase()} fund has been received.
           </Typography>
           
           {/* Transaction Details */}
@@ -106,10 +108,17 @@ const PaymentSuccessDialog = ({
               <Typography variant="body2" color="text.secondary">Amount:</Typography>
               <Typography variant="body2" fontWeight="medium">${amount}</Typography>
             </Box>
+            
+            {notes && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">Notes:</Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ maxWidth: '60%', textAlign: 'right' }}>{notes}</Typography>
+              </Box>
+            )}
           </Box>
           
           <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 2 }}>
-            You will receive a confirmation email shortly with the details of your gift.
+            {email ? `A confirmation email has been sent to ${email}.` : 'Your contribution has been received and recorded.'}
           </Typography>
         </Box>
       </DialogContent>

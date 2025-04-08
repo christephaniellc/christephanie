@@ -40,6 +40,31 @@ namespace Wedding.Common.Helpers.AWS
             Console.WriteLine($"Send email result: {result.HttpStatusCode} {JsonSerializer.Serialize(result.ResponseMetadata)}");
             return result;
         }
+        
+        public async Task<SendEmailResponse?> SendPaymentConfirmationEmail(string name, string email, string paymentIntentId, decimal amount, string category, string notes, string timestamp, CancellationToken cancellationToken)
+        {
+            var bodies = EmailTemplateHelper.SendPaymentConfirmationTemplate(
+                _config,
+                name,
+                email,
+                paymentIntentId,
+                amount,
+                category,
+                notes,
+                timestamp,
+                cancellationToken);
+
+            var result = await SendEmail(
+                toAddresses: new List<string> { email },
+                subject: "Payment Confirmation - Thank You for Your Contribution",
+                textBody: bodies.textBody,
+                htmlBody: bodies.htmlBody,
+                cancellationToken);
+
+            Console.WriteLine($"Payment Confirmation SES response: {JsonSerializer.Serialize(result)}");
+            Console.WriteLine($"Payment Confirmation email sent. Message ID: {result.MessageId}");
+            return result;
+        }
 
         public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, string subject, string textBody, string htmlBody, CancellationToken cancellationToken)
         {

@@ -359,6 +359,18 @@ export interface GiftMetaData {
   giftNotes?: string | null;
 }
 
+export interface ContributionDto {
+  paymentIntentId: string;
+  guestId: string;
+  amount: number;
+  currency: string;
+  giftCategory: string;
+  giftNotes: string;
+  guestName: string;
+  isAnonymous: boolean;
+  timestamp: string;
+}
+
 export interface StripePaymentIntentRequestDto {
   amount: number;
   currency: string;
