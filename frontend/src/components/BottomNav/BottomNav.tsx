@@ -176,7 +176,7 @@ export const BottomNav = () => {
             aria-label="Go to Save the Date Survey page"
             disabled={!auth0User}
             sx={{ 
-              display: !isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none'
+              display: isFeatureEnabled('ENABLE_SURVEY_PHASE') && auth0User ? 'flex' : 'none'
             }}
           />
 
@@ -209,7 +209,7 @@ export const BottomNav = () => {
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{
-              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User && userIsAdmin ? 'flex' : 'none',
             }}
           />
 
