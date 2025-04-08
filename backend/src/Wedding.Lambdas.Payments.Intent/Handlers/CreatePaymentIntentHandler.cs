@@ -90,6 +90,17 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                 _logger.LogInformation("Payment result: {Result} with amount {Amount} and currency {Currency}. Metadata: {MetaData}",
                     JsonSerializer.Serialize(result), command.Amount, command.Currency, JsonSerializer.Serialize(giftMetaData));
 
+                // Check for Stripe-specific errors from the payment provider
+                if (result.Error != null)
+                {
+                    _logger.LogError("Stripe error occurred: Type={ErrorType}, Code={ErrorCode}, Message={ErrorMessage}",
+                        result.Error.Type, result.Error.Code, result.Error.Message);
+                    
+                    // Return the error directly instead of throwing an exception
+                    // This allows the client to get detailed error information
+                    return result;
+                }
+
                 if (!string.IsNullOrEmpty(result.PaymentIntentId))
                 {
                     var paymentEntity = new PaymentIntentEntity
@@ -104,7 +115,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         GuestName = giftMetaData.GuestName,
                         IsAnonymous = giftMetaData.IsAnonymous,
                         Timestamp = DateTime.UtcNow.ToString("o")
-                };
+                    };
 
                     _logger.LogInformation("Saving payment: {Payment}",
                         JsonSerializer.Serialize(paymentEntity));
@@ -128,14 +139,49 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", giftMetaData.GuestEmail);
                     }
                 }
+                else
+                {
+                    _logger.LogWarning("No payment intent ID was returned from Stripe. This indicates a potential issue with the Stripe integration.");
+                }
 
                 return result;
             }
+            catch (Stripe.StripeException stripeEx)
+            {
+                // Handle Stripe-specific exceptions with detailed logging and appropriate error response
+                _logger.LogError(stripeEx, 
+                    "Stripe exception occurred: Type={ErrorType}, Code={ErrorCode}, DeclineCode={DeclineCode}, Message={ErrorMessage}", 
+                    stripeEx.StripeError?.Type, 
+                    stripeEx.StripeError?.Code, 
+                    stripeEx.StripeError?.DeclineCode,
+                    stripeEx.Message);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Type = stripeEx.StripeError?.Type,
+                        Code = stripeEx.StripeError?.Code,
+                        DeclineCode = stripeEx.StripeError?.DeclineCode,
+                        Message = stripeEx.Message
+                    }
+                };
+            }
             catch (Exception ex)
             {
-                // TODO: add stripe exceptions here
-                _logger.LogError(ex, "An error occurred while creating payment.");
-                throw new UnauthorizedAccessException($"{ex.Message}");
+                _logger.LogError(ex, "An unexpected error occurred while creating payment. Error: {ErrorMessage}, Stack: {StackTrace}", ex.Message, ex.StackTrace);
+                
+                // Return a structured error object instead of throwing an exception
+                // This allows the frontend to display a more specific error message
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Type = "server_error",
+                        Code = "internal_error",
+                        Message = "An unexpected error occurred while processing your payment. Please try again."
+                    }
+                };
             }
         }
         
