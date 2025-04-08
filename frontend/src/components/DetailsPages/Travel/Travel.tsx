@@ -1,7 +1,7 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -10,27 +10,21 @@ import {
   Paper, 
   Grid, 
   IconButton, 
-  Collapse, 
-  Fade, 
-  Zoom, 
-  Grow,
-  Tooltip,
+  Fade,
   alpha,
   Stack,
   Stepper,
   Step,
   StepLabel,
   StepContent,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormLabel,
-  Chip
+  CardMedia,
+  Chip,
+  Divider,
+  useMediaQuery,
+  ButtonGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+  MobileStepper,
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
@@ -44,19 +38,24 @@ import {
   LocationOn, 
   PinDrop,
   Hotel, 
-  Home, 
-  Person, 
-  Groups,
   LocalTaxi,
-  Check,
-  ArrowForward,
   Info,
-  SportsScore,
   Navigation,
-  Celebration,
-  FormatListBulleted,
-  Luggage
+  OpenInNew,
+  HotelOutlined,
+  Star,
+  NoTransfer,
+  ArrowForward,
+  ArrowBack,
+  KeyboardArrowRight,
+  KeyboardArrowLeft,
+  Done,
 } from '@mui/icons-material';
+import RatingComponent from '@/components/RatingComponent/RatingComponent';
+
+// Import images directly
+import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
+import charlestownHotel from '@/assets/holiday-inn-express-charlestown.jpg';
 
 interface TravelProps {
   handleTabLink: (to: string) => void;
@@ -65,42 +64,78 @@ interface TravelProps {
 function Travel({handleTabLink}: TravelProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // Game state
+  // Current active step
   const [activeStep, setActiveStep] = useState(0);
-  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-  const [selectedOrigin, setSelectedOrigin] = useState<string | null>(null);
-  const [selectedAirport, setSelectedAirport] = useState<string | null>(null);
-  const [selectedTransport, setSelectedTransport] = useState<string | null>(null);
-  const [showTransportDialog, setShowTransportDialog] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
   
-  // Reset game if the user goes back to step 0
-  useEffect(() => {
-    if (activeStep === 0) {
-      setSelectedPiece(null);
-      setSelectedOrigin(null);
-      setSelectedAirport(null);
-      setSelectedTransport(null);
-      setShowSummary(false);
+  // Selected options state
+  const [selectedTransportType, setSelectedTransportType] = useState<string | null>(null);
+  const [selectedOrigin, setSelectedOrigin] = useState<string | null>(null);
+  const [selectedLocalTransport, setSelectedLocalTransport] = useState<string | null>(null);
+  const [selectedHotel, setSelectedHotel] = useState<number | null>(null);
+  
+  // Step completion state
+  const [stepsCompleted, setStepsCompleted] = useState<boolean[]>([false, false, false, false]);
+  
+  // Hotel options
+  const hotelOptions = [
+    {
+      name: 'Holiday Inn Express Suites - Brunswick, MD',
+      image: '.../assets/holiday-inn-express-brunswick.jpg',
+      googleRating: 4.6,
+      phoneNumber: "(301) 969-8020",
+      numberOfRatings: 195,
+      hotelQuality: 3,
+      onShuttleRoute: true,
+      driveMinsFromWedding: 18,
+      hotelBlock: false,
+      bookingNote: "This hotel does not do formal wedding blocks, but they will give you a discount if you ask for the 'wedding rate'"
+    },
+    {
+      name: 'Holiday Inn Express Charles Town, Ranson, WV',
+      image: '.../assets/holiday-inn-express-charlestown.jpg',
+      googleRating: 4.5,
+      phoneNumber: "(304) 725-1330",
+      numberOfRatings: 755,
+      hotelQuality: 2,
+      onShuttleRoute: true,
+      driveMinsFromWedding: 23,
+      hotelBlock: true,
+      bookingNote: "We have reserved a block of hotel rooms here: ask for the 'Stubler Wedding block rate'"
+    },
+    {
+      name: 'Lovettsville Area Hotels',
+      image: undefined,
+      googleRating: 0,
+      phoneNumber: undefined,
+      numberOfRatings: 0,
+      hotelQuality: 0,
+      onShuttleRoute: false,
+      driveMinsFromWedding: 0,
+      hotelBlock: false,
+      bookingNote: "Search for hotels in Lovettsville, VA and surrounding areas like Purcellville and Leesburg"
+    },
+  ];
+
+  const getImageSrc = (imagePath: string | undefined) => {
+    if (!imagePath) return '';
+    
+    // Use the imported images based on the path
+    if (imagePath.includes('brunswick')) {
+      return brunswickHotel;
+    } else if (imagePath.includes('charlestown')) {
+      return charlestownHotel;
     }
-  }, [activeStep]);
-
-  // Accommodate a direct link to the accommodations page
-  const accommodationsLink = (
-    <Link 
-      onClick={() => handleTabLink('accommodations')}
-      sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', textDecoration: 'underline' }}
-    >
-      accommodations page
-    </Link>
-  );
-
-  // Game pieces for selection
-  const gamePieces = [
-    { id: 'plane', name: 'Airplane', icon: <FlightTakeoff fontSize="large" />, desc: 'For guests flying in' },
-    { id: 'car', name: 'Car', icon: <DirectionsCar fontSize="large" />, desc: 'For guests driving' },
-    { id: 'train', name: 'Train', icon: <Train fontSize="large" />, desc: 'For guests taking Amtrak' }
+    
+    return imagePath;
+  };
+  
+  // Transportation options
+  const transportOptions = [
+    { id: 'plane', name: 'Airplane', icon: <FlightTakeoff />, desc: 'For guests flying in' },
+    { id: 'car', name: 'Car', icon: <DirectionsCar />, desc: 'For guests driving' },
+    { id: 'train', name: 'Train', icon: <Train />, desc: 'For guests taking Amtrak' }
   ];
 
   // Origins based on selected transportation method
@@ -121,12 +156,12 @@ function Travel({handleTabLink}: TravelProps) {
     ]
   };
 
-  // Transport options
-  const transportOptions = [
+  // Local transport options
+  const localTransportOptions = [
     { id: 'rental', name: 'Rental Car', icon: <DirectionsCar />, desc: 'Freedom to explore the area' },
     { id: 'taxi', name: 'Taxi/Rideshare', icon: <LocalTaxi />, desc: 'Easy point-to-point travel' },
     { id: 'shuttle', name: 'Wedding Shuttle', icon: <DirectionsBus />, desc: 'Available on wedding day only' },
-    { id: 'family', name: 'Ride with Family', icon: <Groups />, desc: 'Coordinate with relatives' }
+    { id: 'family', name: 'Ride with Family', icon: <DirectionsWalk />, desc: 'Coordinate with relatives' }
   ];
 
   // Information about selected options
@@ -220,7 +255,7 @@ function Travel({handleTabLink}: TravelProps) {
       tips: [
         'Free shuttle service between recommended hotels and venue',
         'Saturday only: Shuttles run 3:00 PM - 11:30 PM',
-        'See the ' + accommodationsLink + ' for detailed schedule',
+        'See shuttle schedule below for detailed schedule',
         'You\'ll need alternative transportation for other days'
       ]
     },
@@ -234,660 +269,768 @@ function Travel({handleTabLink}: TravelProps) {
     }
   };
 
-  // Board component styling
-  const boardCellStyle = {
-    border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-    backgroundColor: alpha(theme.palette.background.paper, 0.1),
-    backdropFilter: 'blur(5px)',
-    borderRadius: '8px',
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    height: '100px',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.4)}`,
-    }
-  };
-
-  const activeCellStyle = {
-    ...boardCellStyle,
-    borderColor: theme.palette.secondary.main,
-    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
-    boxShadow: `0 0 12px ${alpha(theme.palette.secondary.main, 0.6)}`,
-  };
-
-  // Path connector line
-  const pathStyle = {
-    position: 'absolute',
-    height: '2px',
-    backgroundColor: alpha(theme.palette.primary.main, 0.7),
-    top: '50%',
-    left: '100%',
-    transform: 'translateY(-50%)',
-    zIndex: 0
-  };
-
-  // Board game marker/piece styling
-  interface GamePieceProps {
-    icon: React.ReactNode;
-    selected: boolean;
-  }
-  
-  const GamePiece: React.FC<GamePieceProps> = ({ icon, selected }) => (
-    <Box
-      sx={{
-        width: 50,
-        height: 50,
-        borderRadius: '50%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: selected 
-          ? alpha(theme.palette.secondary.main, 0.3) 
-          : alpha(theme.palette.primary.main, 0.2),
-        border: `2px solid ${selected ? theme.palette.secondary.main : alpha(theme.palette.primary.main, 0.8)}`,
-        color: selected ? theme.palette.secondary.main : theme.palette.primary.main,
-        boxShadow: selected 
-          ? `0 0 12px ${alpha(theme.palette.secondary.main, 0.6)}` 
-          : `0 0 6px ${alpha(theme.palette.primary.main, 0.4)}`,
-        transition: 'all 0.3s ease',
-      }}
-    >
-      {icon}
-    </Box>
-  );
-  
-  // Journey summary card component
-  const JourneySummary = () => {
-    let originName = "Unknown";
-    let routeInfo = [];
+  // Handle option selection
+  const handleTransportTypeChange = (event: React.MouseEvent<HTMLElement>, newType: string | null) => {
+    setSelectedTransportType(newType);
+    setSelectedOrigin(null); // Reset subsequent selections
     
-    if (selectedPiece === 'plane' && selectedAirport) {
-      originName = airportInfo[selectedAirport].name;
-      routeInfo = airportInfo[selectedAirport].tips;
-    } else if (selectedPiece === 'car' && selectedOrigin) {
-      originName = originOptions.car.find(o => o.id === selectedOrigin)?.name || "Unknown";
-      routeInfo = drivingDirections[selectedOrigin];
-    } else if (selectedPiece === 'train' && selectedOrigin) {
-      originName = trainInfo[selectedOrigin].name;
-      routeInfo = trainInfo[selectedOrigin].tips;
+    // Mark step as incomplete if selection is cleared
+    const newStepsCompleted = [...stepsCompleted];
+    newStepsCompleted[0] = !!newType;
+    setStepsCompleted(newStepsCompleted);
+  };
+
+  const handleOriginChange = (event: React.MouseEvent<HTMLElement>, newOrigin: string | null) => {
+    setSelectedOrigin(newOrigin);
+    
+    // Mark step as complete if both transport type and origin are selected
+    const newStepsCompleted = [...stepsCompleted];
+    newStepsCompleted[0] = !!(selectedTransportType && newOrigin);
+    setStepsCompleted(newStepsCompleted);
+  };
+
+  const handleLocalTransportChange = (event: React.MouseEvent<HTMLElement>, newTransport: string | null) => {
+    setSelectedLocalTransport(newTransport);
+    
+    // Mark step as complete when local transport is selected
+    const newStepsCompleted = [...stepsCompleted];
+    newStepsCompleted[1] = !!newTransport;
+    setStepsCompleted(newStepsCompleted);
+  };
+
+  const handleHotelChange = (index: number) => {
+    const newHotelSelection = selectedHotel === index ? null : index;
+    setSelectedHotel(newHotelSelection);
+    
+    // Mark step as complete when hotel is selected
+    const newStepsCompleted = [...stepsCompleted];
+    newStepsCompleted[2] = newHotelSelection !== null;
+    setStepsCompleted(newStepsCompleted);
+  };
+
+  // Handle step navigation
+  const handleNext = () => {
+    // Mark the current step as reviewed if it's the venue info step
+    if (activeStep === 3) {
+      const newStepsCompleted = [...stepsCompleted];
+      newStepsCompleted[3] = true;
+      setStepsCompleted(newStepsCompleted);
     }
     
-    return (
-      <Fade in={showSummary} timeout={800}>
-        <Card sx={{ 
-          mt: 4, 
-          mb: 4,
-          backgroundColor: alpha(theme.palette.background.paper, 0.25),
-          backdropFilter: 'blur(8px)',
-          border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.dark, 0.4)}`,
-        }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <SportsScore color="secondary" sx={{ mr: 1 }} />
-              <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                Your Travel Plan
-              </Typography>
-            </Box>
-            
-            <Stack spacing={2}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <GamePiece icon={gamePieces.find(p => p.id === selectedPiece)?.icon} selected={true} />
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                    {selectedPiece === 'plane' ? 'Flying' : selectedPiece === 'car' ? 'Driving' : 'Taking Train'} from {originName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedPiece === 'plane' ? airportInfo[selectedAirport].distance : ''}
-                  </Typography>
+    setActiveStep((prevActiveStep) => Math.min(prevActiveStep + 1, 3));
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => Math.max(prevActiveStep - 1, 0));
+  };
+
+  const handleStepChange = (step: number) => {
+    setActiveStep(step);
+  };
+
+  // Render transport type details
+  const renderTransportTypeDetails = () => {
+    if (!selectedTransportType) return null;
+
+    let details = null;
+    if (selectedTransportType === 'plane') {
+      details = (
+        <Box>
+          <Typography variant="h6" sx={{ mt: 2, mb: 1, color: theme.palette.secondary.main }}>Recommended Airports</Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={selectedOrigin}
+            onChange={handleOriginChange}
+            aria-label="airport selection"
+            sx={{ flexWrap: 'wrap', mb: 2 }}
+          >
+            {originOptions.plane.map((airport) => (
+              <ToggleButton 
+                key={airport.id} 
+                value={airport.id}
+                aria-label={airport.name}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  mr: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
+                  },
+                }}
+              >
+                <Box>
+                  <Typography variant="body1" fontWeight="bold">{airport.name}</Typography>
+                  <Typography variant="body2">{airport.desc}</Typography>
                 </Box>
-              </Box>
-              
-              {selectedTransport && (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Box sx={{ 
-                    width: 40, 
-                    height: 40, 
-                    borderRadius: '50%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                    color: theme.palette.primary.main,
-                  }}>
-                    {transportOptions.find(t => t.id === selectedTransport)?.icon}
-                  </Box>
-                  <Box sx={{ ml: 2 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                      Local Transportation: {transportOptions.find(t => t.id === selectedTransport)?.name}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-              
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
-                  Directions & Tips:
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          
+          {selectedOrigin && (
+            <Fade in={true}>
+              <Box sx={{ 
+                mt: 2, 
+                p: 2, 
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                borderRadius: '8px',
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}` 
+              }}>
+                <Typography variant="h6" gutterBottom>
+                  {airportInfo[selectedOrigin].name}
                 </Typography>
-                <Box component="ul" sx={{ pl: 3, mt: 1 }}>
-                  {routeInfo.map((tip, i) => (
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {airportInfo[selectedOrigin].distance}
+                </Typography>
+                <Typography variant="body2" fontWeight="bold" sx={{ mt: 1 }}>
+                  Travel Tips:
+                </Typography>
+                <Box component="ul" sx={{ mt: 0.5, pl: 2 }}>
+                  {airportInfo[selectedOrigin].tips.map((tip, i) => (
                     <Typography component="li" variant="body2" key={i} sx={{ mb: 0.5 }}>
                       {tip}
                     </Typography>
                   ))}
                 </Box>
-                
-                {selectedTransport && (
-                  <>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main, mt: 2 }}>
-                      Transportation Tips:
-                    </Typography>
-                    <Box component="ul" sx={{ pl: 3, mt: 1 }}>
-                      {transportInfo[selectedTransport].tips.map((tip, i) => (
-                        <Typography component="li" variant="body2" key={i} sx={{ mb: 0.5 }}>
-                          {tip}
-                        </Typography>
-                      ))}
-                    </Box>
-                  </>
-                )}
               </Box>
-              
+            </Fade>
+          )}
+        </Box>
+      );
+    } else if (selectedTransportType === 'car') {
+      details = (
+        <Box>
+          <Typography variant="h6" sx={{ mt: 2, mb: 1, color: theme.palette.secondary.main }}>Driving From</Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={selectedOrigin}
+            onChange={handleOriginChange}
+            aria-label="driving origin selection"
+            sx={{ flexWrap: 'wrap', mb: 2 }}
+          >
+            {originOptions.car.map((origin) => (
+              <ToggleButton 
+                key={origin.id} 
+                value={origin.id}
+                aria-label={origin.name}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  mr: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
+                  },
+                }}
+              >
+                <Box>
+                  <Typography variant="body1" fontWeight="bold">{origin.name}</Typography>
+                  <Typography variant="body2">{origin.desc}</Typography>
+                </Box>
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          
+          {selectedOrigin && (
+            <Fade in={true}>
               <Box sx={{ 
+                mt: 2, 
                 p: 2, 
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                 borderRadius: '8px',
-                mt: 2 
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}` 
               }}>
-                <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Info fontSize="small" sx={{ mr: 1, color: theme.palette.secondary.main }} />
-                  Need help with your travel plans? Email us at travel@wedding.christephanie.com
+                <Typography variant="h6" gutterBottom>
+                  Driving Directions from {originOptions.car.find(o => o.id === selectedOrigin)?.name}
                 </Typography>
+                <Box component="ol" sx={{ mt: 1, pl: 3 }}>
+                  {drivingDirections[selectedOrigin].map((direction, i) => (
+                    <Typography component="li" variant="body2" key={i} sx={{ mb: 0.5 }}>
+                      {direction}
+                    </Typography>
+                  ))}
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<Navigation />}
+                  size="small"
+                  sx={{ mt: 2 }}
+                  onClick={() => window.open('https://www.google.com/maps/dir//Stone+Manor+Boutique+Inn,+13193+Mountain+Rd,+Lovettsville,+VA+20180/@39.2694448,-77.6474672,14z/data=!4m9!4m8!1m0!1m5!1m1!1s0x89b606193970ec5d:0x2c2c11c2aeded12c!2m2!1d-77.6257573!2d39.2725608!3e0')}
+                >
+                  Get Google Maps Directions
+                </Button>
               </Box>
-            </Stack>
-            
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-              <Button 
-                variant="outlined" 
-                color="primary" 
-                onClick={() => setActiveStep(0)}
-                startIcon={<Navigation />}
-                sx={{ mr: 2 }}
+            </Fade>
+          )}
+        </Box>
+      );
+    } else if (selectedTransportType === 'train') {
+      details = (
+        <Box>
+          <Typography variant="h6" sx={{ mt: 2, mb: 1, color: theme.palette.secondary.main }}>Train Stations</Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={selectedOrigin}
+            onChange={handleOriginChange}
+            aria-label="train station selection"
+            sx={{ flexWrap: 'wrap', mb: 2 }}
+          >
+            {originOptions.train.map((station) => (
+              <ToggleButton 
+                key={station.id} 
+                value={station.id}
+                aria-label={station.name}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  mr: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
+                  },
+                }}
               >
-                Plan New Route
-              </Button>
-              <Button 
-                variant="contained" 
-                color="secondary" 
-                onClick={() => handleTabLink('accommodations')}
-                endIcon={<Hotel />}
-              >
-                View Accommodations
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
+                <Box>
+                  <Typography variant="body1" fontWeight="bold">{station.name}</Typography>
+                  <Typography variant="body2">{station.desc}</Typography>
+                </Box>
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          
+          {selectedOrigin && (
+            <Fade in={true}>
+              <Box sx={{ 
+                mt: 2, 
+                p: 2, 
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                borderRadius: '8px',
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}` 
+              }}>
+                <Typography variant="h6" gutterBottom>
+                  {trainInfo[selectedOrigin].name}
+                </Typography>
+                <Typography variant="body2" fontWeight="bold" sx={{ mt: 1 }}>
+                  Travel Tips:
+                </Typography>
+                <Box component="ul" sx={{ mt: 0.5, pl: 2 }}>
+                  {trainInfo[selectedOrigin].tips.map((tip, i) => (
+                    <Typography component="li" variant="body2" key={i} sx={{ mb: 0.5 }}>
+                      {tip}
+                    </Typography>
+                  ))}
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<Train />}
+                  size="small"
+                  sx={{ mt: 2 }}
+                  onClick={() => window.open('https://www.amtrak.com/stations/hrp')}
+                >
+                  Amtrak Information
+                </Button>
+              </Box>
+            </Fade>
+          )}
+        </Box>
+      );
+    }
+    
+    return details;
+  };
+
+  // Render local transport details
+  const renderLocalTransportDetails = () => {
+    if (!selectedLocalTransport) return null;
+    
+    return (
+      <Fade in={true}>
+        <Box sx={{ 
+          mt: 2, 
+          p: 2, 
+          backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+          borderRadius: '8px',
+          border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}` 
+        }}>
+          <Typography variant="h6" gutterBottom>
+            {localTransportOptions.find(opt => opt.id === selectedLocalTransport)?.name}
+          </Typography>
+          <Typography variant="body2" fontWeight="bold" sx={{ mt: 1 }}>
+            Tips:
+          </Typography>
+          <Box component="ul" sx={{ mt: 0.5, pl: 2 }}>
+            {transportInfo[selectedLocalTransport].tips.map((tip, i) => (
+              <Typography component="li" variant="body2" key={i} sx={{ mb: 0.5 }}>
+                {tip}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
       </Fade>
     );
   };
 
-  // Transportation selection dialog
-  const TransportSelectionDialog = () => (
-    <Dialog 
-      open={showTransportDialog} 
-      onClose={() => setShowTransportDialog(false)}
-      PaperProps={{
-        sx: {
-          backgroundColor: alpha(theme.palette.background.paper, 0.95),
-          backdropFilter: 'blur(10px)',
-          borderRadius: '12px',
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-        }
-      }}
-    >
-      <DialogTitle sx={{ textAlign: 'center', color: theme.palette.secondary.main }}>
-        Choose Your Local Transportation
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" paragraph>
-          How will you get around Lovettsville and to the wedding venue?
-        </Typography>
-        
-        <FormControl component="fieldset">
-          <RadioGroup value={selectedTransport || ''} onChange={(e) => setSelectedTransport(e.target.value)}>
-            {transportOptions.map((option) => (
-              <FormControlLabel 
-                key={option.id}
-                value={option.id}
-                control={<Radio color="secondary" />}
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ 
-                      mr: 1, 
-                      p: 1, 
-                      borderRadius: '50%', 
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1) 
-                    }}>
-                      {option.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="body1">{option.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {option.desc}
-                      </Typography>
-                    </Box>
-                  </Box>
-                }
-                sx={{ 
-                  mb: 2, 
-                  p: 1,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  borderRadius: '8px',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                  }
-                }}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={() => setShowTransportDialog(false)}>Cancel</Button>
-        <Button 
-          variant="contained" 
-          color="secondary"
-          disabled={!selectedTransport}
-          onClick={() => {
-            setShowTransportDialog(false);
-            setShowSummary(true);
-          }}
-        >
-          Complete Journey
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
-  // The game board stepper
-  const renderGameBoard = () => (
-    <Box sx={{ width: '100%', mt: 3 }}>
-      <Stepper activeStep={activeStep} orientation="vertical">
-        {/* Step 1: Choose your game piece (transportation method) */}
-        <Step>
-          <StepLabel>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Choose Your Travel Method</Typography>
-          </StepLabel>
-          <StepContent>
-            <Typography variant="body2" paragraph>
-              How will you be traveling to our wedding? Select your preferred method:
-            </Typography>
-            
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              {gamePieces.map((piece, index) => (
-                <Grid item xs={12} sm={4} key={piece.id}>
-                  <Zoom in={true} style={{ transitionDelay: `${index * 150}ms` }}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        cursor: 'pointer',
-                        backgroundColor: selectedPiece === piece.id
-                          ? alpha(theme.palette.secondary.main, 0.15)
-                          : alpha(theme.palette.background.paper, 0.2),
-                        border: `2px solid ${selectedPiece === piece.id 
-                          ? theme.palette.secondary.main
-                          : alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: '12px',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: selectedPiece === piece.id
-                            ? alpha(theme.palette.secondary.main, 0.2)
-                            : alpha(theme.palette.primary.main, 0.1),
-                          transform: 'translateY(-4px)',
-                        }
-                      }}
-                      onClick={() => setSelectedPiece(piece.id)}
-                    >
-                      <GamePiece icon={piece.icon} selected={selectedPiece === piece.id} />
-                      <Typography variant="body1" sx={{ mt: 2, fontWeight: 'bold' }}>
-                        {piece.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
-                        {piece.desc}
-                      </Typography>
-                    </Paper>
-                  </Zoom>
-                </Grid>
-              ))}
-            </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setActiveStep(1)}
-                disabled={!selectedPiece}
-                endIcon={<ArrowForward />}
-              >
-                Continue
-              </Button>
-            </Box>
-          </StepContent>
-        </Step>
-        
-        {/* Step 2: Choose your starting point */}
-        <Step>
-          <StepLabel>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-              {selectedPiece === 'plane' ? 'Select Airport' : selectedPiece === 'car' ? 'Select Starting Point' : 'Select Train Station'}
-            </Typography>
-          </StepLabel>
-          <StepContent>
-            <Typography variant="body2" paragraph>
-              {selectedPiece === 'plane' 
-                ? 'Which airport will you fly into?' 
-                : selectedPiece === 'car' 
-                  ? 'Where will you be driving from?' 
-                  : 'Which station will you arrive at?'}
-            </Typography>
-            
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              {selectedPiece && originOptions[selectedPiece].map((origin, index) => (
-                <Grid item xs={12} sm={4} key={origin.id}>
-                  <Grow in={true} timeout={800} style={{ transitionDelay: `${index * 150}ms` }}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        cursor: 'pointer',
-                        backgroundColor: (selectedOrigin === origin.id || selectedAirport === origin.id)
-                          ? alpha(theme.palette.secondary.main, 0.15)
-                          : alpha(theme.palette.background.paper, 0.2),
-                        border: `2px solid ${(selectedOrigin === origin.id || selectedAirport === origin.id)
-                          ? theme.palette.secondary.main
-                          : alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: '12px',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: (selectedOrigin === origin.id || selectedAirport === origin.id)
-                            ? alpha(theme.palette.secondary.main, 0.2)
-                            : alpha(theme.palette.primary.main, 0.1),
-                          transform: 'translateY(-4px)',
-                        }
-                      }}
-                      onClick={() => {
-                        if (selectedPiece === 'plane') {
-                          setSelectedAirport(origin.id);
-                        } else {
-                          setSelectedOrigin(origin.id);
-                        }
-                      }}
-                    >
-                      <Box sx={{ 
-                        width: 40, 
-                        height: 40, 
-                        borderRadius: '50%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: (selectedOrigin === origin.id || selectedAirport === origin.id)
-                          ? alpha(theme.palette.secondary.main, 0.3)
-                          : alpha(theme.palette.primary.main, 0.2),
-                        color: (selectedOrigin === origin.id || selectedAirport === origin.id)
-                          ? theme.palette.secondary.main
-                          : theme.palette.primary.main,
-                      }}>
-                        {selectedPiece === 'plane' ? <FlightTakeoff /> : selectedPiece === 'car' ? <LocationOn /> : <Train />}
-                      </Box>
-                      <Typography variant="body1" sx={{ mt: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        {origin.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
-                        {origin.desc}
-                      </Typography>
-                    </Paper>
-                  </Grow>
-                </Grid>
-              ))}
-            </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button onClick={() => setActiveStep(0)}>Back</Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setActiveStep(2)}
-                disabled={!(selectedOrigin || selectedAirport)}
-                endIcon={<ArrowForward />}
-              >
-                Continue
-              </Button>
-            </Box>
-          </StepContent>
-        </Step>
-        
-        {/* Step 3: Choose local transportation */}
-        <Step>
-          <StepLabel>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Local Transportation</Typography>
-          </StepLabel>
-          <StepContent>
-            <Typography variant="body2" paragraph>
-              How will you get around Lovettsville and to the wedding venue?
-            </Typography>
-            
-            <Box sx={{ mb: 3, p: 2, backgroundColor: alpha(theme.palette.info.main, 0.1), borderRadius: '8px' }}>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Info fontSize="small" sx={{ mr: 1, mt: '3px', color: theme.palette.info.main }} />
-                Lovettsville is a rural area with limited public transportation. Most guests will need a car or arranged transportation.
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowTransportDialog(true)}
-                startIcon={<Luggage />}
-              >
-                Choose Local Transportation
-              </Button>
-            </Box>
-            
-            {selectedTransport && (
-              <Paper sx={{ 
-                p: 2, 
-                mb: 2, 
-                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                borderRadius: '8px',
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Check color="secondary" sx={{ mr: 1 }} />
-                  <Typography variant="body1">
-                    Selected: <b>{transportOptions.find(t => t.id === selectedTransport)?.name}</b>
-                  </Typography>
-                </Box>
-              </Paper>
-            )}
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button onClick={() => setActiveStep(1)}>Back</Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setShowSummary(true)}
-                disabled={!selectedTransport}
-                endIcon={<SportsScore />}
-              >
-                Complete Journey
-              </Button>
-            </Box>
-          </StepContent>
-        </Step>
-      </Stepper>
-    </Box>
-  );
-
-  // Visual game board that shows as you progress
-  const renderVisualBoard = () => {
-    // Only show when at least one selection has been made
-    if (!selectedPiece) return null;
+  // Render hotel details
+  const renderHotelDetails = (hotel, index) => {
+    if (selectedHotel !== index) return null;
     
     return (
-      <Box sx={{ mt: 4, mb: 2, px: 2 }}>
-        <Paper sx={{ 
-          p: 2, 
-          backgroundColor: alpha(theme.palette.background.paper, 0.1),
-          backdropFilter: 'blur(5px)',
-          borderRadius: '12px',
-        }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-            <Navigation sx={{ mr: 1, color: theme.palette.secondary.main }} />
-            Your Journey Map
-          </Typography>
-          
-          <Grid container spacing={2} alignItems="center" sx={{ mt: 1 }}>
-            {/* Starting point */}
-            <Grid item xs={3}>
-              <Box sx={activeStep >= 1 && selectedPiece ? activeCellStyle : boardCellStyle}>
-                <Box sx={{ 
-                  width: 36, 
-                  height: 36, 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  color: theme.palette.primary.main
-                }}>
-                  {selectedPiece === 'plane' ? <FlightTakeoff /> : selectedPiece === 'car' ? <Home /> : <Train />}
-                </Box>
-                <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-                  {selectedPiece === 'plane' ? 'Airport' : selectedPiece === 'car' ? 'Starting Point' : 'Train Station'}
-                </Typography>
-                {activeStep >= 1 && (selectedOrigin || selectedAirport) && (
-                  <Tooltip title={selectedPiece === 'plane' && selectedAirport 
-                    ? airportInfo[selectedAirport].name 
-                    : selectedPiece === 'train' && selectedOrigin 
-                      ? trainInfo[selectedOrigin].name 
-                      : selectedOrigin === 'dc' 
-                        ? 'Washington DC' 
-                        : selectedOrigin === 'baltimore' 
-                          ? 'Baltimore' 
-                          : 'Custom Location'}>
-                    <Chip 
-                      label={selectedPiece === 'plane' && selectedAirport 
-                        ? selectedAirport.toUpperCase() 
-                        : selectedOrigin 
-                          ? selectedOrigin.substring(0, 3).toUpperCase() 
-                          : '???'} 
-                      size="small" 
-                      color="secondary"
-                      sx={{ position: 'absolute', top: -10, right: -10 }}
-                    />
-                  </Tooltip>
-                )}
-                {/* Connection line */}
-                <Box sx={{ ...pathStyle, width: '80%' }} />
-              </Box>
-            </Grid>
+      <Fade in={true}>
+        <Box sx={{ p: 2 }}>
+          <Card sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            borderRadius: 2,
+          }}>
+            {/* Hotel Image */}
+            {hotel.image && (
+              <CardMedia
+                component="img"
+                image={getImageSrc(hotel.image)}
+                alt={hotel.name}
+                sx={{ 
+                  height: 160, 
+                  objectFit: 'cover',
+                }}
+              />
+            )}
             
-            {/* Local transportation */}
-            <Grid item xs={3}>
-              <Box sx={activeStep >= 2 && selectedTransport ? activeCellStyle : boardCellStyle}>
-                <Box sx={{ 
-                  width: 36, 
-                  height: 36, 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  color: theme.palette.primary.main
-                }}>
-                  {selectedTransport === 'rental' ? <DirectionsCar /> : 
-                   selectedTransport === 'taxi' ? <LocalTaxi /> :
-                   selectedTransport === 'shuttle' ? <DirectionsBus /> :
-                   selectedTransport === 'family' ? <Groups /> : <DirectionsCar />}
-                </Box>
-                <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-                  Local Transport
-                </Typography>
-                {selectedTransport && (
-                  <Tooltip title={transportOptions.find(t => t.id === selectedTransport)?.name || ''}>
-                    <Chip 
-                      label={selectedTransport.substring(0, 4).toUpperCase()} 
-                      size="small" 
-                      color="secondary"
-                      sx={{ position: 'absolute', top: -10, right: -10 }}
-                    />
-                  </Tooltip>
-                )}
-                {/* Connection line */}
-                <Box sx={{ ...pathStyle, width: '80%' }} />
-              </Box>
-            </Grid>
-            
-            {/* Accommodation */}
-            <Grid item xs={3}>
-              <Box sx={showSummary ? activeCellStyle : boardCellStyle}>
-                <Box sx={{ 
-                  width: 36, 
-                  height: 36, 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  color: theme.palette.primary.main
-                }}>
-                  <Hotel />
-                </Box>
-                <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-                  Accommodation
-                </Typography>
-                {/* Connection line */}
-                <Box sx={{ ...pathStyle, width: '80%' }} />
-              </Box>
-            </Grid>
-            
-            {/* Venue destination */}
-            <Grid item xs={3}>
-              <Box sx={showSummary ? activeCellStyle : boardCellStyle}>
-                <Box sx={{ 
-                  width: 36, 
-                  height: 36, 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  color: theme.palette.primary.main
-                }}>
-                  <Celebration />
-                </Box>
-                <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-                  Wedding Venue
-                </Typography>
-                <Tooltip title="Stone Manor Inn">
-                  <Chip 
-                    label="VENUE" 
-                    size="small" 
-                    color={showSummary ? "secondary" : "primary"}
-                    sx={{ position: 'absolute', top: -10, right: -10 }}
+            <CardContent sx={{ flex: 1, p: 2 }}>
+              {/* Hotel name */}
+              <Typography variant="h6" component="h2" gutterBottom>
+                {hotel.name}
+              </Typography>
+              
+              {/* Rating */}
+              {hotel.googleRating > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <RatingComponent
+                    score={hotel.googleRating}
+                    numberOfRatings={hotel.numberOfRatings}
                   />
-                </Tooltip>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Box>
+                </Box>
+              )}
+              
+              <Stack spacing={1.5}>
+                {/* Phone number */}
+                {hotel.phoneNumber && (
+                  <Typography variant="body2">
+                    <strong>Phone:</strong> {hotel.phoneNumber}
+                  </Typography>
+                )}
+                
+                {/* Drive time */}
+                {hotel.driveMinsFromWedding > 0 && (
+                  <Typography variant="body2">
+                    <strong>Drive time to venue:</strong> {hotel.driveMinsFromWedding} minutes
+                  </Typography>
+                )}
+                
+                {/* Rate info */}
+                {hotel.bookingNote && (
+                  <Typography variant="body2" color="primary.light">
+                    <span style={{ color: "#FFFFFF" }}><strong>Booking note:</strong></span><br/>
+                    {hotel.bookingNote}
+                  </Typography>
+                )}
+                
+                {/* Shuttle info */}
+                {hotel.onShuttleRoute ? (
+                  <Chip
+                    icon={<DirectionsBus />}
+                    label="Shuttle Available"
+                    color="primary"
+                    size="small"
+                    sx={{ alignSelf: 'flex-start', mt: 1 }}
+                  />
+                ) : (
+                  <Chip
+                    icon={<NoTransfer />}
+                    label="No Shuttle Service"
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    sx={{ alignSelf: 'flex-start', mt: 1 }}
+                  />
+                )}
+                
+                {/* Google search button */}
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  endIcon={<OpenInNew />}
+                  onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
+                  sx={{ mt: 1, alignSelf: 'flex-start' }}
+                >
+                  Search on Google
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Box>
+      </Fade>
     );
   };
+
+  // The steps and their content
+  const steps = [
+    {
+      label: 'Getting to the Area',
+      description: 'How to get to Lovettsville, VA',
+      content: (
+        <>
+          <Typography variant="body1" paragraph>
+            Our wedding is in Lovettsville, Virginia - a charming rural area near the Maryland and West Virginia borders, about 1.5 hours from Washington DC.
+          </Typography>
+          
+          <Typography variant="h6" sx={{ mb: 1, color: theme.palette.secondary.main }}>How will you get to the area?</Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={selectedTransportType}
+            onChange={handleTransportTypeChange}
+            aria-label="transport type"
+            sx={{ flexWrap: 'wrap' }}
+          >
+            {transportOptions.map((option) => (
+              <ToggleButton 
+                key={option.id} 
+                value={option.id}
+                aria-label={option.name}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  mr: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
+                  },
+                }}
+              >
+                <Box sx={{ 
+                  mr: 1.5, 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  {option.icon}
+                </Box>
+                <Box>
+                  <Typography variant="body1" fontWeight="bold">{option.name}</Typography>
+                  <Typography variant="body2">{option.desc}</Typography>
+                </Box>
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          
+          {/* Details based on selection */}
+          {renderTransportTypeDetails()}
+          
+          <Box sx={{ mt: 4, mb: 3, p: 3, backgroundColor: alpha(theme.palette.info.main, 0.1), borderRadius: '8px' }}>
+            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+              <Info fontSize="small" sx={{ mr: 1, mt: '3px', color: theme.palette.info.main }} />
+              <strong>Important Travel Tips:</strong>
+            </Typography>
+            <Box component="ul" sx={{ pl: 3, mb: 0 }}>
+              <Typography component="li" variant="body2" gutterBottom>
+                Lovettsville is a rural area with limited public transportation.
+              </Typography>
+              <Typography component="li" variant="body2" gutterBottom>
+                Most guests will need a rental car or arranged transportation to reach the venue.
+              </Typography>
+              <Typography component="li" variant="body2" gutterBottom>
+                Consider sharing rides or coordinating with other guests when possible.
+              </Typography>
+              <Typography component="li" variant="body2">
+                Plan your trip well in advance, especially if flying into the area.
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Typography variant="body2" paragraph>
+            For personalized travel assistance or questions, contact us at <strong>travel@wedding.christephanie.com</strong>
+          </Typography>
+        </>
+      )
+    },
+    {
+      label: 'Local Transportation',
+      description: 'How to get around once you\'re here',
+      content: (
+        <>
+          <Typography variant="body1" paragraph>
+            Once you've arrived in the area, you'll need transportation to get around. Here are your options:
+          </Typography>
+          
+          <Typography variant="h6" sx={{ mb: 1, color: theme.palette.secondary.main }}>Local Transportation Options</Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={selectedLocalTransport}
+            onChange={handleLocalTransportChange}
+            aria-label="local transport options"
+            sx={{ flexWrap: 'wrap' }}
+          >
+            {localTransportOptions.map((option) => (
+              <ToggleButton 
+                key={option.id} 
+                value={option.id}
+                aria-label={option.name}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  mr: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.15),
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
+                  },
+                }}
+              >
+                <Box sx={{ 
+                  mr: 1.5, 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  {option.icon}
+                </Box>
+                <Box>
+                  <Typography variant="body1" fontWeight="bold">{option.name}</Typography>
+                  <Typography variant="body2">{option.desc}</Typography>
+                </Box>
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          
+          {/* Details based on selection */}
+          {renderLocalTransportDetails()}
+          
+          <Box sx={{ mt: 4, mb: 2, p: 3, backgroundColor: alpha(theme.palette.secondary.main, 0.1), borderRadius: '8px' }}>
+            <Typography variant="h6" gutterBottom color="secondary">
+              Wedding Day Shuttle Service
+            </Typography>
+            <Typography variant="body2" paragraph>
+              For your convenience, we've arranged shuttle transportation between our partner hotels and the wedding venue on the wedding day (Saturday).
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" fontWeight="bold">
+                  Departure Times from Hotels:
+                </Typography>
+                <Box component="ul" sx={{ pl: 3 }}>
+                  <Typography component="li" variant="body2">Holiday Inn Express Brunswick: 3:30pm and 4:00pm</Typography>
+                  <Typography component="li" variant="body2">Holiday Inn Express Charles Town: 3:15pm and 3:45pm</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" fontWeight="bold">
+                  Return Times to Hotels:
+                </Typography>
+                <Box component="ul" sx={{ pl: 3 }}>
+                  <Typography component="li" variant="body2">10:00pm</Typography>
+                  <Typography component="li" variant="body2">10:30pm</Typography>
+                  <Typography component="li" variant="body2">11:00pm</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </>
+      )
+    },
+    {
+      label: 'Accommodation Options',
+      description: 'Where to stay for our wedding',
+      content: (
+        <>
+          <Typography variant="body1" paragraph>
+            We've arranged some convenient lodging options to make your trip to our wedding as comfortable as possible.
+          </Typography>
+          
+          <Typography variant="h6" sx={{ mb: 1, color: theme.palette.secondary.main }}>Hotel Options</Typography>
+          <ButtonGroup orientation="vertical" variant="outlined" fullWidth sx={{ mb: 2 }}>
+            {hotelOptions.map((hotel, index) => (
+              <Button
+                key={index}
+                onClick={() => handleHotelChange(index)}
+                sx={{
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  py: 1.5,
+                  px: 2,
+                  borderColor: selectedHotel === index ? theme.palette.secondary.main : alpha(theme.palette.primary.main, 0.3),
+                  backgroundColor: selectedHotel === index ? alpha(theme.palette.secondary.main, 0.1) : 'transparent',
+                  '&:hover': {
+                    backgroundColor: selectedHotel === index ? alpha(theme.palette.secondary.main, 0.15) : alpha(theme.palette.primary.main, 0.05),
+                  },
+                  '&.MuiButtonGroup-grouped:not(:last-of-type)': {
+                    borderBottomColor: selectedHotel === index ? theme.palette.secondary.main : alpha(theme.palette.primary.main, 0.3),
+                  }
+                }}
+                startIcon={<HotelOutlined />}
+              >
+                <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                  <Box display="flex" alignItems="center">
+                    <Typography
+                      component="span"
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 'bold',
+                        textAlign: 'left',
+                        mr: 1,
+                      }}
+                    >
+                      {hotel.name}
+                    </Typography>
+                    {hotel.googleRating > 0 && (
+                      <Box display="flex" alignItems="center" ml={1}>
+                        <Star sx={{ color: 'secondary.main', fontSize: '1rem', mr: 0.3 }} />
+                        <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                          {hotel.googleRating}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  
+                  {hotel.onShuttleRoute && (
+                    <Chip
+                      icon={<DirectionsBus sx={{ color: 'primary.contrastText', fontSize: '1rem' }} />}
+                      label="Shuttle"
+                      size="small"
+                      sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText', fontWeight: 'bold' }}
+                    />
+                  )}
+                </Box>
+              </Button>
+            ))}
+          </ButtonGroup>
+          
+          {hotelOptions.map((hotel, index) => renderHotelDetails(hotel, index))}
+          
+          <Typography variant="body2" paragraph>
+            If you have any questions about accommodations, please contact us at <strong>accommodations@wedding.christephanie.com</strong>
+          </Typography>
+        </>
+      )
+    },
+    {
+      label: 'Venue Information',
+      description: 'Details about our wedding venue',
+      content: (
+        <>
+          <Typography variant="body1" paragraph>
+            Our wedding will be held at Stone Manor Inn, a picturesque estate venue located in Lovettsville, Virginia.
+          </Typography>
+          
+          <Box
+            component="iframe"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12383.86570043533!2d-77.64746721193069!3d39.269444801101574!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89b606193970ec5d%3A0x2c2c11c2aeded12c!2sStone%20Manor%20Boutique%20Inn!5e0!3m2!1sen!2sus!4v1704496957511!5m2!1sen!2sus"
+            width="100%"
+            height="300"
+            style={{
+              border: 0,
+              borderRadius: '8px',
+              marginBottom: '16px',
+            }}
+            allowFullScreen
+            loading="lazy"
+            title="Venue Location Map"
+          />
+          
+          <Box sx={{ 
+            p: 3, 
+            borderRadius: '8px', 
+            backgroundColor: alpha(theme.palette.background.paper, 0.15),
+            backdropFilter: 'blur(5px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+            mb: 3,
+          }}>
+            <Typography variant="h6" gutterBottom>Venue Details</Typography>
+            <Typography variant="body2" paragraph>
+              <strong>Stone Manor Inn</strong><br />
+              13193 Mountain Rd, Lovettsville, VA 20180<br />
+              Phone: (540) 822-3032
+            </Typography>
+            
+            <Typography variant="body2" paragraph>
+              <strong>About the Venue:</strong> Stone Manor is a boutique inn situated on 25 acres of countryside in the heart of Virginia wine country. The venue offers beautiful gardens, historic architecture, and stunning views of the Blue Ridge Mountains.
+            </Typography>
+          </Box>
+          
+          <Box sx={{ mb: 3, p: 2, backgroundColor: alpha(theme.palette.warning.main, 0.1), borderRadius: '8px' }}>
+            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              <Info fontSize="small" sx={{ mr: 1, mt: '3px', color: theme.palette.warning.main }} />
+              <strong>Note:</strong> Stone Manor Inn is in a rural area with limited cell reception. We recommend downloading offline maps and saving the venue address before your trip.
+            </Typography>
+          </Box>
+          
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Navigation />}
+            onClick={() => window.open('https://www.google.com/maps/dir//Stone+Manor+Boutique+Inn,+13193+Mountain+Rd,+Lovettsville,+VA+20180/@39.2694448,-77.6474672,14z/data=!4m9!4m8!1m0!1m5!1m1!1s0x89b606193970ec5d:0x2c2c11c2aeded12c!2m2!1d-77.6257573!2d39.2725608!3e0')}
+            sx={{ mt: 2 }}
+          >
+            Get Directions to Venue
+          </Button>
+        </>
+      )
+    }
+  ];
+
+  // Step progress indicator
+  const StepProgressIndicator = () => (
+    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+      <Stack direction="row" spacing={2} sx={{ width: '100%', maxWidth: 400 }}>
+        {steps.map((step, idx) => (
+          <Button
+            key={idx}
+            variant={activeStep === idx ? "contained" : "outlined"}
+            color={stepsCompleted[idx] ? "success" : activeStep === idx ? "primary" : "inherit"}
+            onClick={() => handleStepChange(idx)}
+            sx={{ 
+              minWidth: 0, 
+              flex: 1,
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              p: 0,
+              fontSize: '1rem',
+            }}
+            disabled={!stepsCompleted.slice(0, idx).every(Boolean) && idx !== 0}
+          >
+            {stepsCompleted[idx] ? <Done /> : (idx + 1)}
+          </Button>
+        ))}
+      </Stack>
+    </Box>
+  );
 
   return (
     <Container
@@ -924,79 +1067,121 @@ function Travel({handleTabLink}: TravelProps) {
             mb: 2
           }}
         >
-          TRAVEL PLANNER
+          TRAVEL & ACCOMMODATIONS
         </StephsActualFavoriteTypography>
         
         <Typography variant="body1" sx={{ mb: 2 }}>
-          Plan your journey to our wedding with this interactive travel guide.
+          Plan your journey to our wedding with this interactive travel guide
         </Typography>
-      </Box>
-      
-      {/* Alternative view button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 2 }}>
-        <Button 
-          variant="outlined" 
-          color="primary" 
-          startIcon={<FormatListBulleted />}
-          onClick={() => handleTabLink('accommodations')}
-          size="small"
-        >
-          View Traditional Travel Info
-        </Button>
+        
+        {/* Step Progress Indicator */}
+        <StepProgressIndicator />
       </Box>
       
       {/* Main content */}
       <Box sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
-        {/* Interactive game board */}
-        {renderGameBoard()}
-        
-        {/* Visual board representation */}
-        {renderVisualBoard()}
-        
-        {/* Summary card once journey is complete */}
-        {showSummary && <JourneySummary />}
-        
-        {/* Venue map card */}
-        <Grow in={true} timeout={800}>
-          <Card sx={{ 
-            mb: 4, 
+        <Paper
+          elevation={3}
+          sx={{
+            p: { xs: 2, sm: 3 },
             backgroundColor: alpha(theme.palette.background.paper, 0.15),
             backdropFilter: 'blur(5px)',
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-          }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <PinDrop sx={{ mr: 1, color: theme.palette.secondary.main }} />
-                Wedding Venue Location
-              </Typography>
-              
-              <Box
-                component="iframe"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12383.86570043533!2d-77.64746721193069!3d39.269444801101574!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89b606193970ec5d%3A0x2c2c11c2aeded12c!2sStone%20Manor%20Boutique%20Inn!5e0!3m2!1sen!2sus!4v1704496957511!5m2!1sen!2sus"
-                width="100%"
-                height="250"
-                style={{
-                  border: 0,
-                  borderRadius: '8px',
-                  marginBottom: '16px',
-                }}
-                allowFullScreen
-                loading="lazy"
-                title="Venue Location Map"
-              />
-              
-              <Typography variant="body2">
-                <strong>Stone Manor Inn</strong><br />
-                13193 Mountain Rd, Lovettsville, VA 20180<br />
-                Phone: (540) 822-3032
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grow>
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            borderRadius: '12px',
+          }}
+        >
+          {/* Step Title and Description */}
+          <Box sx={{ mb: 3 }}>
+            <Typography 
+              variant="h5" 
+              color="secondary" 
+              fontWeight="bold"
+              sx={{ mb: 1 }}
+            >
+              Step {activeStep + 1}: {steps[activeStep].label}
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ borderLeft: `3px solid ${alpha(theme.palette.secondary.main, 0.5)}`, pl: 2 }}
+            >
+              {steps[activeStep].description}
+            </Typography>
+          </Box>
+          
+          {/* Step Content */}
+          <Box sx={{ mb: 4 }}>
+            {steps[activeStep].content}
+          </Box>
+          
+          {/* Navigation Buttons */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              startIcon={<ArrowBack />}
+              sx={{ visibility: activeStep === 0 ? 'hidden' : 'visible' }}
+            >
+              Back
+            </Button>
+            
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleNext}
+              endIcon={activeStep < steps.length - 1 ? <ArrowForward /> : undefined}
+              disabled={
+                (activeStep === 0 && !stepsCompleted[0]) || 
+                (activeStep === 1 && !stepsCompleted[1]) ||
+                (activeStep === 2 && !stepsCompleted[2])
+              }
+            >
+              {activeStep < steps.length - 1 ? 'Continue' : 'Finish'}
+            </Button>
+          </Box>
+          
+          {/* Mobile Stepper (Alternative for smaller screens) */}
+          {isMobile && (
+            <MobileStepper
+              variant="dots"
+              steps={steps.length}
+              position="static"
+              activeStep={activeStep}
+              sx={{ 
+                mt: 4,
+                backgroundColor: 'transparent',
+                '& .MuiMobileStepper-dot': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                },
+                '& .MuiMobileStepper-dotActive': {
+                  backgroundColor: theme.palette.secondary.main,
+                }
+              }}
+              nextButton={
+                <Button 
+                  size="small" 
+                  onClick={handleNext}
+                  disabled={
+                    activeStep === steps.length - 1 ||
+                    (activeStep === 0 && !stepsCompleted[0]) || 
+                    (activeStep === 1 && !stepsCompleted[1]) ||
+                    (activeStep === 2 && !stepsCompleted[2])
+                  }
+                >
+                  Next
+                  <KeyboardArrowRight />
+                </Button>
+              }
+              backButton={
+                <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+                  <KeyboardArrowLeft />
+                  Back
+                </Button>
+              }
+            />
+          )}
+        </Paper>
       </Box>
-      
-      {/* Transport selection dialog */}
-      <TransportSelectionDialog />
     </Container>
   );
 }
