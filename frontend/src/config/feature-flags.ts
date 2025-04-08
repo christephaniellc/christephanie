@@ -18,7 +18,7 @@ export const FeatureFlags = {
   
   // Pages
   ENABLE_RSVP: false,
-  ENABLE_REGISTRY: false,
+  ENABLE_REGISTRY: true,
   ENABLE_DETAILS: true,
   ENABLE_DETAILS_ABOUTUS: true,
   ENABLE_DETAILS_ACCOMMODATIONS: true,
