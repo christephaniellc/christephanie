@@ -23,7 +23,8 @@ namespace Wedding.Common.Helpers.AWS
         Task<List<DesignConfigurationEntity>?> GetPhotoConfigurationsAsync(string audience, CancellationToken cancellationToken = default);
 
         // Payment data
-        Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, string timestamp, CancellationToken cancellationToken = default);
+        Task<List<PaymentIntentEntity>> GetAllPaymentsSortedByTimestampAsync(string audience, CancellationToken cancellationToken = default);
+        Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, CancellationToken cancellationToken = default);
         Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default);
         Task<List<PaymentIntentEntity>> GetPaymentsByCategoryAsync(string audience, string giftCategory, CancellationToken cancellationToken = default);
 

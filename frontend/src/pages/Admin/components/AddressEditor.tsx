@@ -64,10 +64,21 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
   const [originalAddress, setOriginalAddress] = useState<AddressDto | null>(null);
   const [validatedAddress, setValidatedAddress] = useState<AddressDto | null>(null);
   
-  const { validateAddressMutation } = useApiContext();
+  // Use apiInstance directly instead of validateAddressMutation to avoid the side effect
+  // of updating the current user's address
+  const { apiInstance } = useApiContext();
   
-  // Update local form state when initialAddress changes or edit mode is entered
+  // Update local form state when initialAddress changes and exit edit mode when family changes
   useEffect(() => {
+    // Reset all states when the address changes (family selection changes)
+    setEditMode(false);
+    setAddressValidationError(null);
+    setValidatingAddress(false);
+    setSavingAddress(false);
+    setConfirmDialogOpen(false);
+    setOriginalAddress(null);
+    setValidatedAddress(null);
+    
     if (initialAddress) {
       setAddressForm({
         streetAddress: initialAddress.streetAddress || '',
@@ -82,7 +93,7 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
         country: (initialAddress as any)?.country || null // Add country field with default
       });
     }
-  }, [initialAddress, editMode]);
+  }, [initialAddress]);
   
   // Handle input changes without using Recoil
   const handleInputChange = (field: keyof AddressDto, value: string | null) => {
@@ -105,8 +116,9 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
       // Store the original address for comparison
       setOriginalAddress({...addressForm});
       
-      // Call the API to validate the address
-      const validatedAddressResult = await validateAddressMutation.mutateAsync(addressForm);
+      // Call the API directly to validate the address without triggering the side effect
+      // of updating the current user's address
+      const validatedAddressResult = apiInstance ? await apiInstance.validateAddress(addressForm) : null;
       
       // Update the local state with the validated address
       if (validatedAddressResult) {

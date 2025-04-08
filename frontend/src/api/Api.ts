@@ -1,4 +1,4 @@
-import { AddressDto, AdminPatchGuestRequest, ClientInfoDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, StatsViewModel, VerifyEmailResponse } from '@/types/api';
+import { AddressDto, AdminPatchGuestRequest, ClientInfoDto, ContributionDto, FamilyUnitDto, FamilyUnitViewModel, FindUserResponse, GuestDto, GuestViewModel, InvitationDesignDto, NotificationPreferenceEnum, OrientationEnum, PatchFamilyUnitRequest, PatchGuestRequest, PatchUserRequest, StatsViewModel, VerifyEmailResponse } from '@/types/api';
 import { SavedPhotoConfiguration } from '@/pages/PrintedRsvp/types/types';
 import { getConfig } from '@/auth_config';
 
@@ -44,6 +44,58 @@ export default class Api {
   
   async getStats(): Promise<StatsViewModel> {
     return this.get('/stats');
+  }
+  
+  async getMyContributions(): Promise<ContributionDto[]> {
+    return this.get('/payments/contributions?filter=current');
+  }
+  
+  async createPaymentIntent(amount: number, currency: string, giftCategory: string, giftNotes: string = '', guestEmail: string = '', isAnonymous: boolean = false): Promise<{ clientSecret: string; paymentIntentId: string; amount: number; currency: string; error?: any }> {
+    try {
+      // First, get the current user info to fill in any missing data
+      const currentUser = await this.getMe();
+      
+      // Prepare metadata with all required fields
+      const metadata = {
+        giftCategory,
+        giftNotes: giftNotes || '',
+        isAnonymous: isAnonymous || false,
+        // Use provided email or fall back to user email value if available
+        guestEmail: guestEmail || (currentUser.email ? currentUser.email.value : ''),
+        // Make sure we include the guest ID and name which are required
+        guestId: currentUser.guestId || '',
+        guestName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
+      };
+      
+      console.log('Creating payment intent with data:', {
+        amount,
+        currency,
+        giftMetaData: metadata
+      });
+      
+      const response = await this.post<{ 
+        clientSecret: string; 
+        paymentIntentId: string; 
+        amount: number; 
+        currency: string; 
+        error?: any 
+      }>('/payments/intent', {
+        amount,
+        currency,
+        giftMetaData: metadata
+      });
+      
+      console.log('Payment intent creation response:', response);
+      
+      if (response && 'error' in response && response.error) {
+        console.error('Server returned error in payment intent creation:', response.error);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Error in createPaymentIntent:', error);
+      throw error;
+    }
   }
 
   async adminGetAllFamilies(): Promise<FamilyUnitDto[]> {

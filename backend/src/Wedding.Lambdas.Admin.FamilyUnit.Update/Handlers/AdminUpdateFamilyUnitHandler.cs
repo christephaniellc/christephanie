@@ -39,7 +39,6 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
             CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
-            var familyUnit = command.FamilyUnit;
 
             try
             {
@@ -52,100 +51,33 @@ namespace Wedding.Lambdas.Admin.FamilyUnit.Update.Handlers
 
                 var existingFamilyUnitEntity = results.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo);
                 var existingFamilyUnit = _mapper.Map<FamilyUnitDto>(existingFamilyUnitEntity);
-                var existingGuests = results.Where(x => x.SortKey.StartsWith(DynamoKeys.Guest))
-                    .Select(x => _mapper.Map<GuestDto>(x))
-                    .ToList();
-
-                var guestsToAdd = new List<GuestDto>();
-                var guestsToUpdate = new List<GuestDto>();
-                var guestsToDelete = new List<GuestDto>();
-
-                var guestsInCommand = _mapper.Map<List<GuestDto>>(familyUnit.OrderedGuests());
-                guestsToDelete.AddRange(guestsInCommand);
-
                 if (existingFamilyUnit == null)
                 {
                     throw new InvalidOperationException($"Family unit with Invitation code '{command.FamilyUnit.InvitationCode}' does not exist.");
                 }
-
-                var addedGuests = new List<GuestDto>();
-                if (familyUnit.Guests != null)
-                {
-                    foreach (var guest in familyUnit!.OrderedGuests()!)
-                    {
-                        if (existingGuests.Any(g => g.GuestId == guest.GuestId))
-                        {
-                            guestsToUpdate.Add(guest);
-
-                            var guestToDelete = guestsToDelete.FirstOrDefault(g => g.GuestId == guest.GuestId);
-                            if (guestToDelete != null)
-                            {
-                                guestsToDelete.Remove(guestToDelete);
-                            }
-                        }
-                        else
-                        {
-                            guestsToAdd.Add(guest);
-                        }
-                    }
-                }
                 
-                foreach (var guest in guestsToDelete)
+                // Validate that the family unit IDs match to prevent cross-family updates
+                if (existingFamilyUnitEntity!.PartitionKey != DynamoKeys.GetPartitionKey(command.FamilyUnit.InvitationCode))
                 {
-                    _logger.LogInformation($"Removing guest {guest.FirstName} {guest.LastName} from family unit {command.FamilyUnit.InvitationCode}.");
-                    var guestSortKey = DynamoKeys.GetGuestSortKey(guest.GuestId);
-                    await _dynamoDBProvider.DeleteAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode, guestSortKey, cancellationToken);
+                    throw new UnauthorizedAccessException(
+                        $"Family unit mismatch: Requested update for {command.FamilyUnit.InvitationCode} but found {existingFamilyUnitEntity.PartitionKey}");
                 }
 
-                foreach (var guest in guestsToUpdate)
-                {
-                    guest.InvitationCode = command.FamilyUnit.InvitationCode;
-
-                    var existingGuest = await _dynamoDBProvider.LoadGuestByGuestIdAsync(command.AuthContext.Audience, 
-                        guest.InvitationCode,
-                        guest.GuestId, 
-                        cancellationToken);
-
-                    _logger.LogInformation($"Updating guest: {JsonSerializer.Serialize(existingGuest)}");
-
-                    _mapper.Map(guest, existingGuest);
-                    _logger.LogInformation($"Updated guest: {JsonSerializer.Serialize(existingGuest)}");
-                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingGuest!, cancellationToken);
-                    addedGuests.Add(_mapper.Map<GuestDto>(guest));
-                }
-
-                foreach (var guest in guestsToAdd)
-                {
-                    guest.InvitationCode = command.FamilyUnit.InvitationCode;
-                    guest.GuestNumber = addedGuests.Count + 1;
-
-                    var entity = _mapper.Map<WeddingEntity>(guest);
-                    _logger.LogInformation($"Adding guest: {JsonSerializer.Serialize(guest)}");
-                    await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, entity, cancellationToken);
-                    addedGuests.Add(_mapper.Map<GuestDto>(guest));
-                }
-
-                existingFamilyUnit.Guests = addedGuests;
-                //_repository.SaveAsync()
-
-                // var updatedResults = await _repository.FromQueryAsync<WeddingEntity>(dynamoQuery).GetRemainingAsync();
-                // var updatedFamilyUnit = _mapper.Map<FamilyUnitDto>(updatedResults.FirstOrDefault(x => x.SortKey == DynamoKeys.FamilyInfo));
-
-                _mapper.Map(familyUnit, existingFamilyUnitEntity);
-
-                existingFamilyUnitEntity!.PotentialHeadCount = existingFamilyUnit.CalculateHeadcount();
-
-                _logger.LogInformation($"Updated family unit: {JsonSerializer.Serialize(existingFamilyUnitEntity)}");
+                _logger.LogInformation($"Existing family unit: {JsonSerializer.Serialize(existingFamilyUnitEntity)}");
+                _mapper.Map(command.FamilyUnit, existingFamilyUnitEntity);
 
                 await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, existingFamilyUnitEntity, cancellationToken);
+
+                var updatedFamilyUnit = await _dynamoDBProvider.GetFamilyUnitAsync(command.AuthContext.Audience, command.FamilyUnit.InvitationCode, cancellationToken);
+                _logger.LogInformation($"Updated family unit: {JsonSerializer.Serialize(updatedFamilyUnit)}");
+
+                return updatedFamilyUnit;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating the family unit.");
                 throw new ApplicationException("An error occurred while updating the family unit.", ex);
             }
-
-            return familyUnit;
         }
 
         public async Task<GuestDto> ExecuteAsync(AdminPatchGuestCommand command, CancellationToken cancellationToken = default(CancellationToken))

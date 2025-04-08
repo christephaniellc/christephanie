@@ -345,12 +345,25 @@ namespace Wedding.Common.Helpers.AWS
         }
 
         #region Payments
-        public async Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, string timestamp, CancellationToken cancellationToken = default)
+        public async Task<List<PaymentIntentEntity>> GetAllPaymentsSortedByTimestampAsync(string audience, CancellationToken cancellationToken = default)
+        {
+            var scanConfig = new ScanOperationConfig
+            {
+                // Optional: limit properties scanned
+            };
+
+            var results = await _repository
+                .FromScanAsync<PaymentIntentEntity>(scanConfig, GetTableConfig(audience, DatabaseTableEnum.PaymentData))
+                .GetRemainingAsync(cancellationToken);
+
+            return results.OrderByDescending(p => p.Timestamp).ToList();
+        }
+
+        public async Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, CancellationToken cancellationToken = default)
         {
             var partitionKey = PaymentKeys.GetPartitionKey(paymentIntentId);
-            var sortKey = PaymentKeys.GetSortKey(timestamp);
 
-            return await _repository.LoadAsync<PaymentIntentEntity>(partitionKey, sortKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+            return await _repository.LoadAsync<PaymentIntentEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
         }
 
         public async Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)

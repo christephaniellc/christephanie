@@ -52,8 +52,25 @@ public class Function
 
             using var scope = _serviceProvider.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<GetContributionsHandler>();
+
+            var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
+            var giftCategory = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "giftCategory");
+            var filterParam = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "filter");
             
-            var queryUnits = new GetContributionsQuery(authContext);
+            // If filter is "current", use the current user's guestId
+            if (string.Equals(filterParam, "current", StringComparison.OrdinalIgnoreCase))
+            {
+                guestId = authContext.GuestId;
+                context.Logger.LogInformation($"Using current user's guestId: {guestId}");
+            }
+
+            var filter = new ContributionQueryFilter
+            {
+                GuestId = guestId,
+                GiftCategory = giftCategory
+            };
+            
+            var queryUnits = new GetContributionsQuery(authContext, filter);
             var results = await handler.GetAsync(queryUnits);
             return results.OkResponse();
 
