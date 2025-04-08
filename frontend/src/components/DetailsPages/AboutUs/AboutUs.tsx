@@ -4,6 +4,10 @@ import burn_night from '../../../assets/engagement-photos/burn_night.jpg';
 import oktoberfest from '../../../assets/engagement-photos/oktoberfest.jpg';
 import bremerhaven from '../../../assets/engagement-photos/bremerhaven.jpg';
 import roadtrip from '../../../assets/engagement-photos/roadtrip.jpg';
+import topherAvatar from '../../../assets/engagement-photos/toph_seattle.jpg';
+import stephAvatar from '../../../assets/engagement-photos/steph_car.jpg';
+import kilton from '../../../assets/engagement-photos/kilton.jpg';
+import laney from '../../../assets/engagement-photos/laney.jpg';
 
 interface AboutUsProps {
   handleTabLink: (to: string) => void;
@@ -129,59 +133,98 @@ const GameTitle = styled(Typography)(({ theme }) => ({
 const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [selectedCharacter, setSelectedCharacter] = useState<'topher' | 'steph'>('topher');
+  const [selectedCharacter, setSelectedCharacter] = useState<'topher' | 'steph' | 'kilton' | 'laney'>('topher');
 
   const characters = {
     topher: {
       name: 'Topher Sikorra',
-      gamerTag: 'CodeSlinger_T',
-      avatar: oktoberfest,
+      gamerTag: 'PlannedChaos_T',
+      avatar: topherAvatar,
       attributes: {
-        origin: 'California, USA',
-        class: 'Software Developer',
+        origin: 'Florida, USA',
+        class: 'Software Engineer',
         specialAbility: 'Debugging in production',
-        favoriteFood: 'Tacos',
-        hobbies: 'Coding, Burning Man, Travel',
+        favoriteFood: 'Pizza with Olives',
+        hobbies: 'Coding, Ukelele, Snowboarding',
       },
       stats: {
-        strength: 75,
+        strength: 85,
         intelligence: 90,
         charisma: 85,
         cooking: 65,
         dancing: 60,
         romance: 95,
       },
-      bio: `A California native with a passion for code and adventure, Topher's journey began in the tech world where he honed his skills as a software developer. His quest for knowledge and new experiences took him across Europe, where fate would eventually introduce him to his player two. Known for his problem-solving abilities and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected under the stars on a dusty playa night. Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
+      bio: `A Florida native with a passion for code and tinkering, Topher's journey began as Marine and two-time war-veteran, and soon after in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
     },
     steph: {
       name: 'Steph Stubler',
-      gamerTag: 'PlannedChaos_S',
-      avatar: burn_night,
+      gamerTag: 'CodeSlinger_S',
+      avatar: stephAvatar,
       attributes: {
-        origin: 'Maine, USA',
-        class: 'Creative Strategist',
+        origin: 'Virginia, USA',
+        class: 'Software Engineer',
         specialAbility: 'Event planning under pressure',
-        favoriteFood: 'Thai cuisine',
-        hobbies: 'Art, Travel, Dancing',
+        favoriteFood: 'Bratwurst',
+        hobbies: 'Art, Piano, Dancing',
       },
       stats: {
-        strength: 70,
-        intelligence: 88,
+        strength: 85,
+        intelligence: 90,
         charisma: 90,
         cooking: 75,
         dancing: 85,
         romance: 95,
       },
-      bio: `With roots in Maine and an adventurous spirit, Steph's character journey led her through creative pursuits and strategic thinking. Her natural talent for bringing people together and creating memorable experiences made her a sought-after ally in any quest. When her path crossed with Topher's during a magical night at Burning Man, the chemistry was undeniable. They discovered a shared love for adventure, travel, and exploration that would take them from the beaches of California to the streets of Germany. Through their adventures across continents and cultural experiences, they've created a love story worthy of its own epic game saga.`,
+      bio: `With roots in DC and Virginia, and armed with an adventurous spirit, Steph's character journey led her through creative pursuits and strategic thinking. Her natural talent for bringing people together and creating memorable experiences made her a sought-after ally in any quest. When her path crossed with Topher's during a the muddiest Burning Man of all time, the chemistry was undeniable. They discovered a shared love for adventure, absurdity, long hair, and exploration that would take them from the mountains of Seattle to the streets of Germany. Through their adventures across continents, they've created a love story worthy of its own epic game saga.`,
+    },
+    kilton: {
+      name: 'Kilton Jett',
+      gamerTag: 'HandsomestMan_K',
+      avatar: kilton,
+      attributes: {
+        origin: 'Seattle, WA',
+        class: 'Food Detector',
+        specialAbility: 'Racing down the stairs when a refrigerator opens',
+        favoriteFood: 'Beecher\'s Cheese',
+        hobbies: 'Eating cheese, moping when leaving the dog park, singing to earn pets',
+      },
+      stats: {
+        strength: 42,
+        intelligence: 78,
+        charisma: 47,
+        cooking: 0,
+        dancing: 10,
+        cuddling: 95,
+      },
+      bio: `Kilton Jett, arbiter of snuggling proximity, `,
+    },
+    laney: {
+      name: 'Helena Josephine',
+      gamerTag: 'WhiteLightning_K',
+      avatar: laney,
+      attributes: {
+        origin: 'Seattle, WA',
+        class: 'Escape Artist',
+        specialAbility: 'Drive by bark hellos',
+        favoriteFood: 'Chaos',
+        hobbies: 'Biting her brother\'s feet, ',
+      },
+      stats: {
+        strength: 94,
+        intelligence: 78,
+        charisma: 55,
+        cooking: 0,
+        dancing: 70,
+        cuddling: 28,
+      },
+      bio: `Laney Jo, , `,
     },
   };
 
-  // Shadow characters representing "exes"
   const shadowCharacters = [
     { id: 'ex1', name: 'NOT SELECTED' },
     { id: 'ex2', name: 'NOT SELECTED' },
-    { id: 'ex3', name: 'NOT SELECTED' },
-    { id: 'ex4', name: 'NOT SELECTED' },
   ];
 
   const selectedChar = characters[selectedCharacter];
@@ -204,13 +247,25 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
             isSelected={selectedCharacter === 'topher'} 
             onClick={() => setSelectedCharacter('topher')}
           >
-            P1
+            Player 1
           </SelectButton>
           <SelectButton 
             isSelected={selectedCharacter === 'steph'} 
             onClick={() => setSelectedCharacter('steph')}
           >
-            P2
+            Player 2
+          </SelectButton>
+          <SelectButton 
+            isSelected={selectedCharacter === 'kilton'} 
+            onClick={() => setSelectedCharacter('kilton')}
+          >
+            Player 3
+          </SelectButton>
+          <SelectButton 
+            isSelected={selectedCharacter === 'laney'} 
+            onClick={() => setSelectedCharacter('laney')}
+          >
+            Player 4
           </SelectButton>
           
           {/* Shadow characters (exes) */}
@@ -292,20 +347,29 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                 </CharacterBio>
 
                 {/* Our love story */}
+                {(selectedCharacter === 'topher' || selectedCharacter === 'steph') && (
                 <Box sx={{ mt: 3 }}>
                   <Typography variant="h6" sx={{ color: '#61dafb', fontWeight: 'bold', mb: 1 }}>
                     [MAIN QUEST: LOVE STORY]
                   </Typography>
                   <Typography variant="body2">
-                    Their journey began beneath the stars at Burning Man in 2018, where Topher and Steph's paths converged during burn night. 
-                    What started as a chance encounter evolved into a deep connection as they discovered shared passions for adventure, travel, and creativity.
+                    Their journey began beneath the stars at Burning Man in 2023, where Topher and Steph's paths converged first, despite having almost met in 2017. 
+                    Topher, an avid and talented runner, and Steph, a horrendous runner but enthusiastic "try new crazy things and meet fun people"-er, were both part of the infamous running club EWH3 based in Washington, DC.
+                    Hashing will have you navigate random terrains with up to hundreds of runners, and then meet up to share some beers. Sometimes, you will beer during trail.
+                    Steph discovered hashing just as Topher was moving to Seattle, and so their paths would not cross then outside of a Facebook friend request in 2017.
+                    Just before he moved, Topher inquired if Steph could join his team for a Ragnar race. Steph, still a terribly bad runner, declined, citing her own brother's conflicting wedding date,
+                    though she was remiss, as Topher was cute.
+                    Six years later, in 2023, Steph won the Burning Man ticket lottery and found herself with an extra ticket, which she sold to Topher himself through
+                    their mutual friend and camp lead: Karen.
+                    They finally met in August in the Black Rock City desert and were thoroughly and individually endorsed to each other through another mutual friend: Britt.
+                    Steph found Topher to still be cute. They haven't stopped giggling since. 
                   </Typography>
                   
                   <Grid container spacing={1} sx={{ mt: 1 }}>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={burn_night} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
                       <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-                        First Meeting
+                        Attending Local Burns
                       </Typography>
                     </Grid>
                     <Grid item xs={6} sm={3}>
@@ -334,6 +398,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                     they'll exchange legendary items (rings) at Stone Manor Inn in Lovettsville, Virginia.
                   </Typography>
                 </Box>
+                )}
               </Grid>
             </Grid>
 
