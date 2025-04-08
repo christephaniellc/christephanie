@@ -96,6 +96,7 @@ export const paymentSuccessDialogState = atom<{
   category: string;
   paymentIntentId: string;
   email: string;
+  notes: string;
   timestamp: string;
 }>({
   key: 'paymentSuccessDialogState',
@@ -105,6 +106,7 @@ export const paymentSuccessDialogState = atom<{
     category: '',
     paymentIntentId: '',
     email: '',
+    notes: '',
     timestamp: ''
   }
 });
@@ -186,6 +188,7 @@ export const useRegistry = () => {
   const handlePaymentSuccess = (details: { 
     paymentIntentId: string; 
     email: string; 
+    notes?: string;
     timestamp: string 
   }) => {
     const { amount, category, categoryId } = paymentDialog;
@@ -203,6 +206,7 @@ export const useRegistry = () => {
       category,
       paymentIntentId: details.paymentIntentId,
       email: details.email,
+      notes: details.notes || '',
       timestamp: details.timestamp
     });
     
