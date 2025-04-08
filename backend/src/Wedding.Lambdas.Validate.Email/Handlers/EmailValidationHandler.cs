@@ -115,6 +115,7 @@ namespace Wedding.Lambdas.Validate.Email.Handlers
                 ? _mapper.Map<VerifiedDto>(existingGuestEntity.Email)
                 : new VerifiedDto();
             
+            verifyEmail.Value = command.Email;
             verifyEmail.Verified = false;
             verifyEmail.VerificationCode = code;
             verifyEmail.VerificationCodeExpiration = expiry;
