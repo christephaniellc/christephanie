@@ -502,6 +502,8 @@ function StripePaymentForm({
   // Don't render the dialog if it's not open
   if (!open) return null;
 
+  console.log(`Stripe public key: ${stripePromise}`);
+
   return (
     <Dialog 
       open={open} 
