@@ -4,6 +4,7 @@ import burn_night from '../../../assets/engagement-photos/burn_night.jpg';
 import oktoberfest from '../../../assets/engagement-photos/oktoberfest.jpg';
 import bremerhaven from '../../../assets/engagement-photos/bremerhaven.jpg';
 import roadtrip from '../../../assets/engagement-photos/roadtrip.jpg';
+import bm2023 from '../../../assets/engagement-photos/bm2023.jpg';
 import topherAvatar from '../../../assets/engagement-photos/toph_seattle.jpg';
 import stephAvatar from '../../../assets/engagement-photos/steph_car.jpg';
 import kilton from '../../../assets/engagement-photos/kilton.jpg';
@@ -146,16 +147,17 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         specialAbility: 'Debugging in production',
         favoriteFood: 'Pizza with Olives',
         hobbies: 'Coding, Ukelele, Snowboarding',
+        alignment: 'Chaotic Good'
       },
       stats: {
         strength: 85,
         intelligence: 90,
         charisma: 85,
-        cooking: 65,
+        organzition: 0,
         dancing: 60,
         romance: 95,
       },
-      bio: `A Florida native with a passion for code and tinkering, Topher's journey began as Marine and two-time war-veteran, and soon after in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
+      bio: `An at-large Florida Man with a passion for code and tinkering, Topher's journey began as Marine and two-time war-veteran, and soon after found himself in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
     },
     steph: {
       name: 'Steph Stubler',
@@ -167,6 +169,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         specialAbility: 'Event planning under pressure',
         favoriteFood: 'Bratwurst',
         hobbies: 'Art, Piano, Dancing',
+        alignment: 'Neutral Good'
       },
       stats: {
         strength: 85,
@@ -188,13 +191,14 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         specialAbility: 'Racing down the stairs when a refrigerator opens',
         favoriteFood: 'Beecher\'s Cheese',
         hobbies: 'Eating cheese, moping when leaving the dog park, singing to earn pets',
+        alignment: 'Lawful Good'
       },
       stats: {
         strength: 42,
-        intelligence: 78,
+        intelligence: 35,
         charisma: 47,
         cooking: 0,
-        dancing: 10,
+        energy: 35,
         cuddling: 95,
       },
       bio: `Kilton Jett, arbiter of snuggling proximity, `,
@@ -205,17 +209,18 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       avatar: laney,
       attributes: {
         origin: 'Seattle, WA',
-        class: 'Escape Artist',
+        class: 'Toot Expert',
         specialAbility: 'Drive by bark hellos',
-        favoriteFood: 'Chaos',
-        hobbies: 'Biting her brother\'s feet, ',
+        favoriteFood: 'Her brother\'s feet',
+        hobbies: 'Escaping dog park fences, disappearing and reappearing with thorns in her face',
+        alignment: 'Chaotic Neutral'
       },
       stats: {
         strength: 94,
-        intelligence: 78,
+        intelligence: 35,
         charisma: 55,
         cooking: 0,
-        dancing: 70,
+        energy: 100,
         cuddling: 28,
       },
       bio: `Laney Jo, , `,
@@ -366,6 +371,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                   </Typography>
                   
                   <Grid container spacing={1} sx={{ mt: 1 }}>
+                    <Grid item xs={6} sm={3}>
+                      <Avatar src={bm2023} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                        Burning Man 2023 - BRCH3
+                      </Typography>
+                    </Grid>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={burn_night} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
                       <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
