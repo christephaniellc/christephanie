@@ -15,7 +15,8 @@ import {
   TraditionalRegistrySection,
   StripePaymentForm,
   PaymentSuccessDialog,
-  PaymentErrorDialog
+  PaymentErrorDialog,
+  MyContributions
 } from './components';
 
 // Styled components
@@ -74,6 +75,9 @@ const Registry: React.FC = () => {
         
         {/* Info section explaining the registry */}
         <RegistryInfoSection />
+        
+        {/* Display user's contributions if they exist */}
+        <MyContributions />
         
         {/* Gift categories section */}
         <GiftCategoryList 
@@ -157,6 +161,7 @@ const Registry: React.FC = () => {
           category={successDialog.category}
           paymentIntentId={successDialog.paymentIntentId}
           email={successDialog.email}
+          notes={successDialog.notes}
           timestamp={successDialog.timestamp}
         />
         
