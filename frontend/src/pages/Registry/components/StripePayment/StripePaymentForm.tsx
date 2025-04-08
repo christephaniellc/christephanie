@@ -447,7 +447,7 @@ function PaymentForm({
 // Load Stripe with publishable key from environment
 // In development, this will use the test key
 const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
+  import.meta.env.STRIPE_PUBLIC_KEY || 
   // Fallback test key for development
   'pk_test_51OHCKnKsQR10MdgmrKZAh91Ufz6BnXFQBHNsYbVW2uIKmHpWjTq0zJZU9MZ4yVs0g2oXAD9dkSLkPGDfuAqZlMHH00lRQrReDj'
 );
