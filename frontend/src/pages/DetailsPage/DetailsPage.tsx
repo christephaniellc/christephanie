@@ -89,7 +89,8 @@ function TabPanel(props: TabPanelProps) {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(45deg, rgba(76,175,80,0.05) 0%, rgba(33,150,243,0.05) 50%, rgba(156,39,176,0.05) 100%)',
+                background:
+                  'linear-gradient(45deg, rgba(76,175,80,0.05) 0%, rgba(33,150,243,0.05) 50%, rgba(156,39,176,0.05) 100%)',
                 zIndex: 0,
               }}
             />
@@ -125,7 +126,7 @@ function DetailsPage() {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Initial tab index based on the current URL path
   const initialTabIndex = pathToTabIndex[location.pathname] || 0;
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
@@ -140,7 +141,7 @@ function DetailsPage() {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
-    
+
     // Update URL when tab changes
     const tabKeys = Object.keys(detailsRoutes);
     if (newValue < tabKeys.length) {
@@ -153,7 +154,7 @@ function DetailsPage() {
 
   const handleTabLink = (to: string) => {
     return setTabIndex(() => {
-      switch(to) {
+      switch (to) {
         case 'aboutUs':
           navigate('/details/about-us');
           return 0;
@@ -181,12 +182,12 @@ function DetailsPage() {
 
   // Location data using actual wedding details
   const locationInfo = {
-    venue: "Stone Manor",
-    address: "13193 Mountain Rd",
-    city: "Lovettsville",
-    state: "VA",
-    zip: "20180",
-    date: "July 5, 2025 at 6:00pm"
+    venue: 'Stone Manor',
+    address: '13193 Mountain Rd',
+    city: 'Lovettsville',
+    state: 'VA',
+    zip: '20180',
+    date: 'July 5, 2025 at 6:00pm',
   };
 
   // Map details routes to components
@@ -205,42 +206,42 @@ function DetailsPage() {
       label: 'About Us',
       component: detailsComponents.aboutUs,
       enabled: isFeatureEnabled('ENABLE_DETAILS_ABOUTUS'),
-      path: '/details/about-us'
+      path: '/details/about-us',
     },
     {
       label: 'Accommodations',
       component: detailsComponents.accommodations,
       enabled: isFeatureEnabled('ENABLE_DETAILS_ACCOMMODATIONS'),
-      path: '/details/accommodations'
+      path: '/details/accommodations',
     },
     {
       label: 'Travel',
       component: detailsComponents.travel,
       enabled: isFeatureEnabled('ENABLE_DETAILS_TRAVEL'),
-      path: '/details/travel'
+      path: '/details/travel',
     },
     {
       label: 'Attire',
       component: detailsComponents.attire,
       enabled: isFeatureEnabled('ENABLE_DETAILS_ATTIRE'),
-      path: '/details/attire'
+      path: '/details/attire',
     },
     {
       label: 'Schedule',
       component: detailsComponents.schedule,
       enabled: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE'),
-      path: '/details/schedule'
+      path: '/details/schedule',
     },
     {
       label: 'Things to Do',
       component: detailsComponents.thingsToDo,
       enabled: isFeatureEnabled('ENABLE_DETAILS_THINGS_TO_DO'),
-      path: '/details/things-to-do'
+      path: '/details/things-to-do',
     },
   ];
 
   // Filter out disabled items
-  const enabledDetailItems = detailItems.filter(item => item.enabled);
+  const enabledDetailItems = detailItems.filter((item) => item.enabled);
 
   return (
     <Container
@@ -250,31 +251,13 @@ function DetailsPage() {
         overflow: 'hidden',
         borderRadius: 'sm',
         display: 'flex',
-        flexDirection: 'column',
+        flexWrap: 'wrap',
         position: 'relative',
-        paddingBottom: '80px', // Padding to avoid content being hidden behind BottomNav
-        padding: 0, // Remove default padding for the tabs to extend full width
+        padding: `0 !important`, // Remove default padding for the tabs to extend full width
+        margin: `0 !important`,
       }}
       data-testid="details-container"
     >
-      {/* Location Banner */}
-      <Box 
-        sx={{
-          width: '100%',
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
-          padding: '8px 16px',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          zIndex: 101,
-        }}
-      >
-        <Typography variant="subtitle2">
-          Join us for our wedding at {locationInfo.venue} in {locationInfo.city}, {locationInfo.state} on {locationInfo.date}
-        </Typography>
-      </Box>
-      
       <Paper
         square
         elevation={3}
@@ -315,12 +298,12 @@ function DetailsPage() {
                 fontSize: {
                   xs: '0.75rem',
                   sm: '0.875rem',
-                  md: '1rem'
+                  md: '1rem',
                 },
                 minWidth: {
                   xs: '80px',
                   sm: '120px',
-                  md: '160px'
+                  md: '160px',
                 },
               }}
               data-testid={`tab-${index}`}
