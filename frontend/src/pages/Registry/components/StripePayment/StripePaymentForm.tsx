@@ -290,42 +290,49 @@ function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <TextField
-        label="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        fullWidth
-        margin="normal"
-        required
-        placeholder="Your full name"
-        variant="outlined"
-        disabled={true}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
+      <Box sx={{ mb: 2, mt: 0 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+          Name
+        </Typography>
+        <Typography variant="body1" sx={{ fontWeight: 'medium', color: muiTheme.palette.text.primary }}>
+          {name || 'Not available'}
+        </Typography>
+      </Box>
       
-      <TextField
-        label="Email for Receipt"
-        type="email"
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          validateEmail(e.target.value);
-        }}
-        error={!!emailError}
-        helperText={emailError || "We'll send your receipt to this email"}
-        fullWidth
-        margin="normal"
-        required
-        placeholder="your.email@example.com"
-        variant="outlined"
-        color={userHasEmail ? "info" : "secondary"}
-        disabled={userHasEmail}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
+      {userHasEmail ? (
+        <Box sx={{ mb: 2, mt: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+            Email for Receipt
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: 'medium', color: muiTheme.palette.text.primary }}>
+            {email}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+            We'll send your receipt to this email
+          </Typography>
+        </Box>
+      ) : (
+        <TextField
+          label="Email for Receipt"
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            validateEmail(e.target.value);
+          }}
+          error={!!emailError}
+          helperText={emailError || "We'll send your receipt to this email"}
+          fullWidth
+          margin="normal"
+          required
+          placeholder="your.email@example.com"
+          variant="outlined"
+          color="secondary"
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+      )}
       
       <TextField
         label="Gift Notes"
@@ -343,36 +350,29 @@ function PaymentForm({
       />
       
       {/* Amount field */}
-      <TextField
-        label="Amount"
-        value={amount}
-        disabled={true}
-        fullWidth
-        margin="normal"
-        variant="outlined"
-        helperText={<Typography variant='caption' color='#E9950C'>toward {category}</Typography>}
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          endAdornment: 
-          <InputAdornment position="end">
-            <Typography variant="body2" sx={{ color: '#E9950C' }}>USD</Typography>
-          </InputAdornment>,
-          readOnly: true,
-        }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        sx={{
-          '& .MuiInputBase-input.Mui-disabled': {
-            WebkitTextFillColor: muiTheme.palette.secondary.main,
-            color: muiTheme.palette.secondary.main,
-            fontWeight: 'bold',
-          },
-          bgcolor: 'rgba(0, 0, 0, 0.03)',
-        }}
-      />
+      <Box sx={{ mb: 3, mt: 2, p: 2, bgcolor: 'rgba(0, 0, 0, 0.03)', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+          Amount
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 'bold', color: muiTheme.palette.secondary.main, mr: 0.5 }}>
+              $
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: muiTheme.palette.secondary.main }}>
+              {amount}
+            </Typography>
+            <Typography variant="body2" sx={{ ml: 1, color: '#E9950C' }}>
+              USD
+            </Typography>
+          </Box>
+        </Box>
+        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#E9950C' }}>
+          toward {category}
+        </Typography>
+      </Box>
       
-      <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, mb: 1 }}>
         Card Information
       </Typography>
       <CardElementContainer>
@@ -411,10 +411,12 @@ function PaymentForm({
         </Typography>
       )}
       
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
         <Button 
           onClick={onCancel}
           disabled={processing}
+          variant="outlined"
+          color="primary"
         >
           Cancel
         </Button>
@@ -422,7 +424,13 @@ function PaymentForm({
           type="submit" 
           variant="contained" 
           color="secondary"
+          size="large"
           disabled={!stripe || processing || (!userHasEmail && (!email || !!emailError)) || !name}
+          sx={{ 
+            minWidth: '140px', 
+            fontWeight: 'bold',
+            boxShadow: 2
+          }}
         >
           {processing ? (
             <CircularProgress size={24} color="inherit" />
@@ -506,7 +514,8 @@ function StripePaymentForm({
         sx={{
           textAlign: 'center',
           fontSize: '1.8rem',
-          pt: 2
+          pt: 3,
+          pb: 0
         }}
         >
         Complete Your Contribution
