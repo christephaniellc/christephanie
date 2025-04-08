@@ -34,10 +34,9 @@ namespace Wedding.Common.ThirdParty
             try
             {
                 _logger.LogInformation("Initializing Stripe payment intent creation for guest {GuestId}", guest.GuestId);
-                _logger.LogDebug("Stripe configuration: PublicKey={PublicKey}, ApiVersion={ApiVersion}, Environment={Environment}", 
+                _logger.LogDebug("Stripe configuration: PublicKey={PublicKey}, Environment={Environment}", 
                     _config.PublicKey, 
-                    _stripeClient.ApiVersion, 
-                    _config.SecretKey.StartsWith("sk_test") ? "Test" : "Production");
+                    _config.SecretKey.StartsWith("sk_test") ? "Dev" : "Production");
 
                 var customerService = new CustomerService(_stripeClient);
                 var paymentIntentService = new PaymentIntentService(_stripeClient);
@@ -107,13 +106,12 @@ namespace Wedding.Common.ThirdParty
                 // Enhanced logging for Stripe exceptions
                 _logger.LogError(ex, 
                     "Stripe error during payment intent creation. Error Type: {ErrorType}, Code: {ErrorCode}, DeclineCode: {DeclineCode}, " + 
-                    "Message: {ErrorMessage}, Request ID: {RequestId}, Stripe API Version: {ApiVersion}", 
+                    "Message: {ErrorMessage}, Request ID: {RequestId}",
                     ex.StripeError?.Type,
                     ex.StripeError?.Code,
                     ex.StripeError?.DeclineCode,
                     ex.Message,
-                    ex.RequestId,
-                    ex.StripeError?.StripeVersion);
+                    ex.StripeError?.PaymentIntent?.Id ?? "unknown");
                 
                 // Log debugging information about API keys
                 _logger.LogDebug("Stripe configuration check: API Key starts with {KeyPrefix}, Environment: {Environment}", 
@@ -185,7 +183,7 @@ namespace Wedding.Common.ThirdParty
             };
 
             var service = new CustomerService();
-            var customer = service.Update(customerId, options);
+            var customer = await service.UpdateAsync(customerId, options);
 
             return customer;
         }
