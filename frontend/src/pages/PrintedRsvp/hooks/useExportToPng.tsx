@@ -204,18 +204,18 @@ export const useExportToPng = () => {
             const img = icon as HTMLImageElement;
             
             // For export, preserve the icon dimensions from the component
-            img.style.maxWidth = '65px';
-            img.style.maxHeight = '65px';
+            img.style.maxWidth = '84px';
+            img.style.maxHeight = '84px';
             img.style.width = 'auto'; // Use auto width to maintain aspect ratio
             img.style.height = '100%'; // Use 100% height to fill the container
             img.style.objectFit = 'contain'; // Ensure the image keeps its aspect ratio
             img.style.objectPosition = 'center';
-            img.style.opacity = '0.9';
+            img.style.opacity = '1.0';
             
             // Apply the same styling as in the component
-            img.style.borderRadius = '50%';
-            img.style.border = `2px solid rgba(255, 152, 0, 0.8)`;
-            img.style.boxShadow = 'none';
+            //img.style.borderRadius = '50%';
+            //img.style.border = `2px solid rgba(255, 152, 0, 0.8)`;
+            //img.style.boxShadow = 'none';
             
             // Make sure the container is also properly constrained and positioned
             const container = img.closest('.el-pulpo-icon-container');
@@ -223,8 +223,8 @@ export const useExportToPng = () => {
               // Match the exact styles from CardFrontVertical.tsx
               (container as HTMLElement).style.display = 'flex';
               (container as HTMLElement).style.alignItems = 'center';
-              (container as HTMLElement).style.paddingLeft = '8px';
-              (container as HTMLElement).style.height = '65px';
+              (container as HTMLElement).style.paddingLeft = '2px';
+              (container as HTMLElement).style.height = '100px';
               (container as HTMLElement).style.position = 'static'; // Use static positioning like in the component
               (container as HTMLElement).style.zIndex = '5';
               // Remove any top/right positioning that might cause issues
