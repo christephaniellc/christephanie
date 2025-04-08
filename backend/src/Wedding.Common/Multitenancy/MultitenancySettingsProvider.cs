@@ -33,7 +33,7 @@ namespace Wedding.Common.Multitenancy
                     audience = $"https://fianceapi.dev.wedding.christephanie.com";
                     break;
                 default:
-                    throw new Exception("Invalid audience: " + origin.ToLower());
+                    throw new Exception("Invalid audience: " + origin ?? "null");
             }
             return audience;
         }
