@@ -168,6 +168,65 @@ namespace Wedding.Common.ThirdParty
             return await service.CreateAsync(options, requestOptions);
         }
 
+        public async Task<StripePaymentIntentResponseDto> GetPaymentIntent(string paymentIntentId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving payment intent {PaymentIntentId}", paymentIntentId);
+                
+                var paymentIntentService = new PaymentIntentService(_stripeClient);
+                var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId, null, cancellationToken: cancellationToken);
+                
+                _logger.LogInformation("Successfully retrieved payment intent {PaymentIntentId} with status {Status}", 
+                    paymentIntent.Id, paymentIntent.Status);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    ClientSecret = paymentIntent.ClientSecret,
+                    PaymentIntentId = paymentIntent.Id,
+                    Amount = paymentIntent.Amount,
+                    Currency = paymentIntent.Currency,
+                    Status = paymentIntent.Status
+                };
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, 
+                    "Stripe error retrieving payment intent {PaymentIntentId}. Error Type: {ErrorType}, Code: {ErrorCode}, " + 
+                    "Message: {ErrorMessage}",
+                    paymentIntentId,
+                    ex.StripeError?.Type,
+                    ex.StripeError?.Code,
+                    ex.Message);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Message = ex.Message,
+                        Code = ex.StripeError?.Code,
+                        Type = ex.StripeError?.Type,
+                        DeclineCode = ex.StripeError?.DeclineCode
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Non-Stripe exception retrieving payment intent {PaymentIntentId}: {ErrorMessage}", 
+                    paymentIntentId, ex.Message);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Message = $"Failed to retrieve payment information: {ex.Message}",
+                        Type = "server_error",
+                        Code = "retrieval_error"
+                    }
+                };
+            }
+        }
+
         public async Task<Customer> GetCustomer(string customerId)
         {
             var service = new CustomerService();
