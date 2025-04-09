@@ -15,6 +15,9 @@ namespace Wedding.Abstractions.Dtos.Stripe
 
         [JsonPropertyName("currency")]
         public string? Currency { get; set; }
+        
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
 
         [JsonPropertyName("error")]
         public PaymentError? Error { get; set; }
