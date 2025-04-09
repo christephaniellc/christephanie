@@ -76,7 +76,15 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
 
   return (
     <RegistryCard elevation={4}>
-      <CardContentStyled>
+      <CardContentStyled
+            sx={{   
+              width: '100%',  
+              height: '100%',       
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
         <IconWrapper>
           <IconComponent />
         </IconWrapper>
@@ -85,30 +93,49 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
         </Typography>
         <CardDescription variant="body2" color="textSecondary">
           {option.description}
-        </CardDescription>
-        <TextField
-          fullWidth
-          label="Amount"
-          variant="outlined"
-          size="small"
-          value={customAmount || ''}
-          onChange={(e) => onCustomAmountChange(option.id, e.target.value)}
-          InputProps={{
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
-          sx={{ mb: 2 }}
-        />
+        </CardDescription>        
+        <CardActions>
+          <Box
+            sx={{              
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1, // adds space between TextField and Button
+            }}
+          >
+            <TextField
+              fullWidth
+              label="Amount"
+              variant="outlined"
+              value={customAmount || ''}
+              onChange={(e) => onCustomAmountChange(option.id, e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              sx={{ 
+                fontSize: '1.8rem',
+                //height
+                mr: 1
+                //mb: 2 
+              }}
+            />
+            <Button 
+              variant="contained" 
+              color="secondary"
+              disabled={!customAmount}
+              onClick={() => onContribute(option.id)}
+              sx={{
+                px: 4, // horizontal padding (left + right)
+                py: 2, // vertical padding
+                minWidth: 'auto', // allows button to shrink to content + padding
+              }}
+            >
+              Contribute
+            </Button>
+          </Box>
+        </CardActions>
       </CardContentStyled>
-      <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-        <Button 
-          variant="contained" 
-          color="secondary"
-          disabled={!customAmount}
-          onClick={() => onContribute(option.id)}
-        >
-          Contribute
-        </Button>
-      </CardActions>
     </RegistryCard>
   );
 };

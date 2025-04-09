@@ -111,39 +111,6 @@ const Registry: React.FC = () => {
           </Alert>
         </Snackbar>
         
-        {/* Additional error notification that shows when payment fails */}
-        <Snackbar 
-          open={errorDialog.open} 
-          autoHideDuration={10000} 
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          sx={{ mt: 6 }}
-        >
-          <Alert 
-            severity="error" 
-            variant="filled"
-            elevation={6}
-            onClose={closeErrorDialog}
-            action={
-              <Button 
-                color="inherit" 
-                size="small" 
-                onClick={() => {
-                  // Set focus on error dialog to ensure it's visible
-                  console.log('Opening error details');
-                  // Force dialog to stay open
-                  // Call handlePaymentError again with current error to force dialog open
-                  handlePaymentError(errorDialog.message, errorDialog.errorCode, errorDialog.errorType);
-                }}
-              >
-                VIEW DETAILS
-              </Button>
-            }
-            sx={{ width: '100%' }}
-          >
-            Payment Failed: {errorDialog.message}
-          </Alert>
-        </Snackbar>
-        
         {/* Payment Dialogs */}
         <StripePaymentForm
           open={paymentDialog.open}
@@ -171,41 +138,7 @@ const Registry: React.FC = () => {
           errorMessage={errorDialog.message}
           errorCode={errorDialog.errorCode}
           errorType={errorDialog.errorType}
-        />
-        
-        {/* Direct error display as a fallback */}
-        {errorDialog.open && errorDialog.message && (
-          <Box 
-            sx={{ 
-              position: 'fixed', 
-              top: '20px', 
-              left: '50%', 
-              transform: 'translateX(-50%)',
-              zIndex: 9999,
-              width: '90%',
-              maxWidth: '500px',
-              p: 2,
-              bgcolor: 'error.main',
-              color: 'white',
-              borderRadius: 1,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-          >
-            <Typography variant="h6" gutterBottom>Payment Error</Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>{errorDialog.message}</Typography>
-            <Button 
-              variant="outlined" 
-              color="inherit" 
-              size="small"
-              onClick={closeErrorDialog}
-            >
-              Dismiss
-            </Button>
-          </Box>
-        )}
+        />        
       </RegistryContainer>
     );
   } catch (error) {
