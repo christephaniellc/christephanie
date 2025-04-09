@@ -21,10 +21,20 @@ import {
 
 // Styled components
 const RegistryContainer = styled(Container)(({ theme }) => ({
-  paddingTop: theme.spacing(4),
-  paddingBottom: theme.spacing(10), // Add extra space for the bottom nav
+  paddingTop: theme.spacing(3),
+  paddingBottom: theme.spacing(12), // Add extra space for the bottom nav on mobile
+  paddingLeft: theme.spacing(2), // Less horizontal padding on mobile
+  paddingRight: theme.spacing(2),
+  overflow: 'hidden', // Prevent horizontal scrolling on mobile
+  [theme.breakpoints.up('sm')]: {
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(10),
+  },
   [theme.breakpoints.up('md')]: {
     paddingTop: theme.spacing(6),
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
   },
 }));
 
