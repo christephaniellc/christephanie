@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -307,9 +307,6 @@ function PaymentForm({
           <Typography variant="body1" sx={{ fontWeight: 'medium', color: muiTheme.palette.text.primary }}>
             {email}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-            We'll send your receipt to this email
-          </Typography>
         </Box>
       ) : (
         <TextField
@@ -344,6 +341,7 @@ function PaymentForm({
         rows={2}
         placeholder="Add a personal message or note about your gift..."
         variant="outlined"
+          color="secondary"
         InputLabelProps={{
           shrink: true,
         }}
@@ -455,11 +453,10 @@ function PaymentForm({
 
 // Load Stripe with publishable key from environment
 // In development, this will use the test key
-const stripePromise = loadStripe(
-  import.meta.env.STRIPE_PUBLIC_KEY || 
-  // Fallback test key for development
-  'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno'
-);
+const stripePublicKey = import.meta.env.STRIPE_PUBLIC_KEY || 
+  'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
+console.log(`Stripe public key: ${stripePublicKey}`);
+const stripePromise = loadStripe(stripePublicKey);
 
 // Main payment dialog component that wraps the form in Stripe Elements
 function StripePaymentForm({
@@ -501,8 +498,6 @@ function StripePaymentForm({
 
   // Don't render the dialog if it's not open
   if (!open) return null;
-
-  console.log(`Stripe public key: ${stripePromise}`);
 
   return (
     <Dialog 
