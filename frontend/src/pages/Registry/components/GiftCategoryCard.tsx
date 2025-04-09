@@ -99,9 +99,9 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
             sx={{              
               width: '100%',
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: { xs: 'column', sm: 'row' },
               alignItems: 'center',
-              gap: 1, // adds space between TextField and Button
+              gap: { xs: 2, sm: 1 }, // more vertical gap on mobile
             }}
           >
             <TextField
@@ -114,10 +114,9 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
               sx={{ 
-                fontSize: '1.8rem',
-                //height
-                mr: 1
-                //mb: 2 
+                fontSize: { xs: '1.4rem', sm: '1.6rem' },
+                mb: { xs: 1, sm: 0 },
+                mr: { xs: 0, sm: 1 }
               }}
             />
             <Button 
@@ -126,9 +125,10 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
               disabled={!customAmount}
               onClick={() => onContribute(option.id)}
               sx={{
-                px: 4, // horizontal padding (left + right)
-                py: 2, // vertical padding
-                minWidth: 'auto', // allows button to shrink to content + padding
+                px: { xs: 3, sm: 4 }, // less horizontal padding on mobile
+                py: { xs: 1.5, sm: 2 }, // less vertical padding on mobile
+                width: { xs: '100%', sm: 'auto' }, // full width on mobile
+                minWidth: { xs: '100%', sm: 'auto' }, // full width on mobile
               }}
             >
               Contribute
