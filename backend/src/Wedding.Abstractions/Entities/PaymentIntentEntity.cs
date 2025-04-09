@@ -39,6 +39,9 @@ namespace Wedding.Abstractions.Entities
 
         [DynamoDBProperty]
         public required string Timestamp { get; set; } // ISO8601
+        
+        [DynamoDBProperty]
+        public string? Status { get; set; } // Payment status from Stripe (succeeded, processing, requires_payment_method, etc.)
 
         [DynamoDBGlobalSecondaryIndexHashKey("GSI1")]
         public string? GuestIdGSI { get; set; } // "GUEST#<GuestId>"

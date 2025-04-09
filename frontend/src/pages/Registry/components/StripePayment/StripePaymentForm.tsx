@@ -28,8 +28,8 @@ import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext,
 
 // Stripe styled components
 const CardElementContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginTop: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  marginTop: theme.spacing(1.5),
   marginBottom: theme.spacing(2),
   border: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
@@ -38,6 +38,7 @@ const CardElementContainer = styled(Paper)(({ theme }) => ({
     width: '100%',
     padding: theme.spacing(1),
     transition: 'box-shadow 150ms ease, border-color 150ms ease',
+    fontSize: '16px', // Fixed font size for better mobile readability
   },
   '& .StripeElement--focus': {
     boxShadow: `0 1px 3px 0 ${theme.palette.secondary.light}`,
@@ -48,6 +49,11 @@ const CardElementContainer = styled(Paper)(({ theme }) => ({
   },
   '& .StripeElement--webkit-autofill': {
     backgroundColor: 'transparent !important',
+  },
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   }
 }));
 
@@ -108,6 +114,11 @@ function PaymentForm({
         
         console.log('User email check:', { userEmail, hasEmail });
         setUserHasEmail(hasEmail);
+
+        // TODO: Debug, remove
+        const stripePublicKey = import.meta.env.STRIPE_PUBLIC_KEY || 
+        'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
+        console.log(`Stripe public key: ${stripePublicKey}`);
         
         if (hasEmail) {
           setEmail(userEmail);
@@ -409,12 +420,23 @@ function PaymentForm({
         </Typography>
       )}
       
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column-reverse', sm: 'row' },
+        justifyContent: { xs: 'center', sm: 'space-between' },
+        alignItems: 'center',
+        gap: 2,
+        mt: 4 
+      }}>
         <Button 
           onClick={onCancel}
           disabled={processing}
           variant="outlined"
           color="primary"
+          fullWidth={true}
+          sx={{ 
+            maxWidth: { xs: '100%', sm: '120px' }
+          }}
         >
           Cancel
         </Button>
@@ -423,11 +445,14 @@ function PaymentForm({
           variant="contained" 
           color="secondary"
           size="large"
+          fullWidth={true}
           disabled={!stripe || processing || (!userHasEmail && (!email || !!emailError)) || !name}
           sx={{ 
-            minWidth: '140px', 
+            minWidth: { xs: '100%', sm: '140px' }, 
+            maxWidth: { xs: '100%', sm: '180px' },
             fontWeight: 'bold',
-            boxShadow: 2
+            boxShadow: 2,
+            py: { xs: 1.5, sm: 1 }
           }}
         >
           {processing ? (
@@ -455,7 +480,6 @@ function PaymentForm({
 // In development, this will use the test key
 const stripePublicKey = import.meta.env.STRIPE_PUBLIC_KEY || 
   'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
-console.log(`Stripe public key: ${stripePublicKey}`);
 const stripePromise = loadStripe(stripePublicKey);
 
 // Main payment dialog component that wraps the form in Stripe Elements
@@ -505,6 +529,14 @@ function StripePaymentForm({
       onClose={onClose}
       fullWidth
       maxWidth="sm"
+      sx={{
+        '& .MuiDialog-paper': {
+          margin: { xs: '16px', sm: '32px' },
+          width: { xs: 'calc(100% - 32px)', sm: '500px' },
+          borderRadius: { xs: '12px', sm: '16px' },
+          overflow: 'hidden'
+        }
+      }}
     >
       <StephsActualFavoriteTypographyNoDrop  
         color={theme.palette.primary.main}
@@ -517,7 +549,12 @@ function StripePaymentForm({
         >
         Complete Your Contribution
       </StephsActualFavoriteTypographyNoDrop>
-      <DialogContent>
+      <DialogContent sx={{ 
+        padding: { xs: '16px', sm: '24px' },
+        '&:first-of-type': {
+          paddingTop: { xs: '16px', sm: '24px' }
+        }
+      }}>
         <Elements stripe={stripePromise} options={options} key={elementsKey}>
           <PaymentForm 
             amount={amount}

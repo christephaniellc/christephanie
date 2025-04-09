@@ -103,40 +103,77 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
 
                 if (!string.IsNullOrEmpty(result.PaymentIntentId))
                 {
-                    var paymentEntity = new PaymentIntentEntity
+                    try 
                     {
-                        PaymentIntentId = result.PaymentIntentId,
-                        GuestId = command.AuthContext.GuestId,
-                        InvitationCode = command.AuthContext.InvitationCode,
-                        Amount = (long)command.Amount,
-                        Currency = command.Currency,
-                        GiftCategory = giftMetaData.GiftCategory,
-                        GiftNotes = giftMetaData.GiftNotes,
-                        GuestName = giftMetaData.GuestName,
-                        IsAnonymous = giftMetaData.IsAnonymous,
-                        Timestamp = DateTime.UtcNow.ToString("o")
-                    };
+                        // Verify the payment intent exists and is valid before proceeding
+                        var checkResult = await _stripePaymentProvider.GetPaymentIntent(result.PaymentIntentId, cancellationToken);
+                        
+                        if (checkResult.Error != null)
+                        {
+                            _logger.LogError("Payment intent verification failed: {ErrorMessage}", checkResult.Error.Message);
+                            return checkResult;
+                        }
+                        
+                        var paymentEntity = new PaymentIntentEntity
+                        {
+                            PaymentIntentId = result.PaymentIntentId,
+                            GuestId = command.AuthContext.GuestId,
+                            InvitationCode = command.AuthContext.InvitationCode,
+                            Amount = (long)command.Amount,
+                            Currency = command.Currency,
+                            GiftCategory = giftMetaData.GiftCategory,
+                            GiftNotes = giftMetaData.GiftNotes,
+                            GuestName = giftMetaData.GuestName,
+                            IsAnonymous = giftMetaData.IsAnonymous,
+                            Timestamp = DateTime.UtcNow.ToString("o"),
+                            Status = checkResult.Status // Store the payment status
+                        };
 
-                    _logger.LogInformation("Saving payment: {Payment}",
-                        JsonSerializer.Serialize(paymentEntity));
+                        _logger.LogInformation("Saving payment with status {Status}: {Payment}",
+                            paymentEntity.Status,
+                            JsonSerializer.Serialize(paymentEntity));
 
-                    await _dynamoDBProvider.SavePaymentAsync(command.AuthContext.Audience, paymentEntity, cancellationToken);
-                    
-                    try
-                    {
-                        await SendPaymentConfirmationEmail(
-                            giftMetaData.GuestName,
-                            giftMetaData.GuestEmail,
-                            result.PaymentIntentId,
-                            command.Amount / 100M, // Convert cents to dollars for email display
-                            giftMetaData.GiftCategory,
-                            giftMetaData.GiftNotes,
-                            paymentEntity.Timestamp,
-                            cancellationToken);
+                        await _dynamoDBProvider.SavePaymentAsync(command.AuthContext.Audience, paymentEntity, cancellationToken);
+                        
+                        // Only send confirmation email if payment is successful or processing
+                        // Don't send for failed, canceled, or other statuses
+                        if (checkResult.Status == "succeeded" || checkResult.Status == "processing")
+                        {
+                            try
+                            {
+                                await SendPaymentConfirmationEmail(
+                                    giftMetaData.GuestName,
+                                    giftMetaData.GuestEmail,
+                                    result.PaymentIntentId,
+                                    command.Amount / 100M, // Convert cents to dollars for email display
+                                    giftMetaData.GiftCategory,
+                                    giftMetaData.GiftNotes,
+                                    paymentEntity.Timestamp,
+                                    cancellationToken);
+                            }
+                            catch (Exception emailEx)
+                            {
+                                _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", giftMetaData.GuestEmail);
+                            }
+                        }
+                        else 
+                        {
+                            _logger.LogWarning("Skipping confirmation email for payment {PaymentId} with status {Status}", 
+                                result.PaymentIntentId, checkResult.Status);
+                        }
                     }
-                    catch (Exception emailEx)
+                    catch (Exception ex)
                     {
-                        _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", giftMetaData.GuestEmail);
+                        _logger.LogError(ex, "Error verifying payment intent {PaymentId}", result.PaymentIntentId);
+                        return new StripePaymentIntentResponseDto
+                        {
+                            Error = new PaymentError
+                            {
+                                Type = "verification_error",
+                                Code = "payment_verification_failed",
+                                Message = "Could not verify payment status. Please check your payment method."
+                            }
+                        };
                     }
                 }
                 else
