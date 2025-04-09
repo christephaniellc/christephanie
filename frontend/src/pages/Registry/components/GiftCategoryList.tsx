@@ -41,9 +41,11 @@ const GiftCategoryList: React.FC<GiftCategoryListProps> = ({
     <>
       <SectionTitle variant="h2">Contribute to Our Wedding</SectionTitle>
       
-      <GridContainer container spacing={2} sx={{ mb: 6 }}>
+      <GridContainer container spacing={3} sx={{ mb: 6 }}>
         {giftOptions.map((option) => (
-          <Grid item xs={12} sm={6} md={6} key={option.id}>
+          <Grid item xs={12} sm={6} md={6} key={option.id} sx={{ 
+            mb: { xs: 2, sm: 0 }, // Add more bottom margin on mobile
+          }}>
             <GiftCategoryCard
               option={option}
               customAmount={customAmounts[option.id]}
