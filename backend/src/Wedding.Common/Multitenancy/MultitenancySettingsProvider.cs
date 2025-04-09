@@ -19,11 +19,13 @@ namespace Wedding.Common.Multitenancy
                     audience = $"https://api.christephanie.com";
                     break;
                 case ("https://www.wedding.christephanie.com"):
+                case ("https://wedding.christephanie.com"):
                 case ("https://fianceapi.wedding.christephanie.com"):
                 case ("fianceapi.wedding.christephanie.com"):
                     audience = $"https://fianceapi.wedding.christephanie.com";
                     break;
                 case ("https://www.dev.wedding.christephanie.com"):
+                case ("https://dev.wedding.christephanie.com"):
                 case ("https://fianceapi.dev.wedding.christephanie.com"):
                 case ("fianceapi.dev.wedding.christephanie.com"):
                 case ("http://localhost:5173"):
@@ -33,7 +35,7 @@ namespace Wedding.Common.Multitenancy
                     audience = $"https://fianceapi.dev.wedding.christephanie.com";
                     break;
                 default:
-                    throw new Exception("Invalid audience.");
+                    throw new Exception("Invalid audience: " + origin ?? "null");
             }
             return audience;
         }

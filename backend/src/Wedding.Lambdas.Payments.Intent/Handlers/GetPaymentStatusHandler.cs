@@ -39,31 +39,88 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
 
             try
             {
-
-                if (!string.IsNullOrEmpty(query.PaymentIntentId))// && !string.IsNullOrEmpty(filter.GuestId))
+                if (string.IsNullOrEmpty(query.PaymentIntentId))
                 {
-                    // You may want to store or retrieve Timestamp from frontend to fully use GetPaymentByIdAsync.
-                    // For now, just scan and find the match:
-                    var result = await _dynamoDBProvider.GetPaymentByIdAsync(query.AuthContext.Audience, query.PaymentIntentId, cancellationToken);
+                    _logger.LogWarning("GetPaymentStatus called with empty PaymentIntentId");
+                    return new StripePaymentIntentResponseDto
+                    {
+                        Error = new PaymentError
+                        {
+                            Type = "validation_error",
+                            Code = "missing_payment_intent",
+                            Message = "Payment intent ID is required"
+                        }
+                    };
                 }
-                // var result = await _dynamoDBProvider.GetFamilyUnitsAsync(query.AuthContext.Audience, cancellationToken);
-                // var relevantResults = result
-                //     .Where(family => FeatureFlags.TiersToIncludeInStats.Contains(family.Tier))
-                //     .ToList();
-                //
-                // if (result == null)
-                // {
-                //     throw new UnauthorizedAccessException("Stats not found.");
-                // }
-                //
-                // var dtos = _mapper.Map<List<FamilyUnitDto>>(relevantResults);
-                // return _mapper.Map<List<FamilyUnitViewModel>>(dtos);
-                throw new NotImplementedException();
+
+                _logger.LogInformation("Getting payment status for PaymentIntentId: {PaymentIntentId}", query.PaymentIntentId);
+                
+                // First try to get from our database
+                var paymentEntity = await _dynamoDBProvider.GetPaymentByIdAsync(
+                    query.AuthContext.Audience, 
+                    query.PaymentIntentId, 
+                    cancellationToken);
+
+                if (paymentEntity == null)
+                {
+                    _logger.LogWarning("Payment with ID {PaymentIntentId} not found in database", query.PaymentIntentId);
+                    
+                    // If not in our database, we could try to get it directly from Stripe
+                    // However, for now we'll just return a clear error
+                    return new StripePaymentIntentResponseDto
+                    {
+                        Error = new PaymentError
+                        {
+                            Type = "resource_missing",
+                            Code = "payment_intent_not_found",
+                            Message = $"No payment intent found with ID: {query.PaymentIntentId}"
+                        }
+                    };
+                }
+
+                // Return the payment information
+                return new StripePaymentIntentResponseDto
+                {
+                    PaymentIntentId = paymentEntity.PaymentIntentId,
+                    Amount = paymentEntity.Amount,
+                    Currency = paymentEntity.Currency
+                    // We don't have the client secret here since it was only used during initial creation
+                };
+            }
+            catch (Stripe.StripeException stripeEx)
+            {
+                // Handle Stripe-specific exceptions
+                _logger.LogError(stripeEx, 
+                    "Stripe exception getting payment status: Type={ErrorType}, Code={ErrorCode}, Message={ErrorMessage}", 
+                    stripeEx.StripeError?.Type, 
+                    stripeEx.StripeError?.Code,
+                    stripeEx.Message);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Type = stripeEx.StripeError?.Type,
+                        Code = stripeEx.StripeError?.Code,
+                        DeclineCode = stripeEx.StripeError?.DeclineCode,
+                        Message = stripeEx.Message
+                    }
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while getting the stats.");
-                throw new UnauthorizedAccessException($"Stats not found. {ex.Message}");
+                _logger.LogError(ex, "An error occurred while getting payment status for {PaymentIntentId}: {ErrorMessage}", 
+                    query.PaymentIntentId, ex.Message);
+                
+                return new StripePaymentIntentResponseDto
+                {
+                    Error = new PaymentError
+                    {
+                        Type = "server_error",
+                        Code = "internal_error",
+                        Message = "Failed to retrieve payment status. Please try again."
+                    }
+                };
             }
         }
     }
