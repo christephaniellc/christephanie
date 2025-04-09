@@ -13,6 +13,8 @@ namespace Wedding.Common.Helpers.AWS
             if (request.Headers == null) return null;
             if (request.Headers.ContainsKey("Origin")) return request.Headers["Origin"].ToLower();
             if (request.Headers.ContainsKey("origin")) return request.Headers["origin"].ToLower();
+            if (request.Headers.ContainsKey("Host")) return request.Headers["Host"].ToLower();
+            if (request.Headers.ContainsKey("host")) return request.Headers["host"].ToLower();
             return null;
         }
 
