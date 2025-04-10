@@ -62,15 +62,14 @@ namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
                         GuestName = intent.Metadata["GuestName"],
                         GuestEmail = intent.Metadata["GuestEmail"],
                         GiftCategory = intent.Metadata["GiftCategory"],
-                        GiftNotes = intent.Metadata["GiftNotes"],
-                        IsAnonymous = bool.TryParse(intent.Metadata["IsAnonymous"], out var anon) && anon
+                        GiftNotes = intent.Metadata["giftNotes"],
+                        IsAnonymous = bool.TryParse(intent.Metadata["isAnonymous"], out var anon) && anon
                     };
 
                     _logger.LogInformation("PaymentIntent succeeded: {Id} - audience: {Audience}", intent.Id, metaData.Audience);
                     _logger.LogInformation("Metadata: {Metadata}", JsonSerializer.Serialize(metaData, new JsonSerializerOptions { WriteIndented = true }));
 
                     var paymentEntity = await _dynamoDBProvider.GetPaymentByIdAsync(metaData.Audience, intent.Id, cancellationToken);
-                    paymentEntity.Status = intent.Status;
 
                     // var paymentEntity = new PaymentIntentEntity
                     // {
@@ -87,11 +86,11 @@ namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
                     //     Status = intent.Status // Store the payment status
                     // };
 
-                    _logger.LogInformation("Updating payment with status {Status}: {Payment}",
-                        paymentEntity.Status,
+                    _logger.LogInformation("Updating payment with status {Status}: (current): {Payment}",
+                        intent.Status,
                         JsonSerializer.Serialize(paymentEntity));
 
-                    await _dynamoDBProvider.SavePaymentAsync(metaData.Audience, paymentEntity, cancellationToken);
+                    await _dynamoDBProvider.UpdatePaymentStatusAsync(metaData.Audience, paymentEntity, intent.Status, cancellationToken);
 
                     try
                     {
