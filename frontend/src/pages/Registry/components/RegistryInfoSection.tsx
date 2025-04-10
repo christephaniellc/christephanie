@@ -36,10 +36,10 @@ const RegistryInfoSection: React.FC = () => {
         </Typography>
         <Typography paragraph align="center">
           Your presence at our wedding is the greatest gift of all. However, for friends and family who have been asking for gift suggestions,
-          we've created this registry.
+          we've created this registry.  In which case your presents will be the greatest gift of all.
           </Typography>
         <Typography paragraph align="center">
-          We are old and already have many of the items we need for our home.
+          <Typography component="span" sx={{ textDecoration: 'line-through' }}>We are old</Typography> Steph is getting older and we already have many of the items we need for our home.
         </Typography>
         <Typography paragraph align="center">
           If you wish to give a gift, we would be grateful for a contribution to our future together through one of the funds below.

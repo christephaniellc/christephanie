@@ -35,13 +35,13 @@ export const giftOptionsData: GiftOption[] = [
   {
     id: 'honeymoon',
     title: 'Honeymoon Fund',
-    description: 'Help us create hot-ballooning (or similiarly ridiculous) memories on our honeymoon adventure.',
+    description: 'Let us celebrate you as we order room service, wearing nothing but our vows.',
     icon: Flight
   },
   {
     id: 'remodel',
     title: 'Remodelling Our House',
-    description: 'Our 105 year-old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube). Help us prevent zapping fires!',
+    description: 'Our 105 year-old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube!). Help us prevent zapping fires!',
     icon: ConstructionIcon
   },
   {
@@ -232,7 +232,7 @@ export const useRegistry = () => {
       ...prev,
       open: false
     }));
-    
+
     // Show detailed error dialog immediately
     console.log('Setting error dialog state to:', {
       open: true,
