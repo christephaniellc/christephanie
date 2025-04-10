@@ -99,13 +99,14 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
             sx={{
               width: '100%',
               display: 'flex',
+              flexWrap: 'wrap',
               flexDirection: { xs: 'column', sm: 'row' },
               alignItems: 'center',
-              gap: { xs: 2, sm: 1 }, // more vertical gap on mobile
+              justifyContent: 'space-between',
+              gap: { xs: 2, md: 1 }, // more vertical gap on mobile
             }}
           >
             <TextField
-              fullWidth
               label="Amount"
               variant="outlined"
               value={customAmount || ''}
@@ -114,9 +115,9 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
               sx={{
-                fontSize: { xs: '1.4rem', sm: '1.6rem' },
-                mb: { xs: 1, sm: 0 },
-                mr: { xs: 0, sm: 1 }
+                width: { xs: '100%', md: '55%' }, // full width on mobile
+                fontSize: { xs: '1.4rem', md: '1.6rem' },
+                mb: { xs: 1, md: 0 },
               }}
             />
             <Button
@@ -125,10 +126,10 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
               disabled={!customAmount}
               onClick={() => onContribute(option.id)}
               sx={{
-                px: { xs: 3, sm: 4 }, // less horizontal padding on mobile
-                py: { xs: 1.5, sm: 2 }, // less vertical padding on mobile
-                width: { xs: '100%', sm: 'auto' }, // full width on mobile
-                minWidth: { xs: '100%', sm: 'auto' }, // full width on mobile
+                px: { xs: 3, md: 4 }, // less horizontal padding on mobile
+                py: { xs: 1.5, md: 2 }, // less vertical padding on mobile
+                width: { xs: '100%', md: '40%' }, // full width on mobile
+                minWidth: { xs: '100%', md: 'auto' }, // full width on mobile
               }}
             >
               Contribute
