@@ -69,6 +69,8 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     GuestId = command.AuthContext.GuestId,
                     GuestName = $"{guestDto.FirstName} {guestDto.LastName}",
                     GuestEmail = guestDto.Email.Value,
+                    InvitationCode = guestDto.InvitationCode,
+                    Audience = command.AuthContext.Audience,
                     IsAnonymous = command.GiftMetaData?.IsAnonymous ?? false,
                     GiftCategory = command.GiftMetaData?.GiftCategory ?? GiftCategoryEnum.Custom.ToString(),
                     GiftNotes = command.GiftMetaData?.GiftNotes ?? string.Empty
