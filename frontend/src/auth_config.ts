@@ -27,7 +27,7 @@ const PROD_CONFIG: Config = {
   audience: "https://fianceapi.wedding.christephanie.com",
   webserviceUrl: "https://fianceapi.wedding.christephanie.com",
   returnTo: "https://www.wedding.christephanie.com",
-  stripePublicKey: "pk_test_proddddddddddddd"
+  stripePublicKey: (import.meta.env.STRIPE_PUBLIC_KEY) ? import.meta.env.STRIPE_PUBLIC_KEY : "pk_test_proddddddddddddd"
 };
 
 // Test config that is used in automated tests
@@ -37,7 +37,7 @@ export const TEST_CONFIG: Config = {
   audience: "https://test-api.example.com",
   webserviceUrl: "https://test-api.example.com",
   returnTo: "https://test-return.example.com",
-  stripePublicKey: "pk_test_testttttttttttttttttttttttt"
+  stripePublicKey: (import.meta.env.STRIPE_PUBLIC_KEY) ? import.meta.env.STRIPE_PUBLIC_KEY : "pk_test_testttttttttttttttttttttttt"
 };
 
 // Environment-specific config using Vite environment variables from CI
