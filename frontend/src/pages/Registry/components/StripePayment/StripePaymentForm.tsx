@@ -478,7 +478,7 @@ function PaymentForm({
 
 // Load Stripe with publishable key from environment
 // In development, this will use the test key
-const stripePublicKey = import.meta.env.STRIPE_PUBLIC_KEY || 
+const stripePublicKey = getConfig().stripePublicKey || 
   'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
 const stripePromise = loadStripe(stripePublicKey);
 
