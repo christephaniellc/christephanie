@@ -1,23 +1,20 @@
 using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Wedding.Abstractions.Dtos.Stripe;
 using Wedding.Common.Configuration;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
-using Wedding.Common.Serialization;
 using Wedding.Common.ThirdParty;
-using Wedding.Lambdas.Payments.Intent.Commands;
-using Wedding.Lambdas.Payments.Intent.Handlers;
+using Wedding.Lambdas.Payments.Intent.Confirm.Commands;
+using Wedding.Lambdas.Payments.Intent.Confirm.Handlers;
 
-namespace Wedding.Lambdas.Payments.Intent;
+namespace Wedding.Lambdas.Payments.Intent.Confirm;
 
 public class Function
 {
@@ -37,8 +34,7 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLambdaRegistrations(typeof(RegistrationHook));
-        serviceCollection.AddScoped<GetPaymentStatusHandler>();
-        serviceCollection.AddScoped<CreatePaymentIntentHandler>();
+        serviceCollection.AddScoped<StripeWebhookHandler>();
 
         serviceCollection.AddSingleton<Lazy<Task<IStripePaymentProvider>>>(sp =>
         {
@@ -85,46 +81,17 @@ public class Function
         try
         {
             context.Logger.LogInformation($"Raw Input: {System.Text.Json.JsonSerializer.Serialize(request)}");
-
-            var authContext = request.GetAuthContext();
+            context.Logger.LogInformation($"HttpMethod: {request.HttpMethod?.ToUpperInvariant()}");
 
             using var scope = _serviceProvider.CreateScope();
 
-            context.Logger.LogInformation($"HttpMethod: {request.HttpMethod?.ToUpperInvariant()}");
-            context.Logger.LogInformation($"authContext: {JsonSerializer.Serialize(authContext)}");
+            var handler = scope.ServiceProvider.GetRequiredService<StripeWebhookHandler>();
 
+            var stripeSignature = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "Stripe-Signature");
+            var query = new GetPaymentIntentStatusQuery(request.Body, stripeSignature); 
 
-            switch (request.HttpMethod?.ToUpperInvariant())
-            {
-                case "POST":
-                {
-                    var handler = scope.ServiceProvider.GetRequiredService<CreatePaymentIntentHandler>();
-
-                    var createPaymentRequest = JsonSerializationHelper.DeserializeFromFrontend<StripePaymentIntentRequestDto>(request.Body);
-                    var command = new CreatePaymentIntentCommand(authContext, 
-                            createPaymentRequest.Amount,
-                            createPaymentRequest.Currency,
-                            createPaymentRequest.GiftMetaData.GuestEmail,
-                            createPaymentRequest.GiftMetaData
-                        );
-
-                    context.Logger.LogInformation($"POST Command: {System.Text.Json.JsonSerializer.Serialize(command)}");
-
-                    var result = await handler.ExecuteAsync(command);
-
-                    return result.OkResponse();
-                        break;
-                }
-                case "GET:":
-                {
-                    var handler = scope.ServiceProvider.GetRequiredService<GetPaymentStatusHandler>();
-                    throw new NotImplementedException("GET method is not implemented yet.");
-                        break;
-                }
-                default:
-                    return $"Unsupported HTTP method: {request.HttpMethod}".ErrorResponse((int)HttpStatusCode.MethodNotAllowed,
-                        typeof(MissingMethodException).ToString());
-            }
+            var result = await handler.GetAsync(query);
+            return result.OkResponse();
         }
         catch (UnauthorizedAccessException ex)
         {

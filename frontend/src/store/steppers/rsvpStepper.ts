@@ -1,7 +1,7 @@
-import { atom, selector, selectorFamily } from 'recoil';
+import { atom, selector } from 'recoil';
 import React from 'react';
 
-export interface RSVPStep {
+export interface RsvpStep {
   id: number;
   completed: boolean;
   label: string;
@@ -15,78 +15,70 @@ export const rsvpTabIndex = atom<number>({
   default: 0,
 });
 
-export const rsvpStepsState = atom<Record<string, RSVPStep>>({
+export const rsvpStepsState = atom<Record<string, RsvpStep>>({
   key: 'rsvpStepper',
   default: {
-    attendance: {
+    welcome: {
       id: 0,
-      completed: false,
-      label: 'Is your family attending the wedding?',
-      description: '',
+      completed: true,
+      label: 'Welcome to the RSVP Process',
+      description: 'Please confirm your attendance',
       component: null,
       display: true,
     },
-    ageGroup: {
+    weddingAttendance: {
       id: 1,
       completed: false,
-      label: 'What kind of people are we catering to?',
-      description: '',
+      label: 'Will you be attending our wedding?',
+      description: 'Please confirm your final attendance',
       component: null,
       display: true,
     },
-    communicationPreference: {
+    rehearsalDinner: {
       id: 2,
       completed: false,
-      label: 'How can we notify you about wedding updates?',
-      description: '',
+      label: 'Rehearsal Dinner Attendance',
+      description: 'For invited guests only',
       component: null,
-      display: true,
+      display: true, // This will be conditionally set based on guest status
     },
     foodPreferences: {
       id: 3,
-      completed: true,
-      label: 'What kind of life is being sacrificed for your meals?',
-      description: '',
+      completed: false,
+      label: 'Confirm Food Preferences',
+      description: 'Review and update your meal choices',
       component: null,
       display: true,
     },
-    foodAllergies: {
+    transportation: {
       id: 4,
-      completed: true,
-      label: 'Which of these things will cause great distress if you eat them?',
-      description: '',
+      completed: false,
+      label: 'Transportation Needs',
+      description: 'Let us know if you need transportation assistance',
       component: null,
       display: true,
     },
-    camping: {
+    accommodation: {
       id: 5,
       completed: false,
-      label: 'Camping? Hotel? Tell us what you\'re thinking!',
-      description: '(we have bathrooms!)',
-      component: null,
-      display: true,
-    },
-    mailingAddress: {
-      id: 6,
-      completed: false,
-      label: "What's your snail mail?",
-      description: '',
+      label: 'Accommodation Plans',
+      description: 'Confirm your accommodation arrangements',
       component: null,
       display: true,
     },
     comments: {
-      id: 7,
+      id: 6,
       completed: false,
-      label: 'Any comments?',
-      description: '',
+      label: 'Additional Comments',
+      description: 'Any last questions or requests?',
       component: null,
       display: true,
     },
     summary: {
-      id: 8,
+      id: 7,
       completed: true,
-      label: 'Wedding Information Summary',
-      description: 'Review your information',
+      label: 'RSVP Summary',
+      description: 'Review your RSVP information',
       component: null,
       display: true,
     },
@@ -94,10 +86,10 @@ export const rsvpStepsState = atom<Record<string, RSVPStep>>({
 });
 
 interface RsvpStepperProps {
-  steps: Record<string, RSVPStep>;
+  steps: Record<string, RsvpStep>;
   tabIndex: number;
   totalTabs: number;
-  currentStep: [string, RSVPStep];
+  currentStep: [string, RsvpStep];
 }
 
 export const rsvpStepperState = selector<RsvpStepperProps>({

@@ -14,6 +14,7 @@ using Wedding.Abstractions.Enums;
 using Wedding.Common.Multitenancy;
 using System.Globalization;
 using static Wedding.Abstractions.Keys.DynamoKeys;
+using System.Reflection.Emit;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -361,9 +362,17 @@ namespace Wedding.Common.Helpers.AWS
 
         public async Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, CancellationToken cancellationToken = default)
         {
-            var partitionKey = PaymentKeys.GetPartitionKey(paymentIntentId);
+            var partitionKey = PaymentKeys.GetPartitionKey(paymentIntentId); // "PAYMENT#pi_..."
+            var dyanmoDBOperationConfig = GetTableConfig(audience, DatabaseTableEnum.PaymentData);
 
-            return await _repository.LoadAsync<PaymentIntentEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+            var results = await _repository.QueryAsync<PaymentIntentEntity>(
+                partitionKey,
+                dyanmoDBOperationConfig).GetRemainingAsync(cancellationToken);
+
+            return results
+                .Where(e => e.SortKey.StartsWith("METADATA#"))
+                .OrderByDescending(e => e.SortKey) // Newest first (ISO8601 sortable)
+                .FirstOrDefault();
         }
 
         public async Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
@@ -419,6 +428,13 @@ namespace Wedding.Common.Helpers.AWS
             entity.GuestSortKey = entity.Timestamp;
             entity.GiftCategoryGSI = DynamoKeys.PaymentKeys.GetGiftCategoryGSI(entity.GiftCategory);
             entity.CategorySortKey = entity.Timestamp;
+
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+        }
+
+        public async Task UpdatePaymentStatusAsync(string audience, PaymentIntentEntity entity, string status, CancellationToken cancellationToken = default)
+        {
+            entity.Status = status;
 
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
         }

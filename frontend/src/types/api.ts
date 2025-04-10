@@ -368,6 +368,7 @@ export interface ContributionDto {
   giftNotes: string;
   guestName: string;
   isAnonymous: boolean;
+  status: string;
   timestamp: string;
 }
 
