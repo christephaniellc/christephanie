@@ -56,14 +56,14 @@ namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
                     var intent = stripeEvent.Data.Object as PaymentIntent;
                     var metaData = new GiftMetaData
                     {
-                        Audience = intent.Metadata["audience"],
-                        GuestId = intent.Metadata["guestId"],
-                        InvitationCode = intent.Metadata["invitationCode"],
-                        GuestName = intent.Metadata["guestName"],
-                        GuestEmail = intent.Metadata["guestEmail"],
-                        GiftCategory = intent.Metadata["giftCategory"],
-                        GiftNotes = intent.Metadata["giftNotes"],
-                        IsAnonymous = bool.TryParse(intent.Metadata["isAnonymous"], out var anon) && anon
+                        Audience = intent.Metadata["Audience"],
+                        GuestId = intent.Metadata["GuestId"],
+                        InvitationCode = intent.Metadata["InvitationCode"],
+                        GuestName = intent.Metadata["GuestName"],
+                        GuestEmail = intent.Metadata["GuestEmail"],
+                        GiftCategory = intent.Metadata["GiftCategory"],
+                        GiftNotes = intent.Metadata["GiftNotes"],
+                        IsAnonymous = bool.TryParse(intent.Metadata["IsAnonymous"], out var anon) && anon
                     };
 
                     _logger.LogInformation("PaymentIntent succeeded: {Id} - audience: {Audience}", intent.Id, metaData.Audience);
