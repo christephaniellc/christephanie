@@ -7,7 +7,7 @@ namespace Wedding.Common.ThirdParty
 {
     public interface IStripePaymentProvider
     {
-        Task<StripePaymentIntentResponseDto> CreatePaymentIntent(GuestDto guest, int amount, string currency, GiftMetaData giftMetaData, CancellationToken cancellationToken = default(CancellationToken));
+        Task<StripePaymentIntentResponseDto> CreatePaymentIntent(string audience, GuestDto guest, int amount, string currency, GiftMetaData giftMetaData, CancellationToken cancellationToken = default(CancellationToken));
         
         /// <summary>
         /// Retrieves a payment intent by its ID and verifies its status

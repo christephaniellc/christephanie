@@ -3,6 +3,8 @@
     public class GiftMetaData
     {
         public string GuestId { get; set; }
+        public string InvitationCode { get; set; }
+        public string Audience { get; set; }
         public string GuestName { get; set; }
         public bool IsAnonymous { get; set; } = false;
 
