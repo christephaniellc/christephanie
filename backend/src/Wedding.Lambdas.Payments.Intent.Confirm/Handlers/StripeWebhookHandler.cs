@@ -109,7 +109,13 @@ namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
                         _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", metaData.GuestEmail);
                     }
 
-                    return _mapper.Map<StripePaymentIntentResponseDto>(paymentEntity);
+                    return new StripePaymentIntentResponseDto
+                    {
+                        PaymentIntentId = paymentEntity.PaymentIntentId,
+                        Amount = paymentEntity.Amount,
+                        Currency = paymentEntity.Currency,
+                        Status = paymentEntity.Status
+                    };
                 }
             }
             catch (StripeException stripeEx)
