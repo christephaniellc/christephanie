@@ -87,7 +87,8 @@ public class Function
 
             var handler = scope.ServiceProvider.GetRequiredService<StripeWebhookHandler>();
 
-            var query = new GetPaymentIntentStatusQuery(request.Body, request.Headers["Stripe-Signature"]); 
+            var stripeSignature = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "Stripe-Signature");
+            var query = new GetPaymentIntentStatusQuery(request.Body, stripeSignature); 
 
             var result = await handler.GetAsync(query);
             return result.OkResponse();

@@ -96,11 +96,6 @@ public class Function
 
             switch (request.HttpMethod?.ToUpperInvariant())
             {
-                case "POST" when request.Path?.EndsWith("/webhook/stripe") == true:
-                {
-                    var handler = scope.ServiceProvider.GetRequiredService<StripeWebhookHandler>();
-                    return await handler.HandleAsync(request);
-                }
                 case "POST":
                 {
                     var handler = scope.ServiceProvider.GetRequiredService<CreatePaymentIntentHandler>();
@@ -126,17 +121,6 @@ public class Function
                     throw new NotImplementedException("GET method is not implemented yet.");
                         break;
                 }
-                // context.Logger.LogInformation($"Raw Request Input: {request}");
-                //
-                // var authContext = request.GetAuthContext();
-                // context.Logger.LogDebug($"Raw Auth Input: {authContext.GuestId} {authContext.InvitationCode} {authContext.Roles}");
-                //
-                // using var scope = _serviceProvider.CreateScope();
-                // var handler = scope.ServiceProvider.GetRequiredService<GetStatsHandler>();
-                //
-                // var queryUnits = new GetStatsQuery(authContext);
-                // var results = await handler.GetAsync(queryUnits);
-                // return results.OkResponse();
                 default:
                     return $"Unsupported HTTP method: {request.HttpMethod}".ErrorResponse((int)HttpStatusCode.MethodNotAllowed,
                         typeof(MissingMethodException).ToString());
