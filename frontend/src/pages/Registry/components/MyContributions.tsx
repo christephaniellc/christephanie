@@ -180,7 +180,7 @@ const MyContributions: React.FC<MyContributionsProps> = () => {
                         {contribution.giftCategory}
                       </Typography>
                       <ContributionAmount>
-                        {formatAmount(contribution.amount)}
+                        {formatAmount(contribution.amount)} ({contribution.status})
                       </ContributionAmount>
                     </Box>
                   }

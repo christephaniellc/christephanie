@@ -72,15 +72,15 @@ const Registry: React.FC = () => {
       handlePaymentError,
       closePaymentDialog,
       closeSuccessDialog,
-      closeErrorDialog,
-      closeNotification
+      closeErrorDialog
     } = useRegistry();
     
     // We DON'T want to close the error dialog if it's genuinely showing an error
     // The previous implementation was resetting our error dialog
 
     return (
-      <RegistryContainer maxWidth="lg">
+      <RegistryContainer 
+        maxWidth="lg">
         <PageTitle variant="h1">Our Registry</PageTitle>
         
         {/* Info section explaining the registry */}
@@ -104,22 +104,6 @@ const Registry: React.FC = () => {
           url={traditionalRegistry.url}
           icon={traditionalRegistry.icon}
         />
-        
-        {/* Notification */}
-        <Snackbar 
-          open={notification.show} 
-          autoHideDuration={6000} 
-          onClose={closeNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={closeNotification} 
-            severity={notification.severity} 
-            sx={{ width: '100%' }}
-          >
-            {notification.message}
-          </Alert>
-        </Snackbar>
         
         {/* Payment Dialogs */}
         <StripePaymentForm

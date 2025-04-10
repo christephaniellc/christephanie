@@ -26,5 +26,6 @@ import * as cdk from 'aws-cdk-lib';
         twilioMessagingServicePhone: string | undefined;
         stripePublicKey: string | undefined;
         stripeApiSecretKey: string | undefined;
+        stripeWebhookSecret: string | undefined;
     };
  }
