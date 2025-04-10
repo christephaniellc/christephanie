@@ -35,7 +35,7 @@ const RegistryInfoSection: React.FC = () => {
         </Typography>
         <Typography paragraph color='secondary'>
           Your presence at our wedding is the greatest gift of all. However, for friends and family who have been asking for gift suggestions,
-          we've created this registry.  In which case your presents will be the greatest gift of all.
+          we've created this registry. <br/>In which case your presents will be the greatest gift of all.
           </Typography>
         <Typography paragraph color='secondary'>
           <Typography component="span" sx={{ textDecoration: 'line-through' }}>We are old</Typography> Steph is getting older and we already have many of the items we need for our home.
