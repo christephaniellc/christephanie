@@ -58,7 +58,8 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                 {
                     guestDto.Email = new VerifiedDto
                     {
-                        Value = command.GuestEmail
+                        Value = command.GuestEmail,
+                        Verified = false
                     };
                     var updatedGuest = _mapper.Map<WeddingEntity>(guestDto);
                     await _dynamoDBProvider.SaveAsync(command.AuthContext.Audience, updatedGuest, cancellationToken);
