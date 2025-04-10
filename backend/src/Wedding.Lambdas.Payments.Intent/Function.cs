@@ -96,6 +96,11 @@ public class Function
 
             switch (request.HttpMethod?.ToUpperInvariant())
             {
+                case "POST" when request.Path?.EndsWith("/webhook/stripe") == true:
+                {
+                    var handler = scope.ServiceProvider.GetRequiredService<StripeWebhookHandler>();
+                    return await handler.HandleAsync(request);
+                }
                 case "POST":
                 {
                     var handler = scope.ServiceProvider.GetRequiredService<CreatePaymentIntentHandler>();

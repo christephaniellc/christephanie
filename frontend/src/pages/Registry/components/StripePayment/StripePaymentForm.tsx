@@ -116,7 +116,7 @@ function PaymentForm({
         setUserHasEmail(hasEmail);
 
         // TODO: Debug, remove
-        const stripePublicKey = import.meta.env.STRIPE_PUBLIC_KEY || 
+        const stripePublicKey = getConfig().stripePublicKey || 
         'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
         console.log(`Stripe public key: ${stripePublicKey}`);
         

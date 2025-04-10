@@ -233,13 +233,6 @@ export const useRegistry = () => {
       open: false
     }));
     
-    // Show a notification for immediate feedback
-    setNotification({
-      show: true,
-      message: `Payment error: ${message}`,
-      severity: 'error'
-    });
-    
     // Show detailed error dialog immediately
     console.log('Setting error dialog state to:', {
       open: true,
@@ -296,13 +289,6 @@ export const useRegistry = () => {
     });
   };
 
-  const closeNotification = () => {
-    setNotification(prev => ({
-      ...prev,
-      show: false
-    }));
-  };
-
   return {
     giftOptions,
     customAmounts,
@@ -317,7 +303,6 @@ export const useRegistry = () => {
     handlePaymentError,
     closePaymentDialog,
     closeSuccessDialog,
-    closeErrorDialog,
-    closeNotification
+    closeErrorDialog
   };
 };
