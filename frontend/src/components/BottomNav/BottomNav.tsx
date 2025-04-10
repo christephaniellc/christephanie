@@ -209,7 +209,7 @@ export const BottomNav = () => {
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{
-              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User && userIsAdmin ? 'flex' : 'none',
+              display: isFeatureEnabled('ENABLE_REGISTRY') && auth0User ? 'flex' : 'none',
             }}
           />
 
