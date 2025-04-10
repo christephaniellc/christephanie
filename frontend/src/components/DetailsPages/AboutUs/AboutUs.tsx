@@ -9,6 +9,8 @@ import topherAvatar from '../../../assets/engagement-photos/toph_seattle.jpg';
 import stephAvatar from '../../../assets/engagement-photos/steph_car.jpg';
 import kilton from '../../../assets/engagement-photos/kilton.jpg';
 import laney from '../../../assets/engagement-photos/laney.jpg';
+import rattlesnake1 from '../../../assets/engagement-photos/topher_and_steph_rsvp1.jpg';
+import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 
 interface AboutUsProps {
   handleTabLink: (to: string) => void;
@@ -19,7 +21,7 @@ const CharacterFrame = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   backgroundColor: 'rgba(0, 0, 0, 0.75)',
   borderRadius: theme.spacing(1),
-  border: '2px solid #61dafb',
+  border: `2px solid ${theme.palette.secondary.dark}`,
   color: theme.palette.common.white,
   marginBottom: theme.spacing(2),
 }));
@@ -28,17 +30,8 @@ const CharacterAvatar = styled(Avatar)(({ theme }) => ({
   width: '100%',
   height: 'auto',
   aspectRatio: '1/1',
-  border: '3px solid #61dafb',
-  boxShadow: '0 0 10px 2px rgba(97, 218, 251, 0.5)',
-}));
-
-const ShadowAvatar = styled(Avatar)(({ theme }) => ({
-  width: '100%',
-  height: 'auto',
-  aspectRatio: '1/1',
-  backgroundColor: 'rgba(20, 20, 20, 0.9)',
-  filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.2))',
-  opacity: 0.6,
+  border: `3px solid ${theme.palette.secondary.main}`,
+  boxShadow: `0 0 10px 2px ${theme.palette.primary.dark}`,
 }));
 
 const AttributeGrid = styled(Grid)(({ theme }) => ({
@@ -46,7 +39,7 @@ const AttributeGrid = styled(Grid)(({ theme }) => ({
 }));
 
 const AttributeLabel = styled(Typography)(({ theme }) => ({
-  color: '#61dafb',
+  color: theme.palette.primary.light,
   fontWeight: 'bold',
 }));
 
@@ -62,13 +55,14 @@ interface SelectButtonProps {
 const SelectButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'isSelected',
 })<SelectButtonProps>(({ theme, isSelected }) => ({
-  backgroundColor: isSelected ? '#61dafb' : 'transparent',
-  color: isSelected ? '#000' : '#61dafb',
-  border: `2px solid ${isSelected ? '#61dafb' : 'rgba(97, 218, 251, 0.5)'}`,
+  backgroundColor: isSelected ? theme.palette.secondary.main : 'transparent',
+  color: isSelected ? '#000' : theme.palette.secondary.main,
+  border: `2px solid ${isSelected ? theme.palette.secondary.main : theme.palette.secondary.dark}`,
   width: '100%',
   marginBottom: theme.spacing(1),
   '&:hover': {
-    backgroundColor: isSelected ? '#61dafb' : 'rgba(97, 218, 251, 0.2)',
+    backgroundColor: isSelected ? theme.palette.secondary.main : theme.palette.secondary.light,
+    color: '#000'
   },
 }));
 
@@ -81,22 +75,8 @@ const CharacterBio = styled(Typography)(({ theme }) => ({
 const GamerTag = styled(Typography)(({ theme }) => ({
   fontFamily: '"Press Start 2P", cursive',
   fontSize: '0.8rem',
-  color: '#FFD700',
+  color: theme.palette.secondary.light,
   marginBottom: theme.spacing(1),
-}));
-
-const ShadowOverlay = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  color: '#FF5555',
-  fontWeight: 'bold',
 }));
 
 const StatsBox = styled(Box)(({ theme }) => ({
@@ -116,19 +96,8 @@ const ProgressBarContainer = styled(Box)(({ theme }) => ({
 const ProgressBar = styled(Box)<{ value: number }>(({ theme, value }) => ({
   height: '100%',
   width: `${value}%`,
-  backgroundColor: '#61dafb',
+  backgroundColor: theme.palette.primary.main,
   borderRadius: theme.spacing(0.5),
-}));
-
-const GameTitle = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Press Start 2P", cursive',
-  color: '#FFD700',
-  textAlign: 'center',
-  marginBottom: theme.spacing(3),
-  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
-  [theme.breakpoints.up('md')]: {
-    fontSize: '1.5rem',
-  },
 }));
 
 const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
@@ -139,7 +108,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
   const characters = {
     topher: {
       name: 'Topher Sikorra',
-      gamerTag: 'PlannedChaos_T',
+      gamerTag: 'VelociCrafter_23',
       avatar: topherAvatar,
       attributes: {
         origin: 'Florida, USA',
@@ -152,38 +121,36 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       stats: {
         strength: 85,
         intelligence: 90,
-        charisma: 85,
-        organzition: 0,
-        dancing: 60,
-        romance: 95,
+        jolliness: 95,
+        organization: 2.5,
+        thoughtfulness: 95,
       },
-      bio: `An at-large Florida Man with a passion for code and tinkering, Topher's journey began as Marine and two-time war-veteran, and soon after found himself in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
+      bio: `An at-large Florida Man with a passion for code and tinkering, Topher's journey began as a Marine and two-time war-veteran. Soon after he found himself in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
     },
     steph: {
       name: 'Steph Stubler',
-      gamerTag: 'CodeSlinger_S',
+      gamerTag: 'WholeAss_22',
       avatar: stephAvatar,
       attributes: {
         origin: 'Virginia, USA',
         class: 'Software Engineer',
-        specialAbility: 'Event planning under pressure',
+        specialAbility: 'Rubik\'s Cube solving',
         favoriteFood: 'Bratwurst',
-        hobbies: 'Art, Piano, Dancing',
+        hobbies: 'Art, Piano, Dubstep Dancing',
         alignment: 'Neutral Good'
       },
       stats: {
         strength: 85,
         intelligence: 90,
-        charisma: 90,
-        cooking: 75,
-        dancing: 85,
-        romance: 95,
+        running: 3.9,
+        tenacity: 95,
+        bowling: 15
       },
-      bio: `With roots in DC and Virginia, and armed with an adventurous spirit, Steph's character journey led her through creative pursuits and strategic thinking. Her natural talent for bringing people together and creating memorable experiences made her a sought-after ally in any quest. When her path crossed with Topher's during a the muddiest Burning Man of all time, the chemistry was undeniable. They discovered a shared love for adventure, absurdity, long hair, and exploration that would take them from the mountains of Seattle to the streets of Germany. Through their adventures across continents, they've created a love story worthy of its own epic game saga.`,
+      bio: `With roots in DC and Virginia, armed with an adventurous spirit, Steph's preoccupation for learning has earned her many skills of varying use, such as consecutive kayak rolls in succession, reproducing an almost-exact Taco Bell texture of meat on the stovetop, and tetris-ing far too much camping gear into tiny car trunks. Steph can thoroughly ally your party in any glamping quest. When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. Shortly thereafter, they discovered a shared love for absurdity, long hair, and exploration that would take them from the streets of DC, to the mountains of Seattle, to the beer halls of Germany.`,
     },
     kilton: {
-      name: 'Kilton Jett',
-      gamerTag: 'HandsomestMan_K',
+      name: 'Kilton Jett Sikorra',
+      gamerTag: 'HandsomestMan_20',
       avatar: kilton,
       attributes: {
         origin: 'Seattle, WA',
@@ -197,20 +164,19 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         strength: 42,
         intelligence: 35,
         charisma: 47,
-        cooking: 0,
-        energy: 35,
         cuddling: 95,
+        energy: 35,
       },
-      bio: `Kilton Jett, arbiter of snuggling proximity, `,
+      bio: `Kilton Jett, arbiter of snuggling proximity, knows exactly when any snack is being consumed, and will sing to alert the snacker to his own deservedness of this food. Most morose when it is time to leave the park, he will slow his gait approaching the exit, to an almost backwards pace. Extremely particular in his required level of smush, should he find a ball to his standards, he will proudly parade it up to you and carry it in his mouth until the end of a park route, or until it is stolen by his sister, whichever may come first. At home, Kilton favors two snoot-out-of-window watchdog chairs, in order to properly alert house residents of dangerous raccoons and evil mail-people. Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on task by snuggling his head on your hip while his subject is working on the couch. Kilton will loyally verify you are nearby at all times on walks, and tolerate being picked up, although his face may signify abject horror.`,
     },
     laney: {
-      name: 'Helena Josephine',
-      gamerTag: 'WhiteLightning_K',
+      name: 'Helena Josephine Sikorra',
+      gamerTag: 'WhiteLightning_21',
       avatar: laney,
       attributes: {
         origin: 'Seattle, WA',
         class: 'Toot Expert',
-        specialAbility: 'Drive by bark hellos',
+        specialAbility: 'Drive-by bark hellos',
         favoriteFood: 'Her brother\'s feet',
         hobbies: 'Escaping dog park fences, disappearing and reappearing with thorns in her face',
         alignment: 'Chaotic Neutral'
@@ -219,11 +185,10 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         strength: 94,
         intelligence: 35,
         charisma: 55,
-        cooking: 0,
-        energy: 100,
         cuddling: 28,
+        energy: 100,
       },
-      bio: `Laney Jo, , `,
+      bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific jail of our favored multi-acre-off-leash dog park, in order to hunt the smallest of rabbits, should it dare to alert her of its presence. Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting, but indoors, this chaos dog will slink away deep into blankety caves and custom teepees. Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. The size and density of her muscles have her more adept to sinking in lakes than swimming, although occasionally she can be found continuing to terrorize other creatures wearing a shark life-vest. When returning home, after a devastating 42 minutes of neglect, she will greet you with the thunder of a wagging tail, swishing furiously on hardwood floor.`,
     },
   };
 
@@ -238,13 +203,31 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
     <Box sx={{ 
       p: 2, 
       background: 'linear-gradient(to bottom, #000000, #1a1a2e)', 
-      minHeight: '100vh',
       color: 'white',
+      height: 'auto', // Changed from minHeight: '100vh' to allow scrolling
+      minHeight: 'fit-content',
+      width: '100%',
+      overflow: 'visible',
     }}>
-      <GameTitle variant="h4">
-        [CHARACTER SELECT]
-      </GameTitle>
-
+      {/* Title aligned with main character profile */}
+      <Grid container spacing={2}>
+        <Grid item xs={4} sm={3} md={2}>
+          {/* Space for alignment */}
+        </Grid>
+        <Grid item xs={8} sm={9} md={10}>
+          <StephsActualFavoriteTypographyNoDrop 
+            sx={{
+              textAlign: 'left',
+              fontSize: '1.8rem',
+              mb: 2
+            }}
+          >
+            [CHARACTER SELECT]
+          </StephsActualFavoriteTypographyNoDrop>
+        </Grid>
+      </Grid>
+      
+      {/* Main content grid */}
       <Grid container spacing={2}>
         {/* Character selection sidebar */}
         <Grid item xs={4} sm={3} md={2}>
@@ -273,9 +256,9 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
             Player 4
           </SelectButton>
           
-          {/* Shadow characters (exes) */}
+          {/* Shadow characters (kids?!) */}
           {shadowCharacters.map((shadow) => (
-            <Box key={shadow.id} sx={{ position: 'relative', mb: 1 }}>
+            <Box key={shadow.id} sx={{ position: 'relative'}}>
               <SelectButton 
                 isSelected={false} 
                 onClick={() => {}}
@@ -306,7 +289,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                 {/* Stats section - mobile only shows on character page */}
                 {!isMobile && (
                   <StatsBox>
-                    <Typography variant="subtitle2" sx={{ color: '#61dafb', mb: 1 }}>
+                    <Typography variant="subtitle2" 
+                      sx={{ 
+                        color: theme.palette.secondary.light, 
+                        mb: 1 
+                    }}
+                    >
                       CHARACTER STATS
                     </Typography>
                     {Object.entries(selectedChar.stats).map(([stat, value]) => (
@@ -354,59 +342,71 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                 {/* Our love story */}
                 {(selectedCharacter === 'topher' || selectedCharacter === 'steph') && (
                 <Box sx={{ mt: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#61dafb', fontWeight: 'bold', mb: 1 }}>
+                  <Typography variant="h6" sx={{ color: theme.palette.primary.light, fontWeight: 'bold', mb: 1 }}>
                     [MAIN QUEST: LOVE STORY]
                   </Typography>
                   <Typography variant="body2">
-                    Their journey began beneath the stars at Burning Man in 2023, where Topher and Steph's paths converged first, despite having almost met in 2017. 
-                    Topher, an avid and talented runner, and Steph, a horrendous runner but enthusiastic "try new crazy things and meet fun people"-er, were both part of the infamous running club EWH3 based in Washington, DC.
-                    Hashing will have you navigate random terrains with up to hundreds of runners, and then meet up to share some beers. Sometimes, you will beer during trail.
-                    Steph discovered hashing just as Topher was moving to Seattle, and so their paths would not cross then outside of a Facebook friend request in 2017.
+                    Their journey began in the Nevada desert at Burning Man in 2023, where Topher and Steph's paths converged for the first time, despite having almost met in 2017. 
+                    Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of the great "hashing" community
+                    --a rather infamous running club, "EWH3"--based in Washington, DC.
+                    <br/><br/>Note: Hashing will have you run while navigating random terrains with a large pack of runners, often sillily clothed, who then afterward meet up to share some beers. Sometimes, you will beer during trail.
+                    <br/><br/>Steph discovered hashing just as Topher was moving to Seattle, and so their paths would not cross officially then (outside of a Facebook friend request in 2017).
                     Just before he moved, Topher inquired if Steph could join his team for a Ragnar race. Steph, still a terribly bad runner, declined, citing her own brother's conflicting wedding date,
                     though she was remiss, as Topher was cute.
-                    Six years later, in 2023, Steph won the Burning Man ticket lottery and found herself with an extra ticket, which she sold to Topher himself through
-                    their mutual friend and camp lead: Karen.
-                    They finally met in August in the Black Rock City desert and were thoroughly and individually endorsed to each other through another mutual friend: Britt.
-                    Steph found Topher to still be cute. They haven't stopped giggling since. 
+                    <br/><br/>Six years later, in 2023, Steph won the Burning Man ticket lottery and found herself with an extra ticket, which she sold to Topher himself through
+                    their mutual friend and camp lead: Karen H.
+                    <br/><br/>Topher and Steph finally met in August in the Black Rock City desert and were thoroughly and enthusiastically endorsed to each other through another mutual friend: Britt B.
+                    Steph found Topher to still be cute. And they had hundreds of friends in common!
+                    <br/><br/>"I met someone," Steph reported to her hasher friends upon returning home, "...it's Topher."
+                    <br/><br/>"THAT MAKES TOTAL SENSE!!!!" -- an immediate (and Steph's favorite) response from a mutual friend, Katie G.
+                    <br/><br/>Steph then visited Seattle, reveled in its green and blue glory, and moved there to be with Topher shortly after. 
+                    <br/><br/>They haven't stopped giggling since. 
                   </Typography>
                   
                   <Grid container spacing={1} sx={{ mt: 1 }}>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={bm2023} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-                        Burning Man 2023 - BRCH3
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={burn_night} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-                        Attending Local Burns
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
+                        Burning Man 2023 - BRCH3 Camp
                       </Typography>
                     </Grid>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={roadtrip} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-                        Road Trips
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
+                        Cross-Country Road Trip
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <Avatar src={burn_night} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
+                        Local Burn Events
                       </Typography>
                     </Grid>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={bremerhaven} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-                        European Adventure
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
+                        Bremerhaven, Germany
                       </Typography>
                     </Grid>
                     <Grid item xs={6} sm={3}>
                       <Avatar src={oktoberfest} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
                         Oktoberfest
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <Avatar src={rattlesnake1} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
+                        Seattle, WA
                       </Typography>
                     </Grid>
                   </Grid>
                   
                   <Typography variant="body2" sx={{ mt: 2 }}>
-                    After conquering life's various quests together - from navigating through Germany at Oktoberfest to roadtripping across the 
-                    United States - they've decided to form a permanent party. The ultimate quest culminates on July 5, 2025, when 
-                    they'll exchange legendary items (rings) at Stone Manor Inn in Lovettsville, Virginia.
+                    Having conquered many of life's various quests, and through the design and implementation of this ridiculous website, 
+                    they know they can handle (and are terribly excited to be) tackling this epic game saga of life, together.
+                    They have decided to form a permanent party. The ultimate quest culminates on July 5, 2025, when 
+                    they'll exchange legendary items (ahem, rings) at Stone Manor Inn in Lovettsville, Virginia.
                   </Typography>
                 </Box>
                 )}
@@ -416,7 +416,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
             {/* Mobile stats section */}
             {isMobile && (
               <StatsBox sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#61dafb', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.primary.light, mb: 1 }}>
                   CHARACTER STATS
                 </Typography>
                 {Object.entries(selectedChar.stats).map(([stat, value]) => (
@@ -437,27 +437,6 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
               </StatsBox>
             )}
           </CharacterFrame>
-
-          {/* Shadow characters on larger screens */}
-          {!isMobile && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle1" sx={{ color: '#FF5555', mb: 1 }}>
-                [CHARACTERS NOT SELECTED]
-              </Typography>
-              <Grid container spacing={2}>
-                {shadowCharacters.map((shadow) => (
-                  <Grid item xs={6} sm={3} key={shadow.id}>
-                    <Box sx={{ position: 'relative' }}>
-                      <ShadowAvatar variant="rounded" />
-                      <ShadowOverlay>
-                        <Typography variant="body2">NOT CHOSEN</Typography>
-                      </ShadowOverlay>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
         </Grid>
       </Grid>
     </Box>
