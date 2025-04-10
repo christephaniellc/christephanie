@@ -21,7 +21,6 @@ const MessageBanner = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   gap: theme.spacing(1),
-  textAlign: 'center',
   '& svg': {
     color: theme.palette.primary.main,
   }
@@ -34,14 +33,14 @@ const RegistryInfoSection: React.FC = () => {
         <Typography variant="h6" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
           Thank you for celebrating with us!
         </Typography>
-        <Typography paragraph align="center">
+        <Typography paragraph color='secondary'>
           Your presence at our wedding is the greatest gift of all. However, for friends and family who have been asking for gift suggestions,
           we've created this registry.  In which case your presents will be the greatest gift of all.
           </Typography>
-        <Typography paragraph align="center">
+        <Typography paragraph color='secondary'>
           <Typography component="span" sx={{ textDecoration: 'line-through' }}>We are old</Typography> Steph is getting older and we already have many of the items we need for our home.
         </Typography>
-        <Typography paragraph align="center">
+        <Typography paragraph color='secondary'>
           If you wish to give a gift, we would be grateful for a contribution to our future together through one of the funds below.
           Alternatively, we've included a link to a traditional registry for those who prefer to give a physical gift.
         </Typography>
