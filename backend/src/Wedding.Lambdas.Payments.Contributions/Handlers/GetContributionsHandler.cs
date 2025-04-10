@@ -42,20 +42,56 @@ namespace Wedding.Lambdas.Payments.Contributions.Handlers
                 {
                     if (!string.IsNullOrEmpty(filter.GuestId))
                     {
-                        entities = await _dynamoDBProvider.GetPaymentsByGuestIdAsync(audience, filter.GuestId, cancellationToken);
+                        // Get all payments for the guest
+                        var allEntities = await _dynamoDBProvider.GetPaymentsByGuestIdAsync(audience, filter.GuestId, cancellationToken);
+                        
+                        // Filter to only include "succeeded" payments
+                        // Include historical payments that don't have a status field (for backwards compatibility)
+                        entities = allEntities
+                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                        
+                        _logger.LogInformation("Filtered payments for guest {GuestId}: {TotalCount} total, {SucceededCount} with succeeded status", 
+                            filter.GuestId, allEntities.Count, entities.Count);
                     }
                     else if (!string.IsNullOrEmpty(filter.GiftCategory))
                     {
-                        entities = await _dynamoDBProvider.GetPaymentsByCategoryAsync(audience, filter.GiftCategory, cancellationToken);
+                        // Get all payments for the category
+                        var allEntities = await _dynamoDBProvider.GetPaymentsByCategoryAsync(audience, filter.GiftCategory, cancellationToken);
+                        
+                        // Filter to only include "succeeded" payments
+                        // Include historical payments that don't have a status field (for backwards compatibility)
+                        entities = allEntities
+                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                        
+                        _logger.LogInformation("Filtered payments for category {Category}: {TotalCount} total, {SucceededCount} with succeeded status", 
+                            filter.GiftCategory, allEntities.Count, entities.Count);
                     }
                     else
                     {
-                        entities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
+                        // Get all payments
+                        var allEntities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
+                        
+                        // Filter to only include "succeeded" payments
+                        // Include historical payments that don't have a status field (for backwards compatibility)
+                        entities = allEntities
+                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                        
+                        _logger.LogInformation("Filtered all payments: {TotalCount} total, {SucceededCount} with succeeded status", 
+                            allEntities.Count, entities.Count);
                     }
                 }
                 else
                 {
-                    entities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
+                    // Get all payments (no filter)
+                    var allEntities = await _dynamoDBProvider.GetAllPaymentsSortedByTimestampAsync(audience, cancellationToken);
+                    
+                    // Filter to only include "succeeded" payments
+                    // Include historical payments that don't have a status field (for backwards compatibility)
+                    entities = allEntities
+                        .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                    
+                    _logger.LogInformation("Filtered all payments (no filter): {TotalCount} total, {SucceededCount} with succeeded status", 
+                        allEntities.Count, entities.Count);
                 }
 
                 var dtos = _mapper.Map<List<ContributionDto>>(entities);
