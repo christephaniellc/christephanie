@@ -44,10 +44,10 @@ function TabPanel(props: TabPanelProps) {
       id={`details-tabpanel-${index}`}
       aria-labelledby={`details-tab-${index}`}
       {...other}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height: 'auto', overflow: 'visible' }}
     >
       {value === index && (
-        <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Box sx={{ width: '100%', height: 'auto', position: 'relative', overflow: 'visible' }}>
           {/* Custom background for each tab */}
           {index === 0 && (
             <Box
@@ -248,7 +248,7 @@ function DetailsPage() {
       sx={{
         width: '100%',
         height: contentHeight,
-        overflow: 'hidden',
+        overflow: 'auto', // Changed from 'hidden' to 'auto' to allow scrolling
         borderRadius: 'sm',
         display: 'flex',
         flexWrap: 'wrap',
@@ -317,7 +317,7 @@ function DetailsPage() {
           flexGrow: 1,
           width: '100%',
           overflowY: 'auto',
-          height: `calc(${contentHeight} - 48px - 80px - 40px)`, // Height minus tabs, banner and bottom padding
+          height: `calc(${contentHeight} - 48px)`, // Simplified height calculation
         }}
       >
         {enabledDetailItems.map((item, index) => (
