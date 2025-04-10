@@ -18,7 +18,7 @@ const DEV_CONFIG: Config = {
   audience: "https://fianceapi.dev.wedding.christephanie.com",
   webserviceUrl: "https://fianceapi.dev.wedding.christephanie.com",
   returnTo: "https://www.dev.wedding.christephanie.com",
-  stripePublicKey: "pk_test_devvvvvvvvvvvvvvvvvvvvvvv"
+  stripePublicKey: "pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno"
 };
 
 const PROD_CONFIG: Config = {
@@ -27,7 +27,7 @@ const PROD_CONFIG: Config = {
   audience: "https://fianceapi.wedding.christephanie.com",
   webserviceUrl: "https://fianceapi.wedding.christephanie.com",
   returnTo: "https://www.wedding.christephanie.com",
-  stripePublicKey: (import.meta.env.STRIPE_PUBLIC_KEY) ? import.meta.env.STRIPE_PUBLIC_KEY : "pk_test_proddddddddddddd"
+  stripePublicKey: "pk_live_51R9YnJK8kEf0vyv7vrL97dO3Acz14890H4fuMdPxWboSbwqovju6OwldFd2jmnSvBROo4o4osKKMkDGlLez5RKfp00xMwXuaV8"
 };
 
 // Test config that is used in automated tests
