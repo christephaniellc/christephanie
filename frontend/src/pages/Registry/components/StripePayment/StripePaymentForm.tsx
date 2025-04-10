@@ -300,16 +300,7 @@ function PaymentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Box sx={{ mb: 2, mt: 0 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-          Name
-        </Typography>
-        <Typography variant="body1" sx={{ fontWeight: 'medium', color: muiTheme.palette.text.primary }}>
-          {name || 'Not available'}
-        </Typography>
-      </Box>
-      
+    <form onSubmit={handleSubmit}>      
       {userHasEmail ? (
         <Box sx={{ mb: 2, mt: 2 }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
@@ -341,22 +332,6 @@ function PaymentForm({
           }}
         />
       )}
-      
-      <TextField
-        label="Gift Notes"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        fullWidth
-        margin="normal"
-        multiline
-        rows={2}
-        placeholder="Add a personal message or note about your gift..."
-        variant="outlined"
-          color="secondary"
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
       
       {/* Amount field */}
       <Box sx={{ mb: 3, mt: 2, p: 2, bgcolor: 'rgba(0, 0, 0, 0.03)', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
@@ -414,6 +389,57 @@ function PaymentForm({
         />
       </CardElementContainer>
       
+      {/* Security reassurance section */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        mt: 1, 
+        mb: 2,
+        backgroundColor: 'rgba(25, 118, 210, 0.05)',
+        padding: 1.5,
+        borderRadius: 1,
+        border: '1px solid rgba(25, 118, 210, 0.1)'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          width: '100%',
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            mb: { xs: 1, sm: 0 },
+            mr: { xs: 0, sm: 2 }
+          }}>
+            <span role="img" aria-label="secure" style={{ marginRight: '8px', fontSize: '20px' }}>🔒</span>
+            <Typography variant="caption" color="secondary" sx={{ fontWeight: 'medium' }}>
+              Secure Payment
+            </Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            Your card information is not stored in our database. Payments are securely processed by Stripe.
+          </Typography>
+        </Box>
+      </Box>
+      
+      <TextField
+        label="Gift Notes"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        fullWidth
+        margin="normal"
+        multiline
+        rows={2}
+        placeholder="Add a personal message or note about your gift..."
+        variant="outlined"
+          color="secondary"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+      
       {error && (
         <Typography color="error" variant="body2" sx={{ mt: 1 }}>
           {error}
@@ -461,6 +487,56 @@ function PaymentForm({
             `Pay $${amount}`
           )}
         </Button>
+      </Box>
+      
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        justifyContent: 'center', 
+        gap: 2,
+        mt: 4,
+        mb: 2,
+        px: 1
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+          borderRadius: '4px',
+          padding: '4px 8px',
+        }}>
+          <span role="img" aria-label="secure" style={{ marginRight: '6px', fontSize: '14px' }}>🔒</span>
+          <Typography variant="caption" color="text.secondary">
+            SSL Encrypted
+          </Typography>
+        </Box>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+          borderRadius: '4px',
+          padding: '4px 8px',
+        }}>
+          <span role="img" aria-label="verified" style={{ marginRight: '6px', fontSize: '14px' }}>✓</span>
+          <Typography variant="caption" color="text.secondary">
+            One-time Payment
+          </Typography>
+        </Box>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+          borderRadius: '4px',
+          padding: '4px 8px',
+        }}>
+          <span role="img" aria-label="privacy" style={{ marginRight: '6px', fontSize: '14px' }}>🛡️</span>
+          <Typography variant="caption" color="text.secondary">
+            Privacy Protected
+          </Typography>
+        </Box>
       </Box>
       
       <StripeBrandingContainer>
