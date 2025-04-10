@@ -77,9 +77,9 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
   return (
     <RegistryCard elevation={4}>
       <CardContentStyled
-            sx={{   
-              width: '100%',  
-              height: '100%',       
+            sx={{
+              width: '100%',
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -93,10 +93,10 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
         </Typography>
         <CardDescription variant="body2" color="textSecondary">
           {option.description}
-        </CardDescription>        
+        </CardDescription>
         <CardActions>
           <Box
-            sx={{              
+            sx={{
               width: '100%',
               display: 'flex',
               flexDirection: { xs: 'column', sm: 'row' },
@@ -113,14 +113,14 @@ const GiftCategoryCard: React.FC<GiftCategoryCardProps> = ({
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              sx={{ 
+              sx={{
                 fontSize: { xs: '1.4rem', sm: '1.6rem' },
                 mb: { xs: 1, sm: 0 },
                 mr: { xs: 0, sm: 1 }
               }}
             />
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="secondary"
               disabled={!customAmount}
               onClick={() => onContribute(option.id)}
