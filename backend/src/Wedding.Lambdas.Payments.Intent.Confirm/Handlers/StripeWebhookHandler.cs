@@ -62,7 +62,7 @@ namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
                         GuestName = intent.Metadata["GuestName"],
                         GuestEmail = intent.Metadata["GuestEmail"],
                         GiftCategory = intent.Metadata["GiftCategory"],
-                        GiftNotes = intent.Metadata["giftNotes"],
+                        GiftNotes = intent.Metadata["GiftNotes"],
                         IsAnonymous = bool.TryParse(intent.Metadata["isAnonymous"], out var anon) && anon
                     };
 
