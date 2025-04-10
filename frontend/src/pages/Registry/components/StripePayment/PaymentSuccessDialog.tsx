@@ -94,7 +94,7 @@ const PaymentSuccessDialog = ({
             
             {email && (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">Receipt sent to:</Typography>
+                <Typography variant="body2" color="text.secondary">Email receipt:</Typography>
                 <Typography variant="body2" fontWeight="medium">{email}</Typography>
               </Box>
             )}
@@ -118,7 +118,7 @@ const PaymentSuccessDialog = ({
           </Box>
           
           <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 2 }}>
-            {email ? `A confirmation email has been sent to ${email}.` : 'Your contribution has been received and recorded.'}
+            {email ? `A confirmation email will be sent to ${email}.` : 'Your contribution has been received and recorded.'}
           </Typography>
         </Box>
       </DialogContent>

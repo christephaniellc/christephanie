@@ -31,11 +31,11 @@ import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import {
-  SaveTheDateStep,
-  saveTheDateStepsState,
-  stdStepperState,
-  stdTabIndex,
-} from '@/store/steppers/steppers';
+  RsvpStep,
+  rsvpStepsState,
+  rsvpStepperState,
+  rsvpTabIndex,
+} from '@/store/steppers';
 import { userState } from '@/store/user';
 import Container from '@mui/material/Container';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -46,8 +46,8 @@ export default function RSVPStepper() {
   const { user: auth0User } = useAuth0();
   const [_, familyActions] = useFamily();
   const familyState = useRecoilValue(familyGuestsStates);
-  const [saveTheDateSteps, updateSteps] = useRecoilState(saveTheDateStepsState);
-  const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
+  const [rsvpSteps, updateSteps] = useRecoilState(rsvpStepsState);
+  const [tabIndex, setTabIndex] = useRecoilState(rsvpTabIndex);
 
   const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
   const [visibleStepIndex, setVisibleStepIndex] = useState(0);
@@ -57,12 +57,12 @@ export default function RSVPStepper() {
   
   // Compute the visible steps based on attendance status
   const visibleSteps = useMemo(() => {
-    if (!familyState) return Object.entries(saveTheDateSteps);
+    if (!familyState) return Object.entries(rsvpSteps);
     
     // Filter steps based on whether at least one person in the family is attending
     const relevantSteps = familyState.atLeastOneAttending
-      ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
-      : Object.entries(saveTheDateSteps).filter(([key, step]) => 
+      ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
+      : Object.entries(rsvpSteps).filter(([key, step]) => 
           basicSteps.includes(key) && step.display
         );
         
@@ -70,12 +70,12 @@ export default function RSVPStepper() {
     // console.log('Step filtering info:', {
     //   atLeastOneAttending: familyState.atLeastOneAttending,
     //   basicSteps,
-    //   allSteps: Object.keys(saveTheDateSteps),
+    //   allSteps: Object.keys(rsvpSteps),
     //   filteredSteps: relevantSteps.map(([key]) => key)
     // });
         
     // When attendance status changes, we need to update the visibleStepIndex in the next render
-    const currentStepKey = Object.keys(saveTheDateSteps)[tabIndex];
+    const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
     const newVisibleIndex = relevantSteps.findIndex(([key]) => key === currentStepKey);
     if (newVisibleIndex !== -1 && newVisibleIndex !== visibleStepIndex) {
       // Use setTimeout to avoid state updates during render
@@ -85,7 +85,7 @@ export default function RSVPStepper() {
     }
         
     return relevantSteps;
-  }, [saveTheDateSteps, familyState, basicSteps, tabIndex]);
+  }, [rsvpSteps, familyState, basicSteps, tabIndex]);
 
   // Effect that runs on initial load and when the location changes
   // This will check for the step query parameter and set the active step
@@ -93,15 +93,15 @@ export default function RSVPStepper() {
     const params = new URLSearchParams(location.search);
     const step = params.get('step');
     
-    if (step && Object.keys(saveTheDateSteps).includes(step)) {
+    if (step && Object.keys(rsvpSteps).includes(step)) {
       // Check if the step should be visible based on attendance status
       const isStepVisible = familyState?.atLeastOneAttending 
-        ? saveTheDateSteps[step].display
-        : basicSteps.includes(step) && saveTheDateSteps[step].display;
+        ? rsvpSteps[step].display
+        : basicSteps.includes(step) && rsvpSteps[step].display;
       
       if (isStepVisible) {
         // Set the global tab index for this step
-        const index = Object.keys(saveTheDateSteps).indexOf(step);
+        const index = Object.keys(rsvpSteps).indexOf(step);
         //console.log('Setting step index from URL params:', step, index);
         setTabIndex(index);
         
@@ -113,23 +113,23 @@ export default function RSVPStepper() {
         }
       } else {
         // If the step shouldn't be visible, redirect to the first visible step
-        const firstVisibleStep = visibleSteps[0]?.[0] || 'attendance';
-        const firstVisibleIndex = Object.keys(saveTheDateSteps).indexOf(firstVisibleStep);
+        const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
+        const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
         //console.log('Redirecting to first visible step:', firstVisibleStep);
         setTabIndex(firstVisibleIndex);
         setVisibleStepIndex(0); // First visible step
-        navigate(`/save-the-date?step=${firstVisibleStep}`, { replace: true });
+        navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
       }
       setInitialUrlProcessed(true);
     } else if (!initialUrlProcessed) {
       // No step in URL, initialize to the first visible step
-      const firstVisibleStep = visibleSteps[0]?.[0] || 'attendance';
-      const firstVisibleIndex = Object.keys(saveTheDateSteps).indexOf(firstVisibleStep);
+      const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
+      const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
       setTabIndex(firstVisibleIndex);
       setVisibleStepIndex(0);
       setInitialUrlProcessed(true);
     }
-  }, [location.search, saveTheDateSteps, setTabIndex, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
+  }, [location.search, rsvpSteps, setTabIndex, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
   
   // Effect to update the visibleStepIndex when tabIndex, visibleSteps, or URL changes
   useEffect(() => {
@@ -140,7 +140,7 @@ export default function RSVPStepper() {
     const stepFromUrl = params.get('step');
     
     // Prioritize step from URL if it exists
-    const currentStepKey = stepFromUrl || Object.keys(saveTheDateSteps)[tabIndex];
+    const currentStepKey = stepFromUrl || Object.keys(rsvpSteps)[tabIndex];
     
     // Find the index of the current step in the visible steps array
     const visibleIndex = visibleSteps.findIndex(([key]) => key === currentStepKey);
@@ -160,52 +160,52 @@ export default function RSVPStepper() {
         // Update URL to match the first visible step
         const firstVisibleStep = visibleSteps[0]?.[0];
         if (firstVisibleStep) {
-          navigate(`/save-the-date?step=${firstVisibleStep}`, { replace: true });
+          navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
         }
       }
     }
-  }, [tabIndex, visibleSteps, saveTheDateSteps, initialUrlProcessed, location.search]);
+  }, [tabIndex, visibleSteps, rsvpSteps, initialUrlProcessed, location.search]);
 
   // Effect to update URL when tab changes - only after initial URL is processed
   useEffect(() => {
     // Only update URL after we've processed the initial URL parameter
     if (initialUrlProcessed) {
-      const currentStepKey = Object.keys(saveTheDateSteps)[tabIndex];
+      const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
       const params = new URLSearchParams(location.search);
       const currentUrlStep = params.get('step');
       
       // If the current step is not visible based on attendance status, redirect
       const isStepVisible = familyState?.atLeastOneAttending 
-        ? saveTheDateSteps[currentStepKey]?.display
-        : basicSteps.includes(currentStepKey) && saveTheDateSteps[currentStepKey]?.display;
+        ? rsvpSteps[currentStepKey]?.display
+        : basicSteps.includes(currentStepKey) && rsvpSteps[currentStepKey]?.display;
       
       if (!isStepVisible) {
         // Redirect to the first visible step
-        const firstVisibleStep = visibleSteps[0]?.[0] || 'attendance';
-        const firstVisibleIndex = Object.keys(saveTheDateSteps).indexOf(firstVisibleStep);
+        const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
+        const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
         //console.log('Current step not visible, redirecting to:', firstVisibleStep);
         setTabIndex(firstVisibleIndex);
-        const newUrl = `/save-the-date?step=${firstVisibleStep}`;
+        const newUrl = `/rsvp?step=${firstVisibleStep}`;
         window.history.replaceState(null, '', newUrl);
       } else if (currentStepKey && currentUrlStep !== currentStepKey) {
         //console.log('Updating URL to match current step:', currentStepKey);
         // Use history.replaceState to update URL without adding new history entry
-        const newUrl = `/save-the-date?step=${currentStepKey}`;
+        const newUrl = `/rsvp?step=${currentStepKey}`;
         window.history.replaceState(null, '', newUrl);
       }
     }
-  }, [tabIndex, saveTheDateSteps, location.search, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
+  }, [tabIndex, rsvpSteps, location.search, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
 
   const handleNavigateToStep = (step: string) => {
     // Check if the step should be visible based on attendance status
     const isStepVisible = familyState?.atLeastOneAttending 
-      ? saveTheDateSteps[step].display
-      : basicSteps.includes(step) && saveTheDateSteps[step].display;
+      ? rsvpSteps[step].display
+      : basicSteps.includes(step) && rsvpSteps[step].display;
     
     if (isStepVisible) {
       familyActions.getFamily();
       // Set the global tab index
-      setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
+      setTabIndex(Object.keys(rsvpSteps).indexOf(step));
       
       // Find the index in visibleSteps as well
       const newVisibleIndex = visibleSteps.findIndex(([key]) => key === step);
@@ -213,7 +213,7 @@ export default function RSVPStepper() {
         setVisibleStepIndex(newVisibleIndex);
       }
       
-      navigate(`/save-the-date?step=${step}`);
+      navigate(`/rsvp?step=${step}`);
     } else {
       //console.log('Attempted to navigate to invisible step:', step);
     }

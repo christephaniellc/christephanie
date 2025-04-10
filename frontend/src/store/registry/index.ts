@@ -41,7 +41,7 @@ export const giftOptionsData: GiftOption[] = [
   {
     id: 'remodel',
     title: 'Remodelling Our House',
-    description: 'Our 105 year-old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube). Help us prevent zapping fires!',
+    description: 'Our 105 year-old house needs some TLC, from structural support improvements to electrical modernization (we still have knob and tube--yikes). Help us prevent zapping fires!',
     icon: ConstructionIcon
   },
   {
@@ -232,14 +232,7 @@ export const useRegistry = () => {
       ...prev,
       open: false
     }));
-    
-    // Show a notification for immediate feedback
-    setNotification({
-      show: true,
-      message: `Payment error: ${message}`,
-      severity: 'error'
-    });
-    
+
     // Show detailed error dialog immediately
     console.log('Setting error dialog state to:', {
       open: true,
@@ -296,13 +289,6 @@ export const useRegistry = () => {
     });
   };
 
-  const closeNotification = () => {
-    setNotification(prev => ({
-      ...prev,
-      show: false
-    }));
-  };
-
   return {
     giftOptions,
     customAmounts,
@@ -317,7 +303,6 @@ export const useRegistry = () => {
     handlePaymentError,
     closePaymentDialog,
     closeSuccessDialog,
-    closeErrorDialog,
-    closeNotification
+    closeErrorDialog
   };
 };

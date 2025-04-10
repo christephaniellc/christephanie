@@ -25,6 +25,7 @@ namespace Wedding.Common.ThirdParty
         }
 
         public async Task<StripePaymentIntentResponseDto> CreatePaymentIntent(
+            string audience,
             GuestDto guest, 
             int amount, 
             string currency, 
@@ -66,6 +67,8 @@ namespace Wedding.Common.ThirdParty
                 var metadata = new Dictionary<string, string>
                 {
                     { "GuestId", guest.GuestId },
+                    { "InvitationCode", guest.InvitationCode },
+                    { "Audience", audience },
                     { "GuestEmail", guest.Email.Value },
                     { "GuestName", $"{guest.FirstName} {guest.LastName}" },
                     { "IsAnonymous", giftMetaData.IsAnonymous.ToString() },

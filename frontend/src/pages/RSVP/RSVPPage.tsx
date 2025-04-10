@@ -3,12 +3,12 @@ import Box from '@mui/material/Box';
 import { useFamily } from '@/store/family';
 import { useAuth0 } from '@auth0/auth0-react';
 import ElPulpo from '@/assets/el_pulpo_cabeza.jpg';
-import SaveTheDateStepper from '@/components/Steppers/SaveTheDateStepper';
+import RSVPStepper from '@/components/Steppers/RSVPStepper';
 import { GuestViewModel } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import { darken, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
+import { rsvpStepsState, rsvpStepperState, rsvpTabIndex } from '@/store/steppers';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import SummaryView from '@/components/SummaryView';
@@ -28,18 +28,18 @@ function RSVPPage() {
   const { contentHeight } = useAppLayout();
   const { user: auth0User } = useAuth0();
   const { getFamilyUnitQuery } = familyActions;
-  const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
-  const [tabIndex, setTabIndex] = useRecoilState(stdTabIndex);
-  const stdStepper = useRecoilValue(stdStepperState);
+  const rsvpSteps = useRecoilValue(rsvpStepsState);
+  const [tabIndex, setTabIndex] = useRecoilState(rsvpTabIndex);
+  const rsvpStepper = useRecoilValue(rsvpStepperState);
   const { screenWidth } = useAppLayout();
   const theme = useTheme();
   const navigate = useNavigate();
   const genericQuestions = useMemo(
-    () => ['comments', 'mailingAddress', 'summary'].includes(stdStepper.currentStep[0]),
-    [stdStepper.currentStep],
+    () => ['comments', 'mailingAddress', 'summary'].includes(rsvpStepper.currentStep[0]),
+    [rsvpStepper.currentStep],
   );
   const FamilyQueryQuestion = useMemo(() => {
-    switch (stdStepper.currentStep[0]) {
+    switch (rsvpStepper.currentStep[0]) {
       case 'comments':
         return <AutosizedTextArea />;
       case 'mailingAddress':
@@ -49,12 +49,12 @@ function RSVPPage() {
       default:
         return <></>;
     }
-  }, [stdStepper.currentStep]);
+  }, [rsvpStepper.currentStep]);
 
   const handleNavigateToStep = (step: string) => {
     familyActions.getFamily();
-    setTabIndex(Object.keys(saveTheDateSteps).indexOf(step));
-    navigate(`/save-the-date?step=${step}`);
+    setTabIndex(Object.keys(rsvpSteps).indexOf(step));
+    navigate(`/rsvp?step=${step}`);
   };
 
   const contentHeightWithStepper = useMemo(() => {
@@ -67,11 +67,11 @@ function RSVPPage() {
   }, [contentHeight, genericQuestions]);
 
   // Current step name for accessibility labels
-  const currentStepName = stdStepper.currentStep[0] || 'attendance';
+  const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
   
   return (
-    <Box role="main" aria-label="Save the date form">
-      <SaveTheDateStepper />
+    <Box role="main" aria-label="RSVP form">
+      <RSVPStepper />
       <Box
         component={Container}
         onMouseMove={handleMouseMove}
@@ -171,21 +171,21 @@ function RSVPPage() {
                 familyActions.getFamily();
 
                 // Find previous visible step using same logic as next button
-                const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
+                const basicSteps = ['welcome', 'mailingAddress', 'comments', 'summary'];
                 const atLeastOneAttending = family?.guests?.some(
                   guest => guest.rsvp?.invitationResponse === 'Interested'
                 ) ?? false;
                 
                 // Filter steps based on attendance
                 const visibleSteps = atLeastOneAttending
-                  ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
-                  : Object.entries(saveTheDateSteps).filter(
+                  ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
+                  : Object.entries(rsvpSteps).filter(
                       ([key, step]) => basicSteps.includes(key) && step.display
                     );
                 
                 // Find the current visible step index
                 const currentVisibleIndex = visibleSteps.findIndex(
-                  ([key]) => key === stdStepper.currentStep[0]
+                  ([key]) => key === rsvpStepper.currentStep[0]
                 );
                 
                 // Go to the previous visible step
@@ -199,12 +199,12 @@ function RSVPPage() {
               <StephsActualFavoriteTypographyBackNext
                 sx={{
                   textShadow: `3px 3px 0 ${darken(
-                    stdStepper.currentStep[1].completed
+                    rsvpStepper.currentStep[1].completed
                       ? theme.palette.success.dark
                       : theme.palette.error.dark,
                     0.5,
                   )}`,
-                  color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+                  color: rsvpStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
                 Wait, go back
@@ -214,18 +214,18 @@ function RSVPPage() {
             <Button
               variant="outlined"
               color={
-                stdStepper.currentStep[1].completed ? 'success' : ('error' as 'success' | 'error')
+                rsvpStepper.currentStep[1].completed ? 'success' : ('error' as 'success' | 'error')
               }
-              aria-label={tabIndex < stdStepper.totalTabs - 1 ? "Continue to next step" : "Finish and submit form"}
+              aria-label={tabIndex < rsvpStepper.totalTabs - 1 ? "Continue to next step" : "Finish and submit form"}
               sx={{
                 flexShrink: 0,
                 backdropFilter: 'blur(20px)',
                 backgroundColor: 'rgba(0,0,0,.8)',
-                display: tabIndex < stdStepper.totalTabs ? 'inherit' : 'none',
+                display: tabIndex < rsvpStepper.totalTabs ? 'inherit' : 'none',
               }}
               onClick={async () => {
                 // If we're at the last tab, navigate home
-                if (tabIndex >= stdStepper.totalTabs - 1) {
+                if (tabIndex >= rsvpStepper.totalTabs - 1) {
                   navigate('/');
                   return;
                 }
@@ -235,11 +235,11 @@ function RSVPPage() {
                 // This allows them to see the mailing address step even if declined/pending
                 
                 // If we're at the comments step (last step before summary), navigate to summary
-                if (stdStepper.currentStep[0] === 'comments') {
+                if (rsvpStepper.currentStep[0] === 'comments') {
                   handleNavigateToStep('summary');
                 } else {
                   // Otherwise find next visible step
-                  const basicSteps = ['attendance', 'mailingAddress', 'comments', 'summary'];
+                  const basicSteps = ['welcome', 'mailingAddress', 'comments', 'summary'];
                                     
                   // Force a refresh of family data first to ensure we have latest state
                   // especially important after changing from Pending to Interested
@@ -252,14 +252,14 @@ function RSVPPage() {
                   
                   // Filter steps based on UPDATED attendance status
                   const visibleSteps = refreshedAtLeastOneAttendingState
-                    ? Object.entries(saveTheDateSteps).filter(([_, step]) => step.display)
-                    : Object.entries(saveTheDateSteps).filter(
+                    ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
+                    : Object.entries(rsvpSteps).filter(
                         ([key, step]) => basicSteps.includes(key) && step.display
                       );
                   
                   // Find the current visible step index
                   const currentVisibleIndex = visibleSteps.findIndex(
-                    ([key]) => key === stdStepper.currentStep[0]
+                    ([key]) => key === rsvpStepper.currentStep[0]
                   );
                   
                   // Go to the next visible step
@@ -278,15 +278,15 @@ function RSVPPage() {
               <StephsActualFavoriteTypographyBackNext
                 sx={{
                   textShadow: `3px 3px 0 ${darken(
-                    stdStepper.currentStep[1].completed
+                    rsvpStepper.currentStep[1].completed
                       ? theme.palette.success.dark
                       : theme.palette.error.dark,
                     0.5,
                   )}`,
-                  color: stdStepper.currentStep[1].completed ? 'success.main' : 'error.main',
+                  color: rsvpStepper.currentStep[1].completed ? 'success.main' : 'error.main',
                 }}
               >
-                {tabIndex < stdStepper.totalTabs - 1 ? 'Next' : 'Finish'}
+                {tabIndex < rsvpStepper.totalTabs - 1 ? 'Next' : 'Finish'}
               </StephsActualFavoriteTypographyBackNext>
             </Button>
           </Box>
