@@ -2,36 +2,40 @@
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.Lambda.APIGatewayEvents;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Stripe;
 using Wedding.Abstractions.Dtos.Stripe;
-using Wedding.Abstractions.Entities;
+using Wedding.Common.Abstractions;
 using Wedding.Common.Helpers.AWS;
+using Wedding.Lambdas.Payments.Intent.Confirm.Commands;
+using Wedding.Lambdas.Payments.Intent.Confirm.Validation;
 using StripeConfiguration = Wedding.Common.Configuration.StripeConfiguration;
 
-namespace Wedding.Lambdas.Payments.Intent.Handlers
+namespace Wedding.Lambdas.Payments.Intent.Confirm.Handlers
 {
-    public class StripeWebhookHandler
+    public class StripeWebhookHandler :
+        IAsyncQueryHandler<GetPaymentIntentStatusQuery, StripePaymentIntentResponseDto>
     {
         private readonly ILogger<StripeWebhookHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
+        private readonly IMapper _mapper;
         private readonly IAwsSesHelper _sesHelper;
 
-        public StripeWebhookHandler(ILogger<StripeWebhookHandler> logger, IDynamoDBProvider dynamoDbProvider, IAwsSesHelper sesHelper)
+        public StripeWebhookHandler(ILogger<StripeWebhookHandler> logger, IDynamoDBProvider dynamoDbProvider, IMapper mapper, IAwsSesHelper sesHelper)
         {
             _logger = logger;
             _dynamoDBProvider = dynamoDbProvider;
+            _mapper = mapper;
             _sesHelper = sesHelper;
         }
 
-        public async Task<APIGatewayProxyResponse> HandleAsync(APIGatewayProxyRequest request, CancellationToken cancellationToken = default)
+        public async Task<StripePaymentIntentResponseDto> GetAsync(GetPaymentIntentStatusQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
+            query.Validate(nameof(query));
+
             try
             {
-                var json = request.Body;
-                var signatureHeader = request.Headers["Stripe-Signature"];
-
                 var config = await AwsParameterCache.GetConfigAsync<StripeConfiguration>();
                 var endpointSecret = config.WebhookSecret;
                 if (string.IsNullOrEmpty(endpointSecret))
@@ -40,8 +44,8 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                 }
 
                 var stripeEvent = EventUtility.ConstructEvent(
-                    json,
-                    signatureHeader,
+                    query.RequestBodyJson,
+                    query.SignatureHeader,
                     endpointSecret
                 );
 
@@ -65,22 +69,25 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     _logger.LogInformation("PaymentIntent succeeded: {Id} - audience: {Audience}", intent.Id, metaData.Audience);
                     _logger.LogInformation("Metadata: {Metadata}", JsonSerializer.Serialize(metaData, new JsonSerializerOptions { WriteIndented = true }));
 
-                    var paymentEntity = new PaymentIntentEntity
-                    {
-                        PaymentIntentId = intent.Id,
-                        GuestId = metaData.GuestId,
-                        InvitationCode = metaData.InvitationCode,
-                        Amount = intent.Amount,
-                        Currency = intent.Currency,
-                        GiftCategory = metaData.GiftCategory,
-                        GiftNotes = metaData.GiftNotes,
-                        GuestName = metaData.GuestName,
-                        IsAnonymous = metaData.IsAnonymous,
-                        Timestamp = DateTime.UtcNow.ToString("o"),
-                        Status = intent.Status // Store the payment status
-                    };
+                    var paymentEntity = await _dynamoDBProvider.GetPaymentByIdAsync(metaData.Audience, intent.Id, cancellationToken);
+                    paymentEntity.Status = intent.Status;
 
-                    _logger.LogInformation("Saving payment with status {Status}: {Payment}",
+                    // var paymentEntity = new PaymentIntentEntity
+                    // {
+                    //     PaymentIntentId = intent.Id,
+                    //     GuestId = metaData.GuestId,
+                    //     InvitationCode = metaData.InvitationCode,
+                    //     Amount = intent.Amount,
+                    //     Currency = intent.Currency,
+                    //     GiftCategory = metaData.GiftCategory,
+                    //     GiftNotes = metaData.GiftNotes,
+                    //     GuestName = metaData.GuestName,
+                    //     IsAnonymous = metaData.IsAnonymous,
+                    //     Timestamp = DateTime.UtcNow.ToString("o"),
+                    //     Status = intent.Status // Store the payment status
+                    // };
+
+                    _logger.LogInformation("Updating payment with status {Status}: {Payment}",
                         paymentEntity.Status,
                         JsonSerializer.Serialize(paymentEntity));
 
@@ -102,32 +109,46 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                     {
                         _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", metaData.GuestEmail);
                     }
-                }
 
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = 200,
-                    Body = "Webhook handled successfully"
-                };
+                    return _mapper.Map<StripePaymentIntentResponseDto>(paymentEntity);
+                }
             }
             catch (StripeException stripeEx)
             {
                 _logger.LogError(stripeEx, "Stripe error: {Message}", stripeEx.Message);
-                return new APIGatewayProxyResponse
+
+                return new StripePaymentIntentResponseDto
                 {
-                    StatusCode = 400,
-                    Body = $"Stripe error: {stripeEx.Message}"
+                    Error = new PaymentError
+                    {
+                        Type = "verification_error",
+                        Code = "400",
+                        Message = stripeEx.Message
+                    }
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected webhook error");
-                return new APIGatewayProxyResponse
+                _logger.LogError(ex, "Unexpected webhook error: " + ex.Message);
+                return new StripePaymentIntentResponseDto
                 {
-                    StatusCode = 500,
-                    Body = $"Webhook error: {ex.Message}"
+                    Error = new PaymentError
+                    {
+                        Type = "verification_error",
+                        Code = "500",
+                        Message = ex.Message
+                    }
                 };
             }
+            return new StripePaymentIntentResponseDto
+            {
+                Error = new PaymentError
+                {
+                    Type = "verification_error",
+                    Code = "501",
+                    Message = "unknown error"
+                }
+            };
         }
 
         private async Task SendPaymentConfirmationEmail(
