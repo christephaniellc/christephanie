@@ -423,6 +423,12 @@ namespace Wedding.Common.Helpers.AWS
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
         }
 
+        public async Task UpdatePaymentStatusAsync(string audience, PaymentIntentEntity entity, string status, CancellationToken cancellationToken = default)
+        {
+            entity.Status = status;
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+        }
+
         public async Task DeletePaymentAsync(string audience, string paymentId, CancellationToken cancellationToken = default)
         {
             var partitionKey = DynamoKeys.GetPartitionKey(paymentId);

@@ -34,6 +34,7 @@ namespace Wedding.Common.Helpers.AWS
         Task SaveDesignAsync(string audience, DesignConfigurationEntity entity, CancellationToken cancellationToken = default);
         Task DeleteDesignAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default);
         Task SavePaymentAsync(string audience, PaymentIntentEntity entity, CancellationToken cancellationToken = default);
+        Task UpdatePaymentStatusAsync(string audience, PaymentIntentEntity entity, string status, CancellationToken cancellationToken = default);
         Task DeletePaymentAsync(string audience, string paymentId, CancellationToken cancellationToken = default);
 
     }
