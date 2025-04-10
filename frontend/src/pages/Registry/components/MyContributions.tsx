@@ -71,7 +71,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
     bottom: '-8px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '60px',
+    width: '75%',
     height: '2px',
     backgroundColor: theme.palette.secondary.main,
   }
