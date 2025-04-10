@@ -23,20 +23,17 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
         private readonly IDynamoDBProvider _dynamoDBProvider;
         private readonly IMapper _mapper;
         private readonly IStripePaymentProvider _stripePaymentProvider;
-        private readonly IAwsSesHelper _sesHelper;
 
         public CreatePaymentIntentHandler(
             ILogger<CreatePaymentIntentHandler> logger, 
             IDynamoDBProvider dynamoDbProvider, 
             IMapper mapper, 
-            IStripePaymentProvider stripePaymentProvider,
-            IAwsSesHelper sesHelper)
+            IStripePaymentProvider stripePaymentProvider)
         {
             _logger = logger;
             _dynamoDBProvider = dynamoDbProvider;
             _mapper = mapper;
             _stripePaymentProvider = stripePaymentProvider;
-            _sesHelper = sesHelper;
         }
 
         public async Task<StripePaymentIntentResponseDto> ExecuteAsync(CreatePaymentIntentCommand command, CancellationToken cancellationToken = default(CancellationToken))
@@ -81,6 +78,7 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                                        command.AuthContext.GuestId, command.Amount, command.Currency, JsonSerializer.Serialize(giftMetaData));
 
                 var result = await _stripePaymentProvider.CreatePaymentIntent(
+                    command.AuthContext.Audience,
                     guestDto,
                     command.Amount,
                     command.Currency,
@@ -139,21 +137,10 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         // Don't send for failed, canceled, or other statuses
                         if (checkResult.Status == "succeeded" || checkResult.Status == "processing")
                         {
-                            try
+                            if (checkResult.Error != null)
                             {
-                                await SendPaymentConfirmationEmail(
-                                    giftMetaData.GuestName,
-                                    giftMetaData.GuestEmail,
-                                    result.PaymentIntentId,
-                                    command.Amount / 100M, // Convert cents to dollars for email display
-                                    giftMetaData.GiftCategory,
-                                    giftMetaData.GiftNotes,
-                                    paymentEntity.Timestamp,
-                                    cancellationToken);
-                            }
-                            catch (Exception emailEx)
-                            {
-                                _logger.LogError(emailEx, "Failed to send payment confirmation email to {Email}", giftMetaData.GuestEmail);
+                                _logger.LogError("Payment intent verification failed: {ErrorMessage}", checkResult.Error.Message);
+                                return checkResult;
                             }
                         }
                         else 
@@ -219,46 +206,6 @@ namespace Wedding.Lambdas.Payments.Intent.Handlers
                         Message = "An unexpected error occurred while processing your payment. Please try again."
                     }
                 };
-            }
-        }
-        
-        private async Task SendPaymentConfirmationEmail(
-            string name,
-            string email,
-            string paymentIntentId,
-            decimal amount,
-            string category,
-            string notes,
-            string timestamp,
-            CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(email))
-            {
-                _logger.LogWarning("Cannot send payment confirmation email: email address is empty");
-                return;
-            }
-
-            try
-            {
-                _logger.LogInformation("Sending payment confirmation email to {Email}", email);
-                
-                var response = await _sesHelper.SendPaymentConfirmationEmail(
-                    name,
-                    email,
-                    paymentIntentId,
-                    amount,
-                    category,
-                    notes,
-                    timestamp,
-                    cancellationToken);
-                
-                _logger.LogInformation("Payment confirmation email sent successfully to {Email}, MessageId: {MessageId}", 
-                    email, response?.MessageId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send payment confirmation email to {Email}", email);
-                // Don't rethrow - we don't want to fail the payment if email fails
             }
         }
     }
