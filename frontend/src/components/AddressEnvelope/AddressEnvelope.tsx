@@ -193,7 +193,7 @@ const AddressEnvelope: React.FC = () => {
       // they want an announcement
       const areAllGuestsDeclinedOrPending = !attendanceState.atLeastOneAttending;
       if (areAllGuestsDeclinedOrPending) {
-        setWantsAnnouncement(familyUnit.mailingAddress?.uspsVerified || false);
+        setWantsAnnouncement(true);
       }
     }
   }, [familyUnit, attendanceState]);
@@ -221,7 +221,7 @@ const AddressEnvelope: React.FC = () => {
 
   // Function to handle announcement preference selection
   const handleAnnouncementSelection = (wants: boolean) => {
-    setWantsAnnouncement(wants);
+    setWantsAnnouncement(true);
 
     // We're not using tags to avoid modifying the user's comment
     // Just store their preference in state
@@ -255,54 +255,31 @@ const AddressEnvelope: React.FC = () => {
           >
             <Typography
               variant="h5"
-              color="secondary"
-              sx={{ mb: 2, fontFamily: 'Snowstorm, sans-serif' }}
+              sx={{ 
+                mb: 0,
+                fontFamily: 'Snowstorm, sans-serif'
+              }}
             >
-              Would you like to receive a wedding announcement in the mail celebrating how great and
-              perfect our lives are in every way, with pictures of us laughing in different
-              directions at real life amazing stuff?
+              <Box sx={{
+              }}>
+                <span style={{ 
+                  color: theme.palette.secondary.main
+                 }}>
+                Would you like to receive a wedding announcement in the mail celebrating how great and
+                perfect our lives are in every way, with pictures of us laughing in different
+                directions at real life amazing stuff?
+                </span>
+              </Box>
+              <Box sx={{ fontColor: '#FFF' }}>
+                <br/>If so, please enter your address below:
+              </Box>
             </Typography>
-
-            <ButtonGroup variant="contained" color="secondary" size="large" sx={{ mt: 2 }}>
-              <Button
-                onClick={() => handleAnnouncementSelection(true)}
-                variant={
-                  wantsAnnouncement === true
-                    ? 'contained'
-                    : ('outlined' as 'contained' | 'outlined')
-                }
-                sx={{
-                  px: 4,
-                  backgroundColor:
-                    wantsAnnouncement === true ? theme.palette.secondary.main : 'rgba(0,0,0,.8)',
-                  fontFamily: 'Snowstorm, sans-serif',
-                }}
-              >
-                Yes
-              </Button>
-              <Button
-                onClick={() => handleAnnouncementSelection(false)}
-                variant={
-                  wantsAnnouncement === false
-                    ? 'contained'
-                    : ('outlined' as 'contained' | 'outlined')
-                }
-                sx={{
-                  px: 4,
-                  backgroundColor:
-                    wantsAnnouncement === false ? theme.palette.secondary.main : 'rgba(0,0,0,.8)',
-                  fontFamily: 'Snowstorm, sans-serif',
-                }}
-              >
-                No
-              </Button>
-            </ButtonGroup>
           </Paper>
         </Fade>
       )}
 
       {/* Only show the address form if the user wants an announcement or not declined/pending */}
-      {(attendanceState?.atLeastOneAttending || wantsAnnouncement === true) && (
+      {(attendanceState?.atLeastOneAttending || true) && (
         <Box
           sx={{
             minWidth: '100%',
@@ -588,26 +565,6 @@ const AddressEnvelope: React.FC = () => {
               </Button>
             )}
           </Box>
-        </Box>
-      )}
-
-      {/* Show a message if they decline the announcement */}
-      {!attendanceState?.atLeastOneAttending && wantsAnnouncement === false && (
-        <Box
-          sx={{
-            mt: 4,
-            p: 3,
-            textAlign: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: 2,
-            maxWidth: rem(500),
-          }}
-        >
-          <StephsActualFavoriteTypography variant="h5">Your loss.</StephsActualFavoriteTypography>
-          <Typography sx={{ mt: 2 }}>
-            We'll miss having you at our wedding, but we appreciate you letting us know.
-          </Typography>
         </Box>
       )}
     </Box>

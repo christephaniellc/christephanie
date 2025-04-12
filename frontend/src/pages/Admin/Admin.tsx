@@ -272,7 +272,6 @@ function AdminPage() {
           {/* Left Panel - Family List */}
           <Grid item xs={12} md={4} lg={3} sx={{ 
             height: isMobile ? 'auto' : 'calc(100vh - 150px)',
-            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -280,15 +279,21 @@ function AdminPage() {
               p: 2, 
               height: '100%',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              overflow: 'hidden' // Move overflow to Paper component
             }}>
               <Typography variant="h6" component="h2" gutterBottom>
                 Family Units
               </Typography>
               <Divider sx={{ mb: 2 }} />
               
-              {/* Family List component */}
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              {/* Family List component - allow it to fill available space */}
+              <Box sx={{ 
+                flex: 1, 
+                display: 'flex', 
+                flexDirection: 'column',
+                overflow: 'auto' // Enable scrolling here
+              }}>
                 <FamilyList 
                   families={adminData}
                   selectedFamily={selectedFamily}

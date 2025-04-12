@@ -14,6 +14,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import PublicIcon from '@mui/icons-material/Public';
+
+// Import flag SVGs
+import FlagUS from '@/assets/flags/us.svg';
+import FlagCA from '@/assets/flags/ca.svg';
+import FlagDE from '@/assets/flags/de.svg';
+import FlagNO from '@/assets/flags/no.svg';
+import FlagMX from '@/assets/flags/mx.svg';
+import FlagTH from '@/assets/flags/th.svg';
 
 import { FamilyUnitDto, FamilyUnitViewModel } from '@/types/api';
 import { getFamilyStatusColor, getLatestActivityAndGuest } from './StatsHelpers';
@@ -77,16 +86,39 @@ const FamilyCard = ({ family, onGuestClick }: FamilyCardProps) => {
             <Typography variant="h6" component="div">
               {family.unitName}
               {(!family.mailingAddress || !family.mailingAddress.uspsVerified) && (
-                <Tooltip title={!family.mailingAddress ? "No address provided" : "Address not verified"}>
-                  <WarningAmberIcon 
-                    fontSize="small" 
-                    sx={{ 
-                      color: 'warning.main', 
-                      verticalAlign: 'middle', 
-                      ml: 0.5,
-                      fontSize: '1rem'
-                    }} 
-                  />
+                <Tooltip title={!family.mailingAddress ? "No address provided" : (family.mailingAddress.country ? `${family.mailingAddress.country} address` : "Address not verified")}>
+                  {family.mailingAddress?.country ? (
+                    <Box
+                      component="img"
+                      src={
+                        family.mailingAddress.country === 'Canada' ? FlagCA :
+                        family.mailingAddress.country === 'Germany' ? FlagDE :
+                        family.mailingAddress.country === 'Norway' ? FlagNO :
+                        family.mailingAddress.country === 'Mexico' ? FlagMX :
+                        family.mailingAddress.country === 'Thailand' ? FlagTH :
+                        FlagUS
+                      }
+                      alt={family.mailingAddress.country}
+                      sx={{
+                        height: '1.2rem',
+                        width: 'auto',
+                        verticalAlign: 'middle',
+                        ml: 0.5,
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '2px'
+                      }}
+                    />
+                  ) : (
+                    <WarningAmberIcon 
+                      fontSize="small" 
+                      sx={{ 
+                        color: 'warning.main', 
+                        verticalAlign: 'middle', 
+                        ml: 0.5,
+                        fontSize: '1rem'
+                      }} 
+                    />
+                  )}
                 </Tooltip>
               )}
             </Typography>
