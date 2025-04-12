@@ -5,7 +5,7 @@ import oktoberfest from '../../../assets/engagement-photos/oktoberfest.jpg';
 import bremerhaven from '../../../assets/engagement-photos/bremerhaven.jpg';
 import roadtrip from '../../../assets/engagement-photos/roadtrip.jpg';
 import bm2023 from '../../../assets/engagement-photos/bm2023.jpg';
-import topherAvatar from '../../../assets/engagement-photos/toph_seattle.jpg';
+import topherAvatar from '../../../assets/engagement-photos/toph.jpg';
 import stephAvatar from '../../../assets/engagement-photos/steph_car.jpg';
 import kilton from '../../../assets/engagement-photos/kilton.jpg';
 import laney from '../../../assets/engagement-photos/laney.jpg';
@@ -218,7 +218,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
           <StephsActualFavoriteTypographyNoDrop 
             sx={{
               textAlign: 'left',
-              fontSize: '1.8rem',
+              fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
               mb: 2
             }}
           >
@@ -254,20 +254,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
             onClick={() => setSelectedCharacter('laney')}
           >
             Player 4
-          </SelectButton>
-          
-          {/* Shadow characters (kids?!) */}
-          {shadowCharacters.map((shadow) => (
-            <Box key={shadow.id} sx={{ position: 'relative'}}>
-              <SelectButton 
-                isSelected={false} 
-                onClick={() => {}}
-                disabled
-              >
-                ???
-              </SelectButton>
-            </Box>
-          ))}
+          </SelectButton>          
         </Grid>
 
         {/* Main character profile */}

@@ -16,6 +16,7 @@ import Schedule from '@/components/DetailsPages/Schedule/Schedule';
 import ThingsToDo from '@/components/DetailsPages/ThingsToDo';
 import { isFeatureEnabled } from '@/config';
 import { detailsRoutes } from '@/routes/details-routes';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton';
 
 // Type definition for detail items that can be displayed in tabs
 interface DetailItem {
@@ -31,11 +32,13 @@ interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+  enabled: boolean;
 }
 
 // TabPanel component for displaying tab content
 function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, enabled, ...other } = props;
+  const theme = useTheme();
 
   return (
     <div
@@ -44,7 +47,7 @@ function TabPanel(props: TabPanelProps) {
       id={`details-tabpanel-${index}`}
       aria-labelledby={`details-tab-${index}`}
       {...other}
-      style={{ width: '100%', height: 'auto', overflow: 'visible' }}
+      style={{ width: '100%', height: 'auto', overflow: 'visible'}}
     >
       {value === index && (
         <Box sx={{ width: '100%', height: 'auto', position: 'relative', overflow: 'visible' }}>
@@ -54,9 +57,10 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                left: 0,
-                width: '100%',
+                width: '100vw', // Use viewport width
                 height: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)', // Center the background
                 backgroundImage: 'url(/src/assets/engagement-photos/topher_and_steph_rsvp2.jpg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -70,9 +74,10 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                left: 0,
-                width: '100%',
+                width: '100vw', // Use viewport width
                 height: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)', // Center the background
                 backgroundImage: 'url(/src/assets/holiday-inn-express-brunswick.jpg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -86,16 +91,82 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                left: 0,
-                width: '100%',
+                width: '100vw', // Use viewport width
                 height: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)', // Center the background
                 background:
                   'linear-gradient(45deg, rgba(76,175,80,0.05) 0%, rgba(33,150,243,0.05) 50%, rgba(156,39,176,0.05) 100%)',
                 zIndex: 0,
               }}
             />
           )}
-          {children}
+          {enabled ? (
+            children
+          ) : (
+            <Container
+              disableGutters
+              maxWidth={false}
+              sx={{
+                width: '100vw', // Full viewport width
+                maxWidth: 'none !important', // Override all max-width settings
+                overflow: 'auto',
+                borderRadius: 'sm',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                paddingBottom: '80px',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                padding: 0,
+                margin: 0,
+                left: '50%',
+                transform: 'translateX(-50%)', // Center the container
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backdropFilter: 'blur(2px)',
+                  zIndex: 0
+                },
+              }}
+            >
+              <Box sx={{ 
+                width: '100%',
+                mt: 4,
+                pb: 2,
+                position: 'relative',
+                zIndex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+                <StephsActualFavoriteTypography variant="h4" sx={{ 
+                  textAlign: 'center',
+                  fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+                }}>
+                COMING SOON
+                </StephsActualFavoriteTypography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: 'center',
+                    maxWidth: '600px',
+                    mt: 2,
+                    mb: 4,
+                    px: 2,
+                  }}
+                >
+                  This section is currently under construction. Please check back later for updates!
+                </Typography>
+              </Box>
+            </Container>
+          )}
         </Box>
       )}
     </div>
@@ -232,19 +303,18 @@ function DetailsPage() {
       enabled: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE'),
       path: '/details/schedule',
     },
-    {
-      label: 'Things to Do',
-      component: detailsComponents.thingsToDo,
-      enabled: isFeatureEnabled('ENABLE_DETAILS_THINGS_TO_DO'),
-      path: '/details/things-to-do',
-    },
+    // {
+    //   label: 'Things to Do',
+    //   component: detailsComponents.thingsToDo,
+    //   enabled: isFeatureEnabled('ENABLE_DETAILS_THINGS_TO_DO'),
+    //   path: '/details/things-to-do',
+    // },
   ];
 
-  // Filter out disabled items
-  const enabledDetailItems = detailItems.filter((item) => item.enabled);
-
   return (
-    <Container
+    <Container 
+      disableGutters
+      maxWidth={false}
       sx={{
         width: '100%',
         height: contentHeight,
@@ -253,8 +323,8 @@ function DetailsPage() {
         display: 'flex',
         flexWrap: 'wrap',
         position: 'relative',
-        padding: `0 !important`, // Remove default padding for the tabs to extend full width
-        margin: `0 !important`,
+        padding: 0,
+        margin: 0,
       }}
       data-testid="details-container"
     >
@@ -285,7 +355,7 @@ function DetailsPage() {
             },
           }}
         >
-          {enabledDetailItems.map((item, index) => (
+          {detailItems.map((item, index) => (
             <Tab
               key={index}
               label={item.label}
@@ -318,10 +388,11 @@ function DetailsPage() {
           width: '100%',
           overflowY: 'auto',
           height: `calc(${contentHeight} - 48px)`, // Simplified height calculation
+          maxWidth: '100%',
         }}
       >
-        {enabledDetailItems.map((item, index) => (
-          <TabPanel key={index} value={tabIndex} index={index}>
+        {detailItems.map((item, index) => (
+          <TabPanel key={index} value={tabIndex} index={index} enabled={item.enabled}>
             {item.component}
           </TabPanel>
         ))}
