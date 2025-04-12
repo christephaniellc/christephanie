@@ -13,11 +13,14 @@ import {
   Button,
   Chip,
   Grid,
+  ButtonBase,
+  Link,
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { DirectionsBus, NoTransfer, OpenInNew, HotelOutlined, Star } from '@mui/icons-material';
 import RatingComponent from '@/components/RatingComponent/RatingComponent';
+import PlaceIcon from '@mui/icons-material/Place';
 
 // Import images directly
 import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
@@ -32,6 +35,25 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
   const theme = useTheme();
   // Create an array to track expanded state of each hotel
   const [expandedHotels, setExpandedHotels] = React.useState<boolean[]>([true, true, true]);
+
+  const handleMapNewWindow = (locationKey: string) => {
+    const addressMap: Record<string, string> = {
+      venue: 'Stone Manor Boutique Inn, Lovettsville, VA',
+      hotelBrunswick: '1501 Village Green Way, Brunswick, MD 21716',
+      hotelCharlestown: '681 Flowing Springs Rd, Ranson, WV 25438',
+      //airport: 'PDX, Portland International Airport',
+    };
+
+      const address = addressMap[locationKey];
+      if (!address) {
+        console.error(`Unknown location key: ${locationKey}`);
+        return;
+      }
+    
+      const query = encodeURIComponent(address);
+      const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+      window.open(url, '_blank');
+    };
 
   const handleToggleHotelDetails = (index: number) => {
     const newExpandedHotels = [...expandedHotels];
@@ -52,11 +74,13 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
     return imagePath;
   };
 
-  // Hotel data from CampingPreferences
   const hotelOptions = [
     {
       name: 'Holiday Inn Express Suites - Brunswick, MD',
       image: '.../assets/holiday-inn-express-brunswick.jpg',
+      address: '1501 Village Green Way, Brunswick, MD 21716',
+      url: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/brunswick/hgrbw/hoteldetail',
+      urlText: 'Hotel Website',
       googleRating: 4.6,
       phoneNumber: "(301) 969-8020",
       numberOfRatings: 195,
@@ -64,11 +88,17 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       onShuttleRoute: true,
       driveMinsFromWedding: 18,
       hotelBlock: false,
-      bookingNote: "This hotel does not do formal wedding blocks, but they will give you a discount if you ask for the 'wedding rate'"
+      bookingNotes: [
+        "This hotel does not do formal wedding blocks, but they will give you a discount if you call and ask for the 'wedding rate.'",
+        "No pets allowed."
+      ]
     },
     {
       name: 'Holiday Inn Express Charles Town, Ranson, WV',
       image: '.../assets/holiday-inn-express-charlestown.jpg',
+      address: '681 Flowing Springs Rd, Ranson, WV 25438',
+      url: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/ranson/cwvsr/hoteldetail',
+      urlText: 'Hotel Website',
       googleRating: 4.5,
       phoneNumber: "(304) 725-1330",
       numberOfRatings: 755,
@@ -76,11 +106,16 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       onShuttleRoute: true,
       driveMinsFromWedding: 23,
       hotelBlock: true,
-      bookingNote: "We have reserved a block of hotel rooms here: ask for the 'Stubler Wedding block rate'"
+      bookingNotes: [
+        "We have reserved a block of hotel rooms here: call and ask for the 'Stubler Wedding block rate.'",
+        "Pet friendly."
+      ]
     },
     {
       name: 'Lovettsville Area Hotels',
       image: undefined,
+      url: 'https://www.google.com/search?q=hotels+near+stone+manor+inn+lovettsville+va',
+      urlText: 'Google Search',
       googleRating: 0,
       phoneNumber: undefined,
       numberOfRatings: 0,
@@ -88,7 +123,10 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       onShuttleRoute: false,
       driveMinsFromWedding: 0,
       hotelBlock: false,
-      bookingNote: "Search for hotels in Lovettsville, VA and surrounding areas like Purcellville and Leesburg"
+      bookingNotes: 
+      [
+        "Search for hotels in Lovettsville, VA and surrounding areas like Purcellville and Leesburg"
+      ]
     },
   ];
 
@@ -119,16 +157,59 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           sx={{
             textAlign: 'center',
             mt: 2,
-            fontSize: '2rem',
+            fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
           }}
         >
           Accommodations
         </StephsActualFavoriteTypography>
 
-        <Typography variant="body1" sx={{ mt: 2, textAlign: 'center' }}>
-          We've arranged some convenient lodging options to make your trip to our wedding as comfortable as possible. 
-          The wedding venue is located in Lovettsville, Virginia.
-        </Typography>
+        <Box sx={{
+                width: '100%',
+                display: 'flex',
+                textAlign: 'center',
+                border: '1px dotted orange'
+              }}>
+              <Typography variant="body1" sx={{ 
+                mt: 2, 
+                textAlign: 'center',
+                width: '100%'
+                }}>
+              We've partnered with some convenient lodging options to make your trip to our wedding as comfortable as possible. 
+              <br />
+              <br />
+              Our wedding venue:
+              <Box sx={{ mt: 2 }}>
+                <ButtonBase
+                  onClick={() => handleMapNewWindow('venue')}
+                  sx={{
+                    color: theme.palette.secondary.main,
+                    display: 'inline-flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    px: 2,
+                    pb: 1.5,
+                    borderRadius: 2,
+                    fontSize: '1.1rem',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <PlaceIcon fontSize="small" sx={{ mr: 0.5 }} />
+                    <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color: 'inherit' }}>
+                      Stone Manor Boutique Inn
+                    </Typography>
+                    <OpenInNew fontSize="small" sx={{ ml: 0.5 }} />
+                  </Box>
+                  <Typography variant="body2" component="span" sx={{ color: 'inherit' }}>
+                    13193 Mountain Rd, Lovettsville, VA 20180
+                  </Typography>
+                </ButtonBase>
+              </Box>
+          </Typography>
+        </Box>
       </Box>
 
       <Stack
@@ -149,21 +230,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
             width: '100%',
             overflow: 'hidden',
           }}
-        >   
-          <Box sx={{ 
-            p: 2, 
-            pb: 1, 
-            background: alpha(theme.palette.background.paper, 0.9),
-            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
-          }}>
-            <Typography 
-              variant="h6" 
-              fontWeight="500" 
-              color="secondary"
-            >
-              Hotel options: click each for more info
-            </Typography>
-          </Box>    
+        >     
           
           {/* Hotel options list */}
           <Stack
@@ -259,48 +326,114 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                       
                       <CardContent sx={{ flex: 1, p: 2 }}>
                         {/* Hotel name */}
-                        <Typography variant="h6" component="h2" gutterBottom>
-                          {hotel.name}
-                        </Typography>
+                        <Box
+                          sx={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between'
+                          }}
+                          >
+                          <Typography variant="h6" component="h2" gutterBottom>
+                            {hotel.name}
+                          </Typography>
+                          
+                          {/* Rating */}
+                          {hotel.googleRating > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <RatingComponent
+                                score={hotel.googleRating}
+                                numberOfRatings={hotel.numberOfRatings}
+                              />
+                            </Box>
+                          )}
+
+                          {/* Link */}
+                          <Button
+                            variant="outlined"
+                            color="secondary"
+                            size="small"
+                            endIcon={<OpenInNew />}
+                            onClick={() => window.open(`${hotel.url}`)}
+                            sx={{ mt: 1, alignSelf: 'flex-start' }}
+                          >
+                            {hotel.urlText}
+                          </Button>
+                        </Box>
                         
-                        {/* Rating */}
-                        {hotel.googleRating > 0 && (
-                          <Box sx={{ mb: 2 }}>
-                            <RatingComponent
-                              score={hotel.googleRating}
-                              numberOfRatings={hotel.numberOfRatings}
-                            />
-                          </Box>
-                        )}
-                        
-                        <Stack spacing={1.5}>
+                        <Stack spacing={0.4}>
                           {/* Phone number */}
                           {hotel.phoneNumber && (
-                            <Typography variant="body2">
-                              <strong>Phone:</strong> {hotel.phoneNumber}
-                            </Typography>
+                            <StephsActualFavoriteTypographyNoDrop variant="body2">
+                              <Box component="span" 
+                              sx={{ 
+                                color: theme.palette.primary.light, 
+                                fontWeight: 'bold', 
+                                fontSize: '1.2rem' 
+                                }}>
+                                Phone:
+                              </Box>{' '}
+                              <Box component="span" sx={{ color: '#FFFFFF' }}>
+                                {hotel.phoneNumber}
+                              </Box>
+                            </StephsActualFavoriteTypographyNoDrop>
                           )}
                           
                           {/* Drive time */}
-                          {hotel.driveMinsFromWedding > 0 && (
-                            <Typography variant="body2">
-                              <strong>Drive time to venue:</strong> {hotel.driveMinsFromWedding} minutes
-                            </Typography>
+                          {hotel.driveMinsFromWedding > 0 && (                            
+                            <StephsActualFavoriteTypographyNoDrop variant="body2">
+                              <Box component="span" 
+                              sx={{ 
+                                color: theme.palette.primary.light, 
+                                fontWeight: 'bold', 
+                                fontSize: '1.2rem' 
+                                }}>
+                                Drive time to venue:
+                              </Box>{' '}
+                              <Box component="span" sx={{ color: '#FFFFFF' }}>
+                              {hotel.driveMinsFromWedding} minutes
+                              </Box>
+                            </StephsActualFavoriteTypographyNoDrop>
                           )}
                           
-                          {/* Rate info */}
-                          {hotel.bookingNote && (
-                            <Typography variant="body2" color="primary.light">
-                              <span style={{ color: "#FFFFFF" }}><strong>Booking note:</strong></span><br/>
-                              {hotel.bookingNote}
-                            </Typography>
+                          {/* Notes */}
+                          {hotel.bookingNotes && hotel.bookingNotes.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                              <StephsActualFavoriteTypographyNoDrop variant="body2">
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    color: theme.palette.primary.light,
+                                    fontWeight: 'bold',
+                                    fontSize: '1.2rem',
+                                  }}
+                                >
+                                  Booking notes:
+                                </Box>
+                              </StephsActualFavoriteTypographyNoDrop>
+
+                              <Box sx={{ ml: 2, mt: 0.5, mb: 5 }}>
+                                {hotel.bookingNotes.map((note, idx) => (
+                                  <Box
+                                    key={idx}
+                                    sx={{
+                                      color: '#FFFFFF',
+                                      fontFamily: 'Arial',
+                                      fontSize: '0.95rem',
+                                      mb: 0.5,
+                                    }}
+                                  >
+                                    {note}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
                           )}
                           
                           {/* Shuttle info */}
                           {hotel.onShuttleRoute ? (
                             <Chip
                               icon={<DirectionsBus />}
-                              label="Shuttle Available"
+                              label="Shuttle to Venue Available"
                               color="primary"
                               size="small"
                               sx={{ alignSelf: 'flex-start', mt: 1 }}
@@ -314,19 +447,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                               size="small"
                               sx={{ alignSelf: 'flex-start', mt: 1 }}
                             />
-                          )}
+                          )}                         
                           
-                          {/* Google search button */}
-                          <Button
-                            variant="outlined"
-                            color="secondary"
-                            size="small"
-                            endIcon={<OpenInNew />}
-                            onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
-                            sx={{ mt: 1, alignSelf: 'flex-start' }}
-                          >
-                            Search on Google
-                          </Button>
                         </Stack>
                       </CardContent>
                     </Card>
@@ -362,9 +484,9 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           
           <Typography component="div" variant="body2">
             <ul>
-              <li>Pick-up from Holiday Inn Express Brunswick: 3:30pm and 4:00pm</li>
-              <li>Pick-up from Holiday Inn Express Charles Town: 3:15pm and 3:45pm</li>
-              <li>Return shuttles will run at 10:00pm, 10:30pm, and 11:00pm</li>
+              <li>Pick-up from Holiday Inn Express Brunswick: 4:00pm and 5:00pm</li>
+              <li>Pick-up from Holiday Inn Express Charles Town: 4:00pm and 5:00pm</li>
+              <li>Return shuttles will run at 10:00pm and 11:00pm</li>
             </ul>
           </Typography>
           
@@ -386,7 +508,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           
           <Typography variant="body2">
             If you have any questions about accommodations or transportation, please contact us at:<br />
-            <strong>accommodations@wedding.christephanie.com</strong>
+            <strong>hosts@wedding.christephanie.com</strong>
           </Typography>
         </Paper>
       </Box>

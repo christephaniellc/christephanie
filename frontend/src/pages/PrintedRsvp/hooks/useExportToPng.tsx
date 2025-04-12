@@ -195,17 +195,27 @@ export const useExportToPng = () => {
           // Find corner elements and ensure they're visible
           const cornerElements = elementClone.querySelectorAll('[style*="border-top"][style*="border-right"]');
           cornerElements.forEach(corner => {
-            (corner as HTMLElement).style.zIndex = '50'; // Very high z-index
+            (corner as HTMLElement).style.zIndex = '50'; // High z-index, but lower than El Pulpo
           });
           
-          // Special handling for El Pulpo icon - scale it properly for export
+          // Find decorative dividers and ensure they don't overlap with El Pulpo
+          const decorativeDividers = elementClone.querySelectorAll('.decorative-divider, [data-divider="true"]');
+          decorativeDividers.forEach(divider => {
+            (divider as HTMLElement).style.zIndex = '50'; // Same as corner elements
+          });
+          
+          // Special handling for El Pulpo icon - scale it properly for export and ensure it's on top
           const elPulpoIcons = elementClone.querySelectorAll('.el-pulpo-icon');
           elPulpoIcons.forEach(icon => {
             const img = icon as HTMLImageElement;
             
+            // Apply higher z-index to ensure it's on top of dividers
+            img.style.position = 'relative';
+            img.style.zIndex = '100'; // Higher than corner elements and dividers
+            
             // For export, preserve the icon dimensions from the component
-            img.style.maxWidth = '84px';
-            img.style.maxHeight = '84px';
+            img.style.maxWidth = '100px';
+            //img.style.maxHeight = '100px';
             img.style.width = 'auto'; // Use auto width to maintain aspect ratio
             img.style.height = '100%'; // Use 100% height to fill the container
             img.style.objectFit = 'contain'; // Ensure the image keeps its aspect ratio
@@ -225,8 +235,8 @@ export const useExportToPng = () => {
               (container as HTMLElement).style.alignItems = 'center';
               (container as HTMLElement).style.paddingLeft = '2px';
               (container as HTMLElement).style.height = '100px';
-              (container as HTMLElement).style.position = 'static'; // Use static positioning like in the component
-              (container as HTMLElement).style.zIndex = '5';
+              (container as HTMLElement).style.position = 'relative'; // Changed to relative for z-index to work
+              (container as HTMLElement).style.zIndex = '100'; // Higher z-index to make sure it's on top
               // Remove any top/right positioning that might cause issues
               (container as HTMLElement).style.top = '';
               (container as HTMLElement).style.right = '';

@@ -55,7 +55,7 @@ function Attire({handleTabLink}: AttireProps) {
         <StephsActualFavoriteTypography variant="h4" sx={{ 
           textAlign: 'center',
           mt: 2,
-          fontSize: '2rem'
+          fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
         }}>
           Dress Code: Be Yourself
         </StephsActualFavoriteTypography>
