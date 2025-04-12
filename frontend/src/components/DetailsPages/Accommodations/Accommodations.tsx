@@ -21,10 +21,13 @@ import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext,
 import { DirectionsBus, NoTransfer, OpenInNew, HotelOutlined, Star } from '@mui/icons-material';
 import RatingComponent from '@/components/RatingComponent/RatingComponent';
 import PlaceIcon from '@mui/icons-material/Place';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 // Import images directly
 import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
 import charlestownHotel from '@/assets/holiday-inn-express-charlestown.jpg';
+import camping from '@/assets/camping.jpg';
 
 interface AccommodationsProps {
   handleTabLink: (to: string) => void;
@@ -69,6 +72,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       return brunswickHotel;
     } else if (imagePath.includes('charlestown')) {
       return charlestownHotel;
+    } else if (imagePath.includes('camping')) {
+      return camping;
     }
     
     return imagePath;
@@ -112,6 +117,21 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       ]
     },
     {
+      name: 'Camping at the Wedding Venue',
+      image: '.../assets/camping.jpg',
+      address: '13193 Mountain Rd, Lovettsville, VA 20180',
+      googleRating: 5,
+      numberOfRatings: 0,
+      driveMinsFromWedding: 0,
+      onShuttleRoute: undefined,
+      hotelBlock: false,
+      bookingNotes: [
+        "Camp with Steph, Topher, and other camping enthusiasts at our venue!",
+        "We will have campsite space for you and your gear.",
+        "(RV hookups not available, unfortunately)"
+      ]
+    },
+    {
       name: 'Lovettsville Area Hotels',
       image: undefined,
       url: 'https://www.google.com/search?q=hotels+near+stone+manor+inn+lovettsville+va',
@@ -125,7 +145,21 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       hotelBlock: false,
       bookingNotes: 
       [
-        "Search for hotels in Lovettsville, VA and surrounding areas like Purcellville and Leesburg"
+        "Search for hotels in Lovettsville, VA and surrounding areas, like Purcellville and Leesburg"
+      ]
+    },
+    {
+      name: 'Lovettsville Area Airbnbs',
+      image: undefined,
+      url: 'https://www.airbnb.com/s/Lovettsville--VA/homes?refinement_paths%5B%5D=%2Fhomes&place_id=ChIJZeY72Y4etokRVVMaH1j87vo&location_bb=Qh0klMKbQp9CHQbywptMOw%3D%3D&acp_id=b1c524a2-360c-48a3-a81f-666d70428308&date_picker_type=calendar&checkin=2025-07-05&checkout=2025-07-06&search_type=autocomplete_click',
+      urlText: 'Airbnb Search',
+      googleRating: 0,
+      phoneNumber: undefined,
+      onShuttleRoute: false,
+      hotelBlock: false,
+      bookingNotes: 
+      [
+        "Search for AirBnbs in Lovettsville, VA and surrounding areas, like Purcellville and Leesburg"
       ]
     },
   ];
@@ -167,7 +201,6 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                 width: '100%',
                 display: 'flex',
                 textAlign: 'center',
-                border: '1px dotted orange'
               }}>
               <Typography variant="body1" sx={{ 
                 mt: 2, 
@@ -178,7 +211,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
               <br />
               <br />
               Our wedding venue:
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 1 }}>
                 <ButtonBase
                   onClick={() => handleMapNewWindow('venue')}
                   sx={{
@@ -264,7 +297,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                       backgroundColor: 'rgba(255,255,255,.05)',
                     }
                   }}
-                  endIcon={<OpenInNew />}
+                  endIcon={expandedHotels[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                   startIcon={<HotelOutlined />}
                   onClick={() => handleToggleHotelDetails(index)}
                 >
@@ -348,6 +381,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           )}
 
                           {/* Link */}
+                          {hotel.url && (
                           <Button
                             variant="outlined"
                             color="secondary"
@@ -358,6 +392,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           >
                             {hotel.urlText}
                           </Button>
+                          )}
                         </Box>
                         
                         <Stack spacing={0.4}>
@@ -438,7 +473,10 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                               size="small"
                               sx={{ alignSelf: 'flex-start', mt: 1 }}
                             />
-                          ) : (
+                          ) : hotel.onShuttleRoute === undefined ? (
+                            <></>
+                          )
+                          :(
                             <Chip
                               icon={<NoTransfer />}
                               label="No Shuttle Service"
