@@ -80,6 +80,7 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
     setValidatedAddress(null);
     
     if (initialAddress) {
+      // Reset the form with the new address completely
       setAddressForm({
         streetAddress: initialAddress.streetAddress || '',
         secondaryAddress: initialAddress.secondaryAddress || '',
@@ -91,6 +92,17 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
         cityAbbreviation: initialAddress.cityAbbreviation,
         zipPlus4: initialAddress.zipPlus4,
         country: (initialAddress as any)?.country || null // Add country field with default
+      });
+    } else {
+      // If no address, reset to empty form
+      setAddressForm({
+        streetAddress: '',
+        secondaryAddress: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        uspsVerified: false,
+        country: null
       });
     }
   }, [initialAddress]);
