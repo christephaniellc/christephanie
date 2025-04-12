@@ -106,19 +106,14 @@ function PaymentForm({
     const checkUserEmail = async () => {
       try {
         const user = await api.getMe();
-        console.log('User data from API:', user);
+        //console.log('User data from API:', user);
         
         // Check if user.email is a VerifiedDto with a valid value
         const userEmail = user.email && user.email.value ? user.email.value : '';
         const hasEmail = typeof userEmail === 'string' && userEmail.trim().length > 0;
         
-        console.log('User email check:', { userEmail, hasEmail });
+        //console.log('User email check:', { userEmail, hasEmail });
         setUserHasEmail(hasEmail);
-
-        // TODO: Debug, remove
-        const stripePublicKey = getConfig().stripePublicKey || 
-        'pk_test_51R9Ynf2fLHdiDfDYE4j29s49kjr6g5JOcF6qTUH29dBM4iTAck7k7HasED7jwXxzp2URulNwV3sRaBtDu3VRpge400EVCA9Mno';
-        console.log(`Stripe public key: ${stripePublicKey}`);
         
         if (hasEmail) {
           setEmail(userEmail);
@@ -128,7 +123,7 @@ function PaymentForm({
         if (user.firstName) {
           const guestName = user.firstName + (user.lastName ? ` ${user.lastName}` : '');
           setName(guestName);
-          console.log('Setting user name:', guestName);
+          //console.log('Setting user name:', guestName);
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -163,15 +158,15 @@ function PaymentForm({
         return null;
       }
       
-      console.log('Creating payment intent with data:', {
-        amount: Math.round(amount * 100),
-        currency: 'usd',
-        category,
-        notes,
-        email,
-        isAnonymous,
-        name
-      });
+      //console.log('Creating payment intent with data:', {
+      //   amount: Math.round(amount * 100),
+      //   currency: 'usd',
+      //   category,
+      //   notes,
+      //   email,
+      //   isAnonymous,
+      //   name
+      // });
       
       // Get the payment intent from our backend
       const { clientSecret: secret, error: paymentError } = await api.createPaymentIntent(
@@ -320,7 +315,7 @@ function PaymentForm({
             validateEmail(e.target.value);
           }}
           error={!!emailError}
-          helperText={emailError || "We'll send your receipt to this email"}
+          helperText={emailError || ""}
           fullWidth
           margin="normal"
           required
@@ -350,10 +345,24 @@ function PaymentForm({
               USD
             </Typography>
           </Box>
+          
+          <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+            <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>toward</Box>{' '}
+            <Box component="span" sx={{ color: '#E9950C' }}>{category}</Box>
+          </Typography>
         </Box>
-        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#E9950C' }}>
-          toward {category}
-        </Typography>
+          <Typography variant="caption" 
+              color="secondary"
+            sx={{
+              //fontStyle: 'italic', 
+              //whiteSpace: 'nowrap', 
+              fontSize: '0.7rem', 
+              display: 'block',  
+              textAlign: 'right'
+            }}>
+            <Box component="span" sx={{ color: 'text.secondary' }}>from</Box>{' '}
+            <Box component="span" sx={{ color: '#E9950C', fontStyle: 'italic' }}>{name}</Box>
+          </Typography>
       </Box>
       
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, mb: 1 }}>
@@ -419,7 +428,7 @@ function PaymentForm({
             </Typography>
           </Box>
           <Typography variant="caption" color="text.secondary">
-            Your card information is not stored in our database. Payments are securely processed by Stripe.
+            Your card information is not stored. Payments are securely processed by Stripe.
           </Typography>
         </Box>
       </Box>
@@ -604,11 +613,15 @@ function StripePaymentForm({
       open={open} 
       onClose={onClose}
       fullWidth
-      maxWidth="sm"
+      maxWidth="md"
       sx={{
         '& .MuiDialog-paper': {
           margin: { xs: '16px', sm: '32px' },
-          width: { xs: 'calc(100% - 32px)', sm: '500px' },
+          width: { 
+            xs: 'calc(100% - 32px)', 
+            sm: '600px',
+            md: '700px' },
+          maxWidth: '620px',
           borderRadius: { xs: '12px', sm: '16px' },
           overflow: 'hidden'
         }
@@ -618,7 +631,7 @@ function StripePaymentForm({
         color={theme.palette.primary.main}
         sx={{
           textAlign: 'center',
-          fontSize: '1.8rem',
+          fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
           pt: 3,
           pb: 0
         }}
@@ -626,10 +639,12 @@ function StripePaymentForm({
         Complete Your Contribution
       </StephsActualFavoriteTypographyNoDrop>
       <DialogContent sx={{ 
-        padding: { xs: '16px', sm: '24px' },
+        padding: { xs: '16px', sm: '24px', md: '16px' },
         '&:first-of-type': {
-          paddingTop: { xs: '16px', sm: '24px' }
-        }
+          paddingTop: { xs: '16px', sm: '24px', md: '16px' }
+        },
+        maxWidth: { sm: '90%', md: '85%' },
+        margin: '0 auto'
       }}>
         <Elements stripe={stripePromise} options={options} key={elementsKey}>
           <PaymentForm 
