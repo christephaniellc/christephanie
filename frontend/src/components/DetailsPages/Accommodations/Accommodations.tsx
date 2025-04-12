@@ -80,6 +80,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       image: '.../assets/holiday-inn-express-brunswick.jpg',
       address: '1501 Village Green Way, Brunswick, MD 21716',
       url: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/brunswick/hgrbw/hoteldetail',
+      urlText: 'Hotel Website',
       googleRating: 4.6,
       phoneNumber: "(301) 969-8020",
       numberOfRatings: 195,
@@ -88,8 +89,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       driveMinsFromWedding: 18,
       hotelBlock: false,
       bookingNotes: [
-        "This hotel does not do formal wedding blocks, but they will give you a discount if you ask for the 'wedding rate'",
-        ""
+        "This hotel does not do formal wedding blocks, but they will give you a discount if you call and ask for the 'wedding rate.'",
+        "No pets allowed."
       ]
     },
     {
@@ -97,6 +98,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       image: '.../assets/holiday-inn-express-charlestown.jpg',
       address: '681 Flowing Springs Rd, Ranson, WV 25438',
       url: 'https://www.ihg.com/holidayinnexpress/hotels/us/en/ranson/cwvsr/hoteldetail',
+      urlText: 'Hotel Website',
       googleRating: 4.5,
       phoneNumber: "(304) 725-1330",
       numberOfRatings: 755,
@@ -105,12 +107,15 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       driveMinsFromWedding: 23,
       hotelBlock: true,
       bookingNotes: [
-        "We have reserved a block of hotel rooms here: ask for the 'Stubler Wedding block rate'"
+        "We have reserved a block of hotel rooms here: call and ask for the 'Stubler Wedding block rate.'",
+        "Pet friendly."
       ]
     },
     {
       name: 'Lovettsville Area Hotels',
       image: undefined,
+      url: 'https://www.google.com/search?q=hotels+near+stone+manor+inn+lovettsville+va',
+      urlText: 'Google Search',
       googleRating: 0,
       phoneNumber: undefined,
       numberOfRatings: 0,
@@ -351,7 +356,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                             onClick={() => window.open(`${hotel.url}`)}
                             sx={{ mt: 1, alignSelf: 'flex-start' }}
                           >
-                            Hotel Website
+                            {hotel.urlText}
                           </Button>
                         </Box>
                         
@@ -479,9 +484,9 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           
           <Typography component="div" variant="body2">
             <ul>
-              <li>Pick-up from Holiday Inn Express Brunswick: 3:30pm and 4:00pm</li>
-              <li>Pick-up from Holiday Inn Express Charles Town: 3:15pm and 3:45pm</li>
-              <li>Return shuttles will run at 10:00pm, 10:30pm, and 11:00pm</li>
+              <li>Pick-up from Holiday Inn Express Brunswick: 4:00pm and 5:00pm</li>
+              <li>Pick-up from Holiday Inn Express Charles Town: 4:00pm and 5:00pm</li>
+              <li>Return shuttles will run at 10:00pm and 11:00pm</li>
             </ul>
           </Typography>
           
@@ -503,7 +508,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           
           <Typography variant="body2">
             If you have any questions about accommodations or transportation, please contact us at:<br />
-            <strong>accommodations@wedding.christephanie.com</strong>
+            <strong>hosts@wedding.christephanie.com</strong>
           </Typography>
         </Paper>
       </Box>

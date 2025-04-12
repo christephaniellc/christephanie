@@ -152,6 +152,35 @@ function TabPanel(props: TabPanelProps) {
                 }}>
                 COMING SOON
                 </StephsActualFavoriteTypography>
+
+                {/* Circular logo with animation */}
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '120px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.1)' },
+                      '100%': { transform: 'scale(1)' }
+                    },
+                    '& img': {
+                      height: '120px',
+                      width: '120px',
+                      animation: 'pulse 3s infinite ease-in-out',
+                    }
+                  }}
+                >
+                  <img 
+                    src="/favicon_big_art_transparent.png" 
+                    alt="Wedding Logo" 
+                  />
+                </Box>
+
                 <Typography
                   variant="body1"
                   sx={{
