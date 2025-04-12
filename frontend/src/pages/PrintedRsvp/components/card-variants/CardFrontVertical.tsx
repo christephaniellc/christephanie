@@ -10,8 +10,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { FamilyUnitDto } from '@/types/api';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
-//import ElPulpoIcon from '@/assets/favicon_big_art_transparent.png';
-import ElPulpoIcon from '@/assets/pulpo_diamond2.png';
+import ElPulpoIcon from '@/assets/pulpo_2rings.png';
 
 interface CardFrontVerticalProps {
   selectedFamily: FamilyUnitDto | null;
@@ -120,7 +119,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
       {/* Ornamental Header */}
       <Box sx={{
         position: 'relative',
-        top: 16,
+        top: 36,
         left: 0,
         right: 0,
         textAlign: 'right',
@@ -134,7 +133,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             fontSize: '1.8rem', 
             lineHeight: '1.8rem',
             color: theme.palette.secondary.main,
-            mb: 2,
+            mb: 1,
             mr: 7
           }}
         >
@@ -163,7 +162,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
           width: '80%',
           height: '2px',
           background: `linear-gradient(to right, transparent, #9c27b0, transparent)`,
-          mb: 1
+          mb: 1,
+          zIndex: -10,
         }} />
       </Box>
 
@@ -193,7 +193,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
             src={ElPulpoIcon}
             alt="El Pulpo"
             sx={{
-              mt: 1,
+              mt: 1,              
+              //transform: 'rotate(-5deg)',
               height: '100%',
               width: '100%',
               // maxWidth: '100px',   // Strict max dimensions
@@ -201,6 +202,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               //borderRadius: '50%',
               objectFit: 'fill',  // Use contain to maintain aspect ratio
               objectPosition: 'center',
+              zIndex: 10,
               //border: `2px solid ${alpha(theme.palette.secondary.main, 0.8)}`,
               // boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
             }}
@@ -211,8 +213,8 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
         <Box sx={{ 
           position: 'relative',
           textAlign: 'center',
-          mt: 2,
-          mb: 2,
+          mt: 4,
+          mb: 1,
           zIndex: 1
         }}>
           <Typography 
