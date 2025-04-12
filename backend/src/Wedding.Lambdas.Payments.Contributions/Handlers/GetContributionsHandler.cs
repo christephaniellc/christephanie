@@ -48,7 +48,7 @@ namespace Wedding.Lambdas.Payments.Contributions.Handlers
                         // Filter to only include "succeeded" payments
                         // Include historical payments that don't have a status field (for backwards compatibility)
                         entities = allEntities
-                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                            .FindAll(payment => payment.Status == "succeeded");
                         
                         _logger.LogInformation("Filtered payments for guest {GuestId}: {TotalCount} total, {SucceededCount} with succeeded status", 
                             filter.GuestId, allEntities.Count, entities.Count);
@@ -61,7 +61,7 @@ namespace Wedding.Lambdas.Payments.Contributions.Handlers
                         // Filter to only include "succeeded" payments
                         // Include historical payments that don't have a status field (for backwards compatibility)
                         entities = allEntities
-                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                            .FindAll(payment => payment.Status == "succeeded");
                         
                         _logger.LogInformation("Filtered payments for category {Category}: {TotalCount} total, {SucceededCount} with succeeded status", 
                             filter.GiftCategory, allEntities.Count, entities.Count);
@@ -74,7 +74,7 @@ namespace Wedding.Lambdas.Payments.Contributions.Handlers
                         // Filter to only include "succeeded" payments
                         // Include historical payments that don't have a status field (for backwards compatibility)
                         entities = allEntities
-                            .FindAll(payment => payment.Status == "succeeded" || payment.Status == null);
+                            .FindAll(payment => payment.Status == "succeeded");
                         
                         _logger.LogInformation("Filtered all payments: {TotalCount} total, {SucceededCount} with succeeded status", 
                             allEntities.Count, entities.Count);

@@ -128,8 +128,14 @@ const FamilyList: React.FC<FamilyListProps> = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Search & Sort Controls */}
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      maxHeight: '100%',
+      overflow: 'hidden' // Control overflow at this level
+    }}>
+      {/* Search & Sort Controls - fixed position */}
       <Box sx={{ mb: 2 }}>
         <TextField
           fullWidth
@@ -183,11 +189,13 @@ const FamilyList: React.FC<FamilyListProps> = ({
       
       <Divider sx={{ my: 1 }} />
       
-      {/* Family List */}
+      {/* Family List - scrollable */}
       <List sx={{ 
         flex: 1, 
         overflowY: 'auto',
-        '& .MuiListItem-root': { p: 0.5 } 
+        overflowX: 'hidden',
+        '& .MuiListItem-root': { p: 0.5 },
+        maxHeight: 'calc(100% - 120px)' // Reserve space for the search/sort controls
       }}>
         {filteredFamilies.length > 0 ? (
           filteredFamilies.map((family) => {
