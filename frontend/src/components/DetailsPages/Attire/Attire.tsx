@@ -188,8 +188,15 @@ function Attire({handleTabLink}: AttireProps) {
           <Typography variant="h6" gutterBottom color="secondary">
             Questions about attire?
           </Typography>
-          <Typography variant="body1">
-            Email us at: hosts@wedding.christephanie.com
+          <Typography variant="body1">            
+            Email us at: &nbsp;
+            <Box component="span"
+              sx={{
+                color: theme.palette.secondary.main
+              }}
+            >
+              hosts@wedding.christephanie.com
+            </Box>
           </Typography>
         </Box>
       </Paper>
