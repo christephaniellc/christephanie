@@ -1,6 +1,6 @@
 import { styled, Typography } from '@mui/material';
 import { rgba } from 'polished';
-import { keyframes, darken } from '@mui/system';
+import { keyframes, darken, TypographyProps } from '@mui/system';
 
 const floatAnimation = keyframes`
   0% {
@@ -53,6 +53,26 @@ export const StephsActualFavoriteTypographyNoDrop = styled(Typography)(({ theme 
   fontSize: '1.3rem',
   lineHeight: '2.5rem',
   textShadow: `3px 3px 0 ${darken(theme.palette.secondary.dark, 0.5)}`,
+}));
+
+interface CustomTypographyProps extends TypographyProps {
+  color?: string;
+}
+
+export const StephsActualFavoriteTypographyStyleDrop = styled(
+  Typography,
+  {
+    shouldForwardProp: (prop) => prop !== 'color', // prevent passing it to the DOM
+  }
+)<CustomTypographyProps>(({ theme, color }) => ({
+  fontFamily: 'Snowstorm, sans-serif',
+  color: theme.palette.secondary.main,
+  fontWeight: 300,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  fontSize: '1.3rem',
+  lineHeight: '2.5rem',
+  textShadow: `3px 3px 0 ${color ?? theme.palette.secondary.dark}`,
 }));
 
 export const StephsActualFavoriteTypographyBackNext = styled(Typography)(({ theme }) => ({
