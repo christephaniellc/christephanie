@@ -63,7 +63,7 @@ export default function RSVPStepper() {
     const relevantSteps = familyState.atLeastOneAttending
       ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
       : Object.entries(rsvpSteps).filter(([key, step]) => 
-          basicSteps.includes(key) && step.display
+          true
         );
         
     // Debug the filtering conditions

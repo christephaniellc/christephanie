@@ -68,7 +68,7 @@ const StickFigureIcon = ({
 
   const RandomStickFigure = StickFigureAdults[stickFigureIndex];
   const [stickFigureRotation, setStickFigureRotation] = useState(
-    (Number.isFinite(rotation) && rotation) || Math.floor(Math.random() * 360),
+    rotation !== undefined ? rotation : Math.floor(Math.random() * 360),
   );
 
   // We'll use a ref to store the timer ID so we can cancel it on unmount or
@@ -116,7 +116,7 @@ const StickFigureIcon = ({
           elevation={10}
           fontSize={fontSize}
           sx={{
-            color: error ? 'error' : color,
+            color: error ? 'error' : window.location.pathname.includes('/rsvp') ? 'white' : color,
             // width: hidden ? 0 : 'auto',
             transform: `rotateY(${stickFigureRotation}deg) rotateX(${stickFigureRotation}deg) rotateZ(${stickFigureRotation}deg)`,
             boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)',
@@ -130,7 +130,7 @@ const StickFigureIcon = ({
         <BabyChangingStation
           fontSize={fontSize}
           sx={{
-            color: error ? 'error' : color,
+            color: error ? 'error' : window.location.pathname.includes('/rsvp') ? 'white' : color,
             // width: hidden ? 0 : 'auto',
             transition: 'all 1s ease-in-out',
             opacity: hidden ? 0 : 1,
@@ -141,7 +141,11 @@ const StickFigureIcon = ({
       {ageGroup === AgeGroupEnum.Under13 && (
         <RandomStickFigure
           fontSize="small"
-          sx={{ alignSelf: 'flex-end', opacity: hidden ? 0 : 1, color: error ? 'red' : color }}
+          sx={{ 
+            alignSelf: 'flex-end', 
+            opacity: hidden ? 0 : 1, 
+            color: error ? 'red' : window.location.pathname.includes('/rsvp') ? 'white' : color 
+          }}
         />
       )}
     </Box>

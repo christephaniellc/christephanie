@@ -3,6 +3,11 @@
 ## Overview
 This document tracks our progress in converting the Save-the-Date page components into RSVP-specific components. The current RSVP page is a copy of the Save-the-Date page but will be customized to handle the RSVP functionality while reusing data from the Save-the-Date responses.
 
+## Documentation
+Detailed implementation plans and technical specifications are available in the documentation directory:
+- [Phase 1: State Management Setup](/documentation/RSVP-Phase1-State-Management.md)
+- [Phase 3.1: Wedding Attendance Pre-filling](/documentation/RSVP-Wedding-Attendance-Prefilling.md)
+
 ## Current Status
 - ✅ Refactored stepper file structure for better organization
 - ✅ Created RSVP-specific state management
@@ -34,7 +39,7 @@ The basic RSVP page infrastructure is now in place with its own state management
 - [ ] Update content to reflect final RSVP vs initial interest
 - [ ] Add wedding-specific questions not in save-the-date
 - [ ] Add rehearsal dinner attendance option for selected guests
-- [ ] Create WeddingAttendanceRadios to replace generic AttendanceButton
+- [ ] Create WeddingAttendanceSlider component with StickFigureIcon for explicit attendance confirmation
 - [ ] Update SummaryView to show RSVP-specific information
 
 ### Data Handling
@@ -48,7 +53,7 @@ The basic RSVP page infrastructure is now in place with its own state management
 
 ## Implementation Plan
 
-### Phase 1: State Management Setup
+### Phase 1: State Management Setup ✅
 1. Create rsvpStepper.ts file with:
    - Define RSVP-specific step interfaces
    - Create rsvpTabIndex atom
@@ -56,13 +61,13 @@ The basic RSVP page infrastructure is now in place with its own state management
    - Create rsvpStepperState selector
 2. Export all state from store/steppers/index.ts
 
-### Phase 2: Basic Stepper Component
+### Phase 2: Basic Stepper Component ✅
 1. Create RSVPStepper component based on SaveTheDateStepper
 2. Update RSVPPage to use RSVPStepper
 3. Fix navigation to use /rsvp routes instead of /save-the-date
 
-### Phase 3: RSVP-Specific Step Components
-1. Create WeddingAttendanceRadios component 
+### Phase 3: RSVP-Specific Step Components 🔄
+1. Create WeddingAttendanceSlider component with StickFigureIcon for explicit attendance confirmation
 2. Create RehearsalDinnerAttendance component
 3. Update SummaryView to show RSVP-specific information
 4. Add any wedding-specific question components
