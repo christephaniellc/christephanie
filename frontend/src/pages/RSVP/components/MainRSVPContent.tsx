@@ -17,6 +17,7 @@ import { RehearsalDinnerSection } from './RehearsalDinnerSection';
 import { FoodPreferencesSection } from './FoodPreferencesSection';
 import { TransportationSection } from './TransportationSection';
 import { AccommodationSection } from './AccommodationSection';
+import { WelcomeSection } from './WelcomeSection';
 import { useFamily } from '@/store/family';
 
 interface MainRSVPContentProps {
@@ -47,8 +48,8 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
       case 'summary':
         return <SummarySection />;
       case 'weddingAttendance':
-        return <AttendanceSection />;
-      case 'rehearsalDinner':
+        return <WelcomeSection />;
+      case 'fourthOfJulyAttendance':
         return <RehearsalDinnerSection />;
       case 'foodPreferences':
         return <FoodPreferencesSection />;

@@ -10,3 +10,4 @@ export * from './SummarySection';
 export * from './TransportationSection';
 export * from './AccommodationSection';
 export * from './LoadingSection';
+export * from './WelcomeSection';
