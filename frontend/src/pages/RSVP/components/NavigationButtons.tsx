@@ -7,6 +7,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { rsvpStepsState, rsvpStepperState, rsvpTabIndex } from '@/store/steppers';
 import { StephsActualFavoriteTypographyBackNext } from '@/components/AttendanceButton/AttendanceButton';
 import { useFamily } from '@/store/family';
+import { InvitationResponseEnum } from '@/types/api';
 
 interface NavigationButtonsProps {
   tabIndex: number;
@@ -54,23 +55,27 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
 
           // Find previous visible step using same logic as next button
           const basicSteps = [
-            'welcome',
-            'weddingAttendance',
+            'weddingAttendance', 
+            'fourthOfJulyAttendance',
             'mailingAddress',
             'comments',
             'summary',
           ];
           const atLeastOneAttending =
             family?.guests?.some(
-              (guest) => guest.rsvp?.invitationResponse === 'Interested',
+              (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested,
             ) ?? false;
+            
+          // We've removed the welcome step
 
           // Filter steps based on attendance
-          const visibleSteps = atLeastOneAttending
-            ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
-            : Object.entries(rsvpSteps).filter(
-                ([key, step]) => basicSteps.includes(key) && step.display,
-              );
+          const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
+            if (atLeastOneAttending) {
+              return step.display;
+            } else {
+              return basicSteps.includes(key) && step.display;
+            }
+          });
 
           // Find the current visible step index
           const currentVisibleIndex = visibleSteps.findIndex(
@@ -127,10 +132,10 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
             handleNavigateToStep('summary');
           } else {
             // Otherwise find next visible step
-            // Always include the weddingAttendance step in basic steps
+            // Basic steps to always include
             const basicSteps = [
-              'welcome',
               'weddingAttendance',
+              'fourthOfJulyAttendance',
               'mailingAddress',
               'comments',
               'summary',
@@ -143,15 +148,19 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
             // Re-check attendance status with fresh data
             const refreshedAtLeastOneAttendingState =
               family?.guests?.some(
-                (guest) => guest.rsvp?.invitationResponse === 'Interested',
+                (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested,
               ) ?? false;
+              
+            // We've removed the welcome step
 
             // Filter steps based on UPDATED attendance status
-            const visibleSteps = refreshedAtLeastOneAttendingState
-              ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
-              : Object.entries(rsvpSteps).filter(
-                  ([key, step]) => basicSteps.includes(key) && step.display,
-                );
+            const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
+              if (refreshedAtLeastOneAttendingState) {
+                return step.display;
+              } else {
+                return basicSteps.includes(key) && step.display;
+              }
+            });
 
             // Find the current visible step index
             const currentVisibleIndex = visibleSteps.findIndex(
