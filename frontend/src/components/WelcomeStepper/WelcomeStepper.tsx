@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -32,6 +32,7 @@ import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypog
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
 import { familyGuestsStates } from '@/store/family';
+import { isFeatureEnabled } from '@/config';
 
 // Step interface
 export interface Step {
@@ -55,19 +56,27 @@ const steps: { [step: string]: Step } = {
     We'll send out official paper invitations once we get your interest and mailing address! 
     Official RSVP phase coming soon.`,
     lastDate: new Date('2025-04-16'),
-    stepCompleted: false,
+    stepCompleted: !isFeatureEnabled('ENABLE_SURVEY_PHASE'),
     stepUrl: routes[Pages.SaveTheDate].path,
-    enabled: true
+    enabled: true //isFeatureEnabled('ENABLE_SURVEY_PHASE')
   },
   rsvp: {
     id: 1,
-    label: 'RSVP (coming soon)!',
+    label: 'RSVP',
     description:
-      'Finalize your RSVP by letting us know if you can make it, along with your final accomodation and food choices.',
+      `Finalize your RSVP by letting us know if you can make it to our events, along with your final accomodations for shuttle headcounts.
+      <br/><br/>
+      <b>NEW SITE CONTENT!</b> 
+      <br/>
+      <span style="color: #e9950c; font-weight: bold;">RSVP</span>
+      - <span style="color: #e9950c; font-weight: bold;">Stats</span>
+      - <span style="color: #e9950c; font-weight: bold;">Details</span>
+      - <span style="color: #e9950c; font-weight: bold;">Registry</span>
+      `,
     lastDate: new Date('2025-05-20'),
-    stepCompleted: true,
+    stepCompleted: !isFeatureEnabled('ENABLE_RSVP_PHASE'),
     stepUrl: '/',
-    enabled: false
+    enabled: isFeatureEnabled('ENABLE_RSVP_PHASE')
   },
   wedding: {
     id: 2,
@@ -77,9 +86,9 @@ const steps: { [step: string]: Step } = {
       new Date(),
     )} days!`,
     lastDate: new Date('2025-07-06'),
-    stepCompleted: true,
+    stepCompleted: !isFeatureEnabled('ENABLE_WEDDING_PHASE'),
     stepUrl: routes[Pages.Profile].path,
-    enabled: false
+    enabled: true //isFeatureEnabled('ENABLE_WEDDING_PHASE')
   },
 };
 
@@ -136,6 +145,26 @@ const WelcomeStepper = () => {
   // Current active step information
   const activeStepInfo = Object.values(rsvpSteps)[activeStep];
 
+  const calculateChipColor = useCallback((key: string) => {
+    console.log(`key: ${key}`)
+    switch(key) {
+      case('saveTheDate'):
+        return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+        ? theme.palette.success.main
+        : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+          ? theme.palette.error.main
+          : theme.palette.warning.main;
+      case('rsvp'):
+      return user.rsvp?.wedding === RsvpEnum.Attending 
+        ? theme.palette.success.main
+        : user.rsvp?.wedding === RsvpEnum.Declined
+          ? theme.palette.error.main
+          : theme.palette.warning.main;
+      default:
+        return theme.palette.warning.main
+    }
+  }, [user.rsvp, theme.palette]);
+
   // Determine response status message
   const responseStatus = useMemo(() => {
     if (!user.rsvp) return 'Please respond';
@@ -144,6 +173,19 @@ const WelcomeStepper = () => {
       case InvitationResponseEnum.Interested:
         return "You're interested in attending!";
       case InvitationResponseEnum.Declined:
+        return "You've declined to attend";
+      default:
+        return 'Please respond';
+    }
+  }, [user.rsvp]);
+
+  const weddingResponseStatus = useMemo(() => {
+    if (!user.rsvp) return 'Please respond';
+
+    switch (user.rsvp.wedding) {
+      case RsvpEnum.Attending:
+        return "You confirmed you are attending!";
+      case RsvpEnum.Declined:
         return "You've declined to attend";
       default:
         return 'Please respond';
@@ -345,8 +387,11 @@ const WelcomeStepper = () => {
             },
           }}
         >
-          {/* Render each step */}
-          {Object.entries(rsvpSteps).map(([key, step]) => (
+          {/* Render only enabled steps */}
+          {Object.entries(rsvpSteps)
+            .filter(([_, step]) => step.enabled) // Only show steps with enabled=true
+            .map(([key, step]) => (
+            
             <Step key={key}>
               <StepLabel
                 icon={<StickFigureIcon rotation={0} fontSize="medium" ageGroup={user.ageGroup} />}
@@ -393,7 +438,7 @@ const WelcomeStepper = () => {
                   </Box>
                   
                   {/* Show status badge only for the first step */}
-                  {step.id === 0 && (
+                  {step.enabled && (
                     <Box
                       sx={{
                         display: 'inline-flex',
@@ -404,12 +449,7 @@ const WelcomeStepper = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color:
-                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                              ? theme.palette.success.main
-                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                                ? theme.palette.error.main
-                                : theme.palette.warning.main,
+                          color: calculateChipColor(key),
                           fontWeight: 'medium',
                           fontSize: '0.7rem',
                           py: 0.6,
@@ -417,12 +457,7 @@ const WelcomeStepper = () => {
                           borderRadius: '16px',
                           borderWidth: '1.5px',
                           borderStyle: 'solid',
-                          borderColor:
-                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                              ? theme.palette.success.main
-                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                                ? theme.palette.error.main
-                                : theme.palette.warning.main,
+                          borderColor: calculateChipColor(key),
                           backgroundColor: alpha(theme.palette.background.paper, 0.8),
                           backdropFilter: 'blur(8px)',
                           boxShadow: `0 2px 6px ${alpha('#000', 0.3)}`,
@@ -430,7 +465,7 @@ const WelcomeStepper = () => {
                           letterSpacing: '0.02em',
                         }}
                       >
-                        {responseStatus}
+                        {key === 'saveTheDate' ? responseStatus : weddingResponseStatus}
                       </Typography>
                     </Box>
                   )}
@@ -442,15 +477,19 @@ const WelcomeStepper = () => {
                   pb: 2,
                 }}
               >
-                <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
-                  {step.description}
-                </BlockTextTypographyLess>
+                <BlockTextTypographyLess 
+                  variant="body2" 
+                  color="common.white" 
+                  sx={{ mb: 2, opacity: 0.9 }}
+                  dangerouslySetInnerHTML={{ __html: step.description }}
+                />
               
                 {/* Action button shows at top when needed */}
                 {step.enabled && <ActionButton />}
               </StepContent>
 
             </Step>
+
           ))}
         </Stepper>
       </Box>

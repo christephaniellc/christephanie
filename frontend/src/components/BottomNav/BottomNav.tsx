@@ -183,18 +183,46 @@ export const BottomNav = () => {
           {/* RSVP (only for authenticated users) */}
           <BottomNavigationAction
             label="RSVP"
-            icon={<SaveAsIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <SaveAsIcon />
+                <Box sx={{ 
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-20px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: theme.palette.secondary.main,
+                  boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                }} />
+              </Box>
+            }
             aria-label="Go to RSVP pages"
             disabled={!auth0User}
             sx={{ 
-              display: isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none'
+              display: isFeatureEnabled('ENABLE_RSVP_PHASE') && auth0User ? 'flex' : 'none'
             }}
           />
 
-          {/* Info (only for authenticated users) */}
+          {/* Details (only for authenticated users) */}
           <BottomNavigationAction
             label="Details"
-            icon={<AutoAwesomeIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <AutoAwesomeIcon />
+                <Box sx={{ 
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-20px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: theme.palette.secondary.main,
+                  boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                }} />
+              </Box>
+            }
             aria-label="Go to detail pages"
             disabled={!auth0User}
             sx={{
@@ -205,7 +233,21 @@ export const BottomNav = () => {
           {/* Registry (only for authenticated users) */}
           <BottomNavigationAction
             label="Registry"
-            icon={<GiftCardIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <GiftCardIcon />
+                <Box sx={{ 
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-20px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: theme.palette.secondary.main,
+                  boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                }} />
+              </Box>
+            }
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{
@@ -224,7 +266,21 @@ export const BottomNav = () => {
           {/* Stats (only for authenticated users) */}
           <BottomNavigationAction
             label="Stats"
-            icon={<BarChartIcon />}
+            icon={              
+              <Box sx={{ position: 'relative' }}>
+                <BarChartIcon />
+                <Box sx={{ 
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-20px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: theme.palette.secondary.main,
+                  boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                }} />
+              </Box>
+            }
             aria-label="View wedding statistics"
             disabled={!auth0User}
             sx={{ 
