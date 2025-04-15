@@ -487,7 +487,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
             {/* Filter accommodations based on selected category */}
           {(selectedCategory === 'hotels' ? hotelOptions.filter(h => h.name.includes('Holiday Inn')) :
             selectedCategory === 'camping' ? hotelOptions.filter(h => h.name.includes('Camping')) :
-            selectedCategory === 'other' ? hotelOptions.filter(h => h.name.includes('Lovettsville')) :
+            selectedCategory === 'other' ? hotelOptions.filter(h => h.name.includes('Lovettsville Area Hotels')) :
             selectedCategory === 'airbnb' ? hotelOptions.filter(h => h.name.includes('Airbnb')) :
             hotelOptions).map((hotel, index) => (
               <Paper

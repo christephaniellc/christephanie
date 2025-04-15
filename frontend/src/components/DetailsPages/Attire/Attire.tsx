@@ -112,10 +112,10 @@ function Attire({handleTabLink}: AttireProps) {
                 fontSize: '1.5rem'
               }}
             >
-              Burn-Style Wedding: Express Yourself
+              Burning Man-Style Wedding: Express Yourself
             </StephsActualFavoriteTypographyNoDrop>
             <Typography variant="body1" paragraph>
-              This is a burn-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
+              This is a burning man-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
             </Typography>
             <Typography variant="body1" paragraph>
               Love jeans and a t-shirt? Wear them! Prefer a sundress? Perfect! Want to rock a suit? Go for it! Flippy floppies? Absolutely! The only rule is that there are no rules — just be you.
