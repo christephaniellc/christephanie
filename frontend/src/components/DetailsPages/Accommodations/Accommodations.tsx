@@ -17,7 +17,7 @@ import {
   Link,
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyStyleDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { DirectionsBus, NoTransfer, OpenInNew, HotelOutlined, Star } from '@mui/icons-material';
 import RatingComponent from '@/components/RatingComponent/RatingComponent';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -28,6 +28,10 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import brunswickHotel from '@/assets/holiday-inn-express-brunswick.jpg';
 import charlestownHotel from '@/assets/holiday-inn-express-charlestown.jpg';
 import camping from '@/assets/camping.jpg';
+import hotelIcon from '@/assets/holiday-inn-express-brunswick.jpg';
+import airbnbIcon from '@/assets/airbnb.svg';
+import otherHotelsIcon from '@/assets/pulpo_2rings.png';
+import campingIcon from '@/assets/camping.svg';
 
 interface AccommodationsProps {
   handleTabLink: (to: string) => void;
@@ -37,7 +41,10 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   // Create an array to track expanded state of each hotel
-  const [expandedHotels, setExpandedHotels] = React.useState<boolean[]>([true, true, true]);
+  const [expandedHotels, setExpandedHotels] = React.useState<boolean[]>([true, true, true, true]);
+  
+  // Track which category of accommodations is selected
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('hotels');
 
   const handleMapNewWindow = (locationKey: string) => {
     const addressMap: Record<string, string> = {
@@ -62,6 +69,10 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
     const newExpandedHotels = [...expandedHotels];
     newExpandedHotels[index] = !newExpandedHotels[index];
     setExpandedHotels(newExpandedHotels);
+  };
+  
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
   };
 
   const getImageSrc = (imagePath: string | undefined) => {
@@ -94,7 +105,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       driveMinsFromWedding: 18,
       hotelBlock: false,
       bookingNotes: [
-        "This hotel does not do formal wedding blocks, but they will give you a discount if you call and ask for the 'wedding rate.'",
+        "This hotel does not do formal wedding blocks, but they will give you a discount if you call and ask for the \"wedding rate.\"",
         "No pets allowed."
       ]
     },
@@ -112,7 +123,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       driveMinsFromWedding: 23,
       hotelBlock: true,
       bookingNotes: [
-        "We have reserved a block of hotel rooms here: call and ask for the 'Stubler Wedding block rate.'",
+        "We have reserved a block of hotel rooms here: call and ask for the \"Stubler Wedding block rate.\"",
         "Pet friendly."
       ]
     },
@@ -120,15 +131,29 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       name: 'Camping at the Wedding Venue',
       image: '.../assets/camping.jpg',
       address: '13193 Mountain Rd, Lovettsville, VA 20180',
-      googleRating: 5,
-      numberOfRatings: 0,
       driveMinsFromWedding: 0,
       onShuttleRoute: undefined,
       hotelBlock: false,
       bookingNotes: [
-        "Camp with Steph, Topher, and other camping enthusiasts at our venue!",
-        "We will have campsite space for you and your gear.",
+        "Camp (/glamp) with Steph, Topher, and other camping enthusiasts at our venue!",
+        "We will have campsite space for you and your gear",
+        "Fancy portable and indoor facilities on site",
+        "Come early, celebrate Friday the 4th with fireworks and a BBQ dinner! (BYO booze, and wedding day camp breakfast)",
         "(RV hookups not available, unfortunately)"
+      ]
+    },
+    {
+      name: 'Lovettsville Area Airbnbs',
+      image: undefined,
+      url: 'https://www.airbnb.com/s/Lovettsville--VA/homes?refinement_paths%5B%5D=%2Fhomes&place_id=ChIJZeY72Y4etokRVVMaH1j87vo&location_bb=Qh0klMKbQp9CHQbywptMOw%3D%3D&acp_id=b1c524a2-360c-48a3-a81f-666d70428308&date_picker_type=calendar&checkin=2025-07-05&checkout=2025-07-06&search_type=autocomplete_click',
+      urlText: 'Airbnb Search',
+      googleRating: 0,
+      phoneNumber: undefined,
+      onShuttleRoute: false,
+      hotelBlock: false,
+      bookingNotes: 
+      [
+        "Search for AirBnbs in Lovettsville, VA and surrounding areas, like Purcellville and Leesburg"
       ]
     },
     {
@@ -148,41 +173,28 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
         "Search for hotels in Lovettsville, VA and surrounding areas, like Purcellville and Leesburg"
       ]
     },
-    {
-      name: 'Lovettsville Area Airbnbs',
-      image: undefined,
-      url: 'https://www.airbnb.com/s/Lovettsville--VA/homes?refinement_paths%5B%5D=%2Fhomes&place_id=ChIJZeY72Y4etokRVVMaH1j87vo&location_bb=Qh0klMKbQp9CHQbywptMOw%3D%3D&acp_id=b1c524a2-360c-48a3-a81f-666d70428308&date_picker_type=calendar&checkin=2025-07-05&checkout=2025-07-06&search_type=autocomplete_click',
-      urlText: 'Airbnb Search',
-      googleRating: 0,
-      phoneNumber: undefined,
-      onShuttleRoute: false,
-      hotelBlock: false,
-      bookingNotes: 
-      [
-        "Search for AirBnbs in Lovettsville, VA and surrounding areas, like Purcellville and Leesburg"
-      ]
-    },
   ];
 
   return (
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        paddingBottom: '80px', // Added padding to ensure content doesn't get hidden behind BottomNav
+        paddingBottom: { xs: '100px', sm: '80px' }, // Added more padding for mobile to ensure content doesn't get hidden behind BottomNav
+        paddingX: { xs: 0, sm: 2 }, // Remove horizontal padding on mobile
       }}
     >
       <Box
-        my={2}
+        my={{ xs: 1, sm: 2 }}
         sx={{
           width: '100%',
-          px: 2,
-          mt: 2,
-          pb: 2,
+          px: { xs: 1, sm: 2 },
+          mt: { xs: 1, sm: 2 },
+          pb: { xs: 1, sm: 2 },
           zIndex: 5,
         }}
       >
@@ -190,8 +202,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           variant="h4"
           sx={{
             textAlign: 'center',
-            mt: 2,
-            fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+            mt: { xs: 1, sm: 2 },
+            fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem' },
           }}
         >
           Accommodations
@@ -202,11 +214,15 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                 display: 'flex',
                 textAlign: 'center',
               }}>
-              <Typography variant="body1" sx={{ 
-                mt: 2, 
-                textAlign: 'center',
-                width: '100%'
-                }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  mt: { xs: 1, sm: 2 }, 
+                  textAlign: 'center',
+                  width: '100%',
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }}
+              >
               We've partnered with some convenient lodging options to make your trip to our wedding as comfortable as possible. 
               <br />
               <br />
@@ -220,23 +236,45 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    px: 2,
-                    pb: 1.5,
+                    px: { xs: 1, sm: 2 },
+                    pb: { xs: 1, sm: 1.5 },
                     borderRadius: 2,
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '0.9rem', sm: '1.1rem' },
                     '&:hover': {
                       backgroundColor: 'rgba(255,255,255,0.05)',
                     },
+                    width: { xs: '100%', sm: 'auto' }
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    mb: 0.5,
+                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    justifyContent: 'center'
+                  }}>
                     <PlaceIcon fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color: 'inherit' }}>
+                    <Typography 
+                      variant="h6" 
+                      component="span" 
+                      sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'inherit',
+                        fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }
+                      }}
+                    >
                       Stone Manor Boutique Inn
                     </Typography>
                     <OpenInNew fontSize="small" sx={{ ml: 0.5 }} />
                   </Box>
-                  <Typography variant="body2" component="span" sx={{ color: 'inherit' }}>
+                  <Typography 
+                    variant="body2" 
+                    component="span" 
+                    sx={{ 
+                      color: 'inherit',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem' } 
+                    }}
+                  >
                     13193 Mountain Rd, Lovettsville, VA 20180
                   </Typography>
                 </ButtonBase>
@@ -251,7 +289,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
         my="auto"
         justifyContent="center"
         alignItems="center"
-        px={2}
+        px={{ xs: 1, sm: 2 }}
       >
         <Paper
           elevation={5}
@@ -265,15 +303,196 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           }}
         >     
           
+          {/* Accommodation Category Selection */}
+          <Box 
+            sx={{ 
+              p: { xs: 1, sm: 2 }, 
+              display: 'flex', 
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: { xs: 1, sm: 2 },
+              backgroundColor: 'rgba(0,0,0,.3)',
+              borderBottom: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            <Paper
+              elevation={3}
+              component={Button}
+              onClick={() => handleCategoryChange('hotels')}
+              sx={{
+                width: { xs: '80px', sm: '120px', md: '150px' },
+                height: { xs: '80px', sm: '120px', md: '150px' },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: selectedCategory === 'hotels' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)',
+                border: selectedCategory === 'hotels' ? `2px solid ${theme.palette.secondary.main}` : '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+             <HotelOutlined sx={{
+              fontSize: { xs: '40px', sm: '54px', md: '64px' },
+              color: theme.palette.primary.main
+             }}/>
+              <Typography variant="subtitle1" 
+                align="center"
+                color="secondary" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  lineHeight: '1.1rem',
+                  mb: -2,
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' }
+                }}>
+                Recommended Hotels
+              </Typography>
+            </Paper>
+
+            <Paper
+              elevation={3}
+              component={Button}
+              onClick={() => handleCategoryChange('camping')}
+              sx={{
+                width: { xs: '80px', sm: '120px', md: '150px' },
+                height: { xs: '80px', sm: '120px', md: '150px' },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                backgroundColor: selectedCategory === 'camping' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)',
+                border: selectedCategory === 'camping' ? `2px solid ${theme.palette.secondary.main}` : '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+              <Box
+                component="img"
+                src={campingIcon}
+                alt="Camping Icon"
+                sx={{
+                  width: { xs: '60px', sm: '80px', md: '100px' },
+                  height: 'auto',
+                  filter: 'invert(1)',
+                }}
+              />
+              <Typography variant="subtitle1" 
+                align="center" 
+                color="secondary" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' }
+                }}>
+                Camping
+              </Typography>
+            </Paper>
+            
+            <Paper
+              elevation={3}
+              component={Button}
+              onClick={() => handleCategoryChange('airbnb')}
+              sx={{
+                width: { xs: '80px', sm: '120px', md: '150px' },
+                height: { xs: '80px', sm: '120px', md: '150px' },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                backgroundColor: selectedCategory === 'airbnb' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)',
+                border: selectedCategory === 'airbnb' ? `2px solid ${theme.palette.secondary.main}` : '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+              <Box
+                component="img"
+                src={airbnbIcon}
+                alt="AirBnb Icon"
+                sx={{
+                  width: { xs: '40px', sm: '54px', md: '64px' },
+                  height: { xs: '40px', sm: '54px', md: '64px' },
+                  mb: 1
+                }}
+              />
+              <Typography variant="subtitle1" 
+                align="center" 
+                color="secondary" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' }
+                }}>
+                AirBnb
+              </Typography>
+            </Paper>
+
+            <Paper
+              elevation={3}
+              component={Button}
+              onClick={() => handleCategoryChange('other')}
+              sx={{
+                width: { xs: '80px', sm: '120px', md: '150px' },
+                height: { xs: '80px', sm: '120px', md: '150px' },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                backgroundColor: selectedCategory === 'other' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)',
+                border: selectedCategory === 'other' ? `2px solid ${theme.palette.secondary.main}` : '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+              <Box
+                component="img"
+                src={otherHotelsIcon}
+                alt="Other Hotels Icon"
+                sx={{
+                  width: { xs: '40px', sm: '54px', md: '64px' },
+                  height: { xs: '40px', sm: '54px', md: '64px' },
+                  mb: 1
+                }}
+              />
+              <Typography variant="subtitle1" 
+                align="center" 
+                color="secondary" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' }
+                }}>
+                Other Hotels
+              </Typography>
+            </Paper>
+          </Box>
+          
           {/* Hotel options list */}
           <Stack
             spacing={1}
             sx={{
-              p: 1,
+              p: { xs: 1, sm: 1 },
               width: '100%',
             }}
           >
-            {hotelOptions.map((hotel, index) => (
+            {/* Filter accommodations based on selected category */}
+          {(selectedCategory === 'hotels' ? hotelOptions.filter(h => h.name.includes('Holiday Inn')) :
+            selectedCategory === 'camping' ? hotelOptions.filter(h => h.name.includes('Camping')) :
+            selectedCategory === 'other' ? hotelOptions.filter(h => h.name.includes('Lovettsville Area Hotels')) :
+            selectedCategory === 'airbnb' ? hotelOptions.filter(h => h.name.includes('Airbnb')) :
+            hotelOptions).map((hotel, index) => (
               <Paper
                 key={index}
                 elevation={1}
@@ -290,8 +509,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                   sx={{
                     justifyContent: 'space-between',
                     textAlign: 'left',
-                    py: 1,
-                    px: 2,
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 2 },
                     borderRadius: 0,
                     '&:hover': {
                       backgroundColor: 'rgba(255,255,255,.05)',
@@ -301,8 +520,8 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                   startIcon={<HotelOutlined />}
                   onClick={() => handleToggleHotelDetails(index)}
                 >
-                  <Box display="flex" alignItems="center" justifyContent="space-between" width="1">
-                    <Box display="flex" alignItems="center">
+                  <Box display="flex" alignItems="center" justifyContent="space-between" width="1" flexWrap="wrap">
+                    <Box display="flex" alignItems="center" width={{ xs: '100%', sm: 'auto' }} mb={{ xs: 0.5, sm: 0 }}>
                       <Typography
                         component="span"
                         variant="subtitle1"
@@ -310,26 +529,25 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           fontWeight: 'bold',
                           textAlign: 'left',
                           mr: 1,
+                          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                         }}
                       >
                         {hotel.name}
                       </Typography>
-                      {hotel.googleRating > 0 && (
-                        <Box display="flex" alignItems="center">
-                          <Star sx={{ color: 'secondary.main', fontSize: '1rem', mr: 0.3 }} />
-                          <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-                            {hotel.googleRating}
-                          </Typography>
-                        </Box>
-                      )}
                     </Box>
                     
                     {hotel.onShuttleRoute && (
                       <Chip
-                        icon={<DirectionsBus sx={{ color: 'primary.contrastText', fontSize: '1rem' }} />}
+                        icon={<DirectionsBus sx={{ color: 'primary.contrastText', fontSize: { xs: '0.7rem', sm: '1rem' } }} />}
                         label="Shuttle"
                         size="small"
-                        sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText', fontWeight: 'bold' }}
+                        sx={{ 
+                          backgroundColor: 'primary.main', 
+                          color: 'primary.contrastText', 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                          height: { xs: '24px', sm: '32px' },
+                        }}
                       />
                     )}
                   </Box>
@@ -337,7 +555,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                 
                 {/* Expanded hotel details */}
                 {expandedHotels[index] && (
-                  <Box sx={{ p: 2 }}>
+                  <Box sx={{ p: { xs: 1, sm: 2 } }}>
                     <Card sx={{ 
                       display: 'flex', 
                       flexDirection: 'column', 
@@ -351,51 +569,68 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           image={getImageSrc(hotel.image)}
                           alt={hotel.name}
                           sx={{ 
-                            height: 140, 
+                            height: { xs: 100, sm: 140 }, 
                             objectFit: 'cover',
                           }}
                         />
                       )}
                       
-                      <CardContent sx={{ flex: 1, p: 2 }}>
-                        {/* Hotel name */}
+                      <CardContent sx={{ flex: 1, p: { xs: 1.5, sm: 2 } }}>
+                        {/* Hotel name and details - responsive layout */}
                         <Box
                           sx={{
                             width: '100%',
                             display: 'flex',
-                            justifyContent: 'space-between'
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            justifyContent: 'space-between',
+                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            gap: { xs: 1, sm: 2 }
                           }}
+                        >
+                          <Typography 
+                            variant="h6" 
+                            component="h2" 
+                            gutterBottom
+                            sx={{
+                              fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+                              mb: { xs: 0.5, sm: 1 }
+                            }}
                           >
-                          <Typography variant="h6" component="h2" gutterBottom>
                             {hotel.name}
                           </Typography>
                           
-                          {/* Rating */}
-                          {hotel.googleRating > 0 && (
-                            <Box sx={{ mb: 2 }}>
-                              <RatingComponent
-                                score={hotel.googleRating}
-                                numberOfRatings={hotel.numberOfRatings}
-                              />
-                            </Box>
-                          )}
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                            {/* Rating */}
+                            {hotel.googleRating > 0 && (
+                              <Box sx={{ mb: { xs: 0.5, sm: 1 } }}>
+                                <RatingComponent
+                                  score={hotel.googleRating}
+                                  numberOfRatings={hotel.numberOfRatings}
+                                />
+                              </Box>
+                            )}
 
-                          {/* Link */}
-                          {hotel.url && (
-                          <Button
-                            variant="outlined"
-                            color="secondary"
-                            size="small"
-                            endIcon={<OpenInNew />}
-                            onClick={() => window.open(`${hotel.url}`)}
-                            sx={{ mt: 1, alignSelf: 'flex-start' }}
-                          >
-                            {hotel.urlText}
-                          </Button>
-                          )}
+                            {/* Link */}
+                            {hotel.url && (
+                            <Button
+                              variant="outlined"
+                              color="secondary"
+                              size="small"
+                              endIcon={<OpenInNew />}
+                              onClick={() => window.open(`${hotel.url}`)}
+                              sx={{ 
+                                mt: { xs: 0, sm: 1 }, 
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                                padding: { xs: '2px 8px', sm: '6px 16px' }
+                              }}
+                            >
+                              {hotel.urlText}
+                            </Button>
+                            )}
+                          </Box>
                         </Box>
                         
-                        <Stack spacing={0.4}>
+                        <Stack spacing={0.4} mt={1}>
                           {/* Phone number */}
                           {hotel.phoneNumber && (
                             <StephsActualFavoriteTypographyNoDrop variant="body2">
@@ -403,11 +638,16 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                               sx={{ 
                                 color: theme.palette.primary.light, 
                                 fontWeight: 'bold', 
-                                fontSize: '1.2rem' 
+                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
                                 }}>
                                 Phone:
                               </Box>{' '}
-                              <Box component="span" sx={{ color: '#FFFFFF' }}>
+                              <Box 
+                                component="span" 
+                                sx={{ 
+                                  color: '#FFFFFF',
+                                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' }
+                                }}>
                                 {hotel.phoneNumber}
                               </Box>
                             </StephsActualFavoriteTypographyNoDrop>
@@ -420,12 +660,17 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                               sx={{ 
                                 color: theme.palette.primary.light, 
                                 fontWeight: 'bold', 
-                                fontSize: '1.2rem' 
+                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
                                 }}>
                                 Drive time to venue:
                               </Box>{' '}
-                              <Box component="span" sx={{ color: '#FFFFFF' }}>
-                              {hotel.driveMinsFromWedding} minutes
+                              <Box 
+                                component="span" 
+                                sx={{ 
+                                  color: '#FFFFFF',
+                                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' }
+                                }}>
+                                {hotel.driveMinsFromWedding} minutes
                               </Box>
                             </StephsActualFavoriteTypographyNoDrop>
                           )}
@@ -433,33 +678,37 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           {/* Notes */}
                           {hotel.bookingNotes && hotel.bookingNotes.length > 0 && (
                             <Box sx={{ mt: 2 }}>
-                              <StephsActualFavoriteTypographyNoDrop variant="body2">
+                              <StephsActualFavoriteTypographyNoDrop 
+                                variant="body2" 
+                                color={theme.palette.primary.dark}>
                                 <Box
                                   component="span"
                                   sx={{
-                                    color: theme.palette.primary.light,
+                                    color: theme.palette.secondary.main,
                                     fontWeight: 'bold',
-                                    fontSize: '1.2rem',
+                                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
                                   }}
                                 >
-                                  Booking notes:
+                                  Notes:
                                 </Box>
                               </StephsActualFavoriteTypographyNoDrop>
 
-                              <Box sx={{ ml: 2, mt: 0.5, mb: 5 }}>
+                              <Box sx={{ ml: 2, mt: 0.5, mb: 3 }}>
+                                <ul>
                                 {hotel.bookingNotes.map((note, idx) => (
                                   <Box
                                     key={idx}
                                     sx={{
                                       color: '#FFFFFF',
                                       fontFamily: 'Arial',
-                                      fontSize: '0.95rem',
+                                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },
                                       mb: 0.5,
                                     }}
                                   >
-                                    {note}
+                                    <li>{note}</li>
                                   </Box>
                                 ))}
+                                </ul>
                               </Box>
                             </Box>
                           )}
@@ -467,19 +716,43 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                           {/* Shuttle info */}
                           {hotel.onShuttleRoute ? (
                             <Chip
-                              icon={<DirectionsBus />}
-                              label="Shuttle to Venue Available"
+                              icon={<DirectionsBus sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} />}
+                              label={
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                    whiteSpace: 'normal' 
+                                  }}
+                                >
+                                  Shuttle to Venue Available, see schedule below
+                                </Typography>
+                              }
                               color="primary"
                               size="small"
-                              sx={{ alignSelf: 'flex-start', mt: 1 }}
+                              sx={{ 
+                                alignSelf: 'flex-start', 
+                                mt: 1,
+                                height: 'auto',
+                                py: 0.5
+                              }}
                             />
                           ) : hotel.onShuttleRoute === undefined ? (
                             <></>
                           )
                           :(
                             <Chip
-                              icon={<NoTransfer />}
-                              label="No Shuttle Service"
+                              icon={<NoTransfer sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} />}
+                              label={
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    fontSize: { xs: '0.65rem', sm: '0.75rem' } 
+                                  }}
+                                >
+                                  No Shuttle Service
+                                </Typography>
+                              }
                               color="error"
                               variant="outlined"
                               size="small"
@@ -499,54 +772,166 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
       </Stack>
 
       {/* Additional Information Section */}
-      <Box mt={4} mb={8} px={2}>
+      <Box 
+        mt={{ xs: 3, sm: 4 }} 
+        mb={{ xs: 6, sm: 8 }} 
+        px={{ xs: 1, sm: 2 }}
+      >
         <Paper
           elevation={5}
           sx={{
             backdropFilter: 'blur(20px)',
             backgroundColor: 'rgba(0,0,0,.1)',
-            p: 3,
+            p: { xs: 2, sm: 3 },
           }}
         >
-          <Typography variant="h5" color="secondary" gutterBottom>
+          <StephsActualFavoriteTypographyNoDrop 
+            variant="h5" 
+            color="secondary" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.25rem', sm: '1.5rem' }
+            }}
+          >
             Transportation Information
-          </Typography>
+          </StephsActualFavoriteTypographyNoDrop>
           
-          <Typography variant="body1" paragraph>
+          <Typography 
+            variant="body1" 
+            paragraph
+            sx={{
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              mb: { xs: 1, sm: 2 }
+            }}
+          >
             For those staying at our partner hotels, we'll be providing a shuttle service to and from the wedding venue.
           </Typography>
           
-          <Typography variant="h6" gutterBottom>
+          <Typography 
+            variant="h6" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 }
+            }}
+          >
             Shuttle Schedule:
           </Typography>
           
-          <Typography component="div" variant="body2">
+          <Typography 
+            component="div" 
+            variant="body2"
+            sx={{
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+              '& ul': {
+                pl: { xs: 2.5, sm: 4 },
+                mb: { xs: 1.5, sm: 2 }
+              },
+              '& li': {
+                mb: { xs: 1, sm: 0.5 }
+              }
+            }}
+          >
             <ul>
-              <li>Pick-up from Holiday Inn Express Brunswick: 4:00pm and 5:00pm</li>
-              <li>Pick-up from Holiday Inn Express Charles Town: 4:00pm and 5:00pm</li>
-              <li>Return shuttles will run at 10:00pm and 11:00pm</li>
+              <li>Pick-up from Holiday Inn Express Brunswick:
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 4:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 5:00pm</Box>
+              </li>
+              <li>Pick-up from Holiday Inn Express Charles Town:
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 4:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 5:00pm</Box>
+              </li>
+              <li>Return shuttles (to both hotels) will run at 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 10:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 11:00pm</Box>
+              </li>
             </ul>
           </Typography>
           
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Typography 
+            variant="h6" 
+            gutterBottom 
+            sx={{ 
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 },
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}
+          >
             Alternative Transportation Options:
           </Typography>
           
-          <Typography component="div" variant="body2">
+          <Typography 
+            component="div" 
+            variant="body2"
+            sx={{
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+              '& ul': {
+                pl: { xs: 2.5, sm: 4 },
+                mb: { xs: 1.5, sm: 2 }
+              },
+              '& li': {
+                mb: { xs: 1, sm: 0.5 }
+              }
+            }}
+          >
             <ul>
               <li>Uber and Lyft are available in the area, but availability may be limited</li>
               <li>Local taxi services are available (we recommend booking in advance)</li>
-              <li>We encourage carpooling with other guests when possible</li>
+              <li>
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}>Venue parking is limited: We encourage carpooling with other guests when possible</Box>
+              </li>
             </ul>
           </Typography>
           
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Typography 
+            variant="h6" 
+            gutterBottom 
+            sx={{ 
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 },
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}
+          >
             Questions?
           </Typography>
           
-          <Typography variant="body2">
+          <Typography 
+            variant="body2"
+            sx={{
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+              wordBreak: 'break-word'
+            }}
+          >
             If you have any questions about accommodations or transportation, please contact us at:<br />
-            <strong>hosts@wedding.christephanie.com</strong>
+            <Box component="span"
+              sx={{
+                color: theme.palette.secondary.main
+              }}
+            >
+              <strong>hosts@wedding.christephanie.com</strong>
+            </Box>
           </Typography>
         </Paper>
       </Box>

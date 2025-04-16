@@ -37,9 +37,16 @@ export const useAuth0Queries = () => {
     localStorage.removeItem('family');
     sessionStorage.removeItem('auth_redirect_to');
 
+    // Retain visited pages
+    let visitedPages = localStorage.getItem('christephanie_visited_pages');
+
     // NEW: Perform nuclear cleanup
     localStorage.clear();
     sessionStorage.clear();    
+
+    // Restore visited pages
+    localStorage.setItem('christephanie_visited_pages', visitedPages);
+
     // Navigate directly to Auth0 logout endpoint
     forceAuth0Logout();
     
