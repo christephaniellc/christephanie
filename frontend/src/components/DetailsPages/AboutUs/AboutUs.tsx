@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Grid, Button, styled, useTheme, useMediaQuery, Avatar } from '@mui/material';
+import { Box, Typography, Paper, Grid, Button, styled, useTheme, useMediaQuery, Avatar, alpha } from '@mui/material';
 import burn_night from '../../../assets/engagement-photos/burn_night.jpg';
 import oktoberfest from '../../../assets/engagement-photos/oktoberfest.jpg';
 import bremerhaven from '../../../assets/engagement-photos/bremerhaven.jpg';
@@ -16,7 +16,7 @@ interface AboutUsProps {
   handleTabLink: (to: string) => void;
 }
 
-// Styled components
+// Styled components with responsive design
 const CharacterFrame = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   backgroundColor: 'rgba(0, 0, 0, 0.75)',
@@ -24,6 +24,12 @@ const CharacterFrame = styled(Paper)(({ theme }) => ({
   border: `2px solid ${theme.palette.secondary.dark}`,
   color: theme.palette.common.white,
   marginBottom: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1.5),
+    borderRadius: theme.spacing(0.75),
+    border: `1px solid ${theme.palette.secondary.dark}`,
+    marginBottom: theme.spacing(1.5),
+  }
 }));
 
 const CharacterAvatar = styled(Avatar)(({ theme }) => ({
@@ -32,19 +38,33 @@ const CharacterAvatar = styled(Avatar)(({ theme }) => ({
   aspectRatio: '1/1',
   border: `3px solid ${theme.palette.secondary.main}`,
   boxShadow: `0 0 10px 2px ${theme.palette.primary.dark}`,
+  [theme.breakpoints.down('sm')]: {
+    border: `2px solid ${theme.palette.secondary.main}`,
+    boxShadow: `0 0 6px 1px ${theme.palette.primary.dark}`,
+  }
 }));
 
 const AttributeGrid = styled(Grid)(({ theme }) => ({
   paddingTop: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    paddingTop: theme.spacing(1),
+    gap: theme.spacing(0.5),
+  }
 }));
 
 const AttributeLabel = styled(Typography)(({ theme }) => ({
   color: theme.palette.primary.light,
   fontWeight: 'bold',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.75rem',
+  }
 }));
 
 const AttributeValue = styled(Typography)(({ theme }) => ({
   color: theme.palette.common.white,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.75rem',
+  }
 }));
 
 // Define a custom interface for the SelectButton props
@@ -64,12 +84,23 @@ const SelectButton = styled(Button, {
     backgroundColor: isSelected ? theme.palette.secondary.main : theme.palette.secondary.light,
     color: '#000'
   },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.7rem',
+    padding: theme.spacing(0.5, 1),
+    marginBottom: theme.spacing(0.75),
+    border: `1px solid ${isSelected ? theme.palette.secondary.main : theme.palette.secondary.dark}`,
+  }
 }));
 
 const CharacterBio = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(2),
   fontSize: '0.9rem',
   lineHeight: 1.5,
+  [theme.breakpoints.down('sm')]: {
+    marginTop: theme.spacing(1.5),
+    fontSize: '0.75rem',
+    lineHeight: 1.4,
+  }
 }));
 
 const GamerTag = styled(Typography)(({ theme }) => ({
@@ -77,6 +108,10 @@ const GamerTag = styled(Typography)(({ theme }) => ({
   fontSize: '0.8rem',
   color: theme.palette.secondary.light,
   marginBottom: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.6rem',
+    marginBottom: theme.spacing(0.5),
+  }
 }));
 
 const StatsBox = styled(Box)(({ theme }) => ({
@@ -84,6 +119,11 @@ const StatsBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
   borderRadius: theme.spacing(0.5),
   marginTop: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.75),
+    borderRadius: theme.spacing(0.25),
+    marginTop: theme.spacing(0.75),
+  }
 }));
 
 const ProgressBarContainer = styled(Box)(({ theme }) => ({
@@ -91,6 +131,11 @@ const ProgressBarContainer = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.1)',
   borderRadius: theme.spacing(0.5),
   marginBottom: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    height: 12,
+    borderRadius: theme.spacing(0.25),
+    marginBottom: theme.spacing(0.25),
+  }
 }));
 
 const ProgressBar = styled(Box)<{ value: number }>(({ theme, value }) => ({
@@ -98,6 +143,9 @@ const ProgressBar = styled(Box)<{ value: number }>(({ theme, value }) => ({
   width: `${value}%`,
   backgroundColor: theme.palette.primary.main,
   borderRadius: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: theme.spacing(0.25),
+  }
 }));
 
 const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
@@ -112,20 +160,25 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       avatar: topherAvatar,
       attributes: {
         origin: 'Florida, USA',
-        class: 'Software Engineer',
+        class: 'Senior Software Engineer',
         specialAbility: 'Debugging in production',
         favoriteFood: 'Pizza with Olives',
         hobbies: 'Coding, Ukelele, Snowboarding',
         alignment: 'Chaotic Good'
       },
       stats: {
-        strength: 85,
-        intelligence: 90,
         jolliness: 95,
+        creativity: 97,
         organization: 2.5,
         thoughtfulness: 95,
       },
-      bio: `An at-large Florida Man with a passion for code and tinkering, Topher's journey began as a Marine and two-time war-veteran. Soon after he found himself in the aerospace world, where he honed his skills as an engineer. His quest for knowledge and new experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man, where they connected in a Hash House Harriers camp, "BRCH3." Together they've navigated through the challenges of life's game, combining their strengths to form an unbeatable team.`,
+      bio: `An at-large Florida Man with a passion for code and tinkering, 
+      Topher's journey began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, he 
+      developed a deep understanding for complex systems, which easily translated into becoming an aerospace engineer, 
+      which ultimately led him to the world of software. 
+      <br/><br/>
+      His entrepreneurial experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. 
+      Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man.`,
     },
     steph: {
       name: 'Steph Stubler',
@@ -133,20 +186,24 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       avatar: stephAvatar,
       attributes: {
         origin: 'Virginia, USA',
-        class: 'Software Engineer',
+        class: 'Staff Software Engineer and Team Lead',
         specialAbility: 'Rubik\'s Cube solving',
         favoriteFood: 'Bratwurst',
         hobbies: 'Art, Piano, Dubstep Dancing',
         alignment: 'Neutral Good'
       },
       stats: {
-        strength: 85,
-        intelligence: 90,
-        running: 3.9,
+        curiosity: 92,
         tenacity: 95,
+        running: 3.9,
         bowling: 15
       },
-      bio: `With roots in DC and Virginia, armed with an adventurous spirit, Steph's preoccupation for learning has earned her many skills of varying use, such as consecutive kayak rolls in succession, reproducing an almost-exact Taco Bell texture of meat on the stovetop, and tetris-ing far too much camping gear into tiny car trunks. Steph can thoroughly ally your party in any glamping quest. When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. Shortly thereafter, they discovered a shared love for absurdity, long hair, and exploration that would take them from the streets of DC, to the mountains of Seattle, to the beer halls of Germany.`,
+      bio: `With roots in DC and Virginia, armed with an adventurous spirit, Steph's preoccupation for learning has earned her several skills of varying usefulness, 
+      primarily: rolling a kayak four to five times in succession, reproducing an almost-exact Taco Bell meat texture on the stovetop, and tetris-ing (far too much) 
+      camping gear into tiny car trunks. Steph will enthusiastically ally your party in any camping/glamping quest. 
+      <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. 
+      They have since discovered a shared love for absurdity, long hair, and exploration that would take them from the streets of DC, to the 
+      mountains of Seattle, to the beer halls of Germany.`,
     },
     kilton: {
       name: 'Kilton Jett Sikorra',
@@ -161,13 +218,23 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         alignment: 'Lawful Good'
       },
       stats: {
-        strength: 42,
-        intelligence: 35,
-        charisma: 47,
+        enthusiasm: 47,
         cuddling: 95,
         energy: 35,
+        prancing: 78
       },
-      bio: `Kilton Jett, arbiter of snuggling proximity, knows exactly when any snack is being consumed, and will sing to alert the snacker to his own deservedness of this food. Most morose when it is time to leave the park, he will slow his gait approaching the exit, to an almost backwards pace. Extremely particular in his required level of smush, should he find a ball to his standards, he will proudly parade it up to you and carry it in his mouth until the end of a park route, or until it is stolen by his sister, whichever may come first. At home, Kilton favors two snoot-out-of-window watchdog chairs, in order to properly alert house residents of dangerous raccoons and evil mail-people. Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on task by snuggling his head on your hip while his subject is working on the couch. Kilton will loyally verify you are nearby at all times on walks, and tolerate being picked up, although his face may signify abject horror.`,
+      bio: `Kilton Jett, our caroling man, knows exactly when any snack is being consumed, 
+      and will sing to alert the snacker to his presence. You see, he totally deserves this food, in his estimation. 
+      <br/><br/>
+      Most morose when it is time to leave the park, Kilton will slow his gait to an almost backwards pace, as he approaches the exit. 
+      <br/><br/>
+      At home, you will often find Kilton's snoot hanging out of the window while perched in his favorite armchair, 
+      positioned perfectly to alert house residents of dangerous raccoons and evil mail-people. 
+      <br/><br/>
+      Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on 
+      task by snuggling his head on your hip while his subject is working on the couch. 
+      <br/><br/>
+      Kilton will loyally verify you are nearby at all times on walks, and tolerates being picked up...although his face may display abject horror.`,
     },
     laney: {
       name: 'Helena Josephine Sikorra',
@@ -182,13 +249,21 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         alignment: 'Chaotic Neutral'
       },
       stats: {
-        strength: 94,
-        intelligence: 35,
-        charisma: 55,
-        cuddling: 28,
+        muscleDefinition: 94,
+        willfullness: 83,
+        commandResponseTime: 28,
         energy: 100,
       },
-      bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific jail of our favored multi-acre-off-leash dog park, in order to hunt the smallest of rabbits, should it dare to alert her of its presence. Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting, but indoors, this chaos dog will slink away deep into blankety caves and custom teepees. Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. The size and density of her muscles have her more adept to sinking in lakes than swimming, although occasionally she can be found continuing to terrorize other creatures wearing a shark life-vest. When returning home, after a devastating 42 minutes of neglect, she will greet you with the thunder of a wagging tail, swishing furiously on hardwood floor.`,
+      bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific jail 
+      of any glorious dog park, in order to hunt small non-dog creatures. 
+      <br/><br/>
+      Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting, 
+      but indoors, this chaos dog will slink away deep into blankety caves and custom teepees. 
+      <br/><br/>
+      Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. 
+      <br/><br/>
+      The size and density of her muscles have her more adept to sinking in lakes than swimming, although occasionally she can be found terrorizing 
+      other creatures wearing a shark life-vest.`,
     },
   };
 
@@ -201,86 +276,517 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
 
   return (
     <Box sx={{ 
-      p: 2, 
+      p: { xs: 1, sm: 2 }, 
       background: 'linear-gradient(to bottom, #000000, #1a1a2e)', 
       color: 'white',
-      height: 'auto', // Changed from minHeight: '100vh' to allow scrolling
+      height: 'auto',
       minHeight: 'fit-content',
       width: '100%',
       overflow: 'visible',
+      paddingBottom: { xs: '100px', sm: '60px' }, // Extra padding at bottom for mobile
     }}>
-      {/* Title aligned with main character profile */}
-      <Grid container spacing={2}>
-        <Grid item xs={4} sm={3} md={2}>
-          {/* Space for alignment */}
-        </Grid>
-        <Grid item xs={8} sm={9} md={10}>
-          <StephsActualFavoriteTypographyNoDrop 
-            sx={{
-              textAlign: 'left',
-              fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
-              mb: 2
-            }}
-          >
-            [CHARACTER SELECT]
-          </StephsActualFavoriteTypographyNoDrop>
-        </Grid>
-      </Grid>
+      {/* Title section - made responsive for mobile */}
+      <Box>
+        <StephsActualFavoriteTypographyNoDrop 
+          sx={{
+            textAlign: 'center',
+            fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.2rem' },
+            mb: { xs: 1, sm: 2 }
+          }}
+        >
+          [CHARACTER SELECT]
+        </StephsActualFavoriteTypographyNoDrop>
+      </Box>
       
-      {/* Main content grid */}
-      <Grid container spacing={2}>
-        {/* Character selection sidebar */}
-        <Grid item xs={4} sm={3} md={2}>
+      {/* Mobile-only horizontal player selection buttons */}
+      {isMobile && (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          gap: 0.5,
+          mb: 2,
+          mt: 1
+        }}>
           <SelectButton 
             isSelected={selectedCharacter === 'topher'} 
             onClick={() => setSelectedCharacter('topher')}
+            sx={{
+              fontSize: '0.65rem',
+              py: 0.5,
+              px: 0.5,
+              borderRadius: 1,
+              flex: 1,
+              minWidth: 0,
+              mb: 0
+            }}
           >
-            Player 1
+            P1
           </SelectButton>
           <SelectButton 
             isSelected={selectedCharacter === 'steph'} 
             onClick={() => setSelectedCharacter('steph')}
+            sx={{
+              fontSize: '0.65rem',
+              py: 0.5,
+              px: 0.5,
+              borderRadius: 1,
+              flex: 1,
+              minWidth: 0,
+              mb: 0
+            }}
           >
-            Player 2
+            P2
           </SelectButton>
           <SelectButton 
             isSelected={selectedCharacter === 'kilton'} 
             onClick={() => setSelectedCharacter('kilton')}
+            sx={{
+              fontSize: '0.65rem',
+              py: 0.5,
+              px: 0.5,
+              borderRadius: 1,
+              flex: 1,
+              minWidth: 0,
+              mb: 0
+            }}
           >
-            Player 3
+            P3
           </SelectButton>
           <SelectButton 
             isSelected={selectedCharacter === 'laney'} 
             onClick={() => setSelectedCharacter('laney')}
+            sx={{
+              fontSize: '0.65rem',
+              py: 0.5,
+              px: 0.5,
+              borderRadius: 1,
+              flex: 1, 
+              minWidth: 0,
+              mb: 0
+            }}
           >
-            Player 4
-          </SelectButton>          
-        </Grid>
+            P4
+          </SelectButton>
+        </Box>
+      )}
+      
+      {/* Main content grid */}
+      <Grid container spacing={{ xs: 1, sm: 2 }}>
+        {/* Character selection sidebar - desktop only */}
+        {!isMobile && (
+          <Grid item sm={3} md={2}>
+            <SelectButton 
+              isSelected={selectedCharacter === 'topher'} 
+              onClick={() => setSelectedCharacter('topher')}
+              sx={{
+                fontSize: '0.85rem',
+                py: 1
+              }}
+            >
+              Player 1
+            </SelectButton>
+            <SelectButton 
+              isSelected={selectedCharacter === 'steph'} 
+              onClick={() => setSelectedCharacter('steph')}
+              sx={{
+                fontSize: '0.85rem',
+                py: 1
+              }}
+            >
+              Player 2
+            </SelectButton>
+            <SelectButton 
+              isSelected={selectedCharacter === 'kilton'} 
+              onClick={() => setSelectedCharacter('kilton')}
+              sx={{
+                fontSize: '0.85rem',
+                py: 1
+              }}
+            >
+              Player 3
+            </SelectButton>
+            <SelectButton 
+              isSelected={selectedCharacter === 'laney'} 
+              onClick={() => setSelectedCharacter('laney')}
+              sx={{
+                fontSize: '0.85rem',
+                py: 1
+              }}
+            >
+              Player 4
+            </SelectButton>          
+          </Grid>
+        )}
 
-        {/* Main character profile */}
-        <Grid item xs={8} sm={9} md={10}>
-          <CharacterFrame>
-            <Grid container spacing={2}>
-              {/* Character image */}
-              <Grid item xs={12} sm={4}>
-                <CharacterAvatar src={selectedChar.avatar} variant="rounded" />
-                <Box sx={{ mt: 1 }}>
-                  <GamerTag variant="subtitle2">
-                    {selectedChar.gamerTag}
-                  </GamerTag>
-                  <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-                    {selectedChar.name}
-                  </Typography>
+        {/* Main character profile - full width on mobile */}
+        <Grid item xs={12} sm={9} md={10}>
+          <CharacterFrame sx={{ 
+            p: { xs: 1.5, sm: 2 }
+          }}>
+            {/* Mobile optimized layout */}
+            {isMobile ? (
+              <>
+                {/* Mobile character header */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2,
+                  mb: 2
+                }}>
+                  <CharacterAvatar 
+                    src={selectedChar.avatar} 
+                    variant="rounded"
+                    sx={{
+                      borderWidth: 2,
+                      width: '40%',
+                      maxWidth: '150px'
+                    }}
+                  />
+                  <Box>
+                    <GamerTag 
+                      variant="subtitle2"
+                      sx={{
+                        fontSize: '0.6rem',
+                        mb: 0.5
+                      }}
+                    >
+                      {selectedChar.gamerTag}
+                    </GamerTag>
+                    <Typography 
+                      variant="h6" 
+                      component="h1" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      {selectedChar.name}
+                    </Typography>
+                  </Box>
                 </Box>
 
-                {/* Stats section - mobile only shows on character page */}
-                {!isMobile && (
+                {/* Mobile attributes */}
+                <AttributeGrid 
+                  container 
+                  spacing={1}
+                  sx={{ pt: 0, mb: 2 }}
+                >
+                  {Object.entries(selectedChar.attributes).map(([key, value]) => (
+                    <React.Fragment key={key}>
+                      <Grid item xs={5}>
+                        <AttributeLabel 
+                          variant="body2" 
+                          sx={{ 
+                            textTransform: 'capitalize',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {key}:
+                        </AttributeLabel>
+                      </Grid>
+                      <Grid item xs={7}>
+                        <AttributeValue 
+                          variant="body2"
+                          sx={{ fontSize: '0.75rem' }}
+                        >
+                          {value}
+                        </AttributeValue>
+                      </Grid>
+                    </React.Fragment>
+                  ))}
+                </AttributeGrid>
+
+                {/* Mobile stats */}
+                <StatsBox sx={{ 
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1
+                }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ 
+                      color: theme.palette.secondary.light, 
+                      mb: 1,
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    CHARACTER STATS
+                  </Typography>
+                  {Object.entries(selectedChar.stats).map(([stat, value]) => (
+                    <Box key={stat} sx={{ mb: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            textTransform: 'capitalize',
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          {stat}
+                        </Typography>
+                        <Typography 
+                          variant="caption"
+                          sx={{ fontSize: '0.7rem' }}
+                        >
+                          {value}/100
+                        </Typography>
+                      </Box>
+                      <ProgressBarContainer sx={{ height: 12 }}>
+                        <ProgressBar value={value} />
+                      </ProgressBarContainer>
+                    </Box>
+                  ))}
+                </StatsBox>
+
+                {/* Mobile bio */}
+                <CharacterBio sx={{ 
+                  fontSize: '0.75rem',
+                  mt: 0,
+                  mb: 2,                  
+                }}>
+                  <Typography
+                    dangerouslySetInnerHTML={{ __html: selectedChar.bio }}>
+                  </Typography>
+                </CharacterBio>
+
+                {/* Mobile love story */}
+                {(selectedCharacter === 'topher' || selectedCharacter === 'steph') && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: theme.palette.primary.light, 
+                      fontWeight: 'bold', 
+                      mb: 1,
+                      fontSize: '1rem'
+                    }}
+                  >
+                    [MAIN QUEST: LOVE STORY]
+                  </Typography>
+                  <Typography 
+                    variant="body2"
+                    sx={{
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4
+                    }}
+                  >
+                    A tale as old as time: 
+                    girl wins Burning Man ticket lottery, 
+                    girl sells extra ticket to boy, 
+                    boy and girl meet at Burning Man camp, 
+                    girl thinks boy is cute,
+                    girl visits boy in and moves to Seattle, 
+                    girl inherits two dogs of boy, 
+                    boy proposes in a camping tent.
+                    <br/><br/>
+                      Topher and Steph have been Facebook friends since 2017, thanks to a DC-based social running club, the "Hash House Harriers." 
+                      <br/>Versions of this club exist all over the world: "hashers" meet up weekly to run, following a chalk-marked trail, occasionally stopping at "check" points to 
+                      consume a beer or two, and probably sing offensive songs.
+                      <br/><br/>
+                      Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of this rather infamous community.
+                      Steph discovered hashing in 2016 just as Topher was moving to Seattle, and so their paths would not cross officially until seven years later.
+                      
+                      <br/><br/>Topher and Steph finally meet in August of 2023, in the Black Rock City desert, and were thoroughly and enthusiastically endorsed to each other, by several mutual and gushing friends.
+                      As two software engineers who adore problem-solving and code, they found compatibilities everywhere from life goals, general outlooks, and proper toilet-paper orientation (over, you heathens).
+                        
+                      <br/><br/>They haven't stopped giggling since.
+                      <br/>...especially while building this website.  
+                  </Typography>
+                  
+                  {/* Mobile photo grid - 2 columns */}
+                  <Grid container spacing={1} sx={{ mt: 1 }}>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={bm2023} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Burning Man 2023
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={roadtrip} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Road Trip
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={burn_night} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Local Burns
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={bremerhaven} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Bremerhaven
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={oktoberfest} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Oktoberfest
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Avatar 
+                        src={rattlesnake1} 
+                        variant="rounded" 
+                        sx={{ 
+                          width: '100%', 
+                          height: 'auto', 
+                          aspectRatio: '1/1',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block', 
+                          textAlign: 'center', 
+                          mt: 0.5, 
+                          color: theme.palette.secondary.main,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Seattle, WA
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+                )}
+              </>
+            ) : (
+              // Desktop layout - keep as is
+              <Grid container spacing={2}>
+                {/* Character image */}
+                <Grid item sm={4}>
+                  <CharacterAvatar 
+                    src={selectedChar.avatar} 
+                    variant="rounded"
+                    sx={{
+                      borderWidth: 3 
+                    }}
+                  />
+                  <Box sx={{ mt: 1 }}>
+                    <GamerTag 
+                      variant="subtitle2"
+                      sx={{
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {selectedChar.gamerTag}
+                    </GamerTag>
+                    <Typography 
+                      variant="h5" 
+                      component="h1" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        fontSize: '1.5rem'
+                      }}
+                    >
+                      {selectedChar.name}
+                    </Typography>
+                  </Box>
+
+                  {/* Stats section - desktop */}
                   <StatsBox>
-                    <Typography variant="subtitle2" 
+                    <Typography 
+                      variant="subtitle2" 
                       sx={{ 
                         color: theme.palette.secondary.light, 
-                        mb: 1 
-                    }}
+                        mb: 1,
+                        fontSize: '0.8rem'
+                      }}
                     >
                       CHARACTER STATS
                     </Typography>
@@ -300,128 +806,347 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                       </Box>
                     ))}
                   </StatsBox>
-                )}
-              </Grid>
+                </Grid>
 
-              {/* Character attributes & bio */}
-              <Grid item xs={12} sm={8}>
-                <AttributeGrid container spacing={1}>
-                  {Object.entries(selectedChar.attributes).map(([key, value]) => (
-                    <React.Fragment key={key}>
-                      <Grid item xs={5} sm={4}>
-                        <AttributeLabel variant="body2" sx={{ textTransform: 'capitalize' }}>
-                          {key}:
-                        </AttributeLabel>
+                {/* Character attributes & bio */}
+                <Grid item sm={8}>
+                  <AttributeGrid 
+                    container 
+                    spacing={1}
+                    sx={{
+                      pt: 2
+                    }}
+                  >
+                    {Object.entries(selectedChar.attributes).map(([key, value]) => (
+                      <React.Fragment key={key}>
+                        <Grid item sm={4}>
+                          <AttributeLabel 
+                            variant="body2" 
+                            sx={{ 
+                              textTransform: 'capitalize',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            {key}:
+                          </AttributeLabel>
+                        </Grid>
+                        <Grid item sm={8}>
+                          <AttributeValue 
+                            variant="body2"
+                            sx={{
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            {value}
+                          </AttributeValue>
+                        </Grid>
+                      </React.Fragment>
+                    ))}
+                  </AttributeGrid>
+
+                  <CharacterBio sx={{ 
+                    fontSize: '0.85rem',
+                    mt: 2
+                  }}>
+                    <Typography
+                      sx= {{ 
+                        fontSize: '0.85rem',
+                      }}
+                      dangerouslySetInnerHTML={{ __html: selectedChar.bio }}>
+                    </Typography>
+                  </CharacterBio>
+
+                  {/* Our love story - desktop */}
+                  {(selectedCharacter === 'topher' || selectedCharacter === 'steph') && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: theme.palette.primary.light, 
+                        fontWeight: 'bold', 
+                        mb: 1,
+                        fontSize: '1.25rem'
+                      }}
+                    >
+                      [MAIN QUEST: LOVE STORY]
+                    </Typography>
+                    <Typography 
+                      variant="body2"
+                      sx={{
+                        fontSize: '0.85rem',
+                        lineHeight: 1.5
+                      }}
+                    >  
+                      <Paper sx={{ 
+                        mt: 2,
+                        p: { xs: 1, sm: 1.5 },
+                        backgroundColor: alpha(theme.palette.background.paper, 0.15),
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+                        borderRadius: '8px',
+                      }}>                   
+                        <b>TLDR;</b>
+                        <br/><br/>
+                        <i><b>A tale as old as time:</b></i>
+                        <br/>girl wins Burning Man ticket lottery, 
+                        <br/>girl sells extra ticket to boy, 
+                        <br/>boy and girl meet at Burning Man camp, 
+                        <br/>girl thinks boy is cute,
+                        <br/>girl visits boy in (and eventually moves to) Seattle, 
+                        <br/>girl inherits two dogs of boy, 
+                        <br/>boy proposes in a camping tent.
+                      </Paper>
+                    
+                      <br/>
+                      Topher and Steph have been Facebook friends since 2017, thanks to a DC-based social running club, the "Hash House Harriers." 
+                      <br/>Versions of this club exist all over the world: "hashers" meet up weekly to run, following a chalk-marked trail, occasionally stopping at "check" points to 
+                      consume a beer or two, and probably sing offensive songs.
+                      <br/><br/>
+                      Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of this rather infamous community.
+                      Steph discovered hashing in 2016 just as Topher was moving to Seattle, and so their paths would not cross officially until seven years later.
+                      
+                      <br/><br/>Topher and Steph finally meet in August of 2023, in the Black Rock City desert, and were thoroughly and enthusiastically endorsed to each other, by several mutual and gushing friends.
+                      As two software engineers who adore problem-solving and code, they found compatibilities everywhere from life goals, general outlooks, and proper toilet-paper orientation (over, you heathens).
+                        
+                      <br/><br/>They haven't stopped giggling since.
+                      <br/>...especially while building this website. 
+                    </Typography>
+                    
+                    {/* Desktop photo grid - 3x2 grid with larger images */}
+                    <Box 
+                      sx={{ 
+                        mt: 2,
+                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                        borderRadius: '10px',
+                        padding: 2,
+                        backgroundColor: alpha('#000', 0.3)
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          fontWeight: 'bold',
+                          mb: 1.5,
+                          textAlign: 'center'
+                        }}
+                      >
+                        PHOTO ALBUM
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {/* Row 1 */}
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={bm2023} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Burning Man 2023 - BRCH3 Camp
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={roadtrip} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Cross-Country Road Trip
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={burn_night} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Local Burn Events
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        
+                        {/* Row 2 */}
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={bremerhaven} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Bremerhaven, Germany
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={oktoberfest} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Oktoberfest
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item sm={4}>
+                          <Box sx={{ position: 'relative' }}>
+                            <Avatar 
+                              src={rattlesnake1} 
+                              variant="rounded" 
+                              sx={{ 
+                                width: '100%', 
+                                height: 'auto', 
+                                aspectRatio: '1/1',
+                                borderRadius: '10px',
+                                border: `2px solid ${alpha(theme.palette.secondary.dark, 0.7)}`,
+                                boxShadow: `0 4px 8px ${alpha('#000', 0.5)}`,
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.03)'
+                                }
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                mt: 1, 
+                                mb: 1,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.8rem',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Seattle, WA
+                            </Typography>
+                          </Box>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={7} sm={8}>
-                        <AttributeValue variant="body2">
-                          {value}
-                        </AttributeValue>
-                      </Grid>
-                    </React.Fragment>
-                  ))}
-                </AttributeGrid>
-
-                <CharacterBio>
-                  {selectedChar.bio}
-                </CharacterBio>
-
-                {/* Our love story */}
-                {(selectedCharacter === 'topher' || selectedCharacter === 'steph') && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="h6" sx={{ color: theme.palette.primary.light, fontWeight: 'bold', mb: 1 }}>
-                    [MAIN QUEST: LOVE STORY]
-                  </Typography>
-                  <Typography variant="body2">
-                    Their journey began in the Nevada desert at Burning Man in 2023, where Topher and Steph's paths converged for the first time, despite having almost met in 2017. 
-                    Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of the great "hashing" community
-                    --a rather infamous running club, "EWH3"--based in Washington, DC.
-                    <br/><br/>Note: Hashing will have you run while navigating random terrains with a large pack of runners, often sillily clothed, who then afterward meet up to share some beers. Sometimes, you will beer during trail.
-                    <br/><br/>Steph discovered hashing just as Topher was moving to Seattle, and so their paths would not cross officially then (outside of a Facebook friend request in 2017).
-                    Just before he moved, Topher inquired if Steph could join his team for a Ragnar race. Steph, still a terribly bad runner, declined, citing her own brother's conflicting wedding date,
-                    though she was remiss, as Topher was cute.
-                    <br/><br/>Six years later, in 2023, Steph won the Burning Man ticket lottery and found herself with an extra ticket, which she sold to Topher himself through
-                    their mutual friend and camp lead: Karen H.
-                    <br/><br/>Topher and Steph finally met in August in the Black Rock City desert and were thoroughly and enthusiastically endorsed to each other through another mutual friend: Britt B.
-                    Steph found Topher to still be cute. And they had hundreds of friends in common!
-                    <br/><br/>"I met someone," Steph reported to her hasher friends upon returning home, "...it's Topher."
-                    <br/><br/>"THAT MAKES TOTAL SENSE!!!!" -- an immediate (and Steph's favorite) response from a mutual friend, Katie G.
-                    <br/><br/>Steph then visited Seattle, reveled in its green and blue glory, and moved there to be with Topher shortly after. 
-                    <br/><br/>They haven't stopped giggling since. 
-                  </Typography>
-                  
-                  <Grid container spacing={1} sx={{ mt: 1 }}>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={bm2023} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Burning Man 2023 - BRCH3 Camp
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={roadtrip} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Cross-Country Road Trip
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={burn_night} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Local Burn Events
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={bremerhaven} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Bremerhaven, Germany
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={oktoberfest} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Oktoberfest
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Avatar src={rattlesnake1} variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '1/1' }} />
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5, color: theme.palette.secondary.main }}>
-                        Seattle, WA
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  
-                  <Typography variant="body2" sx={{ mt: 2 }}>
-                    Having conquered many of life's various quests, and through the design and implementation of this ridiculous website, 
-                    they know they can handle (and are terribly excited to be) tackling this epic game saga of life, together.
-                    They have decided to form a permanent party. The ultimate quest culminates on July 5, 2025, when 
-                    they'll exchange legendary items (ahem, rings) at Stone Manor Inn in Lovettsville, Virginia.
-                  </Typography>
-                </Box>
-                )}
-              </Grid>
-            </Grid>
-
-            {/* Mobile stats section */}
-            {isMobile && (
-              <StatsBox sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: theme.palette.primary.light, mb: 1 }}>
-                  CHARACTER STATS
-                </Typography>
-                {Object.entries(selectedChar.stats).map(([stat, value]) => (
-                  <Box key={stat} sx={{ mb: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
-                        {stat}
-                      </Typography>
-                      <Typography variant="caption">
-                        {value}/100
-                      </Typography>
                     </Box>
-                    <ProgressBarContainer>
-                      <ProgressBar value={value} />
-                    </ProgressBarContainer>
                   </Box>
-                ))}
-              </StatsBox>
+                  )}
+                </Grid>
+              </Grid>
             )}
           </CharacterFrame>
         </Grid>

@@ -12,3 +12,13 @@ export interface FamilyGuestsStates {
   saveTheDateComplete: boolean;
   allAllergiesResponded: boolean;
 }
+
+export interface FamilyGuestsWeddingStates {
+  [x: string]: any;
+  allUsersResponded: boolean;
+  attendingLastNames: string[];
+  callByLastNames: string;
+  guests: GuestViewModel[];
+  nobodyComing: boolean;
+  rsvpComplete: boolean;
+}

@@ -123,6 +123,8 @@ function TabPanel(props: TabPanelProps) {
                 margin: 0,
                 left: '50%',
                 transform: 'translateX(-50%)', // Center the container
+                backgroundColor: 'black', // Add black background color
+                height: '100vh', // Make it full height of viewport
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -130,7 +132,7 @@ function TabPanel(props: TabPanelProps) {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)', // Darker overlay
                   backdropFilter: 'blur(2px)',
                   zIndex: 0
                 },
@@ -191,7 +193,7 @@ function TabPanel(props: TabPanelProps) {
                     px: 2,
                   }}
                 >
-                  This section is currently under construction. Please check back later for updates!
+                  We are currently working on this section. Please check back later for updates!
                 </Typography>
               </Box>
             </Container>
@@ -375,12 +377,14 @@ function DetailsPage() {
           scrollButtons="auto"
           textColor="primary"
           indicatorColor="secondary"
+          centered
           aria-label="Wedding details tabs"
           sx={{
             borderBottom: 1,
             borderColor: 'divider',
-            [theme.breakpoints.up('md')]: {
-              justifyContent: 'center',
+            width: '100%', // Ensure tabs take full width
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'center', // Center the tab items
             },
           }}
         >
@@ -418,6 +422,7 @@ function DetailsPage() {
           overflowY: 'auto',
           height: `calc(${contentHeight} - 48px)`, // Simplified height calculation
           maxWidth: '100%',
+          backgroundColor: 'black', // Add black background for the content area
         }}
       >
         {detailItems.map((item, index) => (
