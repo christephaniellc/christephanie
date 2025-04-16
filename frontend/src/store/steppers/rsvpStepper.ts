@@ -42,8 +42,16 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       component: null,
       display: true,
     },
-    transportation: {
+    foodAllergies: {
       id: 3,
+      completed: false,
+      label: 'Food Allergies',
+      description: 'Let us know about any dietary restrictions',
+      component: null,
+      display: true,
+    },
+    transportation: {
+      id: 4,
       completed: false,
       label: 'Transportation Needs',
       description: 'Let us know if you need transportation assistance',
@@ -51,7 +59,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     accommodation: {
-      id: 4,
+      id: 5,
       completed: false,
       label: 'Accommodation Plans',
       description: 'Confirm your accommodation arrangements',
@@ -59,7 +67,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     comments: {
-      id: 5,
+      id: 6,
       completed: false,
       label: 'Additional Comments',
       description: 'Any last questions or requests?',
@@ -67,7 +75,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     summary: {
-      id: 6,
+      id: 7,
       completed: true,
       label: 'RSVP Summary',
       description: 'Review your RSVP information',
