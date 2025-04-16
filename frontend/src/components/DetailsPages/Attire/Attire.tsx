@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import React from 'react';
 import { Card, CardContent, Paper, Divider } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
 import burnNightImage from '@/assets/engagement-photos/burn_night.jpg';
 
@@ -20,7 +20,7 @@ function Attire({handleTabLink}: AttireProps) {
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         borderRadius: 'sm',
         display: 'flex',
@@ -38,7 +38,7 @@ function Attire({handleTabLink}: AttireProps) {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backgroundColor: 'rgba(70, 58, 58, 0.6)',
           backdropFilter: 'blur(2px)',
           zIndex: 0
         },
@@ -105,11 +105,17 @@ function Attire({handleTabLink}: AttireProps) {
       >
         <Card sx={{ mb: 3, backgroundColor: 'rgba(0,0,0,0.1)' }}>
           <CardContent>
-            <Typography variant="h5" color="secondary" gutterBottom>
-              Burn-Style Wedding: Express Yourself
-            </Typography>
+            <StephsActualFavoriteTypographyNoDrop variant="h5" 
+              color="secondary" 
+              gutterBottom
+              sx={{
+                fontSize: '1.5rem'
+              }}
+            >
+              Burning Man-Style Wedding: Express Yourself
+            </StephsActualFavoriteTypographyNoDrop>
             <Typography variant="body1" paragraph>
-              This is a burn-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
+              This is a burning man-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
             </Typography>
             <Typography variant="body1" paragraph>
               Love jeans and a t-shirt? Wear them! Prefer a sundress? Perfect! Want to rock a suit? Go for it! Flippy floppies? Absolutely! The only rule is that there are no rules — just be you.
@@ -121,9 +127,16 @@ function Attire({handleTabLink}: AttireProps) {
         
         <Card sx={{ mb: 3, backgroundColor: 'rgba(0,0,0,0.1)' }}>
           <CardContent>
-            <Typography variant="h5" color="secondary" gutterBottom>
+            <StephsActualFavoriteTypographyNoDrop 
+              variant="h5" 
+              color="secondary" 
+              gutterBottom            
+              sx={{
+                fontSize: '1.5rem'
+              }}
+            >
               What Topher & Steph Are Wearing
-            </Typography>
+            </StephsActualFavoriteTypographyNoDrop>
             <Typography variant="body1" paragraph>
               We'll start the day in traditional wedding attire for the ceremony and dinner, but we'll be changing into more comfortable clothes for the party afterward.
             </Typography>
@@ -137,9 +150,16 @@ function Attire({handleTabLink}: AttireProps) {
         
         <Card sx={{ mb: 3, backgroundColor: 'rgba(0,0,0,0.1)' }}>
           <CardContent>
-            <Typography variant="h5" color="secondary" gutterBottom>
+            <StephsActualFavoriteTypographyNoDrop 
+              variant="h5" 
+              color="secondary" 
+              gutterBottom           
+              sx={{
+                fontSize: '1.5rem'
+              }}
+            >
               Weather Considerations
-            </Typography>
+            </StephsActualFavoriteTypographyNoDrop>
             <Typography variant="body1" paragraph>
               Virginia in July can be quite hot and humid. The ceremony will be outdoors (weather permitting), and while indoor spaces will be air-conditioned, outdoor areas may be warm.
             </Typography>
@@ -149,9 +169,13 @@ function Attire({handleTabLink}: AttireProps) {
             <Typography variant="body1">
               <strong>Tips:</strong> 
               <ul>
+                <li>Footwear: the ceremony and reception are outdoors on a mixture of terrains</li>
+                <ul>
+                  <li>Flats or chunky heels are recommended</li>
+                  <li>(Steph loves heels, and is prob wearing boots)</li>
+                </ul>
                 <li>Light, breathable fabrics are recommended</li>
-                <li>Some outdoor areas may have uneven terrain - consider appropriate footwear</li>
-                <li>You might want to bring a hat or sunglasses for outdoor portions</li>
+                <li>You may want to bring a hat or sunglasses</li>
                 <li>Sunscreen is always a good idea!</li>
               </ul>
             </Typography>
@@ -164,8 +188,15 @@ function Attire({handleTabLink}: AttireProps) {
           <Typography variant="h6" gutterBottom color="secondary">
             Questions about attire?
           </Typography>
-          <Typography variant="body1">
-            Email us at: steph-and-topher@wedding.christephanie.com
+          <Typography variant="body1">            
+            Email us at: &nbsp;
+            <Box component="span"
+              sx={{
+                color: theme.palette.secondary.main
+              }}
+            >
+              hosts@wedding.christephanie.com
+            </Box>
           </Typography>
         </Box>
       </Paper>
