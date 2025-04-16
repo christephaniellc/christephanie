@@ -35,10 +35,11 @@ The basic RSVP page infrastructure is now in place with its own state management
 - [ ] Create useQueryParamRsvpStep hook (similar to useQueryParamInvitationCode)
 
 ### RSVP-Specific Steps and Content
-- [ ] Define new steps for RSVP process
+- [x] Define new steps for RSVP process
 - [ ] Update content to reflect final RSVP vs initial interest
 - [ ] Add wedding-specific questions not in save-the-date
 - [ ] Add rehearsal dinner attendance option for selected guests
+- [x] Add foodAllergies step after foodPreferences
 - [ ] Create WeddingAttendanceSlider component with StickFigureIcon for explicit attendance confirmation
 - [ ] Update SummaryView to show RSVP-specific information
 
