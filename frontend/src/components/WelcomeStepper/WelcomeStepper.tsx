@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -29,9 +29,195 @@ import { CountdownBox, SideCountdownContainer } from '@/pages/Welcome/styled';
 import Countdowns from '@/components/Countdowns';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyNoDropWhite, Text3dTypography } from '../AttendanceButton/AttendanceButton';
+import styled from '@emotion/styled';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
 import { familyGuestsStates } from '@/store/family';
+import { isFeatureEnabled } from '@/config';
+
+// Create a Sparkle Animation component
+const SparkleContent = styled.div`
+  position: relative;
+  display: inline-block;
+  padding: 4px 8px;
+  color: ${props => props.theme.palette.secondary.main};
+  font-weight: bold;
+  margin: 4px 0;
+  
+  /* Define the container for sparkles */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    z-index: -1;
+  }
+  
+  /* Define keyframes for sparkle animation */
+  @keyframes sparkle {
+    0% { opacity: 0; transform: scale(0) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
+    100% { opacity: 0; transform: scale(0) rotate(360deg); }
+  }
+  
+  /* Generate 10 sparkle elements with pseudo-elements */
+  ${Array.from({ length: 10 }).map((_, i) => `
+    &::before:nth-of-type(${i + 1}) {
+      content: '';
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: ${props => props.theme.palette.secondary.main};
+      box-shadow: 0 0 6px 1px ${props => props.theme.palette.secondary.main};
+      top: ${10 + Math.random() * 80}%;
+      left: ${10 + Math.random() * 80}%;
+      opacity: 0;
+      animation: sparkle ${1 + Math.random() * 2}s ${Math.random() * 3}s infinite;
+      z-index: -1;
+    }
+  `).join('')}
+  
+  /* Generate 5 star-shaped sparkles */
+  ${Array.from({ length: 5 }).map((_, i) => `
+    &::after:nth-of-type(${i + 1}) {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      transform: rotate(45deg);
+      background-color: ${props => props.theme.palette.secondary.light};
+      box-shadow: 0 0 10px 2px ${props => props.theme.palette.secondary.light};
+      top: ${10 + Math.random() * 80}%;
+      left: ${10 + Math.random() * 80}%;
+      opacity: 0;
+      animation: sparkle ${2 + Math.random() * 3}s ${Math.random() * 5}s infinite;
+      z-index: -1;
+    }
+  `).join('')}
+`;
+
+// Create a custom New Content component that includes the sparkle effect
+const NewContentBadge = () => {
+  const theme = useTheme();
+  return (
+    
+    <Paper sx={{ 
+      mt: 0,
+      p: { xs: 1, sm: 1.5 },
+      backgroundColor: alpha('#000000', 0.6),
+      backdropFilter: 'blur(10px)',
+      boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+      borderRadius: '8px',
+    }}> 
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'inline-block',
+          padding: '4px 6px',
+          mt: '4px',
+          mb: '0px',
+          ml: '16px',
+          fontWeight: 'bold',
+          color: theme.palette.secondary.main,
+          // Define the sparkle animation keyframes
+          '@keyframes sparkle': {
+            '0%': { opacity: 0, transform: 'scale(0) rotate(0deg)' },
+            '50%': { opacity: 1, transform: 'scale(1) rotate(180deg)' },
+            '100%': { opacity: 0, transform: 'scale(0) rotate(360deg)' }
+          }
+        }}
+      >
+        <Typography 
+          component="span" 
+          variant="body1" 
+          sx={{ 
+            fontWeight: 'bold',
+            position: 'relative',
+            zIndex: 1,
+            color: '#FFFFFF',
+            animation: 'pulse 2s infinite ease-in-out',
+            '@keyframes pulse': {
+              '0%': { textShadow: '0 0 0px rgba(233, 149, 12, 0.5)' },
+              '50%': { textShadow: '0 0 10px rgba(233, 149, 12, 0.8)' },
+              '100%': { textShadow: '0 0 0px rgba(233, 149, 12, 0.5)' }
+            }
+          }}
+        >
+          NEW SITE CONTENT!
+        </Typography>
+        {/* New content dot */}
+        <Box sx={{ 
+          position: 'absolute',
+          top: '2px',
+          right: '-16px',
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          backgroundColor: theme.palette.secondary.main,
+          boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+        }} />
+        
+        {/* Sparkle elements */}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: '4px',
+              height: '4px',
+              borderRadius: '50%',
+              backgroundColor: theme.palette.secondary.main,
+              boxShadow: `0 0 4px 1px ${theme.palette.secondary.main}`,
+              opacity: 0,
+              top: `${10 + Math.random() * 80}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `sparkle ${1 + Math.random() * 2}s ${Math.random() * 3}s infinite`,
+              zIndex: 0
+            }}
+          />
+        ))}
+        
+        {/* Star sparkles */}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Box
+            key={`star-${i}`}
+            sx={{
+              position: 'absolute',
+              width: '6px',
+              height: '6px',
+              opacity: 0,
+              top: `${10 + Math.random() * 80}%`,
+              left: `${Math.random() * 100}%`,
+              '&:before': {
+                content: '""',
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                transform: 'rotate(45deg)',
+                backgroundColor: theme.palette.secondary.light,
+                boxShadow: `0 0 6px 1px ${theme.palette.secondary.light}`
+              },
+              animation: `sparkle ${2 + Math.random() * 3}s ${Math.random() * 5}s infinite`,
+              zIndex: 0
+            }}
+          />
+        ))}        
+        </Box>
+        <Box sx={{ mt: 1, ml: '20px' }}>
+          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>RSVP</Typography>
+          <Typography component="span" variant="body2" color="common.white"> - </Typography>
+          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Stats</Typography>
+          <Typography component="span" variant="body2" color="common.white"> - </Typography>
+          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Details</Typography>
+          <Typography component="span" variant="body2" color="common.white"> - </Typography>
+          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Registry</Typography>
+        </Box>
+    </Paper>
+  );
+};
 
 // Step interface
 export interface Step {
@@ -55,19 +241,26 @@ const steps: { [step: string]: Step } = {
     We'll send out official paper invitations once we get your interest and mailing address! 
     Official RSVP phase coming soon.`,
     lastDate: new Date('2025-04-16'),
-    stepCompleted: false,
+    stepCompleted: !isFeatureEnabled('ENABLE_SURVEY_PHASE'),
     stepUrl: routes[Pages.SaveTheDate].path,
-    enabled: true
+    enabled: isFeatureEnabled('ENABLE_SURVEY_PHASE')
   },
   rsvp: {
     id: 1,
-    label: 'RSVP (coming soon)!',
+    label: 'RSVP',
     description:
-      'Finalize your RSVP by letting us know if you can make it, along with your final accomodation and food choices.',
+      `Finalize your RSVP by letting us know if you can make it to our events.
+      <br/><br/>`,
+    // Using a component for this part
+    component: (
+      <Box sx={{ mb: 2 }}>
+        <NewContentBadge />
+      </Box>
+    ),
     lastDate: new Date('2025-05-20'),
-    stepCompleted: true,
+    stepCompleted: !isFeatureEnabled('ENABLE_RSVP_PHASE'),
     stepUrl: '/',
-    enabled: false
+    enabled: isFeatureEnabled('ENABLE_RSVP_PHASE')
   },
   wedding: {
     id: 2,
@@ -77,9 +270,9 @@ const steps: { [step: string]: Step } = {
       new Date(),
     )} days!`,
     lastDate: new Date('2025-07-06'),
-    stepCompleted: true,
+    stepCompleted: !isFeatureEnabled('ENABLE_WEDDING_PHASE'),
     stepUrl: routes[Pages.Profile].path,
-    enabled: false
+    enabled: true //isFeatureEnabled('ENABLE_WEDDING_PHASE')
   },
 };
 
@@ -92,6 +285,7 @@ const WelcomeStepper = () => {
   const [rsvpSteps, setRsvpSteps] = React.useState(steps);
   const stdSteps = useRecoilValue(saveTheDateStepsState);
   const stdStepper = useRecoilValue(stdStepperState);
+  //const rsvpSteps = useRecoilValue(saveTheDateStepsState);
   const navigate = useNavigate();
   const location = useLocation();
   const { contentHeight } = useAppLayout();
@@ -136,6 +330,26 @@ const WelcomeStepper = () => {
   // Current active step information
   const activeStepInfo = Object.values(rsvpSteps)[activeStep];
 
+  const calculateChipColor = useCallback((key: string) => {
+    console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
+    switch(key) {
+      case('saveTheDate'):
+        return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested 
+        ? theme.palette.success.main
+        : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+          ? theme.palette.error.main
+          : theme.palette.warning.main;
+      case('rsvp'):
+      return user.rsvp?.wedding === RsvpEnum.Attending 
+        ? theme.palette.success.main
+        : user.rsvp?.wedding === RsvpEnum.Declined
+          ? theme.palette.error.main
+          : theme.palette.warning.main;
+      default:
+        return theme.palette.warning.main
+    }
+  }, [user.rsvp, theme.palette]);
+
   // Determine response status message
   const responseStatus = useMemo(() => {
     if (!user.rsvp) return 'Please respond';
@@ -144,6 +358,19 @@ const WelcomeStepper = () => {
       case InvitationResponseEnum.Interested:
         return "You're interested in attending!";
       case InvitationResponseEnum.Declined:
+        return "You've declined to attend";
+      default:
+        return 'Please respond';
+    }
+  }, [user.rsvp]);
+
+  const weddingResponseStatus = useMemo(() => {
+    if (!user.rsvp) return 'Please respond';
+
+    switch (user.rsvp.wedding) {
+      case RsvpEnum.Attending:
+        return "You confirmed you are attending!";
+      case RsvpEnum.Declined:
         return "You've declined to attend";
       default:
         return 'Please respond';
@@ -194,6 +421,27 @@ const WelcomeStepper = () => {
     return isMobile ? 'Respond to Survey' : 'Respond to Save the Date Survey';
   }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.invitationResponse]);
 
+  const rsvpActionButtonText = useMemo(() => {
+    // TODO SKS
+    // if ((attendanceState?.atLeastOneAttending  && allStepsCompleted) || 
+    //     (user.rsvp?.wedding === RsvpEnum.Declined && 
+    //       rsvpSteps['attendance']?.completed && 
+    //       rsvpSteps['mailingAddress']?.completed)) {
+    //   return 'Update RSVP';
+    // } 
+    // // else if (firstIncompleteStep) {
+    // //   return `${stdSteps[firstIncompleteStep].label}`;
+    // // } 
+    // else if (firstIncompleteStep) {
+    //   return 'Continue RSVP';
+    // }
+    // else if (user.rsvp?.wedding === RsvpEnum.Declined || 
+    //            user.rsvp?.wedding === RsvpEnum.Pending) {
+    //   return 'Complete RSVP Required Info';
+    // }
+    return isMobile ? 'RSVP' : 'Submit RSVP';
+  }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.wedding]);
+
   React.useEffect(() => {
     setRsvpSteps((prev) => {
       const newSteps = { ...prev };
@@ -237,7 +485,7 @@ const WelcomeStepper = () => {
   }, [contentHeight, isMobile]);
 
   // Render action button component that can be placed at top or bottom
-  const ActionButton = () => (
+  const ActionButton = ({ stepKey }: { stepKey: string }) => (
     <Paper
       elevation={3}
       ref={buttonRef}
@@ -302,7 +550,7 @@ const WelcomeStepper = () => {
             )}`,
           }}
         >
-          {actionButtonText}
+          {stepKey === 'saveTheDate' ? actionButtonText : rsvpActionButtonText}
         </Button>
       </Box>
     </Paper>
@@ -345,8 +593,11 @@ const WelcomeStepper = () => {
             },
           }}
         >
-          {/* Render each step */}
-          {Object.entries(rsvpSteps).map(([key, step]) => (
+          {/* Render only enabled steps */}
+          {Object.entries(rsvpSteps)
+            .filter(([_, step]) => step.enabled) // Only show steps with enabled=true
+            .map(([key, step]) => (
+            
             <Step key={key}>
               <StepLabel
                 icon={<StickFigureIcon rotation={0} fontSize="medium" ageGroup={user.ageGroup} />}
@@ -392,8 +643,8 @@ const WelcomeStepper = () => {
                     </Typography>
                   </Box>
                   
-                  {/* Show status badge only for the first step */}
-                  {step.id === 0 && (
+                  {/* Show status badge (but not for wedding step) */}
+                  {step.enabled && key !== 'wedding' && (
                     <Box
                       sx={{
                         display: 'inline-flex',
@@ -404,12 +655,7 @@ const WelcomeStepper = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color:
-                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                              ? theme.palette.success.main
-                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                                ? theme.palette.error.main
-                                : theme.palette.warning.main,
+                          color: calculateChipColor(key),
                           fontWeight: 'medium',
                           fontSize: '0.7rem',
                           py: 0.6,
@@ -417,12 +663,7 @@ const WelcomeStepper = () => {
                           borderRadius: '16px',
                           borderWidth: '1.5px',
                           borderStyle: 'solid',
-                          borderColor:
-                            user.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-                              ? theme.palette.success.main
-                              : user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-                                ? theme.palette.error.main
-                                : theme.palette.warning.main,
+                          borderColor: calculateChipColor(key),
                           backgroundColor: alpha(theme.palette.background.paper, 0.8),
                           backdropFilter: 'blur(8px)',
                           boxShadow: `0 2px 6px ${alpha('#000', 0.3)}`,
@@ -430,7 +671,7 @@ const WelcomeStepper = () => {
                           letterSpacing: '0.02em',
                         }}
                       >
-                        {responseStatus}
+                        {key === 'saveTheDate' ? responseStatus : weddingResponseStatus}
                       </Typography>
                     </Box>
                   )}
@@ -442,15 +683,22 @@ const WelcomeStepper = () => {
                   pb: 2,
                 }}
               >
-                <BlockTextTypographyLess variant="body2" color="common.white" sx={{ mb: 2, opacity: 0.9 }}>
-                  {step.description}
-                </BlockTextTypographyLess>
+                <BlockTextTypographyLess 
+                  variant="body2" 
+                  color="common.white" 
+                  sx={{ mb: step.component ? 0 : 2, opacity: 0.9 }}
+                  dangerouslySetInnerHTML={{ __html: step.description }}
+                />
+                
+                {/* Display custom component if provided */}
+                {step.component && step.component}
               
                 {/* Action button shows at top when needed */}
-                {step.enabled && <ActionButton />}
+                {step.enabled && <ActionButton stepKey={key} />}
               </StepContent>
 
             </Step>
+
           ))}
         </Stepper>
       </Box>
