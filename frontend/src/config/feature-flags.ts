@@ -17,10 +17,9 @@ export const FeatureFlags = {
   ENABLE_SMS_VERIFICATION: false,          // Enable SMS verification flow
   
   // Pages
-  ENABLE_RSVP: false,
   ENABLE_REGISTRY: true,
   ENABLE_DETAILS: true,
-  ENABLE_DETAILS_ABOUTUS: false,
+  ENABLE_DETAILS_ABOUTUS: true,
   ENABLE_DETAILS_ACCOMMODATIONS: true,
   ENABLE_DETAILS_TRAVEL: false,
   ENABLE_DETAILS_ATTIRE: true,

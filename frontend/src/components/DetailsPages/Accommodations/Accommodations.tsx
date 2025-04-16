@@ -179,7 +179,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -317,6 +317,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
           >
             <Paper
               elevation={3}
+              component={Button}
               onClick={() => handleCategoryChange('hotels')}
               sx={{
                 width: { xs: '80px', sm: '120px', md: '150px' },
@@ -325,7 +326,6 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
                 backgroundColor: selectedCategory === 'hotels' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)',
                 border: selectedCategory === 'hotels' ? `2px solid ${theme.palette.secondary.main}` : '2px solid transparent',
                 transition: 'all 0.2s ease-in-out',
@@ -354,6 +354,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
 
             <Paper
               elevation={3}
+              component={Button}
               onClick={() => handleCategoryChange('camping')}
               sx={{
                 width: { xs: '80px', sm: '120px', md: '150px' },
@@ -395,6 +396,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
             
             <Paper
               elevation={3}
+              component={Button}
               onClick={() => handleCategoryChange('airbnb')}
               sx={{
                 width: { xs: '80px', sm: '120px', md: '150px' },
@@ -436,6 +438,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
 
             <Paper
               elevation={3}
+              component={Button}
               onClick={() => handleCategoryChange('other')}
               sx={{
                 width: { xs: '80px', sm: '120px', md: '150px' },
