@@ -18,24 +18,16 @@ export const rsvpTabIndex = atom<number>({
 export const rsvpStepsState = atom<Record<string, RsvpStep>>({
   key: 'rsvpStepper',
   default: {
-    welcome: {
+    weddingAttendance: {
       id: 0,
       completed: true,
-      label: 'Welcome to the RSVP Process',
-      description: 'Please confirm your attendance',
-      component: null,
-      display: true,
-    },
-    weddingAttendance: {
-      id: 1,
-      completed: false,
       label: 'Will you be attending our wedding?',
       description: 'Please confirm your final attendance',
       component: null,
       display: true,
     },
-    rehearsalDinner: {
-      id: 2,
+    fourthOfJulyAttendance: {
+      id: 1,
       completed: false,
       label: 'Rehearsal Dinner Attendance',
       description: 'For invited guests only',
@@ -43,7 +35,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true, // This will be conditionally set based on guest status
     },
     foodPreferences: {
-      id: 3,
+      id: 2,
       completed: false,
       label: 'Confirm Food Preferences',
       description: 'Review and update your meal choices',
@@ -51,7 +43,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     transportation: {
-      id: 4,
+      id: 3,
       completed: false,
       label: 'Transportation Needs',
       description: 'Let us know if you need transportation assistance',
@@ -59,7 +51,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     accommodation: {
-      id: 5,
+      id: 4,
       completed: false,
       label: 'Accommodation Plans',
       description: 'Confirm your accommodation arrangements',
@@ -67,7 +59,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     comments: {
-      id: 6,
+      id: 5,
       completed: false,
       label: 'Additional Comments',
       description: 'Any last questions or requests?',
@@ -75,7 +67,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     summary: {
-      id: 7,
+      id: 6,
       completed: true,
       label: 'RSVP Summary',
       description: 'Review your RSVP information',

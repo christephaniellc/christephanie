@@ -29,7 +29,10 @@ export const FeatureFlags = {
   // Phase
   ENABLE_SURVEY_PHASE: true,
   ENABLE_RSVP_PHASE: false,
-  ENABLE_WEDDING_PHASE: false
+  ENABLE_WEDDING_PHASE: false,
+  
+  // RSVP Components
+  ENABLE_WEDDING_ATTENDANCE_SLIDER: true
 };
 
 /**
