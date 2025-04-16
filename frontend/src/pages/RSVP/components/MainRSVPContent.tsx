@@ -15,6 +15,7 @@ import { SummarySection } from './SummarySection';
 import { AttendanceSection } from './AttendanceSection';
 import { RehearsalDinnerSection } from './RehearsalDinnerSection';
 import { FoodPreferencesSection } from './FoodPreferencesSection';
+import { FoodAllergiesSection } from './FoodAllergiesSection';
 import { TransportationSection } from './TransportationSection';
 import { AccommodationSection } from './AccommodationSection';
 import { WelcomeSection } from './WelcomeSection';
@@ -53,6 +54,8 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
         return <RehearsalDinnerSection />;
       case 'foodPreferences':
         return <FoodPreferencesSection />;
+      case 'foodAllergies':
+        return <FoodAllergiesSection />;
       case 'transportation':
         return <TransportationSection />;
       case 'accommodation':

@@ -15,7 +15,7 @@ function RSVPPage() {
 
   const genericQuestions = useMemo(
     () =>
-      ['comments', 'mailingAddress', 'summary', 'weddingAttendance', 'fourthOfJulyAttendance', 'foodPreferences', 'transportation', 'accommodation'].includes(
+      ['comments', 'mailingAddress', 'summary', 'weddingAttendance', 'fourthOfJulyAttendance', 'foodPreferences', 'foodAllergies', 'transportation', 'accommodation'].includes(
         rsvpStepper.currentStep[0],
       ),
     [rsvpStepper.currentStep],
