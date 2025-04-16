@@ -1,6 +1,6 @@
 import { styled, Typography, TypographyProps } from '@mui/material';
 import { rgba } from 'polished';
-import { keyframes, darken, TypographyProps } from '@mui/system';
+import { keyframes, darken } from '@mui/system';
 
 const floatAnimation = keyframes`
   0% {
