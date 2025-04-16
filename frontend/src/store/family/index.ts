@@ -7,9 +7,10 @@ import {
   GuestViewModel,
   InvitationResponseEnum,
   NotificationPreferenceEnum,
+  RsvpEnum,
   SleepPreferenceEnum,
 } from '@/types/api';
-import { FamilyGuestsStates } from '@/store/family/types';
+import { FamilyGuestsStates, FamilyGuestsWeddingStates } from '@/store/family/types';
 import { useCallback, useEffect, useMemo } from 'react';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -75,6 +76,55 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
       saveTheDateComplete,
       allAllergiesResponded,
     } as FamilyGuestsStates;
+  },
+});
+
+export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>({
+  key: 'familyMembers',
+  get: ({ get }) => {
+    const familyUnit = get(familyState);
+    if (!familyUnit) {
+      return null;
+    }
+
+    const guests = familyUnit.guests || [];
+    const nobodyComing = guests.every(
+      (user) => user.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+        || user.rsvp?.wedding === RsvpEnum.Declined,
+    );
+
+    const everyoneIsLame =
+      familyUnit.guests?.every(
+        (guest) =>
+          guest.rsvp.wedding === RsvpEnum.Declined ||
+          guest.rsvp.wedding === RsvpEnum.Pending,
+      ) ?? true;
+    const atLeastOneAttending = !everyoneIsLame;
+
+    const attendingLastNames = guests
+      .filter((user) => user.rsvp?.wedding === RsvpEnum.Attending)
+      .map((user) => user.lastName);
+    const allUsersAttendanceResponded = !guests.some(
+      (user) => user.rsvp?.wedding === RsvpEnum.Pending,
+    );
+    const allUsers4thAttendanceResponded = !guests.some(
+      (user) => user.rsvp?.fourthOfJuly === RsvpEnum.Pending,
+    );
+
+    const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName)))
+      .map((lastName) => `${lastName}s`)
+      .join(' & ');
+    const rsvpComplete = allUsersAttendanceResponded && allUsers4thAttendanceResponded;
+
+    return {
+      allUsersResponded: allUsersAttendanceResponded,
+      attendingLastNames,
+      callByLastNames,
+      guests,
+      nobodyComing,
+      atLeastOneAttending,
+      rsvpComplete,
+    } as FamilyGuestsWeddingStates;
   },
 });
 
@@ -185,6 +235,7 @@ export function reorderArrayByKey(array, key, matchValue) {
 
 export const useFamily = () => {
   const guestStates = useRecoilValue(familyGuestsStates);
+  const guestRsvpStates = useRecoilValue(familyGuestsRsvpStates)
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
   const [saveTheDateSteps, setSaveTheDateSteps] = useRecoilState(saveTheDateStepsState);

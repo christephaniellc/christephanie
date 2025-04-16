@@ -525,7 +525,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               mb: 0.2
             }}
           >
-            Visit our website to RSVP:
+            Confirm RSVP at our website:
           </Typography>
           <Typography
             sx={{
@@ -550,7 +550,7 @@ export const CardFrontVertical: React.FC<CardFrontVerticalProps> = ({
               sx={{
                 color: '#9c27b0',
                 fontSize: '0.8rem',
-                fontWeight: 600,
+                fontWeight: 800,
                 fontFamily: 'sans-serif'
               }}
             >
