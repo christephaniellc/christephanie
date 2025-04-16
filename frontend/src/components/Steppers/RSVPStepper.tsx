@@ -17,6 +17,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
 import { useFamily, familyGuestsStates } from '@/store/family';
+import { InvitationResponseEnum } from '@/types/api';
 import IconButton from '@mui/material/IconButton';
 import {
   Check, CheckCircleOutlineTwoTone,
@@ -53,27 +54,38 @@ export default function RSVPStepper() {
   const [visibleStepIndex, setVisibleStepIndex] = useState(0);
 
   // Define which steps are relevant based on attendance status
-  const basicSteps = useMemo(() => ['attendance', 'mailingAddress', 'comments', 'summary'], []);
+  const basicSteps = useMemo(() => ['weddingAttendance', 'fourthOfJulyAttendance', 'mailingAddress', 'comments', 'summary'], []);
   
   // Compute the visible steps based on attendance status
   const visibleSteps = useMemo(() => {
     if (!familyState) return Object.entries(rsvpSteps);
     
+    // Check if any guests have a non-pending InvitationResponse (for debugging)
+    const anyGuestResponded = familyState.guests?.some(
+      guest => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending
+    );
+    
     // Filter steps based on whether at least one person in the family is attending
-    const relevantSteps = familyState.atLeastOneAttending
-      ? Object.entries(rsvpSteps).filter(([_, step]) => step.display)
-      : Object.entries(rsvpSteps).filter(([key, step]) => 
-          basicSteps.includes(key) && step.display
-        );
-        
-    // Debug the filtering conditions
-    // console.log('Step filtering info:', {
-    //   atLeastOneAttending: familyState.atLeastOneAttending,
-    //   basicSteps,
-    //   allSteps: Object.keys(rsvpSteps),
-    //   filteredSteps: relevantSteps.map(([key]) => key)
-    // });
-        
+    const relevantSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
+      if (familyState.atLeastOneAttending) {
+        return step.display;
+      } else {
+        return basicSteps.includes(key) && step.display;
+      }
+    });
+    
+    // Debug output
+    console.log('RSVPStepper visibility calculation:', {
+      anyGuestResponded,
+      visibleSteps: relevantSteps.map(([key]) => key),
+      currentTabIndex: tabIndex,
+      currentStepKey: Object.keys(rsvpSteps)[tabIndex],
+      guests: familyState?.guests?.map(g => ({
+        name: `${g.firstName} ${g.lastName}`,
+        response: g.rsvp?.invitationResponse
+      }))
+    });
+    
     // When attendance status changes, we need to update the visibleStepIndex in the next render
     const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
     const newVisibleIndex = relevantSteps.findIndex(([key]) => key === currentStepKey);

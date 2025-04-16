@@ -214,7 +214,7 @@ export const BottomNav = () => {
             disabled={false}
           />
 
-          {/* Survey (only for authenticated users) */}
+          {/* Survey (only for authenticated users when survey phase is enabled) */}
           <BottomNavigationAction
             label="Survey"
             icon={<ConnectWithoutContactIcon />}
@@ -225,7 +225,7 @@ export const BottomNav = () => {
             }}
           />
 
-          {/* RSVP (only for authenticated users) */}
+          {/* RSVP (only for authenticated users when RSVP is enabled) */}
           <BottomNavigationAction
             label="RSVP"
             icon={
