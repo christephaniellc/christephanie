@@ -13,7 +13,7 @@ export const FoodPreferencesSection: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', py: 2 }}>
       <Typography variant="h5" align="center" gutterBottom mb={4} color="primary.main">
-        Food Preferences
+        What&#39;cha eatin&#39;?
       </Typography>
       {family.guests.map((guest: GuestViewModel) => (
         <Box key={guest.guestId} sx={{ mb: 4 }}>

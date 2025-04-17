@@ -1,8 +1,8 @@
-import { familyState, guestSelector } from './index';
+import { familyGuestsStates, familyState, guestSelector } from './index';
 import { mockFamilyUnitDto } from '../../../test-utils/mockResponses';
 import { RecoilRoot, RecoilState, snapshot_UNSTABLE } from 'recoil';
 import { useEffect } from 'react';
-import { FamilyUnitDto, GuestDto, GuestViewModel, InvitationResponseEnum } from '@/types/api';
+import { FamilyUnitDto, GuestViewModel, InvitationResponseEnum, RsvpEnum } from '@/types/api';
 import { render } from '@testing-library/react';
 import { RecoilObserver } from '@/utils/RecoilObserver';
 
@@ -14,7 +14,108 @@ describe('familyGuestsStates selector', () => {
       set(familyState, mockFamilyUnitDto);
     });
 
-    // Evaluate the selector in that snapshot.
+    // Evaluate the selector in that snapshot
+    const loadable = testSnapshot.getLoadable(familyGuestsStates);
+    const result = loadable.valueOrThrow();
+    
+    // Verify basic properties
+    expect(result).toBeDefined();
+    expect(result?.guests).toHaveLength(mockFamilyUnitDto.guests.length);
+  });
+  
+  it('should correctly calculate atLeastOneAttending when someone is attending [wip]', () => {
+    // Create a family with one person attending
+    const attendingFamily = {
+      ...mockFamilyUnitDto,
+      guests: [
+        {
+          ...mockFamilyUnitDto.guests[0],
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Interested,
+            wedding: RsvpEnum.Attending, 
+            fourthOfJuly: RsvpEnum.Pending
+          }
+        }
+      ]
+    };
+    
+    // Initialize with the attending family
+    const testSnapshot = snapshot_UNSTABLE(({ set }) => {
+      set(familyState, attendingFamily);
+    });
+    
+    // Evaluate the selector in that snapshot
+    const loadable = testSnapshot.getLoadable(familyGuestsStates);
+    const result = loadable.valueOrThrow();
+    
+    // The result should indicate at least one person is attending
+    expect(result.atLeastOneAttending).toBe(true);
+  });
+  
+  it('should correctly calculate atLeastOneAttending when no one is attending [wip]', () => {
+    // Create a family with no one attending
+    const nonAttendingFamily = {
+      ...mockFamilyUnitDto,
+      guests: [
+        {
+          ...mockFamilyUnitDto.guests[0],
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined,
+            wedding: RsvpEnum.Declined,
+            fourthOfJuly: RsvpEnum.Declined
+          }
+        }
+      ]
+    };
+    
+    // Initialize with the non-attending family
+    const testSnapshot = snapshot_UNSTABLE(({ set }) => {
+      set(familyState, nonAttendingFamily);
+    });
+    
+    // Evaluate the selector in that snapshot
+    const loadable = testSnapshot.getLoadable(familyGuestsStates);
+    const result = loadable.valueOrThrow();
+    
+    // The result should indicate no one is attending
+    expect(result.atLeastOneAttending).toBe(false);
+  });
+  
+  it('should correctly calculate atLeastOneAttending with mixed attendance [wip]', () => {
+    // Create a family with mixed attendance
+    const mixedFamily = {
+      ...mockFamilyUnitDto,
+      guests: [
+        {
+          ...mockFamilyUnitDto.guests[0],
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Declined,
+            wedding: RsvpEnum.Declined,
+            fourthOfJuly: RsvpEnum.Declined
+          }
+        },
+        {
+          ...mockFamilyUnitDto.guests[1],
+          rsvp: {
+            invitationResponse: InvitationResponseEnum.Interested,
+            wedding: RsvpEnum.Attending,
+            fourthOfJuly: RsvpEnum.Attending
+          }
+        }
+      ]
+    };
+    
+    // Initialize with the mixed attendance family
+    const testSnapshot = snapshot_UNSTABLE(({ set }) => {
+      set(familyState, mixedFamily);
+    });
+    
+    // Evaluate the selector in that snapshot
+    const loadable = testSnapshot.getLoadable(familyGuestsStates);
+    const result = loadable.valueOrThrow();
+    
+    // The result should indicate at least one person is attending
+    expect(result.atLeastOneAttending).toBe(true);
   });
 });
 
@@ -90,7 +191,7 @@ describe('useUpdateFamilyGuest', () => {
     function TestComponent() {
       // const { updateInvitation } = useUpdateFamilyGuest('guest-001');
 
-      // We’ll update the guest’s invitation as soon as this component mounts
+      // We'll update the guest's invitation as soon as this component mounts
       // useEffect(() => {
       //   updateInvitation(InvitationResponseEnum.Declined);
       // }, [updateInvitation]);
