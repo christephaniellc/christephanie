@@ -5,14 +5,19 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { rsvpStepsState, rsvpTabIndex } from '@/store/steppers';
 import { useRecoilValue } from 'recoil';
 import { useApiContext } from '@/context/ApiContext';
+import { useLocation } from 'react-router-dom';
 import TvSnow from './TvSnow';
 import { rem } from 'polished';
 
 const digitalTitieRotations = [15, 33, 40, 22, 65, 13, 80, 88];
 
 const MtvAnimatedTitle = () => {
+  const location = useLocation();
+  const isRsvpPage = location.pathname.includes('/rsvp');
+  
   const {
     findUserIdQuery,
     getMeQuery,
@@ -33,8 +38,16 @@ const MtvAnimatedTitle = () => {
 
   const theme = useTheme();
   const { boxShadow } = useBoxShadow();
+  
+  // Use the appropriate stepper state based on the current page
   const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
-  const tabIndex = useRecoilValue(stdTabIndex);
+  const rsvpSteps = useRecoilValue(rsvpStepsState);
+  const saveTheDateTabIndex = useRecoilValue(stdTabIndex);
+  const rsvpCurrentTabIndex = useRecoilValue(rsvpTabIndex);
+  
+  // Get the current step and tab index based on the page
+  const currentSteps = isRsvpPage ? rsvpSteps : saveTheDateSteps;
+  const tabIndex = isRsvpPage ? rsvpCurrentTabIndex : saveTheDateTabIndex;
 
   // State to hold the current rotation value.
   const [rotationX, setRotationX] = useState(15);
@@ -146,13 +159,18 @@ const MtvAnimatedTitle = () => {
   // Compute the scaleX factor: a linear mapping from rotation 0-90 to scale 1-1.3.
   const scaleX = 1 + (rotationX / 90) * 0.3;
 
-  // Check if the current step is the "Interested" step
-  const isInterestedStep = Object.values(saveTheDateSteps)[tabIndex]?.label === "Interested";
+  // Check if the current step is the "Interested" step (for Save the Date) or attendance step (for RSVP)
+  const currentStepLabel = isRsvpPage 
+    ? Object.values(rsvpSteps)[tabIndex]?.label
+    : Object.values(saveTheDateSteps)[tabIndex]?.label;
+  
+  const isHighlightedStep = currentStepLabel === "Interested" || 
+                           currentStepLabel === "Will you be attending our wedding?";
   
   return (
     <Box p={2} height={80} display="flex" alignItems="center" width={1} position="relative">
-      {/* Arrow pointing to typography for the "Interested" step */}
-      {isInterestedStep && (
+      {/* Arrow pointing to typography for the highlighted step */}
+      {isHighlightedStep && (
         <Box
           sx={{
             position: 'absolute',
@@ -207,23 +225,17 @@ const MtvAnimatedTitle = () => {
           mr: 'auto',
           mb: 2,
           fontStretch: 'expanded',
-          // width: ,
-          color: isInterestedStep ? theme.palette.secondary.main : 'palette.secondary',
-          // Combine rotateX and scaleX transforms
+          color: isHighlightedStep ? theme.palette.secondary.main : 'palette.secondary',
           transform: `rotateX(${rotationX}deg) scaleX(${scaleX})`,
-          // [theme.breakpoints.up('md')]: {
-          //   pl: '200px',
-          // },
           filter: `drop-shadow(${boxShadow})`,
           lineHeight: '24px',
           fontSize: { xs: rem(16), sm: rem(18), md: rem(20), lg: rem(22), xl: rem(24) },
         }}
       >
-        {Object.values(saveTheDateSteps)[tabIndex]?.label}
-      </StephsActualFavoriteTypography>
+        {currentStepLabel}</StephsActualFavoriteTypography>
       
       {/* Arrow pointing from the right side on small screens */}
-      {isInterestedStep && (
+      {isHighlightedStep && (
         <Box
           sx={{
             position: 'absolute',
