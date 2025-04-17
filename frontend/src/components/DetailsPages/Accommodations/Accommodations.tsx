@@ -381,7 +381,7 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -604,27 +604,79 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
             borderRadius: { xs: 0, md: 2 },
           }}
         >
-          <Typography variant="h5" color="secondary" gutterBottom>
+          <StephsActualFavoriteTypographyNoDrop 
+            variant="h5" 
+            color="secondary" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.25rem', sm: '1.5rem' }
+            }}
+          >
             Transportation Information
-          </Typography>
+          </StephsActualFavoriteTypographyNoDrop>
           
           <Typography variant="body1" paragraph>
             For those staying at our partner hotels, we'll be providing a shuttle service to and from the wedding venue.
           </Typography>
-          
-          <Typography variant="h6" gutterBottom>
+
+          <Typography 
+            variant="h6" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 }
+            }}
+          >
             Shuttle Schedule:
           </Typography>
           
           <Typography component="div" variant="body2">
             <ul>
-              <li>Pick-up from Holiday Inn Express Brunswick: 4:00pm and 5:00pm</li>
-              <li>Pick-up from Holiday Inn Express Charles Town: 4:00pm and 5:00pm</li>
-              <li>Return shuttles will run at 10:00pm and 11:00pm</li>
+              <li>Pick-up from Holiday Inn Express Brunswick:                 
+              <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 4:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 5:00pm</Box>
+              </li>
+              <li>Pick-up from Holiday Inn Express Charles Town: 
+                
+              <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 4:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 5:00pm</Box>
+              </li>
+              <li>Return shuttles will run at 
+                
+              <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 10:00pm</Box> and 
+                <Box component="span" 
+                  sx={{ fontWeight: 'bold', 
+                  color: theme.palette.secondary.main 
+                }}> 11:00pm</Box>
+              </li>
             </ul>
           </Typography>
-          
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+
+          <Typography 
+            variant="h6" 
+            gutterBottom 
+            sx={{ 
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 },
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}
+          >
             Alternative Transportation Options:
           </Typography>
           
@@ -632,17 +684,37 @@ const Accommodations: React.FC<AccommodationsProps> = ({ handleTabLink }) => {
             <ul>
               <li>Uber and Lyft are available in the area, but availability may be limited</li>
               <li>Local taxi services are available (we recommend booking in advance)</li>
-              <li>We encourage carpooling with other guests when possible</li>
+              <li>Venue parking is limited: We encourage carpooling with other guests when possible</li>
             </ul>
           </Typography>
           
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Typography 
+            variant="h6" 
+            gutterBottom 
+            sx={{ 
+              mt: { xs: 2, sm: 2 },
+              mb: { xs: 0.5, sm: 1 },
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}
+          >
             Questions?
           </Typography>
           
-          <Typography variant="body2">
+          <Typography 
+            variant="body2"
+            sx={{
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+              wordBreak: 'break-word'
+            }}
+          >
             If you have any questions about accommodations or transportation, please contact us at:<br />
-            <strong>hosts@wedding.christephanie.com</strong>
+            <Box component="span"
+              sx={{
+                color: theme.palette.secondary.main
+              }}
+            >
+              <strong>hosts@wedding.christephanie.com</strong>
+            </Box>
           </Typography>
         </Paper>
       </Box>

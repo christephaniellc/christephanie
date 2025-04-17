@@ -76,7 +76,7 @@ function Attire({handleTabLink}: AttireProps) {
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         borderRadius: 'sm',
         display: 'flex',
