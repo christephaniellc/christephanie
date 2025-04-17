@@ -57,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                width: '100vw', // Use viewport width
+                width: '100%', // Use viewport width
                 height: '100%',
                 left: '50%',
                 transform: 'translateX(-50%)', // Center the background
@@ -238,8 +238,18 @@ function DetailsPage() {
     const newTabIndex = pathToTabIndex[location.pathname] || 0;
     if (newTabIndex !== tabIndex) {
       setTabIndex(newTabIndex);
+      
+      // Scroll first tab into view when it's selected
+      if (newTabIndex === 0) {
+        setTimeout(() => {
+          const tabsContainer = document.querySelector('.MuiTabs-scroller');
+          if (tabsContainer) {
+            tabsContainer.scrollLeft = 0;
+          }
+        }, 100);
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, tabIndex]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -249,6 +259,18 @@ function DetailsPage() {
     if (newValue < tabKeys.length) {
       const tabKey = tabKeys[newValue];
       navigate(detailsRoutes[tabKey].path);
+      
+      // Ensure selected tab is fully visible (especially important for first tab)
+      setTimeout(() => {
+        const tabs = document.querySelectorAll('.MuiTab-root');
+        if (tabs && tabs[newValue]) {
+          (tabs[newValue] as HTMLElement).scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest',
+            inline: 'center' 
+          });
+        }
+      }, 100);
     } else {
       navigate('/details');
     }
@@ -385,6 +407,10 @@ function DetailsPage() {
             width: '100%', // Ensure tabs take full width
             '& .MuiTabs-flexContainer': {
               justifyContent: 'center', // Center the tab items
+              paddingLeft: { xs: '12px', sm: 0 }, // Add left padding on mobile to make first tab more accessible
+            },
+            '& .MuiTabs-scroller': {
+              overflow: 'visible !important', // Ensures tabs are visible outside the container
             },
           }}
         >
