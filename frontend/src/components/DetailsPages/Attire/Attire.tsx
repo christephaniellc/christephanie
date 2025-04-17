@@ -12,7 +12,7 @@ import {
   Stack 
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { useTheme } from '@mui/material/styles';
 import { 
   Checkroom, 
@@ -221,11 +221,15 @@ function Attire({handleTabLink}: AttireProps) {
               <Stack spacing={2}>
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h5" color="secondary" gutterBottom>
-                      Burn-Style Wedding: Express Yourself
-                    </Typography>
+                    <StephsActualFavoriteTypographyNoDrop                     
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
+                      Burning Man-Style Wedding: Express Yourself
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
-                      This is a burn-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
+                      This is a burning man-style wedding where self-expression is celebrated! We want you to come dressed in whatever makes you feel most like yourself and most comfortable.
                     </Typography>
                     <Typography variant="body1" paragraph>
                       Love jeans and a t-shirt? Wear them! Prefer a sundress? Perfect! Want to rock a suit? Go for it! Flippy floppies? Absolutely! The only rule is that there are no rules — just be you.
@@ -235,15 +239,19 @@ function Attire({handleTabLink}: AttireProps) {
 
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h6" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop                     
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
                       General Guidelines
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
                       While there's no strict dress code, here are some general ideas for those who want guidance:
                     </Typography>
                     <Typography component="div" variant="body1">
                       <ul>
-                        <li>Semi-formal to casual attire is perfectly fine</li>
+                        <li>From formal to semi-formal to casual attire: are all perfectly fine</li>
                         <li>Bright colors and creative outfits are welcome</li>
                         <li>Comfortable shoes recommended (there will be dancing!)</li>
                         <li>Consider bringing a light layer for the evening</li>
@@ -259,9 +267,13 @@ function Attire({handleTabLink}: AttireProps) {
               <Stack spacing={2}>
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h5" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop                    
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
                       What Topher & Steph Are Wearing
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
                       We'll start the day in traditional wedding attire for the ceremony and dinner, but we'll be changing into more comfortable clothes for the party afterward.
                     </Typography>
@@ -273,9 +285,13 @@ function Attire({handleTabLink}: AttireProps) {
 
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h6" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop                     
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
                       Ceremony & Dinner
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
                       For the ceremony and dinner, we'll be in traditional wedding attire:
                     </Typography>
@@ -286,9 +302,13 @@ function Attire({handleTabLink}: AttireProps) {
                       </ul>
                     </Typography>
                     
-                    <Typography variant="h6" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop 
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
                       Reception & Party
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
                       For the reception and party, we'll change into:
                     </Typography>
@@ -308,9 +328,13 @@ function Attire({handleTabLink}: AttireProps) {
               <Stack spacing={2}>
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h5" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop 
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                      gutterBottom>
                       Weather Considerations
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography variant="body1" paragraph>
                       Virginia in July can be quite hot and humid. The ceremony will be outdoors (weather permitting), and while indoor spaces will be air-conditioned, outdoor areas may be warm.
                     </Typography>
@@ -322,9 +346,13 @@ function Attire({handleTabLink}: AttireProps) {
 
                 <Card sx={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                   <CardContent>
-                    <Typography variant="h6" color="secondary" gutterBottom>
+                    <StephsActualFavoriteTypographyNoDrop 
+                      sx={{
+                        fontSize: '1.5rem'
+                      }}
+                    gutterBottom>
                       Helpful Tips
-                    </Typography>
+                    </StephsActualFavoriteTypographyNoDrop>
                     <Typography component="div" variant="body1">
                       <ul>
                         <li>Light, breathable fabrics are recommended</li>
@@ -355,14 +383,20 @@ function Attire({handleTabLink}: AttireProps) {
             textAlign: 'center',
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Help color="secondary" fontSize="large" />
-          </Box>
-          <Typography variant="h6" gutterBottom color="secondary">
-            Questions about attire?
-          </Typography>
-          <Typography variant="body1">
-            Email us at: <strong>steph-and-topher@wedding.christephanie.com</strong>
+          <Typography variant="h6" 
+            sx={{
+              fontSize: { xs: '1.0rem', sm: '1.2rem' },
+              wordBreak: 'break-word'
+            }}
+            gutterBottom>
+            If you have any questions about attire, please contact us at:<br />
+            <Box component="span"
+              sx={{
+                color: theme.palette.secondary.main
+              }}
+            >
+              <strong>hosts@wedding.christephanie.com</strong>
+            </Box>
           </Typography>
         </Paper>
       </Box>
