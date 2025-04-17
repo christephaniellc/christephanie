@@ -1,7 +1,7 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Paper, 
   Button,
@@ -23,19 +23,39 @@ import {
   MusicNote,
   Celebration,
   DirectionsBus,
+  Hive,
   Hotel,
   Cake,
   FlightTakeoff
 } from '@mui/icons-material';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
+import { hasRole, isStaffOrParty } from '@/utils/roles';
+import { RoleEnum } from '@/types/api';
 
 interface ScheduleProps {
   handleTabLink: (to: string) => void;
+}
+
+interface EventItem {
+  id: string;
+  name: string;
+  time: string;
+  location: string;
+  description: string;
+  details: string[];
+  icon: React.ReactNode;
+  restricted?: boolean;
 }
 
 function Schedule({handleTabLink}: ScheduleProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState('day2');
+  const currentUser = useRecoilValue(userState);
+  
+  // Check if user has staff or party roles
+  const canViewRestrictedEvents = useMemo(() => isStaffOrParty(currentUser), [currentUser]);
   
   // Event data
   const events = {
@@ -44,12 +64,23 @@ function Schedule({handleTabLink}: ScheduleProps) {
       subtitle: 'Pre-Wedding Events',
       events: [
         {
+          id: 'rehearsal-dinner',
+          name: 'Wedding Rehearsal',
+          time: '5:00 PM - 6:00 PM',
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Rehearsal walkthrough for the bride and groom, and wedding party members.',
+          details: ['Officiant and wedding party only', 'Casual attire'],
+          icon: <Hive />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Rehearsal) || hasRole(RoleEnum.Party)
+        },
+        {
           id: 'welcome-dinner',
-          name: 'Welcome Dinner',
+          name: 'Fourth of July: BBQ & Fireworks',
           time: '6:00 PM - 9:00 PM',
-          location: 'Local Brewery & Restaurant, Lovettsville, VA',
-          description: 'Join us for a casual dinner. Jeans welcome!',
-          details: ['Meet other guests', 'Food and drinks', 'Casual attire'],
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Join us for a fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
+          details: ['Meet other guests', 'Casual attire', 'BBQ foods', 'BYOB', 'Bring your instruments', 'Bring your (legal in Virginia) fireworks!'],
           icon: <Fastfood />
         }
       ]
@@ -58,6 +89,17 @@ function Schedule({handleTabLink}: ScheduleProps) {
       title: 'Saturday, July 5, 2025',
       subtitle: 'Wedding Day',
       events: [
+        {
+          id: 'brunch',
+          name: 'Manor Breakfast',
+          time: '09:00 AM - 10:00 AM',
+          location: 'Stone Manor Inn: Dining Hall',
+          description: 'Breakfast for manor guests.',
+          details: ['Breakfast', 'Coffee', 'Final farewells'],
+          icon: <Hotel />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor)
+        },
         {
           id: 'ceremony',
           name: 'Wedding Ceremony',
@@ -111,12 +153,14 @@ function Schedule({handleTabLink}: ScheduleProps) {
       events: [
         {
           id: 'brunch',
-          name: 'Farewell Brunch',
-          time: '10:00 AM - 12:00 PM',
-          location: 'Holiday Inn Express Brunswick (Function Room)',
-          description: 'Casual gathering to say goodbyes before everyone departs.',
-          details: ['Continental breakfast', 'Coffee', 'Final farewells'],
-          icon: <Hotel />
+          name: 'Manor Breakfast',
+          time: '09:00 AM - 10:00 AM',
+          location: 'Stone Manor Inn: Dining Hall',
+          description: 'Breakfast for manor guests.',
+          details: ['Breakfast', 'Coffee', 'Final farewells'],
+          icon: <Hotel />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor)
         }
       ]
     }
@@ -155,8 +199,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
   // Help/support contact info
   const supportContact = {
     name: 'Wedding Day Contact',
-    contact: 'K Town',
-    email: 'ktown@christephanie.com'
+    contact: 'Hosts',
+    email: 'hosts@wedding.christephanie.com'
   };
   
   // Styled button for day selection
@@ -202,67 +246,98 @@ function Schedule({handleTabLink}: ScheduleProps) {
   );
   
   // Event card component
-  const EventCard = ({ event, delay = 0 }) => (
-    <Grow in={true} timeout={500 + delay * 200}>
-      <Card sx={{ 
-        mb: 2, 
-        backgroundColor: alpha(theme.palette.background.paper, 0.15),
-        backdropFilter: 'blur(5px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-        position: 'relative',
-        '&:hover': {
-          boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-        }
-      }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-            <Box sx={{ 
-              backgroundColor: alpha(theme.palette.primary.main, 0.2),
-              width: 40,
-              height: 40,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: '8px',
-              mr: 2
-            }}>
-              {event.icon}
-            </Box>
-            <Box>
-              <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {event.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {event.time}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                {event.location}
-              </Typography>
-            </Box>
-          </Box>
-          
-          <Typography variant="body2" paragraph>
-            {event.description}
-          </Typography>
-          
-          {event.details && (
-            <>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 1, color: theme.palette.secondary.main }}>
-                Details:
-              </Typography>
-              <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
-                {event.details.map((detail, i) => (
-                  <Typography component="li" variant="body2" key={i}>
-                    {detail}
-                  </Typography>
-                ))}
+  const EventCard = ({ event, delay = 0 }) => {
+    // Add special styling for restricted events
+    const isRestricted = event.restricted;
+    
+    return (
+      <Grow in={true} timeout={500 + delay * 200}>
+        <Card sx={{ 
+          mb: 2, 
+          backgroundColor: isRestricted 
+            ? alpha(theme.palette.secondary.dark, 0.2)  // Darker background for restricted events
+            : alpha(theme.palette.background.paper, 0.15),
+          backdropFilter: 'blur(5px)',
+          border: isRestricted
+            ? `1px solid ${alpha(theme.palette.secondary.main, 0.5)}` // Highlight border for restricted events
+            : `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          position: 'relative',
+          '&:hover': {
+            boxShadow: isRestricted
+              ? `0 0 20px ${alpha(theme.palette.secondary.main, 0.5)}`
+              : `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+          }
+        }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+              <Box sx={{ 
+                backgroundColor: isRestricted
+                  ? alpha(theme.palette.secondary.main, 0.3)
+                  : alpha(theme.palette.primary.main, 0.2),
+                width: 40,
+                height: 40,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: '8px',
+                mr: 2
+              }}>
+                {event.icon}
               </Box>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </Grow>
-  );
+              <Box sx={{ width: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
+                    {event.name}
+                  </Typography>
+                  {isRestricted && (
+                    <Chip 
+                      size="small"
+                      label="Private Event" 
+                      color="secondary"
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: '20px',
+                        ml: 1
+                      }}
+                    />
+                  )}
+                </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {event.time}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {event.location}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Typography variant="body2" paragraph>
+              {event.description}
+            </Typography>
+            
+            {event.details && (
+              <>
+                <Typography variant="body2" sx={{ 
+                  fontWeight: 'bold', 
+                  mt: 1, 
+                  color: isRestricted ? theme.palette.secondary.light : theme.palette.secondary.main 
+                }}>
+                  Details:
+                </Typography>
+                <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
+                  {event.details.map((detail, i) => (
+                    <Typography component="li" variant="body2" key={i}>
+                      {detail}
+                    </Typography>
+                  ))}
+                </Box>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </Grow>
+    );
+  };
   
   // Transportation info card
   const TransportationCard = () => (
@@ -406,10 +481,12 @@ function Schedule({handleTabLink}: ScheduleProps) {
           </Paper>
         </Fade>
         
-        {/* Event cards */}
-        {events[selectedDay].events.map((event, index) => (
-          <EventCard key={event.id} event={event} delay={index} />
-        ))}
+        {/* Event cards - filter based on role access */}
+        {events[selectedDay].events
+          .filter(event => !event.restricted || canViewRestrictedEvents)
+          .map((event, index) => (
+            <EventCard key={event.id} event={event} delay={index} />
+          ))}
         
         {/* Transportation card - show only on main wedding day */}
         {selectedDay === 'day2' && <TransportationCard />}

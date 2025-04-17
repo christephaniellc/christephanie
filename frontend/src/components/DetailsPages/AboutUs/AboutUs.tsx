@@ -11,6 +11,7 @@ import kilton from '../../../assets/engagement-photos/kilton.jpg';
 import laney from '../../../assets/engagement-photos/laney.jpg';
 import rattlesnake1 from '../../../assets/engagement-photos/topher_and_steph_rsvp1.jpg';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
+import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 interface AboutUsProps {
   handleTabLink: (to: string) => void;
@@ -149,6 +150,7 @@ const ProgressBar = styled(Box)<{ value: number }>(({ theme, value }) => ({
 }));
 
 const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
+  const { contentHeight } = useAppLayout();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [selectedCharacter, setSelectedCharacter] = useState<'topher' | 'steph' | 'kilton' | 'laney'>('topher');
