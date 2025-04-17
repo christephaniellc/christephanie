@@ -29,7 +29,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
     fourthOfJulyAttendance: {
       id: 1,
       completed: false,
-      label: 'Rehearsal Dinner Attendance',
+      label: '4th of July Rehearsal Dinner Attendance',
       description: 'For invited guests only',
       component: null,
       display: true, // This will be conditionally set based on guest status
