@@ -54,7 +54,18 @@ export default function RSVPStepper() {
   const [visibleStepIndex, setVisibleStepIndex] = useState(0);
 
   // Define which steps are relevant based on attendance status
-  const basicSteps = useMemo(() => ['weddingAttendance', 'fourthOfJulyAttendance', 'mailingAddress', 'comments', 'summary'], []);
+  // Include all steps that should be shown regardless of attendance status
+  const basicSteps = useMemo(() => [
+    'weddingAttendance', 
+    'fourthOfJulyAttendance', 
+    'foodPreferences', 
+    'foodAllergies',
+    'transportation',
+    'accommodation',
+    'mailingAddress', 
+    'comments', 
+    'summary'
+  ], []);
   
   // Compute the visible steps based on attendance status
   const visibleSteps = useMemo(() => {
@@ -65,13 +76,10 @@ export default function RSVPStepper() {
       guest => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending
     );
     
-    // Filter steps based on whether at least one person in the family is attending
+    // Show all steps with display=true regardless of attendance status
+    // This ensures all steps are visible even if atLeastOneAttending is false
     const relevantSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
-      if (familyState.atLeastOneAttending) {
-        return step.display;
-      } else {
-        return basicSteps.includes(key) && step.display;
-      }
+      return step.display;
     });
     
     // Debug output
@@ -106,10 +114,9 @@ export default function RSVPStepper() {
     const step = params.get('step');
     
     if (step && Object.keys(rsvpSteps).includes(step)) {
-      // Check if the step should be visible based on attendance status
-      const isStepVisible = familyState?.atLeastOneAttending 
-        ? rsvpSteps[step].display
-        : basicSteps.includes(step) && rsvpSteps[step].display;
+      // Check if the step should be visible based on its display property
+      // Always show steps with display=true regardless of attendance status
+      const isStepVisible = rsvpSteps[step].display;
       
       if (isStepVisible) {
         // Set the global tab index for this step
@@ -186,10 +193,9 @@ export default function RSVPStepper() {
       const params = new URLSearchParams(location.search);
       const currentUrlStep = params.get('step');
       
-      // If the current step is not visible based on attendance status, redirect
-      const isStepVisible = familyState?.atLeastOneAttending 
-        ? rsvpSteps[currentStepKey]?.display
-        : basicSteps.includes(currentStepKey) && rsvpSteps[currentStepKey]?.display;
+      // If the current step is not visible based on its display property, redirect
+      // Always show steps with display=true regardless of attendance status
+      const isStepVisible = rsvpSteps[currentStepKey]?.display;
       
       if (!isStepVisible) {
         // Redirect to the first visible step
@@ -209,10 +215,9 @@ export default function RSVPStepper() {
   }, [tabIndex, rsvpSteps, location.search, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
 
   const handleNavigateToStep = (step: string) => {
-    // Check if the step should be visible based on attendance status
-    const isStepVisible = familyState?.atLeastOneAttending 
-      ? rsvpSteps[step].display
-      : basicSteps.includes(step) && rsvpSteps[step].display;
+    // Check if the step should be visible based on its display property
+    // Always show steps with display=true regardless of attendance status
+    const isStepVisible = rsvpSteps[step].display;
     
     if (isStepVisible) {
       familyActions.getFamily();

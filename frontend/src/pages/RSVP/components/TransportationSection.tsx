@@ -5,8 +5,8 @@ import { Typography, Paper } from '@mui/material';
 export const TransportationSection: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', py: 2 }}>
-      <Typography variant="h5" align="center" gutterBottom mb={4} color="primary.main">
-        Transportation Needs
+      <Typography variant="h5" align="center" gutterBottom mb={4} color="secondary.main">
+        Please Carpool or Use the Shuttle Service
       </Typography>
       <Paper
         elevation={5}

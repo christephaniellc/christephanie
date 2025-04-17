@@ -5,7 +5,8 @@ import {
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
 import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
-import { useNavigate } from 'react-router-dom';
+import { rsvpStepsState, rsvpTabIndex } from '@/store/steppers';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useFamily, familyGuestsStates } from '@/store/family';
 import { userCommentState } from '@/store/userComment/userComment';
 import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
@@ -33,23 +34,38 @@ const SummaryView: React.FC = () => {
   const attendanceState = useRecoilValue(familyGuestsStates);
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const comment = useRecoilValue(userCommentState);
+  
+  // Determine which flow we're in based on the current URL
+  const isRsvpFlow = location.pathname.includes('/rsvp');
+  
+  // Use the appropriate steps and tab index based on the current flow
   const saveTheDateSteps = useRecoilValue(saveTheDateStepsState);
-  const tabIndex = useRecoilValue(stdTabIndex);
+  const rsvpSteps = useRecoilValue(rsvpStepsState);
+  const saveTheDateTabIndex = useRecoilValue(stdTabIndex);
+  const rsvpCurrentTabIndex = useRecoilValue(rsvpTabIndex);
+  
+  // Get the current steps and tab index
+  const currentSteps = isRsvpFlow ? rsvpSteps : saveTheDateSteps;
+  const tabIndex = isRsvpFlow ? rsvpCurrentTabIndex : saveTheDateTabIndex;
+  
   const { boxShadow } = useBoxShadow();
 
   // Get the step key by index
   const getStepKeyByIndex = (index: number): string => {
-    return Object.keys(saveTheDateSteps)[index];
+    return Object.keys(currentSteps)[index];
   };
 
-  // Navigate to a specific step
+  // Navigate to a specific step based on the current flow
   const navigateToStep = (stepIndex: number) => {
-    navigate(`/save-the-date?step=${getStepKeyByIndex(stepIndex)}`);
+    const basePath = isRsvpFlow ? '/rsvp' : '/save-the-date';
+    navigate(`${basePath}?step=${getStepKeyByIndex(stepIndex)}`);
   };
 
   // Map of step keys to icons
   const stepIcons = {
+    // Save the Date step keys
     attendance: <EventAvailableIcon />,
     ageGroup: <FaceIcon />,
     communicationPreference: <NotificationsIcon />,
@@ -58,6 +74,12 @@ const SummaryView: React.FC = () => {
     camping: <HotelIcon />,
     mailingAddress: <HomeIcon />,
     comments: <CommentIcon />,
+    
+    // RSVP step keys
+    weddingAttendance: <EventAvailableIcon />,
+    fourthOfJulyAttendance: <EventAvailableIcon />,
+    transportation: <EventAvailableIcon />,
+    accommodation: <HotelIcon />,
   };
 
   // Helper to get the status icon
@@ -301,7 +323,10 @@ const SummaryView: React.FC = () => {
       >
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Thank you for providing your information.
+            {isRsvpFlow 
+              ? "Thank you for confirming your RSVP details."
+              : "Thank you for providing your information."
+            }
           </Typography> 
           {attendanceState.atLeastOneAttending && 
           <>
@@ -317,65 +342,67 @@ const SummaryView: React.FC = () => {
             Here's a summary of what you've shared with us. Click on any item to update your information.
           </Typography>
 
-          <Box sx={{ 
-            width: '100%', 
-            textAlign: 'center',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            display: 'flex',
-            mt: 4,
-            mb: 2,
-            py: 1.5,
-            px: 3,
-            mx: 'auto',
-            maxWidth: 'fit-content',
-            borderRadius: 2,
-            border: `1px dashed ${theme.palette.secondary.main}`,
-            position: 'relative',
-            overflow: 'hidden',
-            zIndex: 1,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(0, 0, 0, 0.75)' 
-                : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(8px)',
-              zIndex: -1,
-            }
-          }}>
-            <Box sx={{
-              pr: 2,
-              color: theme.palette.secondary.main,
-              verticalAlign: 'center'
+          {!isRsvpFlow && (
+            <Box sx={{ 
+              width: '100%', 
+              textAlign: 'center',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              display: 'flex',
+              mt: 4,
+              mb: 2,
+              py: 1.5,
+              px: 3,
+              mx: 'auto',
+              maxWidth: 'fit-content',
+              borderRadius: 2,
+              border: `1px dashed ${theme.palette.secondary.main}`,
+              position: 'relative',
+              overflow: 'hidden',
+              zIndex: 1,
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(0, 0, 0, 0.75)' 
+                  : 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(8px)',
+                zIndex: -1,
+              }
             }}>
-              <MailOutlineIcon/>
-            </Box>
-            <Box sx={{
-              flex: 1
-            }}>
-              <Typography sx={{ 
-                fontWeight: 'medium',
+              <Box sx={{
+                pr: 2,
                 color: theme.palette.secondary.main,
-                fontSize: '0.95rem',
-                letterSpacing: '0.01em',
-                textShadow: theme.palette.mode === 'dark'
-                  ? '0 1px 2px rgba(0,0,0,0.8)'
-                  : 'none',
+                verticalAlign: 'center'
               }}>
-                  Formal RSVP invitations will be coming in the mail soon!
-              </Typography>
+                <MailOutlineIcon/>
+              </Box>
+              <Box sx={{
+                flex: 1
+              }}>
+                <Typography sx={{ 
+                  fontWeight: 'medium',
+                  color: theme.palette.secondary.main,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.01em',
+                  textShadow: theme.palette.mode === 'dark'
+                    ? '0 1px 2px rgba(0,0,0,0.8)'
+                    : 'none',
+                }}>
+                    Formal RSVP invitations will be coming in the mail soon!
+                </Typography>
+              </Box>
             </Box>
-          </Box>
+          )}
 
           <Divider sx={{ my: 2 }} />
 
           <List sx={{ width: '100%' }}>
-            {Object.entries(saveTheDateSteps).slice(0, Object.entries(saveTheDateSteps).length -1).map(([stepKey, step], index) => (
+            {Object.entries(currentSteps).slice(0, Object.entries(currentSteps).length -1).map(([stepKey, step], index) => (
               <React.Fragment key={stepKey}>
                 <ListItem 
                   alignItems="flex-start"
