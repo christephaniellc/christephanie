@@ -57,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                width: '100vw', // Use viewport width
+                width: '100%', // Use viewport width
                 height: '100%',
                 left: '50%',
                 transform: 'translateX(-50%)', // Center the background

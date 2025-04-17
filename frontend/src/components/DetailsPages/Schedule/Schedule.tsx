@@ -44,12 +44,21 @@ function Schedule({handleTabLink}: ScheduleProps) {
       subtitle: 'Pre-Wedding Events',
       events: [
         {
+          id: 'rehearsal-dinner',
+          name: 'Wedding Rehearsal',
+          time: '5:00 PM - 6:00 PM',
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Rehearsal walkthrough for the bride and groom, and wedding party members.',
+          details: ['Officiant and wedding party only', 'Casual attire'],
+          icon: <Fastfood />
+        },
+        {
           id: 'welcome-dinner',
-          name: 'Welcome Dinner',
+          name: 'Fourth of July: BBQ & Fireworks',
           time: '6:00 PM - 9:00 PM',
-          location: 'Local Brewery & Restaurant, Lovettsville, VA',
-          description: 'Join us for a casual dinner. Jeans welcome!',
-          details: ['Meet other guests', 'Food and drinks', 'Casual attire'],
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Join us for a fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
+          details: ['Meet other guests', 'Casual attire', 'BBQ foods', 'BYOB', 'Bring your instruments', 'Bring your (legal in Virginia) fireworks!'],
           icon: <Fastfood />
         }
       ]
@@ -155,8 +164,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
   // Help/support contact info
   const supportContact = {
     name: 'Wedding Day Contact',
-    contact: 'K Town',
-    email: 'ktown@christephanie.com'
+    contact: 'Hosts',
+    email: 'hosts@wedding.christephanie.com'
   };
   
   // Styled button for day selection
