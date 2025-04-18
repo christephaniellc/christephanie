@@ -254,8 +254,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
   // Help/support contact info
   const supportContact = {
     name: 'Wedding Day Contact',
-    contact: 'Hosts',
-    email: 'hosts@wedding.christephanie.com'
+    contact: 'Erin Simpson (Wedding Coordinator)',
+    email: 'erin@virginiabandb.net'
   };
   
   // Styled button for day selection
