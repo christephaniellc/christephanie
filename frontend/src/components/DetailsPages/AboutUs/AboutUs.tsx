@@ -180,8 +180,8 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       which ultimately led him to the world of software. 
       <br/><br/>
       His entrepreneurial experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. 
-      Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the 80 of 80/20 project starts, Topher "leveled up" when he 
-      discovered Steph, who is a hardcore 20 finisher. With their powers combined, they make a formidable team.`, 
+      Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the "80" part of 80/20 project starts, Topher "leveled up" when he 
+      discovered Steph, who is a hardcore "20" finisher. With their powers combined, they make a formidable team, in code and in life.`, 
     },
     steph: {
       name: 'Steph Stubler',
