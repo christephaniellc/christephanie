@@ -175,12 +175,13 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         thoughtfulness: 95,
       },
       bio: `An at-large Florida Man with a passion for code and tinkering, 
-      Topher's journey began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, he 
-      developed a deep understanding for complex systems, which easily translated into becoming an aerospace engineer, 
+      Topher's journey began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, 
+      he discovered a serious knack for handling complex systems. This easily translated into becoming an aerospace engineer, 
       which ultimately led him to the world of software. 
       <br/><br/>
       His entrepreneurial experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. 
-      Known for his problem-solving abilities, ideation, and quick wit, Topher leveled up his life when he found Steph at Burning Man.`,
+      Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the 80 of 80/20 project starts, Topher "leveled up" when he 
+      discovered Steph, who is a hardcore 20 finisher. With their powers combined, they make a formidable team.`, 
     },
     steph: {
       name: 'Steph Stubler',
@@ -200,11 +201,14 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         running: 3.9,
         bowling: 15
       },
-      bio: `With roots in DC and Virginia, armed with an adventurous spirit, Steph's preoccupation for learning has earned her several skills of varying usefulness, 
-      primarily: rolling a kayak four to five times in succession, reproducing an almost-exact Taco Bell meat texture on the stovetop, and tetris-ing (far too much) 
-      camping gear into tiny car trunks. Steph will enthusiastically ally your party in any camping/glamping quest. 
-      <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. 
-      They have since discovered a shared love for absurdity, long hair, and exploration that would take them from the streets of DC, to the 
+      bio: `With roots in DC, Virginia, and northern Germany, armed with an adventurous spirit, Steph's preoccupation for learning has earned her several skills, of 
+      varying usefulness, including: rolling a kayak four to five times in succession for no reason, reproducing an almost-exact Taco Bell meat texture on the stovetop, 
+      and tetris-ing (far too much) camping gear into tiny car trunks. Steph is a hardcore camper/"glamper" and earned her burn name, "Whole Ass," for not half-assing, 
+      well, anything. 
+      <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. Topher demo'd his custom 
+      "Breadth of the Wild" Zelda quest-and-item tracking website to her on first meeting, and her completionist heart was won over, immediately.
+      <br/><br/>
+      They have since discovered a shared love for absurdity, long hair, learning, and exploration that would take them from the streets of DC, to the 
       mountains of Seattle, to the beer halls of Germany.`,
     },
     kilton: {
@@ -230,7 +234,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       <br/><br/>
       Most morose when it is time to leave the park, Kilton will slow his gait to an almost backwards pace, as he approaches the exit. 
       <br/><br/>
-      At home, you will often find Kilton's snoot hanging out of the window while perched in his favorite armchair, 
+      At home, you will often find Kilton's snoot hanging out of an open window while perched in his favorite armchair, 
       positioned perfectly to alert house residents of dangerous raccoons and evil mail-people. 
       <br/><br/>
       Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on 
@@ -265,7 +269,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. 
       <br/><br/>
       The size and density of her muscles have her more adept to sinking in lakes than swimming, although occasionally she can be found terrorizing 
-      other creatures wearing a shark life-vest.`,
+      other creatures wearing a pink shark life-vest.`,
     },
   };
 
