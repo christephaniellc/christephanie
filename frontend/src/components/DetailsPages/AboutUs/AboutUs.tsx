@@ -720,7 +720,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                           fontSize: '0.6rem'
                         }}
                       >
-                        Oktoberfest
+                        Oktoberfest 2024
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
@@ -1109,7 +1109,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                                 fontWeight: 'medium'
                               }}
                             >
-                              Oktoberfest
+                              Oktoberfest 2024
                             </Typography>
                           </Box>
                         </Grid>
