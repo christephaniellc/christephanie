@@ -56,8 +56,8 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
         return <FoodPreferencesSection />;
       case 'foodAllergies':
         return <FoodAllergiesSection />;
-      case 'transportation':
-        return <TransportationSection />;
+      // case 'transportation':
+      //   return <TransportationSection />;
       case 'accommodation':
         return <AccommodationSection />;
       default:

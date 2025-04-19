@@ -49,7 +49,7 @@ export const hasVisitedPage = (pageName: VisitedPageType): boolean => {
   try {
     const storedVisitedPages = localStorage.getItem(STORAGE_KEY);
     if (!storedVisitedPages) {
-      logDebug(`No visited pages found in localStorage for key ${STORAGE_KEY}`);
+      //logDebug(`No visited pages found in localStorage for key ${STORAGE_KEY}`);
       return false;
     }
     
@@ -57,7 +57,7 @@ export const hasVisitedPage = (pageName: VisitedPageType): boolean => {
     const visited = !!visitedPages[pageName];
     
     // Add diagnostic logging
-    logDebug(`Checking if page ${pageName} has been visited:`, visited);
+    //logDebug(`Checking if page ${pageName} has been visited:`, visited);
     return visited;
   } catch (error) {
     console.error('Error checking if page has been visited:', error);
@@ -70,5 +70,5 @@ export const hasVisitedPage = (pageName: VisitedPageType): boolean => {
  */
 export const resetVisitedPages = (): void => {
   localStorage.removeItem(STORAGE_KEY);
-  logDebug(`Visited pages reset for key ${STORAGE_KEY}`);
+  //logDebug(`Visited pages reset for key ${STORAGE_KEY}`);
 };

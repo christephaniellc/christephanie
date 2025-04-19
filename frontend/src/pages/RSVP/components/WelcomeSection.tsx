@@ -5,7 +5,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { GuestViewModel, InvitationResponseEnum } from '@/types/api';
+import { GuestViewModel, RsvpEnum } from '@/types/api';
 import { useFamily } from '@/store/family';
 import { 
   useTheme, 
@@ -25,7 +25,7 @@ import {
   Favorite 
 } from '@mui/icons-material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
-import { StephsStyledTypography } from '@/components/AttendanceButton/components/StyledComponents';
+import { StephsActualFavoriteTypographyNoDrop, StephsStyledTypography } from '@/components/AttendanceButton/components/StyledComponents';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 
 // Define keyframes for animations
@@ -141,8 +141,8 @@ const ButtonContainer = styled(Box)(({ theme }) => ({
 
 // Props for the attendance button component
 interface AttendanceButtonProps {
-  response: InvitationResponseEnum;
-  currentResponse: InvitationResponseEnum | null;
+  response: RsvpEnum;
+  currentResponse: RsvpEnum | null;
   icon: React.ReactNode;
   selectedIcon: React.ReactNode;
   label: string;
@@ -304,8 +304,8 @@ export const WelcomeSection: React.FC = () => {
     );
   }
 
-  const handleResponseChange = (guestId: string, response: InvitationResponseEnum) => {
-    familyActions.updateFamilyGuestInterest(guestId, response);
+  const handleResponseChange = (guestId: string, response: RsvpEnum) => {
+    familyActions.updateFamilyGuestRsvp(guestId, response);
   };
 
   // Check if form is in a loading/submitting state
@@ -397,11 +397,11 @@ export const WelcomeSection: React.FC = () => {
                   filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                 }} 
               />
-              <StephsStyledTypography
+              <StephsActualFavoriteTypographyNoDrop
                 variant="h5"
-                component="h2"
-                textColor={theme.palette.primary.main}
-                shadowSize={1.5}
+                //component="h2"
+                //textColor={theme.palette.primary.main}
+                //shadowSize={1.5}
                 fontSize={isMobile ? '1.2rem' : '1.5rem'}
                 sx={{ 
                   my: 0, 
@@ -411,24 +411,41 @@ export const WelcomeSection: React.FC = () => {
                 }}
               >
                 Will you be attending our wedding?
-              </StephsStyledTypography>
+              </StephsActualFavoriteTypographyNoDrop>
             </Box>
             <Typography
               variant="body2"
               component="p"
               sx={{ 
-                color: alpha(theme.palette.primary.main, 0.8),
+                color: alpha(theme.palette.secondary.main, 0.8),
                 opacity: 0.8,
                 position: 'relative',
                 zIndex: 1,
-                fontStyle: 'italic',
+                fontWeight: '800',
+                textAlign: 'center',
+                fontSize: { xs: '0.9rem', sm: '1.0rem' },
+                mt: 0.5,
+                px: 2,
+              }}
+            >
+              Saturday, July 5th
+            </Typography>
+            <Typography
+              variant="body2"
+              component="p"
+              sx={{ 
+                color: alpha('#FFFFF', 0.8),
+                opacity: 0.8,
+                position: 'relative',
+                zIndex: 1,
+                //fontStyle: 'italic',
                 textAlign: 'center',
                 fontSize: { xs: '0.8rem', sm: '0.9rem' },
                 mt: 0.5,
                 px: 2,
               }}
             >
-              Please confirm your final attendance for each guest
+              Please confirm final attendance for each guest.
             </Typography>
           </Box>
           
@@ -468,30 +485,30 @@ export const WelcomeSection: React.FC = () => {
                 
                 <ButtonContainer>
                   <AttendanceButton
-                    response={InvitationResponseEnum.Interested}
-                    currentResponse={guest.rsvp?.invitationResponse || null}
+                    response={RsvpEnum.Attending}
+                    currentResponse={guest.rsvp?.wedding || null}
                     icon={<FavoriteBorder color="primary" fontSize="inherit" />}
                     selectedIcon={<Favorite color="inherit" fontSize="inherit" />}
                     label="I'll be there!"
-                    onClick={() => handleResponseChange(guest.guestId, InvitationResponseEnum.Interested)}
+                    onClick={() => handleResponseChange(guest.guestId, RsvpEnum.Attending)}
                     disabled={isLoading}
                     isPrimary
                   />
                   
                   <AttendanceButton
-                    response={InvitationResponseEnum.Declined}
-                    currentResponse={guest.rsvp?.invitationResponse || null}
+                    response={RsvpEnum.Declined}
+                    currentResponse={guest.rsvp?.wedding || null}
                     icon={<Cancel color="error" fontSize="inherit" />}
                     selectedIcon={<Cancel color="inherit" fontSize="inherit" />}
                     label="Cannot attend"
-                    onClick={() => handleResponseChange(guest.guestId, InvitationResponseEnum.Declined)}
+                    onClick={() => handleResponseChange(guest.guestId, RsvpEnum.Declined)}
                     disabled={isLoading}
                     isError
                   />
                 </ButtonContainer>
                 
                 {/* Status message based on current response */}
-                {guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending && (
+                {guest.rsvp?.wedding === RsvpEnum.Pending && (
                   <Box 
                     sx={{ 
                       width: '100%',
@@ -544,7 +561,7 @@ export const WelcomeSection: React.FC = () => {
                   </Box>
                 )}
                 
-                {guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested && (
+                {guest.rsvp?.wedding === RsvpEnum.Attending && (
                   <Box 
                     sx={{ 
                       width: '100%',
@@ -591,7 +608,7 @@ export const WelcomeSection: React.FC = () => {
                   </Box>
                 )}
                 
-                {guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined && (
+                {guest.rsvp?.wedding === RsvpEnum.Declined && (
                   <Box 
                     sx={{ 
                       width: '100%',
@@ -632,7 +649,7 @@ export const WelcomeSection: React.FC = () => {
                         verticalAlign: 'middle',
                         opacity: 0.5
                       }} />
-                      We'll miss {guest.firstName}! You can change this response if plans change.
+                      We'll miss {guest.firstName}! You can change this response if plans change before May 19.
                     </Typography>
                   </Box>
                 )}
@@ -687,14 +704,14 @@ export const WelcomeSection: React.FC = () => {
             <Box component="div" sx={{ position: 'relative', zIndex: 1, px: 1 }}>
               <Typography 
                 variant="body1" 
-                color="primary.light" 
+                color="secondary.main" 
                 align="center"
                 sx={{ 
-                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  fontSize: { xs: '0.9rem', sm: '0.9rem' },
                   lineHeight: 1.5,
                   fontWeight: 300,
                   letterSpacing: '0.02em',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                  //textShadow: '0 1px 2px rgba(0,0,0,0.5)'
                 }}
               >
                 Please continue through the RSVP process to provide additional details for attending guests.

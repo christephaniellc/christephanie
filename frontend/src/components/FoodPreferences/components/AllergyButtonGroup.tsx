@@ -83,6 +83,7 @@ const AllergyButtonGroup: React.FC<AllergyButtonGroupProps> = ({
         sx={{
           width: isBreakpointUpMin ? '66.66%' : '100%',
           height: !isBreakpointUpMin ? '70%' : '100%',
+          //border: '3px blue dotted',
           lineHeight: 1.2,
           paddingY: 1.5,
           paddingX: 2,
