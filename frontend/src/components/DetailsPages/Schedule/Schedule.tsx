@@ -37,6 +37,7 @@ import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
 import { hasRole, isAdmin, isStaffOrParty } from '@/utils/roles';
 import { RoleEnum } from '@/types/api';
+import { isFeatureEnabled } from '@/config';
 
 interface ScheduleProps {
   handleTabLink: (to: string) => void;
@@ -85,8 +86,13 @@ function Schedule({handleTabLink}: ScheduleProps) {
           name: 'Fourth of July: BBQ & Fireworks',
           time: '6:00 PM - 9:00 PM',
           location: 'Stone Manor Inn, Lovettsville, VA',
-          description: 'Join us for a fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
-          details: ['Meet other guests', 'Casual attire', 'BBQ foods', 'BYOB', 'Bring your instruments', 'Bring your (legal in Virginia) fireworks!'],
+          description: 'Join us for a potluck fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
+          details: ['Meet other guests!', 
+            'Casual attire', 
+            'BYOB', 
+            'Bring BBQ meats, buns, or sides',
+            'Bring your instruments', 
+            'Bring your (legal in Virginia) fireworks!'],
           icon: <Stream />
         }
       ]
@@ -104,7 +110,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
           details: ['Coffee and tea', 'Breakfast'],
           icon: <BakeryDining />,
           restricted: true,
-          visible: hasRole(RoleEnum.Manor, currentUser)
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+            && hasRole(RoleEnum.Manor, currentUser)
         },
         {
           id: 'getting-ready',
@@ -119,7 +126,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
           ],
           icon: <DryCleaning />,
           restricted: true,
-          visible: hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser)
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+            && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
         },
         {
           id: 'ceremony',
@@ -137,7 +145,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
           location: 'Stone Manor Inn (Patio & Lower Level)',
           description: 'Enjoy drinks while mingling with other guests.',
           details: ['Open bar'],
-          icon: <LocalBar />
+          icon: <LocalBar />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY')           
         },
         {
           id: 'reception',
@@ -146,7 +155,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
           location: 'Stone Manor Inn (Patio & Lower Level)',
           description: 'Dinner, speeches, toasts, and cake cutting.',
           details: ['Buffet dinner service', 'Cake', 'Toasts and speeches'],
-          icon: <Cake />
+          icon: <Cake />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
         },
         {
           id: 'dancing',
@@ -155,7 +165,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
           location: 'Stone Manor Inn (Main Hall)',
           description: 'Dance the night away! Topher and Steph will change into more comfortable attire for this portion.',
           details: ['DJ and dancing', 'Fire spinners'],
-          icon: <MusicNote />
+          icon: <MusicNote />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
         }
       ]
     },
@@ -304,7 +315,10 @@ function Schedule({handleTabLink}: ScheduleProps) {
   const EventCard = ({ event, delay = 0 }) => {
     // Add special styling for restricted events
     const isRestricted = event.restricted;
-    
+    // if (event.comingSoon) {
+    //   return ComingSoonCard();
+    // }
+
     return (
       <Grow in={true} timeout={500 + delay * 200}>
         <Card sx={{ 
@@ -394,6 +408,67 @@ function Schedule({handleTabLink}: ScheduleProps) {
     );
   };
   
+  const ComingSoonCard = () => (
+    <Box sx={{ 
+      width: '100%',
+      mt: 4,
+      pb: 2,
+      position: 'relative',
+      zIndex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }}>
+      <StephsActualFavoriteTypography variant="h4" sx={{ 
+        textAlign: 'center',
+        fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+      }}>
+      COMING SOON
+      </StephsActualFavoriteTypography>
+
+      {/* Circular logo with animation */}
+      <Box
+        sx={{
+          width: '100%',
+          height: '120px',
+          overflow: 'hidden',
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          '@keyframes pulse': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.1)' },
+            '100%': { transform: 'scale(1)' }
+          },
+          '& img': {
+            height: '120px',
+            width: '120px',
+            animation: 'pulse 3s infinite ease-in-out',
+          }
+        }}
+      >
+        <img 
+          src="/favicon_big_art_transparent.png" 
+          alt="Wedding Logo" 
+        />
+      </Box>
+
+      <Typography
+        variant="body1"
+        sx={{
+          textAlign: 'center',
+          maxWidth: '600px',
+          mt: 2,
+          mb: 4,
+          px: 2,
+        }}
+      >
+        We are currently working on this section. Please check back later for updates!
+      </Typography>
+    </Box>
+  );
+
   // Transportation info card
   const TransportationCard = () => (
     <Grow in={true} timeout={800}>
@@ -549,7 +624,10 @@ function Schedule({handleTabLink}: ScheduleProps) {
           ))}
         
         {/* Transportation card - show only on main wedding day */}
-        {selectedDay === 'day2' && <TransportationCard />}
+        {selectedDay === 'day2' && 
+          <ComingSoonCard />
+          // <TransportationCard />
+        }
         
         {/* Wedding Support Section */}
         <Grow in={true} timeout={1000}>
