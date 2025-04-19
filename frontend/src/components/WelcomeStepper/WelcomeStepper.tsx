@@ -34,6 +34,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
 import { familyGuestsStates } from '@/store/family';
 import { isFeatureEnabled } from '@/config';
+import theme from '@/store/theme';
 
 // Create a custom New Content component that includes the sparkle effect
 const NewContentBadge = () => {
@@ -187,9 +188,12 @@ const steps: { [step: string]: Step } = {
     description:
       `Finalize your RSVP by letting us know if you can make it to our events.
       <br/><br/>`,
-    // Using a component for this part
     component: (
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ 
+        mb: 2,        
+        border: `2px orange dotted`,
+        borderRadius: '8px',
+       }}>
         <NewContentBadge />
       </Box>
     ),
