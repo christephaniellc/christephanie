@@ -175,7 +175,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         thoughtfulness: 95,
       },
       bio: `An at-large Florida Man with a passion for code and tinkering, 
-      Topher's journey began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, 
+      Topher's career began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, 
       he discovered a serious knack for handling complex systems. This easily translated into becoming an aerospace engineer, 
       which ultimately led him to the world of software. 
       <br/><br/>
