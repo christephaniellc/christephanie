@@ -96,6 +96,7 @@ export const hasRole = (role: RoleEnum, user?: Partial<GuestDto> | null): boolea
   if (!Array.isArray(user.roles)) {
     return false;
   }
+  //console.log(`has role: ${role}: ${user.roles.includes(role)}`);
   
   return user.roles.includes(role) || isAdmin(user);
 };

@@ -17,7 +17,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
 import { useFamily, familyGuestsStates } from '@/store/family';
-import { InvitationResponseEnum } from '@/types/api';
+import { RsvpEnum } from '@/types/api';
 import IconButton from '@mui/material/IconButton';
 import {
   Check, CheckCircleOutlineTwoTone,
@@ -71,9 +71,9 @@ export default function RSVPStepper() {
   const visibleSteps = useMemo(() => {
     if (!familyState) return Object.entries(rsvpSteps);
     
-    // Check if any guests have a non-pending InvitationResponse (for debugging)
+    // Check if any guests have a non-pending wedding rsvp (for debugging)
     const anyGuestResponded = familyState.guests?.some(
-      guest => guest.rsvp?.invitationResponse !== InvitationResponseEnum.Pending
+      guest => guest.rsvp?.wedding !== RsvpEnum.Pending
     );
     
     // Show all steps with display=true regardless of attendance status
@@ -90,7 +90,7 @@ export default function RSVPStepper() {
       currentStepKey: Object.keys(rsvpSteps)[tabIndex],
       guests: familyState?.guests?.map(g => ({
         name: `${g.firstName} ${g.lastName}`,
-        response: g.rsvp?.invitationResponse
+        response: g.rsvp?.wedding
       }))
     });
     

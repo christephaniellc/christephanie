@@ -288,18 +288,21 @@ export const useFamily = () => {
   const updateFamilyGuestBetaTestOptIn = useCallback(
     (guestId: string, allowBetaScreenRecordings: boolean) => {
       patchFamilyGuestMutation.mutate({ updatedGuest: { guestId, allowBetaScreenRecordings } });
-    },
-    [],
-  );
+    }, []);
 
   const updateFamilyGuestInterest = useCallback(
     (guestId: string, interested: InvitationResponseEnum) => {
       patchFamilyGuestMutation.mutate({
         updatedGuest: { guestId, invitationResponse: interested },
       });
-    },
-    [],
-  );
+    }, []);
+  
+  const updateFamilyGuestRsvp = useCallback(
+    (guestId: string, attending: RsvpEnum) => {
+      patchFamilyGuestMutation.mutate({
+        updatedGuest: { guestId, wedding: attending },
+      });
+    }, []);
 
   const updateFamilyGuestFoodPreferences = useCallback(
     (guestId: string, foodPreference: FoodPreferenceEnum) => {
@@ -457,6 +460,7 @@ export const useFamily = () => {
       updateFamilyGuestPhone,
       updateFamilyGuestFoodAllergies,
       updateFamilyGuestInterest,
+      updateFamilyGuestRsvp,
       updateFamilyGuestFoodPreferences,
       patchFamilyMutation: patchFamilyMutation,
       validateFamilyAddress: validateAddressMutation,
@@ -473,6 +477,7 @@ export const useFamily = () => {
       getFamilyUnitQuery,
       getFamily,
       updateFamilyGuestInterest,
+      updateFamilyGuestRsvp,
       updateFamilyAddress,
       patchFamilyMutation,
       validateAddressMutation,
