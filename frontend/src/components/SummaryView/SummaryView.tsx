@@ -12,7 +12,7 @@ import { userCommentState } from '@/store/userComment/userComment';
 import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { darken } from '@mui/system';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
-import { AgeGroupEnum, GuestViewModel } from '@/types/api';
+import { AgeGroupEnum, GuestViewModel, RsvpEnum } from '@/types/api';
 import StickFigureIcon from '@/components/StickFigureIcon';
 
 // Icons
@@ -99,9 +99,15 @@ const SummaryView: React.FC = () => {
         // Return a summary of guest attendance
         if (!family.guests || family.guests.length === 0) return "No attendance information";
         
-        const attendingCount = family.guests.filter(g => g.rsvp?.invitationResponse === 'Interested').length;
-        const decliningCount = family.guests.filter(g => g.rsvp?.invitationResponse === 'Declined').length;
-        const pendingCount = family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
+        const attendingCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Attending).length 
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Interested').length;
+        const decliningCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Declined).length
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Declined').length;
+          const pendingCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
         
         return `${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`;
         
@@ -249,7 +255,9 @@ const SummaryView: React.FC = () => {
           <Chip 
             icon={<EventAvailableIcon />} 
             label={`Attendance: ${attendanceStatus}`} 
-            color={attendanceStatus === 'Interested' ? 'success' : attendanceStatus === 'Declined' ? 'error' : 'default'}
+            color={attendanceStatus === (isRsvpFlow ? RsvpEnum.Attending : 'Interested') 
+              ? 'success' : attendanceStatus === ('Declined') 
+              ? 'error' : 'default'}
             variant="outlined"
           />
           <Chip 
@@ -420,7 +428,7 @@ const SummaryView: React.FC = () => {
                     {stepIcons[stepKey as keyof typeof stepIcons]}
                   </ListItemIcon>
                   <ListItemText
-                    primary={step.label}
+                    primary={`${step.label}${step.label === 'Wedding Attendance' ? ' - July 5th' : ''}`}
                     secondary={getResponseValueForStep(stepKey)}
                   />
                   <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
@@ -441,8 +449,10 @@ const SummaryView: React.FC = () => {
                       {family.guests.map((guest, idx) => {
                         // Only show relevant information based on the step and attendance status
                         let relevantContent = null;
-                        const attendanceStatus = guest.rsvp?.invitationResponse || 'Pending';
-                        const isAttending = attendanceStatus === 'Interested';
+                        const attendanceStatus = isRsvpFlow 
+                        ? guest.rsvp?.wedding 
+                        : guest.rsvp?.invitationResponse || 'Pending';
+                        const isAttending = attendanceStatus === 'Interested' || 'Attending';
                         
                         // For non-attending guests, show a message instead of preferences
                         if (!isAttending) {
