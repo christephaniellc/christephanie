@@ -175,13 +175,13 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         thoughtfulness: 95,
       },
       bio: `An at-large Florida Man with a passion for code and tinkering, 
-      Topher's journey began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, 
+      Topher's career began as a Marine and two-time war-veteran. As an amphibious vehicle mechanic in the military, 
       he discovered a serious knack for handling complex systems. This easily translated into becoming an aerospace engineer, 
       which ultimately led him to the world of software. 
       <br/><br/>
       His entrepreneurial experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. 
-      Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the 80 of 80/20 project starts, Topher "leveled up" when he 
-      discovered Steph, who is a hardcore 20 finisher. With their powers combined, they make a formidable team.`, 
+      Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the "80" part of 80/20 project starts, Topher "leveled up" when he 
+      discovered Steph, who is a hardcore "20" finisher. With their powers combined, they make a formidable team, in code and in life.`, 
     },
     steph: {
       name: 'Steph Stubler',
@@ -192,7 +192,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         class: 'Staff Software Engineer and Team Lead',
         specialAbility: 'Rubik\'s Cube solving',
         favoriteFood: 'Bratwurst',
-        hobbies: 'Art, Piano, Dubstep Dancing',
+        hobbies: 'Art, Piano, Dubstep Shows',
         alignment: 'Neutral Good'
       },
       stats: {
@@ -201,12 +201,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         running: 3.9,
         bowling: 15
       },
-      bio: `With roots in DC, Virginia, and northern Germany, armed with an adventurous spirit, Steph's preoccupation for learning has earned her several skills, of 
-      varying usefulness, including: rolling a kayak four to five times in succession for no reason, reproducing an almost-exact Taco Bell meat texture on the stovetop, 
-      and tetris-ing (far too much) camping gear into tiny car trunks. Steph is a hardcore camper/"glamper" and earned her burn name, "Whole Ass," for not half-assing, 
+      bio: `With roots in DC, Virginia, and northern Germany, armed with an adventurous spirit, Steph's preoccupation for learning has earned her several skills of 
+      varying usefulness, including: rolling a kayak underwater four to five times in succession for no reason, reproducing an almost-exact Taco Bell meat texture on the stovetop, 
+      and tetris-ing far too much camping gear into tiny car trunks. Steph is a hardcore camper/"glamper" and earned her burn name, "Whole Ass," for not half-assing, 
       well, anything. 
       <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. Topher demo'd his custom 
-      "Breadth of the Wild" Zelda quest-and-item tracking website to her on first meeting, and her completionist heart was won over, immediately.
+      "Breadth of the Wild" Zelda quest-and-item tracking website to her on their first interaction, and her completionist heart was won over, immediately.
       <br/><br/>
       They have since discovered a shared love for absurdity, long hair, learning, and exploration that would take them from the streets of DC, to the 
       mountains of Seattle, to the beer halls of Germany.`,
@@ -220,7 +220,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         class: 'Food Detector',
         specialAbility: 'Racing down the stairs when a refrigerator opens',
         favoriteFood: 'Beecher\'s Cheese',
-        hobbies: 'Eating cheese, moping when leaving the dog park, singing to earn pets',
+        hobbies: 'Moping when leaving the dog park, singing to earn pets and treats',
         alignment: 'Lawful Good'
       },
       stats: {
@@ -230,7 +230,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         prancing: 78
       },
       bio: `Kilton Jett, our caroling man, knows exactly when any snack is being consumed, 
-      and will sing to alert the snacker to his presence. You see, he totally deserves this food, in his estimation. 
+      and will sing in husky-mix fashion to alert the snacker to his presence. In his estimation, he totally deserves this food, obviously for being so handsome. 
       <br/><br/>
       Most morose when it is time to leave the park, Kilton will slow his gait to an almost backwards pace, as he approaches the exit. 
       <br/><br/>
@@ -238,7 +238,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       positioned perfectly to alert house residents of dangerous raccoons and evil mail-people. 
       <br/><br/>
       Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on 
-      task by snuggling his head on your hip while his subject is working on the couch. 
+      task by snuggling his head on your hip while you are working on the couch. 
       <br/><br/>
       Kilton will loyally verify you are nearby at all times on walks, and tolerates being picked up...although his face may display abject horror.`,
     },
@@ -251,7 +251,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         class: 'Toot Expert',
         specialAbility: 'Drive-by bark hellos',
         favoriteFood: 'Her brother\'s feet',
-        hobbies: 'Escaping dog park fences, disappearing and reappearing with thorns in her face',
+        hobbies: 'Disappearing and reappearing with thorns in her face',
         alignment: 'Chaotic Neutral'
       },
       stats: {
@@ -261,14 +261,14 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         energy: 100,
       },
       bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific jail 
-      of any glorious dog park, in order to hunt small non-dog creatures. 
+      of any glorious Seattle dog park, in order to hunt small non-dog creatures. 
       <br/><br/>
-      Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting, 
-      but indoors, this chaos dog will slink away deep into blankety caves and custom teepees. 
+      Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting.
+      Indoors, however, this chaos dog will slink away deep into blankety caves and custom teepees to ponder life's complexities. 
       <br/><br/>
       Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. 
       <br/><br/>
-      The size and density of her muscles have her more adept to sinking in lakes than swimming, although occasionally she can be found terrorizing 
+      The size and density of her doggy muscles make her more of a sinker in lakes than swimmer, although occasionally she can be found terrorizing 
       other creatures wearing a pink shark life-vest.`,
     },
   };
@@ -720,7 +720,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                           fontSize: '0.6rem'
                         }}
                       >
-                        Oktoberfest
+                        Oktoberfest 2024
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
@@ -1109,7 +1109,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                                 fontWeight: 'medium'
                               }}
                             >
-                              Oktoberfest
+                              Oktoberfest 2024
                             </Typography>
                           </Box>
                         </Grid>
