@@ -70,4 +70,5 @@ export interface PreferenceDescriptionProps {
 
 export interface CampingPreferencesProps {
   guestId: string;
+  guestFirstName: string;
 }

@@ -13,7 +13,9 @@ export const AccommodationSection: React.FC = () => {
     <>
       {family.guests.map((guest: GuestViewModel) => (
         <Box key={guest.guestId} sx={{ mb: 3, width: '100%' }}>
-          <CampingPreferences guestId={guest.guestId} />
+          <CampingPreferences 
+            guestId={guest.guestId}
+            guestFirstName={guest.firstName} />
         </Box>
       ))}
     </>

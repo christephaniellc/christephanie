@@ -81,18 +81,16 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
       alignItems="center" 
       width="100%" 
       py={2}
-      sx={{ cursor: isMobile ? 'pointer' : 'default' }}
-    >
-      <Typography variant="h6" gutterBottom align="center" sx={{ mb: 3 }}>
-        {guest.firstName} {guest.lastName}
-      </Typography>
-      
+      sx={{ 
+        cursor: isMobile ? 'pointer' : 'default',
+      }}
+    >      
       <Box
         sx={{
           width: '100%',
           maxWidth: 600,
           p: 1,
-          mb: 2,
+          //mb: 2,
           background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(20px)',
           border: `1px dashed ${theme.palette.secondary.main}`,
@@ -100,6 +98,14 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
           boxShadow: 1,
         }}
       >
+      <Typography variant="h6" gutterBottom
+        sx={{ 
+          alignContent: 'left',
+          mb: 3,
+          textAlign: 'left',
+        }}>
+        {guest.firstName}
+      </Typography>
         <ButtonGroup
           fullWidth
           orientation={isBreakpointUpMin ? 'horizontal' : 'vertical'}
