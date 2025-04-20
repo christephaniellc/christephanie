@@ -16,7 +16,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
-import { saveTheDateStepsState } from '@/store/steppers/steppers';
+import { saveTheDateStepsState } from '@/store/steppers/saveTheDateStepper';
 
 export const familyState = atom<FamilyUnitViewModel | null>({
   key: 'familyUnit',

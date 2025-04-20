@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 import { useUser } from '@/store/user';
 import useNotifications from '@/store/notifications';
 import { Notification } from '@/store/notifications/types';
-import { stdTabIndex, saveTheDateStepsState } from '@/store/steppers/steppers';
+import { stdTabIndex, saveTheDateStepsState } from '@/store/steppers/saveTheDateStepper';
 
 /**
  * Hook that looks for query parameters in URL:

@@ -35,7 +35,7 @@ import {
   saveTheDateStepsState,
   stdStepperState,
   stdTabIndex,
-} from '@/store/steppers/steppers';
+} from '@/store/steppers/saveTheDateStepper';
 import { userState } from '@/store/user';
 import Container from '@mui/material/Container';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
