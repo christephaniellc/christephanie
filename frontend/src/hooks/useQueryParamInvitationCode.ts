@@ -52,7 +52,7 @@ export const useQueryParamInvitationCode = () => {
     if (stepParam && Object.keys(saveTheDateSteps).includes(stepParam)) {
       const stepIndex = Object.keys(saveTheDateSteps).indexOf(stepParam);
       if (stepIndex !== -1 && stepIndex !== tabIndex) {
-        console.log(`Setting active step to ${stepParam} (index: ${stepIndex})`);
+        //console.log(`Setting active step to ${stepParam} (index: ${stepIndex})`);
         setTabIndex(stepIndex);
       }
     }

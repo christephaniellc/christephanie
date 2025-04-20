@@ -271,7 +271,7 @@ const WelcomeStepper = () => {
   const activeStepInfo = Object.values(rsvpSteps)[activeStep];
 
   const calculateChipColor = useCallback((key: string) => {
-    console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
+    //console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
     switch(key) {
       case('saveTheDate'):
         return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested 

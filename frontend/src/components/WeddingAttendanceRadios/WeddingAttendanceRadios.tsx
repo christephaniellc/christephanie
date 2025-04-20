@@ -216,7 +216,7 @@ const WeddingAttendanceRadios = ({
     });
     scenarios.push({ name: "They pending", result: scenario4 });
 
-    console.log("Response Formatting Test Scenarios:", scenarios);
+    //console.log("Response Formatting Test Scenarios:", scenarios);
     return scenarios;
   };
 

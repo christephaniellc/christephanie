@@ -111,13 +111,10 @@ export const useContactInformation = (guestId: string) => {
   const fetchUnmaskedPhoneValue = async () => {
     setIsLoadingPhone(true);
     try {
-      console.log('Fetching unmasked phone value');
       const result = await fetchMaskedValue('text');
-      console.log('Fetch phone result:', result);
       if (result) {
         // Handle both string and object responses
         const phoneVal = typeof result === 'string' ? result : result.value;
-        console.log('Setting phone value directly to:', phoneVal);
         setPhoneValue(phoneVal);
       } else {
         console.error('No phone value returned from API');

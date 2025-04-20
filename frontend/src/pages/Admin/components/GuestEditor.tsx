@@ -155,8 +155,6 @@ const GuestEditor: React.FC<GuestEditorProps> = ({
         wedding: editedGuest.rsvp?.wedding
       };
       
-      console.log('Sending patch request:', patchRequest);
-      
       // Use the admin API to patch the guest
       await apiInstance.adminPatchGuest(patchRequest);
       

@@ -5,7 +5,7 @@ import { VisitedPageType, markPageAsVisited, hasVisitedPage, resetVisitedPages }
 const isDev = import.meta.env.MODE === 'development';
 const logDebug = (message: string, ...args: any[]) => {
   if (isDev) {
-    console.log(`[useVisitedPages] ${message}`, ...args);
+    //console.log(`[useVisitedPages] ${message}`, ...args);
   }
 };
 
