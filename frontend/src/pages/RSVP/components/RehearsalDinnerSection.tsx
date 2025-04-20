@@ -124,6 +124,7 @@ export const RehearsalDinnerSection: React.FC = () => {
           >
           <Box 
             sx={{ 
+              id: '4th-title',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -173,24 +174,59 @@ export const RehearsalDinnerSection: React.FC = () => {
           >
             Friday, July 4th
           </Typography>
-          <Typography
-            variant="body2"
-            component="p"
+            <Typography
+              variant="body2"
+              component="p"
+              sx={{ 
+                color: alpha('#FFFFF', 0.8),
+                opacity: 0.8,
+                position: 'relative',
+                zIndex: 1,
+                //fontStyle: 'italic',
+                //textAlign: 'center',
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                mt: 0.5,
+                px: 2,
+              }}
+            >
+              Join us at the venue the day before for a potluck BBQ and fireworks!<br/><br/>
+            </Typography>
+          <Paper
             sx={{ 
-              color: alpha('#FFFFF', 0.8),
-              opacity: 0.8,
+              id: '4th-info',
+              backgroundColor: alpha(theme.palette.primary.main, 0.2),
+              padding: theme.spacing(1.5),
+              borderRadius: 1,
+              maxWidth: '90%',
+              textAlign: 'left',
+              boxShadow: theme.shadows[1],
               position: 'relative',
               zIndex: 1,
-              //fontStyle: 'italic',
-              textAlign: 'center',
-              fontSize: { xs: '0.8rem', sm: '0.9rem' },
-              mt: 0.5,
-              px: 2,
-            }}
-          >
-            Join us at the venue the day before for a BBQ and fireworks!<br/>
-            Burgers & Dogs - BYOB
-          </Typography>
+            }}>
+              <Typography
+                variant="body2"
+                component="p"
+                sx={{ 
+                  color: alpha('#FFFFF', 0.8),
+                  opacity: 0.8,
+                  position: 'relative',
+                  zIndex: 1,
+                  //fontStyle: 'italic',
+                  //textAlign: 'center',
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  mt: 0.5,
+                  px: 2,
+                }}
+              >
+              <strong>Bring:</strong>
+                <ul>
+                  <li>Grill items, buns, and sides to share</li>
+                  <li>BYOB</li>
+                  <li>Fireworks (legal in Virginia)</li>
+                  <li>Instruments</li>  
+                </ul>
+            </Typography>
+          </Paper>
         </Box>
       
       {/* Guest attendance buttons */}
