@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
-import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/saveTheDateStepper';
 import { rsvpStepsState, rsvpTabIndex } from '@/store/steppers';
 import { useRecoilValue } from 'recoil';
 import { useApiContext } from '@/context/ApiContext';

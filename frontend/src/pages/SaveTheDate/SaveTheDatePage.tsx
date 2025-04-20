@@ -8,7 +8,7 @@ import { GuestViewModel } from '@/types/api';
 import AttendanceButton from '@/components/AttendanceButton';
 import { darken, useTheme } from '@mui/material';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdStepperState, stdTabIndex } from '@/store/steppers/saveTheDateStepper';
 import AddressEnvelope from '@/components/AddressEnvelope';
 import AutosizedTextArea from '@/components/TextArea';
 import SummaryView from '@/components/SummaryView';

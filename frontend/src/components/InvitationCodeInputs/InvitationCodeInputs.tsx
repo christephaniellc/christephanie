@@ -33,7 +33,7 @@ import {
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { rem } from 'polished';
 import { useNavigate } from 'react-router-dom';
-import { stdStepperState } from '@/store/steppers/steppers';
+import { stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import ElPulpo from '@/assets/favicon_big_art_transparent.png';
