@@ -254,7 +254,23 @@ function Attire({handleTabLink}: AttireProps) {
                     <Typography component="div" variant="body1">
                       <ul>
                         <li>From formal to semi-formal to casual attire: are all perfectly fine</li>
-                        <li>Bright colors and creative outfits are welcome</li>
+                        <li>Bright colors and creative outfits are welcome!</li>    
+                        <li><Button
+                            variant="outlined"
+                            color="secondary"
+                            size="small"
+                            endIcon={<OpenInNew />}
+                            onClick={() => window.open(`https://www.pinterest.com/hosts0408/burning-man-attire/`)}
+                            sx={{ mt: 1, alignSelf: 'flex-start' }}
+                            data-testid="search-google-button"
+                          >Burning man costume ideas</Button>
+                          <ul>
+                            <li>Linens / leathers</li>
+                            <li>Sarongs / kilts</li>
+                            <li>Bohemian / futuristic / punk</li>
+                            <li><span style={{fontSize: '0.8rem'}}><b>Note:</b> try to avoid feathers/sequins/costume items that shed an become litter</span></li>
+                          </ul>
+                        </li>
                         <li>Comfortable shoes recommended (there will be dancing!)</li>
                         <li>Consider bringing a light layer for the evening</li>
                       </ul>
@@ -316,18 +332,22 @@ function Attire({handleTabLink}: AttireProps) {
                     </Typography>
                     <Typography component="div" variant="body1">
                       <ul>
-                        <li>Comfortable, fun, and lightweight outfits. It will be hot! <br/>
-                          <Box>Check out some  
-                            <Button
-                              variant="outlined"
-                              color="secondary"
-                              size="small"
-                              endIcon={<OpenInNew />}
-                              onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
-                              sx={{ mt: 1, alignSelf: 'flex-start' }}
-                              data-testid="search-google-button"
-                            >burning man costume ideas</Button>.
-                          </Box>
+                        <li>Comfortable, fun, and lightweight outfits. It will be hot! </li>
+                        <li><Button
+                            variant="outlined"
+                            color="secondary"
+                            size="small"
+                            endIcon={<OpenInNew />}
+                            onClick={() => window.open(`https://www.pinterest.com/hosts0408/burning-man-attire/`)}
+                            sx={{ mt: 1, alignSelf: 'flex-start' }}
+                            data-testid="search-google-button"
+                          >Burning man costume ideas</Button>
+                          <ul>
+                            <li>Linens / leathers</li>
+                            <li>Sarongs / kilts</li>
+                            <li>Bohemian / futuristic / punk</li>
+                            <li><span style={{fontSize: '0.8rem'}}><b>Note:</b> try to avoid feathers/sequins/costume items that shed an become litter</span></li>
+                          </ul>
                         </li>
                         <li>Shoes we can dance in all night</li>
                       </ul>
