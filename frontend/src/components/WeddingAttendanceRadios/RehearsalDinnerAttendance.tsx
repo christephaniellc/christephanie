@@ -33,23 +33,27 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
   }, [guest]);
 
   const updateRehearsalDinnerAttendance = useCallback(
-    async (response: RsvpEnum) => {
+    (response: RsvpEnum) => {
       if (!guest) return;
       
+      // Store the selected response and set loading state
       setLoading(true);
-      try {
-        await familyActions.patchFamilyGuestMutation.mutate({
-          updatedGuest: {
-            guestId,
-            fourthOfJuly: response,
-          },
-        });
-        await familyActions.getFamily();
-      } catch (error) {
-        console.error('Error updating rehearsal dinner attendance', error);
-      } finally {
+      
+      // Mark the response we're updating to
+      const updatingToResponse = response;
+      
+      // Update the attendance
+      familyActions.patchFamilyGuestMutation.mutate({
+        updatedGuest: {
+          guestId,
+          fourthOfJuly: updatingToResponse,
+        },
+      });
+      
+      // Set a timeout to ensure loading state is visible
+      setTimeout(() => {
         setLoading(false);
-      }
+      }, 1000);
     },
     [guest, guestId, familyActions]
   );
@@ -133,6 +137,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Can't make it"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Declined !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 
@@ -149,6 +154,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Not sure yet"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Pending !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 
@@ -165,6 +171,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Yes, I'll be there!"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Attending !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 
