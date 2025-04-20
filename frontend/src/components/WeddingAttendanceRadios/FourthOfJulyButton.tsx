@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, useTheme, useMediaQuery, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { darken, alpha, lighten } from '@mui/system';
 import { StephsStyledTypography } from '@/components/AttendanceButton/components/StyledComponents';
@@ -21,6 +21,7 @@ interface FourthOfJulyButtonProps {
   onClick: (response: RsvpEnum) => void;
   disabled: boolean;
   isBreakpointUpMin: boolean;
+  loading?: boolean;
 }
 
 const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
@@ -32,6 +33,7 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
   onClick,
   disabled,
   isBreakpointUpMin,
+  loading = false,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -120,9 +122,9 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
         alignItems="center"
         gap={1}
         height={80}
-        sx={{ width: '100%' }}
+        sx={{ width: '100%', position: 'relative' }}
       >
-        <IconContainer>
+        <IconContainer sx={{ opacity: loading ? 0.4 : 1 }}>
           {icons}
         </IconContainer>
         <StephsStyledTypography
@@ -134,10 +136,26 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
           sx={{
             lineHeight: '1.4rem',
             textShadow: styles.typography.textShadow,
+            opacity: loading ? 0.4 : 1,
           }}
         >
           {label}
         </StephsStyledTypography>
+        
+        {loading && (
+          <CircularProgress 
+            size={28} 
+            color={color} 
+            sx={{ 
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              marginLeft: '-14px',
+              marginTop: '-14px',
+              zIndex: 10,
+            }} 
+          />
+        )}
       </Box>
     </Button>
   );

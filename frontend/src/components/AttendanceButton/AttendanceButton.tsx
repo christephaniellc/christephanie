@@ -55,7 +55,7 @@ export const AttendanceButton = ({ guestId }: AttendanceButtonProps) => {
       case 'communicationPreference':
         return <CommunicationPreferences guestId={guestId} />;
       case 'camping':
-        return <CampingPreferences guestId={guestId} />;
+        return <CampingPreferences guestId={guestId} guestFirstName={guest.firstName} />;
       default:
         return <></>;
     }
