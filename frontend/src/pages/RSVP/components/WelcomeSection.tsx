@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -14,7 +14,8 @@ import {
   alpha, 
   darken,
   styled,
-  keyframes
+  keyframes,
+  CircularProgress
 } from '@mui/material';
 import { 
   CheckCircle, 
@@ -148,6 +149,7 @@ interface AttendanceButtonProps {
   label: string;
   onClick: () => void;
   disabled: boolean;
+  loading?: boolean;
   isPrimary?: boolean;
   isError?: boolean;
 }
@@ -161,6 +163,7 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({
   label,
   onClick,
   disabled,
+  loading = false,
   isPrimary = false,
   isError = false
 }) => {
@@ -257,6 +260,7 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({
             },
             transition: 'all 0.3s ease',
             filter: isSelected ? 'drop-shadow(0 0 3px rgba(255,255,255,0.5))' : 'none',
+            opacity: loading ? 0.4 : 1,
           }}
         >
           {isSelected ? selectedIcon : icon}
@@ -273,10 +277,26 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({
             letterSpacing: isSelected ? '0.03em' : 'normal',
             textTransform: 'uppercase',
             fontSize: { xs: '1.1rem', sm: '1.3rem' }, // Responsive font size through sx
+            opacity: loading ? 0.4 : 1,
           }}
         >
           {label}
         </StephsStyledTypography>
+        
+        {loading && (
+          <CircularProgress 
+            size={24} 
+            color={isPrimary ? "primary" : isError ? "error" : "secondary"} 
+            sx={{ 
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              marginLeft: '-12px',
+              marginTop: '-12px',
+              zIndex: 2
+            }} 
+          />
+        )}
       </Box>
     </StyledAttendanceButton>
   );
@@ -288,6 +308,7 @@ export const WelcomeSection: React.FC = () => {
   const { screenWidth } = useAppLayout();
   const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
   const isSmallDevice = useMediaQuery(theme.breakpoints.down('sm'));
+  const [loadingGuestId, setLoadingGuestId] = useState<string | null>(null);
 
   // Force a refresh to ensure we have the latest data
   useEffect(() => {
@@ -305,7 +326,17 @@ export const WelcomeSection: React.FC = () => {
   }
 
   const handleResponseChange = (guestId: string, response: RsvpEnum) => {
+    // Set loading state for the specific guest and response
+    setLoadingGuestId(guestId);
+    
+    // Update the RSVP
     familyActions.updateFamilyGuestRsvp(guestId, response);
+    
+    // Set a timeout to clear the loading state after a reasonable time
+    // This ensures users see the loading state even if the operation is quick
+    setTimeout(() => {
+      setLoadingGuestId(null);
+    }, 1000);
   };
 
   // Check if form is in a loading/submitting state
@@ -491,7 +522,8 @@ export const WelcomeSection: React.FC = () => {
                     selectedIcon={<Favorite color="inherit" fontSize="inherit" />}
                     label="I'll be there!"
                     onClick={() => handleResponseChange(guest.guestId, RsvpEnum.Attending)}
-                    disabled={isLoading}
+                    disabled={isLoading || (loadingGuestId !== null && loadingGuestId !== guest.guestId)}
+                    loading={loadingGuestId === guest.guestId && RsvpEnum.Attending !== (guest.rsvp?.wedding || null)}
                     isPrimary
                   />
                   
@@ -502,7 +534,8 @@ export const WelcomeSection: React.FC = () => {
                     selectedIcon={<Cancel color="inherit" fontSize="inherit" />}
                     label="Cannot attend"
                     onClick={() => handleResponseChange(guest.guestId, RsvpEnum.Declined)}
-                    disabled={isLoading}
+                    disabled={isLoading || (loadingGuestId !== null && loadingGuestId !== guest.guestId)}
+                    loading={loadingGuestId === guest.guestId && RsvpEnum.Declined !== (guest.rsvp?.wedding || null)}
                     isError
                   />
                 </ButtonContainer>
