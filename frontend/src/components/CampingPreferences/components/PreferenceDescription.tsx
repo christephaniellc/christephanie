@@ -3,7 +3,7 @@ import { Typography, Box, Button } from '@mui/material';
 import { SleepPreferenceEnum } from '@/types/api';
 import { PreferenceDescriptionProps } from '../types';
 import HotelDialog from './HotelDialog';
-import { HotelOutlined } from '@mui/icons-material';
+import { HotelOutlined, OpenInNew } from '@mui/icons-material';
 
 const PreferenceDescription: React.FC<PreferenceDescriptionProps> = ({
   campingValue,

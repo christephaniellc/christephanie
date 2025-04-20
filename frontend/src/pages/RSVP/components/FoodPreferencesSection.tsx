@@ -114,7 +114,7 @@ export const FoodPreferencesSection: React.FC = () => {
         {family.guests.map((guest: GuestViewModel) => (
           <Box key={guest.guestId} sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-              {guest.firstName} {guest.lastName}
+              {guest.firstName}
             </Typography>
             <FoodPreferences guestId={guest.guestId} />
           </Box>

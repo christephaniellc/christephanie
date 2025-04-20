@@ -189,7 +189,7 @@ export const FoodAllergiesSection: React.FC = () => {
                       fontSize: isMobile ? '1.2rem' : '1.3rem',
                     }}
                   >
-                    {guest.firstName} {guest.lastName}
+                    {guest.firstName}
                   </Typography>
 
                   <Box sx={{ width: '100%' }}>
