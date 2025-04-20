@@ -268,7 +268,7 @@ function Attire({handleTabLink}: AttireProps) {
                             <li>Linens / leathers</li>
                             <li>Sarongs / kilts</li>
                             <li>Bohemian / futuristic / punk</li>
-                            <li><b>Note:</b> try to avoid feathers/sequins/costume items that shed and can become litter</li>
+                            <li><b>Note:</b> try to avoid feathers, loose sequins, or other costume items that shed and can become litter</li>
                           </ul>
                         </li>
                         <li>Comfortable shoes recommended (there will be dancing!)</li>
@@ -346,7 +346,7 @@ function Attire({handleTabLink}: AttireProps) {
                             <li>Linens / leathers</li>
                             <li>Sarongs / kilts</li>
                             <li>Bohemian / futuristic / punk</li>
-                            <li><b>Note:</b> try to avoid feathers/sequins/costume items that shed and can become litter</li>
+                            <li><b>Note:</b> try to avoid feathers, loose sequins, or other costume items that shed and can become litter</li>
                           </ul>
                         </li>
                         <li>Shoes we can dance in all night</li>
