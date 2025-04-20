@@ -268,7 +268,7 @@ function Attire({handleTabLink}: AttireProps) {
                             <li>Linens / leathers</li>
                             <li>Sarongs / kilts</li>
                             <li>Bohemian / futuristic / punk</li>
-                            <li><span style={{fontSize: '0.8rem'}}><b>Note:</b> try to avoid feathers/sequins/costume items that shed an become litter</span></li>
+                            <li><b>Note:</b> try to avoid feathers/sequins/costume items that shed and can become litter</li>
                           </ul>
                         </li>
                         <li>Comfortable shoes recommended (there will be dancing!)</li>
@@ -296,7 +296,7 @@ function Attire({handleTabLink}: AttireProps) {
                       We'll start the day in traditional wedding attire for the ceremony and dinner, but we'll be changing into more comfortable clothes for the party afterward.
                     </Typography>
                     <Typography variant="body1" paragraph>
-                      Feel free to bring a change of clothes too if you want to switch into something more dance-floor friendly as the night goes on!
+                      Feel free to bring a change of clothes too if you want to switch into something more burn or dance-floor friendly as the night goes on!
                     </Typography>
                   </CardContent>
                 </Card>
@@ -346,7 +346,7 @@ function Attire({handleTabLink}: AttireProps) {
                             <li>Linens / leathers</li>
                             <li>Sarongs / kilts</li>
                             <li>Bohemian / futuristic / punk</li>
-                            <li><span style={{fontSize: '0.8rem'}}><b>Note:</b> try to avoid feathers/sequins/costume items that shed an become litter</span></li>
+                            <li><b>Note:</b> try to avoid feathers/sequins/costume items that shed and can become litter</li>
                           </ul>
                         </li>
                         <li>Shoes we can dance in all night</li>
