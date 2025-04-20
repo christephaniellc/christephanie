@@ -1,7 +1,7 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Paper, 
   Button,
@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useTheme } from '@mui/material/styles';
-import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyNoDropWhite } from '@/components/AttendanceButton/AttendanceButton';
 import {
   CalendarToday,
   EmojiEvents,
@@ -22,20 +22,47 @@ import {
   LocalBar,
   MusicNote,
   Celebration,
+  DryCleaning,
   DirectionsBus,
+  Hive,
+  Stream,
+  BakeryDining,
   Hotel,
   Cake,
-  FlightTakeoff
+  FlightTakeoff,
+  SupervisorAccount,
+  CleaningServices
 } from '@mui/icons-material';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
+import { hasRole, isAdmin, isStaffOrParty } from '@/utils/roles';
+import { RoleEnum } from '@/types/api';
+import { isFeatureEnabled } from '@/config';
 
 interface ScheduleProps {
   handleTabLink: (to: string) => void;
+}
+
+interface EventItem {
+  id: string;
+  name: string;
+  time: string;
+  location: string;
+  description: string;
+  details: string[];
+  icon: React.ReactNode;
+  restricted?: boolean;
+  visible?: boolean;
 }
 
 function Schedule({handleTabLink}: ScheduleProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState('day2');
+  const currentUser = useRecoilValue(userState);
+  
+  // Check if user has staff or party roles
+  const canViewRestrictedEvents = useMemo(() => isAdmin(currentUser), [currentUser]);
   
   // Event data
   const events = {
@@ -44,13 +71,29 @@ function Schedule({handleTabLink}: ScheduleProps) {
       subtitle: 'Pre-Wedding Events',
       events: [
         {
+          id: 'rehearsal-dinner',
+          name: 'Wedding Rehearsal',
+          time: '5:00 PM - 6:00 PM',
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Rehearsal walkthrough for the bride and groom, and wedding party members.',
+          details: ['Officiant, family, and wedding party only', 'Casual attire'],
+          icon: <SupervisorAccount />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Rehearsal, currentUser) || hasRole(RoleEnum.Party, currentUser)
+        },
+        {
           id: 'welcome-dinner',
-          name: 'Welcome Dinner',
+          name: 'Fourth of July: BBQ & Fireworks',
           time: '6:00 PM - 9:00 PM',
-          location: 'Local Brewery & Restaurant, Lovettsville, VA',
-          description: 'Join us for a casual dinner. Jeans welcome!',
-          details: ['Meet other guests', 'Food and drinks', 'Casual attire'],
-          icon: <Fastfood />
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Join us for a potluck fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
+          details: ['Meet other guests!', 
+            'Casual attire', 
+            'BYOB', 
+            'Bring BBQ meats, buns, or sides',
+            'Bring your instruments', 
+            'Bring your (legal in Virginia) fireworks!'],
+          icon: <Stream />
         }
       ]
     },
@@ -59,31 +102,61 @@ function Schedule({handleTabLink}: ScheduleProps) {
       subtitle: 'Wedding Day',
       events: [
         {
+          id: 'brunch1',
+          name: 'Manor Guests: Breakfast',
+          time: '09:00 AM - 10:00 AM',
+          location: 'Stone Manor Inn: Dining Hall',
+          description: 'Breakfast for manor guests.',
+          details: ['Coffee and tea', 'Breakfast'],
+          icon: <BakeryDining />,
+          restricted: true,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+            && hasRole(RoleEnum.Manor, currentUser)
+        },
+        {
+          id: 'getting-ready',
+          name: 'Wedding Party: Getting Ready',
+          time: '2:00 PM - 5:00 PM',
+          location: 'Stone Manor Inn',
+          description: 'Get ready with the bride and groom!',
+          details: [
+            'Bridal party in the Manor Suite', 
+            'Groomsmen in the Turret Suite',
+            'Photographer arrives at 4:00 PM'
+          ],
+          icon: <DryCleaning />,
+          restricted: true,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+            && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
+        },
+        {
           id: 'ceremony',
           name: 'Wedding Ceremony',
-          time: '4:30 PM - 5:15 PM',
-          location: 'Stone Manor Inn (Outdoor Garden)',
+          time: '6:00 PM - 6:30 PM',
+          location: 'Stone Manor Inn (Wooded Glen)',
           description: 'Topher and Steph exchange vows. Please arrive 15-30 minutes early.',
           details: ['Outdoor ceremony (weather permitting)', 'Seating provided'],
-          icon: <EmojiEvents />
+          icon: <Celebration />
         },
         {
           id: 'cocktail',
           name: 'Cocktail Hour',
-          time: '5:15 PM - 6:30 PM',
+          time: '6:30 PM - 7:30 PM',
           location: 'Stone Manor Inn (Patio & Lower Level)',
-          description: 'Enjoy drinks and appetizers while mingling with other guests.',
-          details: ['Hors d\'oeuvres', 'Signature cocktails', 'Live music by The Virginia String Quartet'],
-          icon: <LocalBar />
+          description: 'Enjoy drinks while mingling with other guests.',
+          details: ['Open bar'],
+          icon: <LocalBar />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY')           
         },
         {
           id: 'reception',
           name: 'Dinner Reception',
           time: '6:30 PM - 8:30 PM',
-          location: 'Stone Manor Inn (Main Hall)',
+          location: 'Stone Manor Inn (Patio & Lower Level)',
           description: 'Dinner, speeches, toasts, and cake cutting.',
-          details: ['Full dinner service', 'Cake', 'Toasts and speeches'],
-          icon: <Cake />
+          details: ['Buffet dinner service', 'Cake', 'Toasts and speeches'],
+          icon: <Cake />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
         },
         {
           id: 'dancing',
@@ -91,17 +164,9 @@ function Schedule({handleTabLink}: ScheduleProps) {
           time: '8:30 PM - 11:00 PM',
           location: 'Stone Manor Inn (Main Hall)',
           description: 'Dance the night away! Topher and Steph will change into more comfortable attire for this portion.',
-          details: ['DJ and dancing', 'Photo booth', 'Dessert table'],
-          icon: <MusicNote />
-        },
-        {
-          id: 'after-party',
-          name: 'After Party (Optional)',
-          time: '11:30 PM - 1:00 AM',
-          location: 'Local Brewery & Restaurant (Private Room)',
-          description: 'For night owls who want to continue the celebration!',
-          details: ['Late night snacks', 'Cash bar', 'Casual atmosphere'],
-          icon: <Celebration />
+          details: ['DJ and dancing', 'Fire spinners'],
+          icon: <MusicNote />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
         }
       ]
     },
@@ -110,19 +175,59 @@ function Schedule({handleTabLink}: ScheduleProps) {
       subtitle: 'Post-Wedding Gathering',
       events: [
         {
-          id: 'brunch',
-          name: 'Farewell Brunch',
-          time: '10:00 AM - 12:00 PM',
-          location: 'Holiday Inn Express Brunswick (Function Room)',
-          description: 'Casual gathering to say goodbyes before everyone departs.',
-          details: ['Continental breakfast', 'Coffee', 'Final farewells'],
-          icon: <Hotel />
-        }
+          id: 'brunch2',
+          name: 'Manor Guests: Breakfast',
+          time: '09:00 AM - 10:00 AM',
+          location: 'Stone Manor Inn: Dining Hall',
+          description: 'Breakfast for manor guests.',
+          details: ['Coffee and tea', 'Breakfast', 'Final Farewells'],
+          icon: <BakeryDining />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor, currentUser)
+        },
+        {
+          id: 'cleanup',
+          name: 'Decoration Removal',
+          time: '10:00 AM - 11:00 AM',
+          location: 'Stone Manor Inn',
+          description: 'Decorations must be removed by 11:00 AM. Help us out!',
+          details: ['Take down LED lights', 'Remove flowers', "Etc."],
+          icon: <CleaningServices />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Party, currentUser)
+        },
       ]
     }
   };
   
-  // Transportation info
+  // Create a component for schedule item with rich formatting
+  const ScheduleItem = ({ from, times }) => {
+    const formattedTimes = times.map((time, index) => (
+      <React.Fragment key={index}>
+        {index > 0 && " and "}
+        <Box 
+          component="span" 
+          sx={{ 
+            fontWeight: 'bold',
+            color: theme.palette.secondary.main,
+            display: 'inline-block'
+          }}
+        >
+          {time}
+        </Box>
+      </React.Fragment>
+    ));
+    
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
+        <Typography variant="body2">
+          {from}: {formattedTimes}
+        </Typography>
+      </Box>
+    );
+  };
+
+  // Transportation info with component-based schedule items
   const transportInfo = {
     id: 'transport',
     name: 'Shuttle Information',
@@ -132,21 +237,26 @@ function Schedule({handleTabLink}: ScheduleProps) {
       {
         title: 'To the Ceremony',
         schedule: [
-          'From Holiday Inn Express Brunswick: 3:30 PM and 4:00 PM',
-          'From Holiday Inn Express Charles Town: 3:15 PM and 3:45 PM'
+          <ScheduleItem 
+            key="brunswick" 
+            from="From Holiday Inn Express Brunswick" 
+            times={["4:00 PM", "5:00 PM"]} 
+          />,
+          <ScheduleItem 
+            key="charlestown" 
+            from="From Holiday Inn Express Charles Town" 
+            times={["4:00 PM", "5:00 PM"]} 
+          />
         ]
       },
       {
         title: 'Return Shuttles',
         schedule: [
-          'To both hotels: 10:00 PM, 10:30 PM, and 11:00 PM',
-          'To After Party location: 11:00 PM and 11:15 PM'
-        ]
-      },
-      {
-        title: 'From After Party',
-        schedule: [
-          'To both hotels: 12:00 AM, 12:30 AM, and 1:00 AM'
+          <ScheduleItem 
+            key="return" 
+            from="To both hotels" 
+            times={["10:00 PM", "11:00 PM"]} 
+          />
         ]
       }
     ]
@@ -155,8 +265,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
   // Help/support contact info
   const supportContact = {
     name: 'Wedding Day Contact',
-    contact: 'K Town',
-    email: 'ktown@christephanie.com'
+    contact: 'Erin Simpson (Wedding Coordinator)',
+    email: 'erin@virginiabandb.net'
   };
   
   // Styled button for day selection
@@ -202,68 +312,163 @@ function Schedule({handleTabLink}: ScheduleProps) {
   );
   
   // Event card component
-  const EventCard = ({ event, delay = 0 }) => (
-    <Grow in={true} timeout={500 + delay * 200}>
-      <Card sx={{ 
-        mb: 2, 
-        backgroundColor: alpha(theme.palette.background.paper, 0.15),
-        backdropFilter: 'blur(5px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-        position: 'relative',
-        '&:hover': {
-          boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-        }
-      }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-            <Box sx={{ 
-              backgroundColor: alpha(theme.palette.primary.main, 0.2),
-              width: 40,
-              height: 40,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: '8px',
-              mr: 2
-            }}>
-              {event.icon}
-            </Box>
-            <Box>
-              <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {event.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {event.time}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                {event.location}
-              </Typography>
-            </Box>
-          </Box>
-          
-          <Typography variant="body2" paragraph>
-            {event.description}
-          </Typography>
-          
-          {event.details && (
-            <>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 1, color: theme.palette.secondary.main }}>
-                Details:
-              </Typography>
-              <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
-                {event.details.map((detail, i) => (
-                  <Typography component="li" variant="body2" key={i}>
-                    {detail}
-                  </Typography>
-                ))}
+  const EventCard = ({ event, delay = 0 }) => {
+    // Add special styling for restricted events
+    const isRestricted = event.restricted;
+    // if (event.comingSoon) {
+    //   return ComingSoonCard();
+    // }
+
+    return (
+      <Grow in={true} timeout={500 + delay * 200}>
+        <Card sx={{ 
+          mb: 2, 
+          backgroundColor: isRestricted 
+            ? alpha(theme.palette.secondary.dark, 0.2)  // Darker background for restricted events
+            : alpha(theme.palette.background.paper, 0.15),
+          backdropFilter: 'blur(5px)',
+          border: isRestricted
+            ? `1px solid ${alpha(theme.palette.secondary.main, 0.5)}` // Highlight border for restricted events
+            : `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          position: 'relative',
+          '&:hover': {
+            boxShadow: isRestricted
+              ? `0 0 20px ${alpha(theme.palette.secondary.main, 0.5)}`
+              : `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+          }
+        }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+              <Box sx={{ 
+                backgroundColor: isRestricted
+                  ? alpha(theme.palette.secondary.main, 0.3)
+                  : alpha(theme.palette.primary.main, 0.2),
+                width: 40,
+                height: 40,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: '8px',
+                mr: 2
+              }}>
+                {event.icon}
               </Box>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </Grow>
-  );
+              <Box sx={{ width: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
+                    {event.name}
+                  </Typography>
+                  {isRestricted && (
+                    <Chip 
+                      size="small"
+                      label="Private Event" 
+                      color="secondary"
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: '20px',
+                        ml: 1
+                      }}
+                    />
+                  )}
+                </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {event.time}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {event.location}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Typography variant="body2" paragraph>
+              {event.description}
+            </Typography>
+            
+            {event.details && (
+              <>
+                <Typography variant="body2" sx={{ 
+                  fontWeight: 'bold', 
+                  mt: 1, 
+                  color: isRestricted ? theme.palette.secondary.light : theme.palette.secondary.main 
+                }}>
+                  Details:
+                </Typography>
+                <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
+                  {event.details.map((detail, i) => (
+                    <Typography component="li" variant="body2" key={i}>
+                      {detail}
+                    </Typography>
+                  ))}
+                </Box>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </Grow>
+    );
+  };
   
+  const ComingSoonCard = () => (
+    <Box sx={{ 
+      width: '100%',
+      mt: 4,
+      pb: 2,
+      position: 'relative',
+      zIndex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }}>
+      <StephsActualFavoriteTypography variant="h4" sx={{ 
+        textAlign: 'center',
+        fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+      }}>
+      COMING SOON
+      </StephsActualFavoriteTypography>
+
+      {/* Circular logo with animation */}
+      <Box
+        sx={{
+          width: '100%',
+          height: '120px',
+          overflow: 'hidden',
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          '@keyframes pulse': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.1)' },
+            '100%': { transform: 'scale(1)' }
+          },
+          '& img': {
+            height: '120px',
+            width: '120px',
+            animation: 'pulse 3s infinite ease-in-out',
+          }
+        }}
+      >
+        <img 
+          src="/favicon_big_art_transparent.png" 
+          alt="Wedding Logo" 
+        />
+      </Box>
+
+      <Typography
+        variant="body1"
+        sx={{
+          textAlign: 'center',
+          maxWidth: '600px',
+          mt: 2,
+          mb: 4,
+          px: 2,
+        }}
+      >
+        We are currently working on this section. Please check back later for updates!
+      </Typography>
+    </Box>
+  );
+
   // Transportation info card
   const TransportationCard = () => (
     <Grow in={true} timeout={800}>
@@ -291,8 +496,8 @@ function Schedule({handleTabLink}: ScheduleProps) {
               <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
                 {transportInfo.name}
               </Typography>
-              <Typography variant="body2">
-                {transportInfo.description}
+              <Typography
+                dangerouslySetInnerHTML={{ __html: transportInfo.description }}>
               </Typography>
             </Box>
           </Box>
@@ -304,9 +509,9 @@ function Schedule({handleTabLink}: ScheduleProps) {
               </Typography>
               <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
                 {detail.schedule.map((item, j) => (
-                  <Typography component="li" variant="body2" key={j}>
+                  <Box component="li" key={j}>
                     {item}
-                  </Typography>
+                  </Box>
                 ))}
               </Box>
             </Box>
@@ -320,7 +525,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
     <Container
       sx={{
         width: '100%',
-        height: contentHeight,
+        height: contentHeight * 0.9,
         overflow: 'auto',
         borderRadius: 'sm',
         display: 'flex',
@@ -406,13 +611,23 @@ function Schedule({handleTabLink}: ScheduleProps) {
           </Paper>
         </Fade>
         
-        {/* Event cards */}
-        {events[selectedDay].events.map((event, index) => (
-          <EventCard key={event.id} event={event} delay={index} />
-        ))}
+        {/* Event cards - filter based on role access and visibility */}
+        {events[selectedDay].events
+          .filter(event => {            
+            // Check visibility (if visible property is undefined, treat as visible)
+            const isVisible = event.visible === undefined || event.visible === true;
+            
+            return isVisible;
+          })
+          .map((event, index) => (
+            <EventCard key={event.id} event={event} delay={index} />
+          ))}
         
         {/* Transportation card - show only on main wedding day */}
-        {selectedDay === 'day2' && <TransportationCard />}
+        {selectedDay === 'day2' && 
+          <ComingSoonCard />
+          // <TransportationCard />
+        }
         
         {/* Wedding Support Section */}
         <Grow in={true} timeout={1000}>
@@ -423,9 +638,15 @@ function Schedule({handleTabLink}: ScheduleProps) {
             border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
           }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ color: theme.palette.secondary.main }}>
+              <StephsActualFavoriteTypographyNoDrop variant="h6" 
+              gutterBottom 
+              sx={{ 
+                color: theme.palette.secondary.main,                
+                fontSize: { xs: '1.0rem', sm: '1.3rem' },
+                wordBreak: 'break-word'
+                }}>
                 Contact Information
-              </Typography>
+              </StephsActualFavoriteTypographyNoDrop>
               <Typography variant="body2" paragraph>
                 If you need assistance with wedding details, please contact:
               </Typography>

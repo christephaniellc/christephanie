@@ -57,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
               sx={{
                 position: 'absolute',
                 top: 0,
-                width: '100vw', // Use viewport width
+                width: '100%', // Use viewport width
                 height: '100%',
                 left: '50%',
                 transform: 'translateX(-50%)', // Center the background
@@ -123,6 +123,8 @@ function TabPanel(props: TabPanelProps) {
                 margin: 0,
                 left: '50%',
                 transform: 'translateX(-50%)', // Center the container
+                backgroundColor: 'black', // Add black background color
+                height: '100vh', // Make it full height of viewport
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -130,7 +132,7 @@ function TabPanel(props: TabPanelProps) {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)', // Darker overlay
                   backdropFilter: 'blur(2px)',
                   zIndex: 0
                 },
@@ -191,7 +193,7 @@ function TabPanel(props: TabPanelProps) {
                     px: 2,
                   }}
                 >
-                  This section is currently under construction. Please check back later for updates!
+                  We are currently working on this section. Please check back later for updates!
                 </Typography>
               </Box>
             </Container>
@@ -236,8 +238,18 @@ function DetailsPage() {
     const newTabIndex = pathToTabIndex[location.pathname] || 0;
     if (newTabIndex !== tabIndex) {
       setTabIndex(newTabIndex);
+      
+      // Scroll first tab into view when it's selected
+      if (newTabIndex === 0) {
+        setTimeout(() => {
+          const tabsContainer = document.querySelector('.MuiTabs-scroller');
+          if (tabsContainer) {
+            tabsContainer.scrollLeft = 0;
+          }
+        }, 100);
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, tabIndex]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -247,6 +259,18 @@ function DetailsPage() {
     if (newValue < tabKeys.length) {
       const tabKey = tabKeys[newValue];
       navigate(detailsRoutes[tabKey].path);
+      
+      // Ensure selected tab is fully visible (especially important for first tab)
+      setTimeout(() => {
+        const tabs = document.querySelectorAll('.MuiTab-root');
+        if (tabs && tabs[newValue]) {
+          (tabs[newValue] as HTMLElement).scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest',
+            inline: 'center' 
+          });
+        }
+      }, 100);
     } else {
       navigate('/details');
     }
@@ -375,12 +399,18 @@ function DetailsPage() {
           scrollButtons="auto"
           textColor="primary"
           indicatorColor="secondary"
+          centered
           aria-label="Wedding details tabs"
           sx={{
             borderBottom: 1,
             borderColor: 'divider',
-            [theme.breakpoints.up('md')]: {
-              justifyContent: 'center',
+            width: '100%', // Ensure tabs take full width
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'center', // Center the tab items
+              paddingLeft: { xs: '12px', sm: 0 }, // Add left padding on mobile to make first tab more accessible
+            },
+            '& .MuiTabs-scroller': {
+              overflow: 'visible !important', // Ensures tabs are visible outside the container
             },
           }}
         >
@@ -418,6 +448,7 @@ function DetailsPage() {
           overflowY: 'auto',
           height: `calc(${contentHeight} - 48px)`, // Simplified height calculation
           maxWidth: '100%',
+          backgroundColor: 'black', // Add black background for the content area
         }}
       >
         {detailItems.map((item, index) => (

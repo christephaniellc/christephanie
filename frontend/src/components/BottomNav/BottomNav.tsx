@@ -22,6 +22,8 @@ import { userState } from '@/store/user';
 import { isAdmin } from '@/utils/roles';
 import AppVersionFooter from '../VersionHash';
 import { isFeatureEnabled } from '@/config';
+import { detailsRoutes } from '@/routes/details-routes';
+import { useVisitedPages } from '@/hooks/useVisitedPages';
 
 export const BottomNav = () => {
   const location = useLocation();
@@ -31,6 +33,18 @@ export const BottomNav = () => {
   const { logOutFromAuth0 } = useAuth0Queries();
   const currentUser = useRecoilValue(userState);
   const userIsAdmin = isAdmin(currentUser);
+  
+  // Use our custom hook to track visited pages
+  const { visitedPages, markVisited, refreshVisitedPagesFromStorage } = useVisitedPages();
+  
+  // Refresh visited pages when auth0User changes
+  useEffect(() => {
+    // We'll refresh regardless of whether the user is logged in or not,
+    // since we're using a global storage key now
+    setTimeout(() => {
+      refreshVisitedPagesFromStorage();
+    }, 100);
+  }, [auth0User, refreshVisitedPagesFromStorage]);
 
   // Determine which tab should be active based on the current location
   const getCurrentTab = () => {
@@ -49,10 +63,37 @@ export const BottomNav = () => {
 
   const [activeTab, setActiveTab] = useState(getCurrentTab());
 
-  // Update active tab when location changes
+  // Update active tab when location changes and mark pages as visited
   useEffect(() => {
     setActiveTab(getCurrentTab());
-  }, [location.pathname]);
+    
+    // Only track page visits if the user is authenticated
+    if (auth0User) {
+      // Mark the current page as visited based on the path
+      const currentPath = location.pathname;
+      
+      // Handle details pages (both main details page and subpages)
+      if (currentPath === routes[Pages.Details].path || 
+          Object.values(detailsRoutes).some(route => currentPath === route.path)) {
+        markVisited('details');
+      }
+      
+      // Handle registry page
+      if (currentPath === routes[Pages.Registry].path) {
+        markVisited('registry');
+      }
+
+      // Handle stats page
+      if (currentPath === routes[Pages.Stats].path) {
+        markVisited('stats');
+      }
+
+      // Handle RSVP page
+      if (currentPath === routes[Pages.RSVP].path) {
+        markVisited('rsvp');
+      }
+    }
+  }, [location.pathname, markVisited, auth0User]);
 
   // Handle tab change
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -65,18 +106,22 @@ export const BottomNav = () => {
         break;
       case 2:
         navigate(routes[Pages.RSVP].path!);
+        markVisited('rsvp');
         break;
       case 3:
         navigate(routes[Pages.Details].path!);
+        markVisited('details');
         break;
       case 4:
         navigate(routes[Pages.Registry].path!);
+        markVisited('registry');
         break;
       case 5:
         navigate(routes[Pages.Bureaucracy].path!);
         break;
       case 6:
         navigate(routes[Pages.Stats].path!);
+        markVisited('stats');
         break;
       case 7:
         navigate(routes[Pages.Admin].path!);
@@ -169,7 +214,7 @@ export const BottomNav = () => {
             disabled={false}
           />
 
-          {/* Survey (only for authenticated users) */}
+          {/* Survey (only for authenticated users when survey phase is enabled) */}
           <BottomNavigationAction
             label="Survey"
             icon={<ConnectWithoutContactIcon />}
@@ -180,21 +225,55 @@ export const BottomNav = () => {
             }}
           />
 
-          {/* RSVP (only for authenticated users) */}
+          {/* RSVP (only for authenticated users when RSVP is enabled) */}
           <BottomNavigationAction
             label="RSVP"
-            icon={<SaveAsIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <SaveAsIcon />
+                {/* New content dot - only shown if user hasn't visited RSVP page */}
+                {!visitedPages.rsvp && (
+                  <Box sx={{ 
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-20px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.secondary.main,
+                    boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                  }} />
+                )}
+              </Box>
+            }
             aria-label="Go to RSVP pages"
             disabled={!auth0User}
             sx={{ 
-              display: isFeatureEnabled('ENABLE_RSVP') && auth0User ? 'flex' : 'none'
+              display: isFeatureEnabled('ENABLE_RSVP_PHASE') && auth0User ? 'flex' : 'none'
             }}
           />
 
-          {/* Info (only for authenticated users) */}
+          {/* Details (only for authenticated users) */}
           <BottomNavigationAction
             label="Details"
-            icon={<AutoAwesomeIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <AutoAwesomeIcon />
+                {/* New content dot - only shown if user hasn't visited Details page */}
+                {!visitedPages.details && (
+                  <Box sx={{ 
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-20px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.secondary.main,
+                    boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                  }} />
+                )}
+              </Box>
+            }
             aria-label="Go to detail pages"
             disabled={!auth0User}
             sx={{
@@ -205,7 +284,24 @@ export const BottomNav = () => {
           {/* Registry (only for authenticated users) */}
           <BottomNavigationAction
             label="Registry"
-            icon={<GiftCardIcon />}
+            icon={
+              <Box sx={{ position: 'relative' }}>
+                <GiftCardIcon />
+                {/* New content dot - only shown if user hasn't visited Registry page */}
+                {!visitedPages.registry && (
+                  <Box sx={{ 
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-20px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.secondary.main,
+                    boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                  }} />
+                )}
+              </Box>
+            }
             aria-label="Go to registry page"
             disabled={!auth0User}
             sx={{
@@ -224,7 +320,24 @@ export const BottomNav = () => {
           {/* Stats (only for authenticated users) */}
           <BottomNavigationAction
             label="Stats"
-            icon={<BarChartIcon />}
+            icon={              
+              <Box sx={{ position: 'relative' }}>
+                <BarChartIcon />
+                {/* New content dot - only shown if user hasn't visited Stats page */}
+                {!visitedPages.stats && (
+                  <Box sx={{ 
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-20px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.secondary.main,
+                    boxShadow: `0 0 4px ${theme.palette.secondary.main}`
+                  }} />
+                )}
+              </Box>
+            }
             aria-label="View wedding statistics"
             disabled={!auth0User}
             sx={{ 
