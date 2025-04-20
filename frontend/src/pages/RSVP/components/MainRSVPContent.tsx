@@ -11,6 +11,7 @@ import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { LoadingSection } from './LoadingSection';
 import { CommentsSection } from './CommentsSection';
 import { MailingAddressSection } from './MailingAddressSection';
+import { CommunicationSection } from './CommunicationSection';
 import { SummarySection } from './SummarySection';
 import { AttendanceSection } from './AttendanceSection';
 import { RehearsalDinnerSection } from './RehearsalDinnerSection';
@@ -39,13 +40,15 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   
   // Current step name for accessibility labels
   const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
-
+  //console.log('Current Step:', currentStepName);
   const FamilyQueryQuestion = useMemo(() => {
     switch (rsvpStepper.currentStep[0]) {
       case 'comments':
         return <CommentsSection />;
       case 'mailingAddress':
         return <MailingAddressSection />;
+      case 'communicationPreferences':
+        return <CommunicationSection />;
       case 'summary':
         return <SummarySection />;
       case 'weddingAttendance':

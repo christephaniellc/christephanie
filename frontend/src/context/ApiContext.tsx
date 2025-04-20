@@ -170,9 +170,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     queryFn: async () => {
       try {
         // Add detailed logging for this particular endpoint
-        console.log('Making getFamilyUnit request');
         const result = await apiRef.current!.getFamilyUnit();
-        console.log('getFamilyUnit request succeeded');
         return result;
       } catch (error: any) {
         console.error('getFamilyUnit request failed:', error);
@@ -211,8 +209,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationFn: ({ updatedGuest }: { updatedGuest: PatchGuestRequest }) =>
       apiRef.current.patchGuestDto(updatedGuest),
     onSuccess: (data) => {
-      console.log('patchFamilyGuestMutation success', data);
-
       setFamily((prev) => {
         if (!prev || !prev.guests) return prev;
         const sortedGuests = reorderArrayByKey([...prev.guests], 'auth0Id', auth0User?.sub);
@@ -282,7 +278,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     mutationKey: ['validatePhone'],
     mutationFn: ({ phoneNumber, code, action }) => apiRef.current.validatePhone(phoneNumber, code, action),
     onSuccess: (data) => {
-      console.log('Phone validation successful', data);
       // Refresh the family data to show updated verification status
       getFamilyUnitQuery.refetch();
     },
@@ -327,7 +322,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         
         // Update timestamp for this email+action
         emailRequestCache.current[cacheKey] = now;
-        console.log(`Allowing email registration call for ${email}`);
         
         // These actions still use the validateEmail endpoint
         return apiRef.current.validateEmail(email, token, action);
@@ -368,7 +362,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       return apiRef.current.validateEmail(email, token, action);
     },
     onSuccess: (data) => {
-      console.log('Email validation successful', data);
       // Refresh the family data after a delay to avoid race conditions
       setTimeout(() => {
         getFamilyUnitQuery.refetch();

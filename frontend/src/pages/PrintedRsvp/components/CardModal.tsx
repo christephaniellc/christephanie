@@ -263,14 +263,12 @@ const CardModal: React.FC<CardModalProps> = ({
               variant={isExporting ? "outlined" : "contained"}
               onClick={() => {
                 if (family) {
-                  console.log("Toolbar Export button clicked");
                   // Force a re-render first to ensure everything is properly displayed
                   setShowChangeFeedback(true);
                   setTimeout(() => {
                     setShowChangeFeedback(false);
                     // Add delay to ensure UI is updated before capture
                     setTimeout(() => {
-                      console.log("Starting export from toolbar button");
                       handleExportAsPng(family, cardSide, orientation);
                     }, 300);
                   }, 100);
@@ -421,14 +419,12 @@ const CardModal: React.FC<CardModalProps> = ({
                   startIcon={<ImageIcon />}
                   onClick={() => {
                     if (family) {
-                      console.log("Modal Export button clicked");
                       // Force a re-render first to ensure everything is properly displayed
                       setShowChangeFeedback(true);
                       setTimeout(() => {
                         setShowChangeFeedback(false);
                         // Add delay to ensure UI is updated before capture
                         setTimeout(() => {
-                          console.log("Starting export from bottom button");
                           handleExportAsPng(family, cardSide, orientation);
                         }, 300);
                       }, 100);

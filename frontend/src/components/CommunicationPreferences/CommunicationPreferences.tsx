@@ -137,7 +137,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
       
       // Refresh family data exactly once with 500ms delay to ensure UI updates first
       const timeoutId = setTimeout(() => {
-        console.log('Refreshing family data after verification...');
         familyActions.getFamilyUnitQuery.refetch()
           .catch(err => console.error('Error refreshing family data after verification:', err));
       }, 500);
@@ -175,7 +174,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     handleOpenEmailDialog();
     
     // Fetch the unmasked value from API
-    console.log('Opening email dialog and fetching email');
     fetchUnmaskedEmailValue();
   };
 
@@ -235,7 +233,6 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
     
     // Don't allow more than one click every 3 seconds
     if (now - lastClickTimeRef.current < 3000) {
-      console.log('Ignoring rapid email verification button clicks');
       showAlertMessage('Please wait before requesting another email', 'info');
       return;
     }

@@ -73,7 +73,6 @@ export const useAuth0Queries = () => {
         } as LogoutOptions);
         
         // If we reach here, logout succeeded but we need to redirect manually
-        console.log('Logout successful, redirecting to home page');
         window.location.href = homeUrl + '?logout=' + Date.now();
       } catch (err) {
         console.log('First logout attempt failed, trying with openUrl:true', err);

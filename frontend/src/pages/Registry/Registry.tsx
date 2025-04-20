@@ -54,7 +54,6 @@ const PageTitle = styled(Typography)(({ theme }) => ({
  * Business logic is extracted to the useRegistry hook in the store
  */
 const Registry: React.FC = () => {
-  console.log('Rendering Registry component');
   
   // Use try-catch to handle any errors during state initialization
   try {
