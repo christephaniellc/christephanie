@@ -12,6 +12,8 @@ import laney from '../../../assets/engagement-photos/laney.jpg';
 import rattlesnake1 from '../../../assets/engagement-photos/topher_and_steph_rsvp1.jpg';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
+import theme from '@/store/theme';
+import { lineHeight } from '@mui/system';
 
 interface AboutUsProps {
   handleTabLink: (to: string) => void;
@@ -44,6 +46,52 @@ const CharacterAvatar = styled(Avatar)(({ theme }) => ({
     boxShadow: `0 0 6px 1px ${theme.palette.primary.dark}`,
   }
 }));
+
+const SharedQuest = ({ theme, isMobile }) => {
+  return (
+    <Typography 
+      variant="body2"
+      sx={{
+        fontSize: isMobile ? '0.75rem' : '0.85rem',
+        lineHeight: isMobile ? 1.4 : 1.5
+      }}
+    >
+      {/* {!isMobile && (} */}
+      <Paper sx={{ 
+        mt: 2,
+        p: { xs: 1, sm: 1.5 },
+        backgroundColor: alpha(theme.palette.background.paper, 0.15),
+        backdropFilter: 'blur(10px)',
+        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
+        borderRadius: '8px',
+      }}> 
+        <b><span style={{
+          lineHeight: '2.2rem'
+        }}>A tale as old as time:</span></b><br/>
+        girl wins Burning Man ticket lottery,<br/> 
+        girl sells extra ticket to boy, <br/>
+        boy and girl meet at Burning Man camp, <br/> 
+        girl thinks boy is cute, <br/>
+        girl visits boy in and moves to Seattle, <br/> 
+        girl inherits two dogs of boy,  <br/>
+        boy proposes in a camping tent.
+      </Paper>
+      <br/>
+      Topher and Steph have been Facebook friends since 2017, thanks to a DC-based social running club, the "Hash House Harriers." 
+      <br/>Versions of this club exist all over the world: "hashers" meet up weekly to run, following a chalk-marked trail, occasionally stopping at "check" points to 
+      consume a beer or two, and probably sing offensive songs.
+      <br/><br/>
+      Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of this rather infamous community.
+      Steph discovered hashing in 2016 just as Topher was moving to Seattle, and so their paths would not cross officially until seven years later.
+      
+      <br/><br/>Topher and Steph finally meet in August of 2023, in the Black Rock City desert, and were thoroughly and enthusiastically endorsed to each other, by several mutual and gushing friends.
+      As two software engineers who adore problem-solving and code, they found compatibilities everywhere from life goals, general outlooks, and proper toilet-paper orientation (over, you heathens).
+        
+      <br/><br/>They haven't stopped giggling since.
+      <br/>...especially while building this website.  
+    </Typography>
+  )
+};
 
 const AttributeGrid = styled(Grid)(({ theme }) => ({
   paddingTop: theme.spacing(2),
@@ -152,7 +200,7 @@ const ProgressBar = styled(Box)<{ value: number }>(({ theme, value }) => ({
 const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedCharacter, setSelectedCharacter] = useState<'topher' | 'steph' | 'kilton' | 'laney'>('topher');
 
   const characters = {
@@ -181,7 +229,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       <br/><br/>
       His entrepreneurial experiences took him to Mexico, Europe, and eventually Seattle, where fate would eventually introduce him to his player two. 
       Known for his problem-solving abilities, wild and sometimes practical ideation, quick wit, and the "80" part of 80/20 project starts, Topher "leveled up" when he 
-      discovered Steph, who is a hardcore "20" finisher. With their powers combined, they make a formidable team, in code and in life.`, 
+      discovered Steph, who is a hardcore "20" finisher. With their powers combined, they make a formidable team, both in code and in life.`, 
     },
     steph: {
       name: 'Steph Stubler',
@@ -205,8 +253,8 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
       varying usefulness, including: rolling a kayak underwater four to five times in succession for no reason, reproducing an almost-exact Taco Bell meat texture on the stovetop, 
       and tetris-ing far too much camping gear into tiny car trunks. Steph is a hardcore camper/"glamper" and earned her burn name, "Whole Ass," for not half-assing, 
       well, anything. 
-      <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. Topher demo'd his custom 
-      "Breadth of the Wild" Zelda quest-and-item tracking website to her on their first interaction, and her completionist heart was won over, immediately.
+      <br/><br/>When her path crossed with Topher's during the muddiest Burning Man of all time, the chemistry was undeniable. On their first interaction,
+      Topher demo'd his custom "Breadth of the Wild" website: a Zelda quest-and-item tracking system, and Steph's completionist heart was won over, immediately.
       <br/><br/>
       They have since discovered a shared love for absurdity, long hair, learning, and exploration that would take them from the streets of DC, to the 
       mountains of Seattle, to the beer halls of Germany.`,
@@ -220,7 +268,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         class: 'Food Detector',
         specialAbility: 'Racing down the stairs when a refrigerator opens',
         favoriteFood: 'Beecher\'s Cheese',
-        hobbies: 'Moping when leaving the dog park, singing to earn pets and treats',
+        hobbies: 'Moping when leaving the dog park',
         alignment: 'Lawful Good'
       },
       stats: {
@@ -229,18 +277,18 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         energy: 35,
         prancing: 78
       },
-      bio: `Kilton Jett, our caroling man, knows exactly when any snack is being consumed, 
-      and will sing in husky-mix fashion to alert the snacker to his presence. In his estimation, he totally deserves this food, obviously for being so handsome. 
+      bio: `Kilton Jett, our caroling man, (who also answers to \"Handsomes,\") will sing to anyone who might eat in his presence. 
+      Doesn't he deserve a snack, too?
       <br/><br/>
-      Most morose when it is time to leave the park, Kilton will slow his gait to an almost backwards pace, as he approaches the exit. 
+      Most morose when it is time to leave the park, as he approaches the exit Kilton will slow his gait to an almost backwards pace. 
       <br/><br/>
       At home, you will often find Kilton's snoot hanging out of an open window while perched in his favorite armchair, 
-      positioned perfectly to alert house residents of dangerous raccoons and evil mail-people. 
+      positioned to alert house residents of dangerous raccoons and evil mail-people. 
       <br/><br/>
       Shy until he has determined his liking to you, once in his favor, Kilton will ensure you stay on 
       task by snuggling his head on your hip while you are working on the couch. 
       <br/><br/>
-      Kilton will loyally verify you are nearby at all times on walks, and tolerates being picked up...although his face may display abject horror.`,
+      On walks, Kilton will loyally verify you are nearby at all times, and tolerates being picked up...although his face may display abject horror.`,
     },
     laney: {
       name: 'Helena Josephine Sikorra',
@@ -260,16 +308,17 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         commandResponseTime: 28,
         energy: 100,
       },
-      bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific jail 
-      of any glorious Seattle dog park, in order to hunt small non-dog creatures. 
+      bio: `Helena Josephine (Laney Jo), facilitator of pandemonium, will find the only Laney-Jo-sized hole in a fence to break free of the horrific 
+      jail of any glorious Seattle dog park, in order to hunt small non-dog creatures. 
       <br/><br/>
       Extroverted outdoors, no dog is too large nor intimidating to escape a gruff bark-growl greeting.
-      Indoors, however, this chaos dog will slink away deep into blankety caves and custom teepees to ponder life's complexities. 
+      Indoors, however, this chaos dog will slink away deep into blankety caves and custom teepees to ponder life's complexities, probably. 
       <br/><br/>
-      Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, particularly in urban environments. 
+      Professional face-licker with race-horse speed, she will gleefully bound away with little regard for her own safety, 
+      particularly in urban environments. 
       <br/><br/>
-      The size and density of her doggy muscles make her more of a sinker in lakes than swimmer, although occasionally she can be found terrorizing 
-      other creatures wearing a pink shark life-vest.`,
+      Though Laney Jo enjoys the water, she is more adept to sinking than swimming, thanks to the size and density of her doggy muscles. 
+      In spite of this, she can occasionally be found terrorizing other creatures while wearing a pink shark life-vest.`,
     },
   };
 
@@ -426,7 +475,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
         )}
 
         {/* Main character profile - full width on mobile */}
-        <Grid item xs={12} sm={9} md={10}>
+        <Grid item xs={15} sm={12} md={10}>
           <CharacterFrame sx={{ 
             p: { xs: 1.5, sm: 2 }
           }}>
@@ -571,35 +620,11 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                   >
                     [MAIN QUEST: LOVE STORY]
                   </Typography>
-                  <Typography 
-                    variant="body2"
-                    sx={{
-                      fontSize: '0.75rem',
-                      lineHeight: 1.4
-                    }}
-                  >
-                    A tale as old as time: 
-                    girl wins Burning Man ticket lottery, 
-                    girl sells extra ticket to boy, 
-                    boy and girl meet at Burning Man camp, 
-                    girl thinks boy is cute,
-                    girl visits boy in and moves to Seattle, 
-                    girl inherits two dogs of boy, 
-                    boy proposes in a camping tent.
-                    <br/><br/>
-                      Topher and Steph have been Facebook friends since 2017, thanks to a DC-based social running club, the "Hash House Harriers." 
-                      <br/>Versions of this club exist all over the world: "hashers" meet up weekly to run, following a chalk-marked trail, occasionally stopping at "check" points to 
-                      consume a beer or two, and probably sing offensive songs.
-                      <br/><br/>
-                      Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of this rather infamous community.
-                      Steph discovered hashing in 2016 just as Topher was moving to Seattle, and so their paths would not cross officially until seven years later.
-                      
-                      <br/><br/>Topher and Steph finally meet in August of 2023, in the Black Rock City desert, and were thoroughly and enthusiastically endorsed to each other, by several mutual and gushing friends.
-                      As two software engineers who adore problem-solving and code, they found compatibilities everywhere from life goals, general outlooks, and proper toilet-paper orientation (over, you heathens).
-                        
-                      <br/><br/>They haven't stopped giggling since.
-                      <br/>...especially while building this website.  
-                  </Typography>
+                  
+                  <SharedQuest
+                    theme={theme}
+                    isMobile={isMobile}
+                   />
                   
                   {/* Mobile photo grid - 2 columns */}
                   <Grid container spacing={1} sx={{ mt: 1 }}>
@@ -876,47 +901,11 @@ const AboutUs: React.FC<AboutUsProps> = ({ handleTabLink }) => {
                     >
                       [MAIN QUEST: LOVE STORY]
                     </Typography>
-                    <Typography 
-                      variant="body2"
-                      sx={{
-                        fontSize: '0.85rem',
-                        lineHeight: 1.5
-                      }}
-                    >  
-                      <Paper sx={{ 
-                        mt: 2,
-                        p: { xs: 1, sm: 1.5 },
-                        backgroundColor: alpha(theme.palette.background.paper, 0.15),
-                        backdropFilter: 'blur(10px)',
-                        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.2)}`,
-                        borderRadius: '8px',
-                      }}>                   
-                        <b>TLDR;</b>
-                        <br/><br/>
-                        <i><b>A tale as old as time:</b></i>
-                        <br/>girl wins Burning Man ticket lottery, 
-                        <br/>girl sells extra ticket to boy, 
-                        <br/>boy and girl meet at Burning Man camp, 
-                        <br/>girl thinks boy is cute,
-                        <br/>girl visits boy in (and eventually moves to) Seattle, 
-                        <br/>girl inherits two dogs of boy, 
-                        <br/>boy proposes in a camping tent.
-                      </Paper>
                     
-                      <br/>
-                      Topher and Steph have been Facebook friends since 2017, thanks to a DC-based social running club, the "Hash House Harriers." 
-                      <br/>Versions of this club exist all over the world: "hashers" meet up weekly to run, following a chalk-marked trail, occasionally stopping at "check" points to 
-                      consume a beer or two, and probably sing offensive songs.
-                      <br/><br/>
-                      Topher, an avid and talented runner, and Steph, a horrendous runner, but enthusiastic "try new outrageous things and meet fun people"-er, were both members of this rather infamous community.
-                      Steph discovered hashing in 2016 just as Topher was moving to Seattle, and so their paths would not cross officially until seven years later.
-                      
-                      <br/><br/>Topher and Steph finally meet in August of 2023, in the Black Rock City desert, and were thoroughly and enthusiastically endorsed to each other, by several mutual and gushing friends.
-                      As two software engineers who adore problem-solving and code, they found compatibilities everywhere from life goals, general outlooks, and proper toilet-paper orientation (over, you heathens).
-                        
-                      <br/><br/>They haven't stopped giggling since.
-                      <br/>...especially while building this website. 
-                    </Typography>
+                    <SharedQuest
+                      theme={theme}
+                      isMobile={isMobile}
+                    />
                     
                     {/* Desktop photo grid - 3x2 grid with larger images */}
                     <Box 

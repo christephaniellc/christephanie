@@ -2,6 +2,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import React from 'react';
+import { Button, Link } from '@mui/material';
 import { 
   Card, 
   CardContent, 
@@ -18,7 +19,8 @@ import {
   Checkroom, 
   WbSunny, 
   Celebration, 
-  Help
+  Help,
+  OpenInNew
 } from '@mui/icons-material';
 import burnNightImage from '@/assets/engagement-photos/burn_night.jpg';
 
@@ -314,7 +316,19 @@ function Attire({handleTabLink}: AttireProps) {
                     </Typography>
                     <Typography component="div" variant="body1">
                       <ul>
-                        <li>Comfortable, fun outfits that express our personalities</li>
+                        <li>Comfortable, fun, and lightweight outfits. It will be hot! <br/>
+                          <Box>Check out some  
+                            <Button
+                              variant="outlined"
+                              color="secondary"
+                              size="small"
+                              endIcon={<OpenInNew />}
+                              onClick={() => window.open(`https://www.google.com/search?q=${hotel.name}`)}
+                              sx={{ mt: 1, alignSelf: 'flex-start' }}
+                              data-testid="search-google-button"
+                            >burning man costume ideas</Button>.
+                          </Box>
+                        </li>
                         <li>Shoes we can dance in all night</li>
                       </ul>
                     </Typography>
@@ -356,10 +370,14 @@ function Attire({handleTabLink}: AttireProps) {
                     <Typography component="div" variant="body1">
                       <ul>
                         <li>Light, breathable fabrics are recommended</li>
-                        <li>Some outdoor areas may have uneven terrain - consider appropriate footwear</li>
-                        <li>You might want to bring a hat or sunglasses for outdoor portions</li>
+                        <li>Some outdoor areas may have uneven terrain - consider appropriate footwear: 
+                          flats or chunky heels recommended</li>
+                        <ul>
+                          <li>(Steph loves heels, but will be wearing boots!)</li>
+                        </ul>
+                        <li>You might want to bring a hat or sunglasses</li>
                         <li>Sunscreen is always a good idea!</li>
-                        <li>A small personal fan might be useful for outdoor activities</li>
+                        <li>A small personal fan might be handy</li>
                         <li>Bringing a light jacket or wrap for air-conditioned indoor spaces</li>
                       </ul>
                     </Typography>

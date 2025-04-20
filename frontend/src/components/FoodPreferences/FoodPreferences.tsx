@@ -78,17 +78,6 @@ const FoodPreferences = ({ guestId }: { guestId: string }) => {
           //filter: `drop-shadow(${calculateShadow()})`,
         }}
       >
-        <Box sx={{ p: 2, pb: 1, 
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-          <StephsActualFavoriteTypographyNoDrop 
-            variant="subtitle1" 
-            fontWeight="500" 
-            color="secondary"
-            id="food-preferences-heading"
-          >
-            These are delicious to me:
-          </StephsActualFavoriteTypographyNoDrop>
-        </Box>
         {guest.ageGroup !== AgeGroupEnum.Baby && (
           <ButtonGroup
             fullWidth

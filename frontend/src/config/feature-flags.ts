@@ -17,7 +17,6 @@ export const FeatureFlags = {
   ENABLE_SMS_VERIFICATION: false,          // Enable SMS verification flow
   
   // Pages
-  ENABLE_RSVP: true,
   ENABLE_REGISTRY: true,
   ENABLE_DETAILS: true,
   ENABLE_DETAILS_ABOUTUS: true,
@@ -25,11 +24,12 @@ export const FeatureFlags = {
   ENABLE_DETAILS_TRAVEL: false,
   ENABLE_DETAILS_ATTIRE: true,
   ENABLE_DETAILS_SCHEDULE: true,
-  ENABLE_DETAILS_THINGS_TO_DO: true,
+  ENABLE_DETAILS_SCHEDULE_WEDDINGDAY: false,
+  ENABLE_DETAILS_THINGS_TO_DO: false,
 
   // Phase
-  ENABLE_SURVEY_PHASE: false,
-  ENABLE_RSVP_PHASE: true,
+  ENABLE_SURVEY_PHASE: true,
+  ENABLE_RSVP_PHASE: false,
   ENABLE_WEDDING_PHASE: false,
   
   // RSVP Components
