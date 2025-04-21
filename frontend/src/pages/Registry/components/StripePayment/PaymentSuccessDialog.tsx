@@ -33,7 +33,7 @@ const PaymentSuccessDialog = ({
   timestamp?: string;
 }) => {
   // Add console.log to debug dialog open state
-  console.log('PaymentSuccessDialog render:', { open, amount, category, paymentIntentId, email, notes });
+  //console.log('PaymentSuccessDialog render:', { open, amount, category, paymentIntentId, email, notes });
   
   // Only render if actually open to prevent flash of success dialog
   if (!open) return null;

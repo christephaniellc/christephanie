@@ -430,7 +430,6 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
                     address={address} 
                     onAddressUpdate={(updatedAddress) => {
                       // This would need a custom endpoint to update additional addresses
-                      console.log('Update additional address:', updatedAddress);
                       return Promise.resolve();
                     }}
                     readOnly={true} // For now, set as read-only until we implement the update endpoint

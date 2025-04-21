@@ -13,7 +13,7 @@ const STORAGE_KEY = 'christephanie_visited_pages';
 const isDev = import.meta.env.MODE === 'development';
 const logDebug = (message: string, ...args: any[]) => {
   if (isDev) {
-    console.log(`[VisitedPages] ${message}`, ...args);
+    //console.log(`[VisitedPages] ${message}`, ...args);
   }
 };
 

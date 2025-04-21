@@ -9,9 +9,7 @@ import { getConfig } from '@/auth_config';
  * Aggressively clears all Auth0-related storage
  * @param clientId - The Auth0 client ID
  */
-export function clearAllAuth0Data(clientId: string): void {
-  console.log('Performing complete Auth0 data cleanup');
-  
+export function clearAllAuth0Data(clientId: string): void {  
   // 1. Clear localStorage
   clearAuth0LocalStorage(clientId);
   
@@ -40,7 +38,7 @@ export function getAuth0LogoutUrl(): string {
  */
 export function forceAuth0Logout(): void {
   const logoutUrl = getAuth0LogoutUrl();
-  console.log('Performing hard Auth0 logout via direct URL:', logoutUrl);
+  console.debug('Performing hard Auth0 logout via direct URL:', logoutUrl);
   window.location.href = logoutUrl;
 }
 
@@ -67,7 +65,6 @@ function clearAuth0LocalStorage(clientId: string): void {
     key.includes('auth')
   );
   
-  console.log(`Clearing ${auth0Keys.length} Auth0-related localStorage items`);
   auth0Keys.forEach(key => {
     try {
       localStorage.removeItem(key);
@@ -88,7 +85,6 @@ function clearAuth0SessionStorage(): void {
     key.includes('token')
   );
   
-  console.log(`Clearing ${authKeys.length} Auth0-related sessionStorage items`);
   authKeys.forEach(key => {
     try {
       sessionStorage.removeItem(key);

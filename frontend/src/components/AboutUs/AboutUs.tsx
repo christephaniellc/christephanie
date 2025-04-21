@@ -35,7 +35,7 @@ function AboutUs({handleTabLink}: AboutUsProps) {
         }
       } catch (error) {
         if (signal.aborted) {
-          console.log('Fetch aborted due to navigation.');
+          console.debug('Fetch aborted due to navigation.');
         }
       }
     };

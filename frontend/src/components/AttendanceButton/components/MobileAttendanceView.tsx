@@ -11,7 +11,7 @@ import {
 import { useRecoilValue } from 'recoil';
 import { guestSelector } from '@/store/family';
 import { useAuth0 } from '@auth0/auth0-react';
-import { stdStepperState } from '@/store/steppers/steppers';
+import { stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import { AttendanceButtonStatus } from './AttendanceButtonStatus';
 import { useAttendanceButtonContainer } from '../hooks/useAttendanceButtonContainer';
 import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';

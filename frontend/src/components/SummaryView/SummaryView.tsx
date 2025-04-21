@@ -4,7 +4,7 @@ import {
   ListItemIcon, Button, useTheme, Chip, Avatar
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
-import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/saveTheDateStepper';
 import { rsvpStepsState, rsvpTabIndex } from '@/store/steppers';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFamily, familyGuestsStates } from '@/store/family';

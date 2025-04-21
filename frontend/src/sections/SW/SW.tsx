@@ -42,7 +42,7 @@ function SW() {
   }, [setOfflineReady, setNeedRefresh, notificationsActions]);
 
   const handleReload = useCallback(() => {
-    console.log('Updating service worker and reloading the page');
+    //console.log('Updating service worker and reloading the page');
     // First close the notification
     close();
     // Then trigger the service worker update and force reload
@@ -53,7 +53,7 @@ function SW() {
       // As a fallback, force page reload after a short delay if the updateServiceWorker
       // doesn't trigger a reload by itself
       setTimeout(() => {        
-         console.log('Forcing page reload as fallback');
+         //console.log('Forcing page reload as fallback');
          window.location.reload();
        }, 1000);
     } catch (error) {

@@ -74,8 +74,16 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       component: null,
       display: true,
     },
-    comments: {
+    communicationPreferences: {
       id: 6,
+      completed: false,
+      label: 'Validate Communication Preferences',
+      description: 'Confirm your communication preferences',
+      component: null,
+      display: true,
+    },
+    comments: {
+      id: 7,
       completed: false,
       label: 'Additional Comments',
       description: 'Any last questions or requests?',
@@ -83,7 +91,7 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       display: true,
     },
     summary: {
-      id: 7,
+      id: 8,
       completed: true,
       label: 'RSVP Summary',
       description: 'Review your RSVP information',

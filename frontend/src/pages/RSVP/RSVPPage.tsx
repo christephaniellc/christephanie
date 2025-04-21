@@ -12,14 +12,24 @@ function RSVPPage() {
   const rsvpSteps = useRecoilValue(rsvpStepsState);
   const [tabIndex] = useRecoilState(rsvpTabIndex);
   const rsvpStepper = useRecoilValue(rsvpStepperState);
+  
+  // Debug logging for component mounting
+  console.log("RSVPPage rendering, current step:", rsvpStepper.currentStep[0]);
 
   const genericQuestions = useMemo(
     () =>
-      ['comments', 'mailingAddress', 'summary', 'weddingAttendance', 'fourthOfJulyAttendance', 'foodPreferences', 'foodAllergies', 'transportation', 'accommodation'].includes(
+      ['comments', 'mailingAddress', 'summary', 'weddingAttendance', 'fourthOfJulyAttendance', 'foodPreferences', 'foodAllergies', 'transportation', 'accommodation', 'communicationPreferences'].includes(
         rsvpStepper.currentStep[0],
       ),
     [rsvpStepper.currentStep],
   );
+  
+  // Debug log for genericQuestions determination
+  console.log("genericQuestions check:", {
+    currentStep: rsvpStepper.currentStep[0],
+    isGenericQuestion: genericQuestions,
+    wouldCommunicationPreferencesBeIncluded: ['comments', 'mailingAddress', 'summary', 'weddingAttendance', 'fourthOfJulyAttendance', 'foodPreferences', 'foodAllergies', 'transportation', 'accommodation', 'communicationPreferences'].includes(rsvpStepper.currentStep[0])
+  });
 
   const contentHeightWithStepper = useMemo(() => {
     // Use full height for generic questions to allow scrolling
