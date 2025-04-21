@@ -8,7 +8,7 @@ import { userState } from '@/store/user';
 import { getTierDetails } from './components/AdminHelpers';
 import { GuestPopperState, getRandomAxis } from '../Stats/components/StatsHelpers';
 import GuestDetailCard from '../Stats/components/GuestDetailCard';
-import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/components/StyledComponents';
 import AdminFamilyCard from './components/AdminFamilyCard';
 import PrintedRsvp from '../PrintedRsvp/PrintedRsvp';
 import { SelectChangeEvent } from '@mui/material';
@@ -45,6 +45,7 @@ interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+  style?: React.CSSProperties;
 }
 
 // TabPanel component for displaying tab content
