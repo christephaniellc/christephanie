@@ -25,7 +25,7 @@ import {
   VerificationDialog
 } from './components';
 
-const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
+const CommunicationPreferences = ({ guestId, showTitle }: { guestId: string, showTitle: boolean }) => {
   const [searchParams] = useSearchParams();
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
   
@@ -326,6 +326,7 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
               <>
                 {/* Main preferences card */}
                 <PreferencesCard
+                  showTitle={showTitle}
                   contactPreferences={contactPreferences}
                   isEmailOptedIn={isEmailOptedIn}
                   isTextOptedIn={isTextOptedIn}
@@ -349,12 +350,12 @@ const CommunicationPreferences = ({ guestId }: { guestId: string }) => {
                 />
                 
                 {/* Beta Tester Section - Only show for users with BetaTester role */}
-                {hasBetaTesterRole && (
+                {/* {hasBetaTesterRole && (
                   <BetaTesterCard 
                     isOptedIn={isOptedInForBetaTesting || isBetaTesting} 
                     onChange={setIsBetaTesting} 
                   />
-                )}
+                )} */}
               </>
             )}
           </Stack>
