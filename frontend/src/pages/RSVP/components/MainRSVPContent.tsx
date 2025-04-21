@@ -39,9 +39,6 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   
   // Current step name for accessibility labels
   const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
-  console.log('DEBUG - Current RSVP Step:', currentStepName);
-  // Debug the current step
-  console.log("Current step before switch:", rsvpStepper.currentStep[0], "Type:", typeof rsvpStepper.currentStep[0]);
   
   const FamilyQueryQuestion = useMemo(() => {
     const currentStep = rsvpStepper.currentStep[0];
