@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { GuestViewModel, NotificationPreferenceEnum } from '@/types/api';
+import { GuestViewModel, NotificationPreferenceEnum, RsvpEnum } from '@/types/api';
 import { useFamily } from '@/store/family';
 import { 
   useTheme, 
@@ -104,6 +104,10 @@ export const CommunicationSection: React.FC = () => {
     guest.auth0Id && guest.auth0Id === user?.sub
   );
 
+  const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.wedding === RsvpEnum.Attending,
+    );
+
   return (
       <>
       <Box
@@ -198,7 +202,7 @@ export const CommunicationSection: React.FC = () => {
         )}
         
         {/* Display read-only view of other guests */}
-        {family.guests
+        {attendingGuests
           .filter(guest => guest.auth0Id !== user?.sub)
           .map((guest: GuestViewModel) => (
             <Box key={guest.guestId} sx={{ mb: 4 }}>
