@@ -25,7 +25,7 @@ import {
   VerificationDialog
 } from './components';
 
-const CommunicationPreferences = ({ guestId, showTitle }: { guestId: string, showTitle: boolean }) => {
+const CommunicationPreferences = ({ guestId, showTitle = true }: { guestId: string, showTitle?: boolean }) => {
   const [searchParams] = useSearchParams();
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
   
