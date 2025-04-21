@@ -40,30 +40,54 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   
   // Current step name for accessibility labels
   const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
-  //console.log('Current Step:', currentStepName);
+  console.log('DEBUG - Current RSVP Step:', currentStepName);
+  // Debug the current step
+  console.log("Current step before switch:", rsvpStepper.currentStep[0], "Type:", typeof rsvpStepper.currentStep[0]);
+  
   const FamilyQueryQuestion = useMemo(() => {
-    switch (rsvpStepper.currentStep[0]) {
+    const currentStep = rsvpStepper.currentStep[0];
+    console.log("Inside memo - evaluating step:", currentStep);
+    
+    // Special handling for debug
+    if (currentStep === 'communicationPreferences' || currentStep === 'communicationPreference') {
+      console.log("🔍 Found communication step:", currentStep);
+      console.log("⚠️ Returning CommunicationSection");
+      return <CommunicationSection />;
+    }
+    
+    switch (currentStep) {
       case 'comments':
+        console.log("Returning CommentsSection");
         return <CommentsSection />;
       case 'mailingAddress':
+        console.log("Returning MailingAddressSection");
         return <MailingAddressSection />;
+      // Keeping this for completeness, but the special handler above will catch it first
       case 'communicationPreferences':
+        console.log("Returning CommunicationSection");
         return <CommunicationSection />;
       case 'summary':
+        console.log("Returning SummarySection");
         return <SummarySection />;
       case 'weddingAttendance':
+        console.log("Returning WelcomeSection");
         return <WelcomeSection />;
       case 'fourthOfJulyAttendance':
+        console.log("Returning RehearsalDinnerSection");
         return <RehearsalDinnerSection />;
       case 'foodPreferences':
+        console.log("Returning FoodPreferencesSection");
         return <FoodPreferencesSection />;
       case 'foodAllergies':
+        console.log("Returning FoodAllergiesSection");
         return <FoodAllergiesSection />;
       // case 'transportation':
       //   return <TransportationSection />;
       case 'accommodation':
+        console.log("Returning AccommodationSection");
         return <AccommodationSection />;
       default:
+        console.log("No matching case found, returning empty fragment");
         return <></>;
     }
   }, [rsvpStepper.currentStep, family]);
@@ -102,14 +126,24 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
               />
             )}
             {genericQuestions && !familyActions.getFamilyUnitQuery.isError && (
-              <Box
-                height={remainingQuestionHeight}
-                sx={{ overflow: 'auto' }}
-                role="region"
-                aria-label={`${currentStepName} form section`}
-              >
-                {FamilyQueryQuestion}
-              </Box>
+              <>
+                {console.log("About to render component in Box, genericQuestions=true")}
+                <Box
+                  height={remainingQuestionHeight}
+                  sx={{ overflow: 'auto' }}
+                  role="region"
+                  aria-label={`${currentStepName} form section`}
+                >
+                  {console.log("Inside Box before rendering FamilyQueryQuestion")}
+                  {FamilyQueryQuestion}
+                  {console.log("After rendering FamilyQueryQuestion")}
+                </Box>
+              </>
+            )}
+            {!genericQuestions && (
+              <div style={{color: 'red', fontWeight: 'bold'}}>
+                Debug: genericQuestions is FALSE for {currentStepName}
+              </div>
             )}
           </>
         )}

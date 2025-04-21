@@ -62,7 +62,7 @@ export default function RSVPStepper() {
     'foodAllergies',
     'transportation',
     'accommodation',
-    'communicationPreference',
+    'communicationPreferences',
     'mailingAddress', 
     'comments', 
     'summary'

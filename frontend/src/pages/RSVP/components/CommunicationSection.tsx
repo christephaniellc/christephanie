@@ -72,18 +72,20 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 export const CommunicationSection: React.FC = () => {
+  console.log("YAY - CommunicationSection component is being rendered");
+  
+  // Force this component to be very visible
+  React.useEffect(() => {
+    console.log("🎉🎉🎉 COMMUNICATION SECTION MOUNTED 🎉🎉🎉");
+    return () => console.log("COMMUNICATION SECTION UNMOUNTED");
+  }, []);
+  
   const [family, familyActions] = useFamily();
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
   const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
   const { user } = useAuth0();
   
-console.log("YAY");
-
-  const isCommunicationPreferencesEnabled = isFeatureEnabled('ENABLE_COMMUNICATION_PREFERENCES');
-  const isEmailVerificationEnabled = isFeatureEnabled('ENABLE_EMAIL_VERIFICATION');
-  const isSmsVerificationEnabled = isFeatureEnabled('ENABLE_SMS_VERIFICATION');
-
   // Force a refresh to ensure we have the latest data
   useEffect(() => {
     familyActions.getFamily();
@@ -105,7 +107,7 @@ console.log("YAY");
   );
 
   return (
-    <>
+      <>
       <Box
         sx={{
           position: 'relative',
@@ -189,7 +191,7 @@ console.log("YAY");
             textAlign: 'center',
           }}
         >
-          Choose how you would like to receive updates about our wedding
+          Choose how you would like to receive updates about our wedding.
         </Typography>      
       </Box>
       
@@ -197,10 +199,10 @@ console.log("YAY");
         {currentUserGuest ? (
           // Display for current user
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ mb: 0 }}>
               {currentUserGuest.firstName}
             </Typography>
-            <CommunicationPreferences guestId={currentUserGuest.guestId} />
+            <CommunicationPreferences guestId={currentUserGuest.guestId} showTitle={false} />
           </Box>
         ) : (
           // Placeholder for when no guest matches current user
@@ -261,25 +263,33 @@ console.log("YAY");
                       <Info color="disabled" sx={{ ml: 1 }} />
                     )}
                   </ListItem>
+                  <ListItem
+                    sx={{                      
+                      background: alpha(theme.palette.primary.main, 0.1),
+                      borderRadius: 1,
+                      py: 0,
+                      border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
+                    }}
+                  >                    
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        textAlign: 'center', 
+                        mt: 2, 
+                        mb: 2,
+                        opacity: 1.0, 
+                        fontStyle: 'italic',
+                        px: 2
+                      }}
+                    >
+                      Note: Communication preferences can only be managed by the account owner
+                    </Typography>
+                  </ListItem>
                 </List>
               </StyledCard>
             </Box>
           ))}
       </Box>
-      
-      <Typography 
-        variant="body2" 
-        sx={{ 
-          textAlign: 'center', 
-          mt: 3, 
-          mb: 2,
-          opacity: 0.7, 
-          fontStyle: 'italic',
-          px: 2
-        }}
-      >
-        Note: Communication preferences can only be managed by the account owner
-      </Typography>
     </>
   );
 };
