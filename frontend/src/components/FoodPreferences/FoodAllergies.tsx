@@ -37,7 +37,7 @@ function FoodAllergies({ guestId }: { guestId: string }) {
         m: 0,
         background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(20px)',
-        border: `1px dashed ${theme.palette.secondary.main}`,
+        border: `1px solid ${theme.palette.primary.main}`,
         borderRadius: 1,
         boxShadow: 1,
       }}
