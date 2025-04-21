@@ -116,40 +116,6 @@ export const useVerification = (
         setIsSendingEmailCode(false);
       }
     });
-
-    // Original code left commented out for future reference
-    /*
-    // Ensure we have an email to verify
-    if (!emailValue && !guest?.email?.maskedValue) {
-      showAlertMessage('No email address provided', 'error');
-      return;
-    }
-
-    // Set loading state to true before API call
-    setIsSendingEmailCode(true);
-    
-    // Use mutateAsync to prevent automatic retries
-    const emailToVerify = emailValue || guest?.email?.maskedValue;
-    console.log(`Sending verification email to: ${emailToVerify}`);
-    
-    validateEmailMutation.mutateAsync(
-      { email: emailToVerify, action: 'register' },
-      {
-        onSuccess: () => {
-          showAlertMessage('Verification email sent! Please check your inbox and click the verification link.', 'success');
-          // Set loading state to false after success
-          setIsSendingEmailCode(false);
-          // No longer open the verification dialog
-          // handleOpenEmailVerifyDialog();
-        },
-        onError: (error) => {
-          showAlertMessage('Failed to send verification email. Please try again.', 'error');
-          // Set loading state to false after error
-          setIsSendingEmailCode(false);
-        }
-      }
-    );
-    */
   };
 
   // Reactivated with safety measures
@@ -202,37 +168,6 @@ export const useVerification = (
         setIsSendingEmailCode(false);
       }
     });
-
-    /* Original code commented out
-    // Ensure we have an email to verify
-    if (!emailValue && !guest?.email?.maskedValue) {
-      showAlertMessage('No email address provided', 'error');
-      return;
-    }
-
-    // Set loading state to true before API call
-    setIsSendingEmailCode(true);
-
-    // Use mutateAsync to prevent automatic retries
-    const emailToVerify = emailValue || guest?.email?.maskedValue;
-    console.log(`Resending verification email to: ${emailToVerify}`);
-    
-    validateEmailMutation.mutateAsync(
-      { email: emailToVerify, action: 'register' },
-      {
-        onSuccess: () => {
-          showAlertMessage('New verification code sent to your email', 'success');
-          // Set loading state to false after success
-          setIsSendingEmailCode(false);
-        },
-        onError: (error) => {
-          showAlertMessage('Failed to send verification code. Please try again.', 'error');
-          // Set loading state to false after error
-          setIsSendingEmailCode(false);
-        }
-      }
-    );
-    */
   };
 
   const submitEmailVerificationCode = (

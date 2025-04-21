@@ -1,7 +1,7 @@
 import { Box, Typography, useMediaQuery } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
-import { stdStepperState } from '@/store/steppers/steppers';
+import { stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';
 import CommunicationPreferences from '@/components/CommunicationPreferences';
 import CampingPreferences from '@/components/CampingPreferences';

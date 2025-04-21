@@ -3,7 +3,7 @@ import { guestSelector, useFamily } from '@/store/family';
 import { useTheme, useMediaQuery } from '@mui/material';
 import { InvitationResponseEnum } from '@/types/api';
 import { useMemo, useState } from 'react';
-import { stdStepperState } from '@/store/steppers/steppers';
+import { stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import { darken } from '@mui/material';
 
 export const useAttendanceButtonMain = ({ guestId }: { guestId: string }) => {

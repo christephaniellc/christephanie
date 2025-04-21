@@ -214,14 +214,7 @@ export const useRegistry = () => {
     setCustomAmounts(prev => ({
       ...prev,
       [categoryId]: ''
-    }));
-    
-    // Log transaction for debugging
-    console.log('Payment successful:', {
-      amount,
-      category,
-      ...details
-    });
+    }));    
   };
   
   const handlePaymentError = (message: string, errorCode: string = '', errorType: string = '') => {

@@ -16,7 +16,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
-import { saveTheDateStepsState } from '@/store/steppers/steppers';
+import { saveTheDateStepsState } from '@/store/steppers/saveTheDateStepper';
 
 export const familyState = atom<FamilyUnitViewModel | null>({
   key: 'familyUnit',
@@ -80,7 +80,8 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
 });
 
 export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>({
-  key: 'familyMembers',
+  key: 'familyMembersWedding',
+  //key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
     if (!familyUnit) {
@@ -341,7 +342,6 @@ export const useFamily = () => {
 
   useEffect(() => {
     if (getFamilyUnitQuery.data && !family) {
-      console.log('setting family from getFamilyUnitQuery');
       let sortedGuests = [];
       if (getFamilyUnitQuery.data.guests && getFamilyUnitQuery.data.guests.length > 0) {
         sortedGuests = reorderArrayByKey(

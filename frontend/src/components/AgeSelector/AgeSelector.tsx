@@ -8,7 +8,7 @@ import { getEnumValueByIndex } from '@/utils/utils';
 import Button from '@mui/material/Button';
 import { useAuth0 } from '@auth0/auth0-react';
 import Stepper from '@mui/material/Stepper';
-import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import Paper from '@mui/material/Paper';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
