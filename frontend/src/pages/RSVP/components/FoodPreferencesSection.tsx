@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import { alpha, Paper, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useFamily } from '@/store/family';
-import { GuestViewModel } from '@/types/api';
+import { GuestViewModel, RsvpEnum } from '@/types/api';
 import FoodPreferences from '@/components/FoodPreferences/FoodPreferences';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
@@ -36,6 +36,10 @@ export const FoodPreferencesSection: React.FC = () => {
   const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
 
   if (!family) return null;
+  
+  const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.wedding === RsvpEnum.Attending,
+    );
 
   return (
     <><Box
@@ -111,7 +115,7 @@ export const FoodPreferencesSection: React.FC = () => {
         </StephsActualFavoriteTypographyNoDrop>
       </Box>      
     </Box><Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', py: 2 }}>
-        {family.guests.map((guest: GuestViewModel) => (
+        {attendingGuests.map((guest: GuestViewModel) => (
           <Box key={guest.guestId} sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               {guest.firstName}
