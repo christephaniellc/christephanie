@@ -57,7 +57,7 @@ export const BottomNav = () => {
     if (path === routes[Pages.Bureaucracy].path) return 5;
     if (path === routes[Pages.Stats].path) return 6;
     if (path === routes[Pages.Admin].path) return 7;
-    if (path === routes[Pages.PrintedRsvp].path) return 8;
+    //if (path === routes[Pages.PrintedRsvp].path) return 8;
     return -1; // No tab selected
   };
 
@@ -126,10 +126,10 @@ export const BottomNav = () => {
       case 7:
         navigate(routes[Pages.Admin].path!);
         break;
-      case 8:
-        navigate(routes[Pages.PrintedRsvp].path!);
-        break;
-      case 9: // Auth button
+      // case 8:
+      //   navigate(routes[Pages.PrintedRsvp].path!);
+      //   break;
+      case 8: // Auth button
         if (auth0User) {
           logOutFromAuth0();
         } else {
@@ -357,7 +357,7 @@ export const BottomNav = () => {
           />
 
           {/* Printed RSVP (only for admin users) */}
-          <BottomNavigationAction
+          {/* <BottomNavigationAction
             label="Printed RSVP"
             icon={<PrintIcon />}
             aria-label="View Printed RSVP"
@@ -365,7 +365,7 @@ export const BottomNav = () => {
             sx={{
               display: userIsAdmin ? 'flex' : 'none',
             }}
-          />
+          /> */}
 
           {/* Login/Logout button */}
           <BottomNavigationAction

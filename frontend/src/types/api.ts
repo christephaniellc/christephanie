@@ -416,6 +416,7 @@ export enum RoleEnum {
   Rehearsal = 'Rehearsal',
   Staff = 'Staff',
   Manor = 'Manor',
+  Camper = 'Camper',
   BetaTester = 'BetaTester',
   Admin = 'Admin',
 }
