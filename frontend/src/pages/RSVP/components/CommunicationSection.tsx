@@ -72,11 +72,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 export const CommunicationSection: React.FC = () => {
-  console.log("YAY - CommunicationSection component is being rendered");
   
   // Force this component to be very visible
   React.useEffect(() => {
-    console.log("🎉🎉🎉 COMMUNICATION SECTION MOUNTED 🎉🎉🎉");
     return () => console.log("COMMUNICATION SECTION UNMOUNTED");
   }, []);
   
@@ -154,7 +152,7 @@ export const CommunicationSection: React.FC = () => {
             justifyContent: 'center',
             position: 'relative',
             zIndex: 1,
-            mb: 1,
+            mb: 0,
           }}
         >
           <ConnectWithoutContact
@@ -176,29 +174,13 @@ export const CommunicationSection: React.FC = () => {
           >
             How would you like to hear from us?
           </StephsActualFavoriteTypographyNoDrop>
-        </Box>
-        <Typography
-          variant="body2"
-          component="p"
-          sx={{ 
-            color: alpha('#FFFFF', 0.8),
-            opacity: 0.8,
-            position: 'relative',
-            zIndex: 1,
-            fontSize: { xs: '0.8rem', sm: '0.9rem' },
-            mt: 0.5,
-            px: 2,
-            textAlign: 'center',
-          }}
-        >
-          Choose how you would like to receive updates about our wedding.
-        </Typography>      
+        </Box>     
       </Box>
       
       <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', py: 2 }}>
         {currentUserGuest ? (
           // Display for current user
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 0 }}>
             <Typography variant="h6" gutterBottom sx={{ mb: 0 }}>
               {currentUserGuest.firstName}
             </Typography>
