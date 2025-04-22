@@ -64,7 +64,7 @@ export const RehearsalDinnerSection: React.FC = () => {
     const allDeclined = family.guests.every(guest => guest.rsvp?.fourthOfJuly === RsvpEnum.Declined);
     
     if (allAttending) {
-      return "Great! We'll see you at a BBQ Dinner on the 4th of July. Don't forget to BYOB and fireworks that are legal in Virginia!";
+      return "Great! We'll see you at a Potluck BBQ Dinner on the 4th of July. Don't forget to BYOB and fireworks that are legal in Virginia!";
     } else if (allDeclined) {
       return "We'll miss you at the 4th of July BBQ.";
     } else {
@@ -83,97 +83,113 @@ export const RehearsalDinnerSection: React.FC = () => {
           Burgers & Dogs - BYOB
         </Typography>
       </TitlePaper> */}
-          <Box
-            sx={{
-              position: 'relative',
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 3,
+          background: alpha(theme.palette.primary.main, 0.1),
+          borderRadius: 1,
+          py: 2,
+          border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'url("/textures/paper_texture.webp")',
+            opacity: 0.1,
+            pointerEvents: 'none',
+            zIndex: 0,
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%)',
+            opacity: 0.2,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'center', sm: 'flex-start' },
+            justifyContent: 'space-between',
+            width: '100%',
+            mb: 1,
+            px: 2,
+          }}
+        >
+          <Box 
+            id="4th-title"
+            sx={{ 
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mb: 3,
-              background: alpha(theme.palette.primary.main, 0.1),
-              borderRadius: 1,
-              py: 2,
-              border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'url("/textures/paper_texture.webp")',
-                opacity: 0.1,
-                pointerEvents: 'none',
-                zIndex: 0,
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%)',
-                opacity: 0.2,
-                pointerEvents: 'none',
-                zIndex: 0,
-              }
-            }}
-          >
-          <Box 
-            sx={{ 
-              id: '4th-title',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: { xs: 'center', sm: 'flex-start' },
               position: 'relative',
               zIndex: 1,
               mb: 1,
+              flex: '1 1 auto',
             }}
           >
-            <EventAvailable 
-              sx={{ 
-                mr: 1.5, 
-                color: theme.palette.primary.main,
-                fontSize: { xs: '1.8rem', sm: '2rem' },
-                filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
-              }} 
-            />
-            <StephsActualFavoriteTypographyNoDrop
-              variant="h5"
-              //component="h2"
-              //textColor={theme.palette.primary.main}
-              //shadowSize={1.5}
-              fontSize={isMobile ? '1.2rem' : '1.5rem'}
-              sx={{ 
-                my: 0, 
-                textAlign: 'center', 
-                letterSpacing: '0.05em',
-                fontWeight: 500,
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 1,
               }}
             >
-              4th of July BBQ Dinner & Fireworks
-            </StephsActualFavoriteTypographyNoDrop>
-          </Box>
-          <Typography
-            variant="body2"
-            component="p"
-            sx={{ 
-              color: alpha(theme.palette.secondary.main, 0.8),
-              opacity: 0.8,
-              position: 'relative',
-              zIndex: 1,
-              fontWeight: '800',
-              textAlign: 'center',
-              fontSize: { xs: '0.9rem', sm: '1.0rem' },
-              mt: 0.5,
-              px: 2,
-            }}
-          >
-            Friday, July 4th
-          </Typography>
+              <EventAvailable 
+                sx={{ 
+                  mr: 1.5, 
+                  color: theme.palette.primary.main,
+                  fontSize: { xs: '1.8rem', sm: '2rem' },
+                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
+                }} 
+              />
+              <StephsActualFavoriteTypographyNoDrop
+                variant="h5"
+                fontSize={isMobile ? '1.2rem' : '1.5rem'}
+                sx={{ 
+                  my: 0, 
+                  textAlign: 'center', 
+                  letterSpacing: '0.05em',
+                  fontWeight: 500,
+                }}
+              >
+                4th of July: Potluck BBQ Dinner & Fireworks
+              </StephsActualFavoriteTypographyNoDrop>
+            </Box>
+            <Typography
+              variant="body2"
+              component="p"
+              sx={{ 
+                color: alpha(theme.palette.secondary.main, 0.8),
+                opacity: 0.8,
+                position: 'relative',
+                zIndex: 1,
+                fontWeight: '800',
+                textAlign: { xs: 'center', sm: 'left' },
+                fontSize: { xs: '0.9rem', sm: '1.0rem' },
+                mt: 0.5,
+                pl: { sm: 3 },
+              }}
+            >
+              Friday, July 4th
+            </Typography>
             <Typography
               variant="body2"
               component="p"
@@ -182,56 +198,58 @@ export const RehearsalDinnerSection: React.FC = () => {
                 opacity: 0.8,
                 position: 'relative',
                 zIndex: 1,
-                //fontStyle: 'italic',
-                //textAlign: 'center',
                 fontSize: { xs: '0.8rem', sm: '0.9rem' },
                 mt: 0.5,
-                px: 2,
+                pl: { sm: 3 },
+                textAlign: { xs: 'center', sm: 'left' },
               }}
             >
-              Join us at the venue the day before for a potluck BBQ and fireworks!<br/><br/>
+              Join us at the venue the day before for a potluck BBQ and fireworks!
             </Typography>
+          </Box>
           <Paper
+            id="4th-info"
             sx={{ 
-              id: '4th-info',
               backgroundColor: alpha(theme.palette.primary.main, 0.2),
               padding: theme.spacing(1.5),
               borderRadius: 1,
-              maxWidth: '90%',
+              maxWidth: { xs: '90%', sm: '40%' },
               textAlign: 'left',
               boxShadow: theme.shadows[1],
               position: 'relative',
               zIndex: 1,
-            }}>
-              <Typography
-                variant="body2"
-                component="p"
-                sx={{ 
-                  color: alpha('#FFFFF', 0.8),
-                  opacity: 0.8,
-                  position: 'relative',
-                  zIndex: 1,
-                  //fontStyle: 'italic',
-                  //textAlign: 'center',
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                  mt: 0.5,
-                  px: 2,
-                }}
-              >
-              <strong>Bring:</strong>
-                <ul>
-                  <li>Grill items, buns, and sides to share</li>
-                  <li>BYOB</li>
-                  <li>Fireworks (legal in Virginia)</li>
-                  <li>Instruments</li>  
-                </ul>
+              ml: { sm: 2 },
+              mt: { xs: 2, sm: 0 },
+              alignSelf: { sm: 'stretch' },
+            }}
+          >
+            <Typography
+              variant="body2"
+              component="p"
+              sx={{ 
+                color: alpha('#FFFFF', 0.8),
+                opacity: 0.8,
+                position: 'relative',
+                zIndex: 1,
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                mt: 0.5,
+              }}
+            >
+              <strong>Please Bring:</strong>
+              <ul>
+                <li>Grill items, buns, and sides to share</li>
+                <li>BYOB</li>
+                <li>Fireworks (legal in Virginia)</li>
+                <li>Instruments</li>  
+              </ul>
             </Typography>
           </Paper>
         </Box>
+      </Box>
       
       {/* Guest attendance buttons */}
       {family.guests.map((guest: GuestViewModel) => (
-        <Box key={guest.guestId} sx={{ mb: 3, width: '100%' }}>
+        <Box key={guest.guestId} sx={{ mb: 0, width: '100%' }}>
           <RehearsalDinnerAttendance 
             guestId={guest.guestId} 
             showHeader={false} 

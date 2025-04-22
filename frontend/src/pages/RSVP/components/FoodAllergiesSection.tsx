@@ -44,7 +44,7 @@ export const FoodAllergiesSection: React.FC = () => {
           background: 'rgba(0,0,0,0.05)',
           backdropFilter: 'blur(10px)',
           borderRadius: 2,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          border: 'none',
           overflow: 'hidden',
           position: 'relative',
           '&::before': {
@@ -73,7 +73,7 @@ export const FoodAllergiesSection: React.FC = () => {
           background: alpha(theme.palette.primary.main, 0.1),
           borderRadius: 1,
           py: 2,
-          border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
+          border: `1px dotted ${alpha(theme.palette.primary.main, 0.5)}`,
           overflow: 'hidden',
           '&::before': {
             content: '""',
@@ -140,7 +140,7 @@ export const FoodAllergiesSection: React.FC = () => {
                 sx={{
                   color: alpha('#FFFFFF', 0.8),
                   opacity: 0.8,
-                  fontWeight: 'bold',
+                  //fontWeight: 'bold',
                   position: 'relative',
                   zIndex: 1,
                   fontStyle: 'italic',
@@ -189,7 +189,7 @@ export const FoodAllergiesSection: React.FC = () => {
                       fontSize: isMobile ? '1.2rem' : '1.3rem',
                     }}
                   >
-                    {guest.firstName} {guest.lastName}
+                    {guest.firstName}
                   </Typography>
 
                   <Box sx={{ width: '100%' }}>

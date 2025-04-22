@@ -62,6 +62,7 @@ export default function RSVPStepper() {
     'foodAllergies',
     'transportation',
     'accommodation',
+    'communicationPreferences',
     'mailingAddress', 
     'comments', 
     'summary'
@@ -80,18 +81,6 @@ export default function RSVPStepper() {
     // This ensures all steps are visible even if atLeastOneAttending is false
     const relevantSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
       return step.display;
-    });
-    
-    // Debug output
-    console.log('RSVPStepper visibility calculation:', {
-      anyGuestResponded,
-      visibleSteps: relevantSteps.map(([key]) => key),
-      currentTabIndex: tabIndex,
-      currentStepKey: Object.keys(rsvpSteps)[tabIndex],
-      guests: familyState?.guests?.map(g => ({
-        name: `${g.firstName} ${g.lastName}`,
-        response: g.rsvp?.wedding
-      }))
     });
     
     // When attendance status changes, we need to update the visibleStepIndex in the next render

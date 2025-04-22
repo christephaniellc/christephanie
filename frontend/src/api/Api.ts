@@ -22,7 +22,7 @@ export default class Api {
   
   // Public method to clear token cache
   clearTokenCache() {
-    console.log('Clearing token cache');
+    console.debug('Clearing token cache');
     this.tokenCache = { token: null, expiresAt: 0 };
   }
 
@@ -67,11 +67,11 @@ export default class Api {
         guestName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
       };
       
-      console.log('Creating payment intent with data:', {
-        amount,
-        currency,
-        giftMetaData: metadata
-      });
+      // console.log('Creating payment intent with data:', {
+      //   amount,
+      //   currency,
+      //   giftMetaData: metadata
+      // });
       
       const response = await this.post<{ 
         clientSecret: string; 
@@ -84,9 +84,7 @@ export default class Api {
         currency,
         giftMetaData: metadata
       });
-      
-      console.log('Payment intent creation response:', response);
-      
+            
       if (response && 'error' in response && response.error) {
         console.error('Server returned error in payment intent creation:', response.error);
       }
@@ -107,10 +105,8 @@ export default class Api {
   }
   
   async adminUpdateFamily(family: FamilyUnitDto): Promise<FamilyUnitDto> {
-    console.log('API: Updating family with invitation code:', family.invitationCode);
     try {
       const result = await this.post('/admin/familyunit', family);
-      console.log('API: Family update success');
       return result;
     } catch (error) {
       console.error('API: Error updating family:', error);
@@ -123,10 +119,10 @@ export default class Api {
   }
   
   async adminGetFamilyByInvitationCode(invitationCode: string): Promise<FamilyUnitDto> {
-    console.log('API: Getting family by invitation code:', invitationCode);
+    //console.log('API: Getting family by invitation code:', invitationCode);
     try {
       const result = await this.get(`/admin/familyunit/invitationCode?invitationCode=${encodeURIComponent(invitationCode)}`);
-      console.log('API: Get family successful');
+      //console.log('API: Get family successful');
       return result;
     } catch (error) {
       console.error('API: Error getting family:', error);
@@ -136,10 +132,9 @@ export default class Api {
   
   async testAdminAccess(): Promise<boolean> {
     try {
-      console.log('Testing admin access');
       // Try to fetch admin data
       await this.get('/admin/familyunit');
-      console.log('Admin access granted');
+      console.debug('Admin access granted');
       return true;
     } catch (error) {
       console.error('Admin access denied:', error);
@@ -411,7 +406,7 @@ export default class Api {
           // Log token expiry for debugging (not the token itself)
           if (decodedToken.exp) {
             const expiryDate = new Date(decodedToken.exp * 1000).toISOString();
-            console.log(`Using token with expiry: ${expiryDate}`);
+            //console.log(`Using token with expiry: ${expiryDate}`);
           } else {
             console.log('Token expiry time not found, using default 1hr');
           }
@@ -438,7 +433,7 @@ export default class Api {
       const requestId = Math.random().toString(36).substring(2, 10);
       
       try {
-        console.log(`API ${requestId} - Starting request (${new Date().toISOString()})`);
+        //console.log(`API ${requestId} - Starting request (${new Date().toISOString()})`);
         
         // Add timeout to detect hanging requests
         const timeoutPromise = new Promise<Response>((_, reject) => {
@@ -450,11 +445,11 @@ export default class Api {
         const response = await Promise.race([promise, timeoutPromise]);
         
         // More detailed response logging
-        console.log(`API ${requestId} - ${response.status} ${response.url} (${Date.now() - requestStartTime}ms)`, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: [...response.headers.entries()].reduce((obj, [key, val]) => ({...obj, [key]: val}), {}),
-        });
+        // console.log(`API ${requestId} - ${response.status} ${response.url} (${Date.now() - requestStartTime}ms)`, {
+        //   status: response.status,
+        //   statusText: response.statusText,
+        //   headers: [...response.headers.entries()].reduce((obj, [key, val]) => ({...obj, [key]: val}), {}),
+        // });
         
         let result = await this.handleResponse<Awaited<T>>(response);
         if (callback) {
@@ -502,10 +497,10 @@ export default class Api {
   }
 
   async post<T>(path: string, data?: any, callback?: (_response: Awaited<T>) => Awaited<T>): Promise<Awaited<T>> {
-    console.log('POST request to:', path, 'with data:', data);
+    //console.log('POST request to:', path, 'with data:', data);
     try {
       const result = await this.compositeResponseHandler(fetch(getConfig().webserviceUrl + path, await this.buildConfig('POST', data, true)), callback);
-      console.log('POST request successful:', path);
+      //console.log('POST request successful:', path);
       return result;
     } catch (error) {
       console.error('POST request failed:', path, error);

@@ -21,7 +21,7 @@ import { format, differenceInDays } from 'date-fns';
 import { useRecoilValue } from 'recoil';
 import { InvitationResponseEnum, RsvpEnum } from '@/types/api';
 import { userState } from '@/store/user';
-import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
 import StickFigureIcon from '@/components/StickFigureIcon';
@@ -271,7 +271,7 @@ const WelcomeStepper = () => {
   const activeStepInfo = Object.values(rsvpSteps)[activeStep];
 
   const calculateChipColor = useCallback((key: string) => {
-    console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
+    //console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
     switch(key) {
       case('saveTheDate'):
         return user.rsvp?.invitationResponse === InvitationResponseEnum.Interested 

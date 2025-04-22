@@ -6,6 +6,7 @@ import { NotificationPreferenceEnum } from '@/types/api';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 
 interface PreferencesCardProps {
+  showTitle: boolean;
   contactPreferences: string[];
   isEmailOptedIn: boolean;
   isTextOptedIn: boolean;
@@ -29,6 +30,7 @@ interface PreferencesCardProps {
 }
 
 export const PreferencesCard = ({
+  showTitle = true,
   contactPreferences,
   isEmailOptedIn,
   isTextOptedIn,
@@ -67,17 +69,29 @@ export const PreferencesCard = ({
     >
       <Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
         <StephsActualFavoriteTypographyNoDrop 
-          //variant="h6" 
+          variant="h6" 
           fontWeight="500" 
           color="secondary"
           id="communication-preferences-heading"
-          sx={{
-            fontSize: '1.3rem'
-          }}
         >
-          How would you like to hear from us?
+          Communication Preferences
         </StephsActualFavoriteTypographyNoDrop>
       </Box>
+      {showTitle && (
+        <Box sx={{ p: 2, pb: 1, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <StephsActualFavoriteTypographyNoDrop 
+            //variant="h6" 
+            fontWeight="500" 
+            color="secondary"
+            id="communication-preferences-heading"
+            sx={{
+              fontSize: '1.3rem'
+            }}
+          >
+            How would you like to hear from us?
+          </StephsActualFavoriteTypographyNoDrop>
+        </Box>
+      )}
       
       <List 
         disablePadding 

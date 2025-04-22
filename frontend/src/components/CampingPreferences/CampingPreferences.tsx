@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Paper, Box, Typography, alpha, useTheme } from '@mui/material';
+import { Stack, Paper, Box, Typography, alpha, useTheme, Button } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { CampingPreferencesProps } from './types';
@@ -10,8 +10,10 @@ import {
 } from './components';
 import theme from '@/store/theme'; 
 import {StephsActualFavoriteTypographyNoDrop} from '@/components/AttendanceButton/AttendanceButton';
+import { OpenInNew } from '@mui/icons-material';
 
-const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
+const CampingPreferences: React.FC<CampingPreferencesProps> = ({ 
+  guestId, guestFirstName }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
@@ -56,17 +58,38 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({ guestId }) => {
       >   
         <Box sx={{ p: 2, 
           pb: 1, 
+          width: '100%',
+          display: 'flex',
+          //border: `1px solid ${theme.palette.primary.main}`,
           background: alpha(theme.palette.background.paper, 0.9),
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
         }}>
           <StephsActualFavoriteTypographyNoDrop 
             variant="h6" 
             fontWeight="500" 
-            color="secondary"
+            color="white"
             id="camping-preferences-heading"
+            sx={{
+              color: '#FFFFFF', 
+            }}
           >
-            Accommodation options: click each for more info.
+            {guestFirstName}
           </StephsActualFavoriteTypographyNoDrop>
+          <Button
+              variant="contained"
+              color="primary"
+              endIcon={<OpenInNew />}
+              sx={{ 
+                mt: 1, 
+                align: 'flex-end',
+                //alignSelf: 'flex-end',
+                mb: 2,
+                ml: 2
+                }}
+              onClick={() => window.open(`details/accommodations`)}
+            >
+            Click for Accommodation Details
+          </Button>
         </Box>    
         {/* Selection buttons */}
         <PreferenceButtonGroup

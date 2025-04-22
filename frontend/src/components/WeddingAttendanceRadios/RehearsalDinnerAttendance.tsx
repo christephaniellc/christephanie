@@ -33,23 +33,27 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
   }, [guest]);
 
   const updateRehearsalDinnerAttendance = useCallback(
-    async (response: RsvpEnum) => {
+    (response: RsvpEnum) => {
       if (!guest) return;
       
+      // Store the selected response and set loading state
       setLoading(true);
-      try {
-        await familyActions.patchFamilyGuestMutation.mutate({
-          updatedGuest: {
-            guestId,
-            fourthOfJuly: response,
-          },
-        });
-        await familyActions.getFamily();
-      } catch (error) {
-        console.error('Error updating rehearsal dinner attendance', error);
-      } finally {
+      
+      // Mark the response we're updating to
+      const updatingToResponse = response;
+      
+      // Update the attendance
+      familyActions.patchFamilyGuestMutation.mutate({
+        updatedGuest: {
+          guestId,
+          fourthOfJuly: updatingToResponse,
+        },
+      });
+      
+      // Set a timeout to ensure loading state is visible
+      setTimeout(() => {
         setLoading(false);
-      }
+      }, 1000);
     },
     [guest, guestId, familyActions]
   );
@@ -81,18 +85,16 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
       alignItems="center" 
       width="100%" 
       py={2}
-      sx={{ cursor: isMobile ? 'pointer' : 'default' }}
-    >
-      <Typography variant="h6" gutterBottom align="center" sx={{ mb: 3 }}>
-        {guest.firstName} {guest.lastName}
-      </Typography>
-      
+      sx={{ 
+        cursor: isMobile ? 'pointer' : 'default',
+      }}
+    >      
       <Box
         sx={{
           width: '100%',
           maxWidth: 600,
           p: 1,
-          mb: 2,
+          //mb: 2,
           background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(20px)',
           border: `1px dashed ${theme.palette.secondary.main}`,
@@ -100,6 +102,14 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
           boxShadow: 1,
         }}
       >
+      <Typography variant="h6" gutterBottom
+        sx={{ 
+          alignContent: 'left',
+          mb: 3,
+          textAlign: 'left',
+        }}>
+        {guest.firstName}
+      </Typography>
         <ButtonGroup
           fullWidth
           orientation={isBreakpointUpMin ? 'horizontal' : 'vertical'}
@@ -127,6 +137,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Can't make it"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Declined !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 
@@ -143,6 +154,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Not sure yet"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Pending !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 
@@ -159,6 +171,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             label="Yes, I'll be there!"
             onClick={updateRehearsalDinnerAttendance}
             disabled={buttonDisabled}
+            loading={loading && RsvpEnum.Attending !== currentResponse}
             isBreakpointUpMin={isBreakpointUpMin}
           />
 

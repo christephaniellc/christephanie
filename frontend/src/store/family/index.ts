@@ -16,7 +16,8 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useApiContext } from '@/context/ApiContext';
 import { userState } from '@/store/user';
-import { saveTheDateStepsState } from '@/store/steppers/steppers';
+import { saveTheDateStepsState } from '@/store/steppers/saveTheDateStepper';
+import { rsvpStepsState } from '@/store/steppers/rsvpStepper';
 
 export const familyState = atom<FamilyUnitViewModel | null>({
   key: 'familyUnit',
@@ -80,7 +81,8 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
 });
 
 export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>({
-  key: 'familyMembers',
+  key: 'familyMembersWedding',
+  //key: 'familyMembers',
   get: ({ get }) => {
     const familyUnit = get(familyState);
     if (!familyUnit) {
@@ -239,6 +241,7 @@ export const useFamily = () => {
   const [family, setFamily] = useRecoilState(familyState);
   const [user, setUser] = useRecoilState(userState);
   const [saveTheDateSteps, setSaveTheDateSteps] = useRecoilState(saveTheDateStepsState);
+  const [rsvpSteps, setRsvpSteps] = useRecoilState(rsvpStepsState);
   const { user: auth0User } = useAuth0();
   const {
     getFamilyUnitQuery,
@@ -341,7 +344,6 @@ export const useFamily = () => {
 
   useEffect(() => {
     if (getFamilyUnitQuery.data && !family) {
-      console.log('setting family from getFamilyUnitQuery');
       let sortedGuests = [];
       if (getFamilyUnitQuery.data.guests && getFamilyUnitQuery.data.guests.length > 0) {
         sortedGuests = reorderArrayByKey(
@@ -432,6 +434,95 @@ export const useFamily = () => {
             !!family.mailingAddress?.state &&
             !!family.mailingAddress?.postalCode
           ),
+      },
+      comments: {
+        ...prev.comments,
+        display: true,
+        completed: !!family.invitationResponseNotes,
+      },
+      summary: {
+        ...prev.summary,
+        display: true,
+        completed: true,
+      },
+    }));
+  }, [family]);
+
+  useEffect(() => {
+    if (!family || !family.guests || !rsvpSteps) return;
+    const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.wedding === RsvpEnum.Pending,
+    );
+    //console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
+    setRsvpSteps((prev) => ({
+      weddingAttendance: {
+        ...prev.attendance,
+        display: true,
+        label: `${guestStates.guests.length > 1 ? 'Is your family' : 'Are you'} interested in attending the wedding?`,
+        completed: !family.guests.some(
+          (guest) => guest.rsvp?.wedding === RsvpEnum.Pending,
+        ),
+      },
+      fourthOfJulyAttendance: {
+        ...prev.fourthOfJulyAttendance,
+        display: true,
+        label: `${guestStates.guests.length > 1 ? 'Is your family' : 'Are you'} interested in attending the 4th of July BBQ potluck?`,
+        completed: !family.guests.some(
+          (guest) => guest.rsvp?.fourthOfJuly === RsvpEnum.Pending,
+        ),
+      },
+      // ageGroup: {
+      //   ...prev.ageGroup,
+      //   display: attendingGuests.some(
+      //     (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+      //   ),
+      //   label: `What kind of '${guestStates.guests.length > 1 ? 'people' : 'person'} are we catering to?`,
+      //   completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
+      // },
+      foodPreferences: {
+        ...prev.foodPreferences,
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        ),
+        completed: attendingGuests.every((guest) => guest.preferences.foodPreference !== null),
+      },
+      foodAllergies: {
+        ...prev.foodAllergies,
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        ),
+        completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
+      },
+      accommodation: {
+        ...prev.accommodation,
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        ),
+        completed: attendingGuests.every(
+          (guest) =>
+            guest?.preferences?.sleepPreference !== undefined &&
+            guest?.preferences?.sleepPreference !== SleepPreferenceEnum.Unknown,
+        ),
+      },
+      mailingAddress: {
+        ...prev.mailingAddress,
+        display: true, // Always show mailing address step
+        completed:
+          family.mailingAddress?.uspsVerified === true || (
+            !!family.mailingAddress?.streetAddress &&
+            !!family.mailingAddress?.city &&
+            !!family.mailingAddress?.state &&
+            !!family.mailingAddress?.postalCode
+          ),
+      },
+      communicationPreferences: {
+        ...prev.communicationPreferences,
+        display: attendingGuests.some(
+          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        ),
+        completed: attendingGuests.some(
+          (value) => value?.phone?.verified || value?.email?.verified,
+        ),
       },
       comments: {
         ...prev.comments,

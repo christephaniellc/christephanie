@@ -53,7 +53,69 @@ function Pages() {
               );
             }
             
-            // Stats page (formerly Admin) requires only authentication
+            // Admin page and its sub-pages require admin role
+            if (page === PageEnum.Admin) {
+              return (
+                <>
+                  <Route 
+                    key={path} 
+                    path={path} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    key={`${path}/edit`} 
+                    path={`${path}/edit`} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    key={`${path}/details`} 
+                    path={`${path}/details`} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    key={`${path}/summary`} 
+                    path={`${path}/summary`} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    key={`${path}/printed-invite`} 
+                    path={`${path}/printed-invite`} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    key={`${path}/notifications`} 
+                    path={`${path}/notifications`} 
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Component />
+                      </ProtectedRoute>
+                    } 
+                  />
+                </>
+              );
+            }
+            
+            // Stats page requires only authentication
             if (page === PageEnum.Stats) {
               return (
                 <Route 

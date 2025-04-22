@@ -4,12 +4,12 @@ import {
   ListItemIcon, Button, useTheme, Chip, Avatar
 } from '@mui/material';
 import { useRecoilValue } from 'recoil';
-import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/steppers';
+import { saveTheDateStepsState, stdTabIndex } from '@/store/steppers/saveTheDateStepper';
 import { rsvpStepsState, rsvpTabIndex } from '@/store/steppers';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFamily, familyGuestsStates } from '@/store/family';
 import { userCommentState } from '@/store/userComment/userComment';
-import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
+import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
 import { darken } from '@mui/system';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { AgeGroupEnum, GuestViewModel, RsvpEnum } from '@/types/api';
@@ -80,6 +80,7 @@ const SummaryView: React.FC = () => {
     fourthOfJulyAttendance: <EventAvailableIcon />,
     transportation: <EventAvailableIcon />,
     accommodation: <HotelIcon />,
+    communicationPreferences: <NotificationsIcon />,
   };
 
   // Helper to get the status icon
@@ -93,9 +94,10 @@ const SummaryView: React.FC = () => {
   // Helper to get response value for a step
   const getResponseValueForStep = (stepKey: string) => {
     if (!family) return "Information not available";
-
+    
     switch (stepKey) {
       case 'attendance':
+      case 'weddingAttendance':
         // Return a summary of guest attendance
         if (!family.guests || family.guests.length === 0) return "No attendance information";
         
@@ -108,9 +110,25 @@ const SummaryView: React.FC = () => {
           const pendingCount = isRsvpFlow 
           ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
           : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
-        
+        console.log(`${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`)
         return `${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`;
+      
+      case 'fourthOfJulyAttendance':
+          // Return a summary of guest attendance
+        if (!family.guests || family.guests.length === 0) return "No attendance information";
         
+        const fourthAttendingCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Attending).length 
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Interested').length;
+        const fourthDecliningCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Declined).length
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Declined').length;
+          const fourthPendingCount = isRsvpFlow 
+          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
+          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
+        console.log(`${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`)
+        return `${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`;
+      
       case 'ageGroup':
         // Return a summary of guest ages
         if (!family.guests || family.guests.length === 0) return "No age information";
@@ -127,6 +145,7 @@ const SummaryView: React.FC = () => {
         return ageString.trim() || "No age information";
         
       case 'communicationPreference':
+      case 'communicationPreferences':
         // Return communication preferences from guests
         if (!family.guests || family.guests.length === 0) return "No preferences set";
         
@@ -169,6 +188,7 @@ const SummaryView: React.FC = () => {
         return uniqueAllergies.join(', ') || "No allergies";
         
       case 'camping':
+      case 'accommodation':
         // Return sleep preferences from guests
         if (!family.guests || family.guests.length === 0) return "No preferences set";
         
@@ -332,7 +352,7 @@ const SummaryView: React.FC = () => {
         <CardContent>
           <Typography variant="h6" gutterBottom>
             {isRsvpFlow 
-              ? "Thank you for confirming your RSVP details."
+              ? "Thank you for confirming details for your RSVP."
               : "Thank you for providing your information."
             }
           </Typography> 
@@ -471,7 +491,7 @@ const SummaryView: React.FC = () => {
                               variant="outlined"
                             />
                           );
-                        } else if (stepKey === 'communicationPreference') {
+                        } else if (stepKey === 'communicationPreference' || stepKey === 'communicationPreferences') {
                           const communicationPrefs = guest.preferences?.notificationPreference || [];
                           relevantContent = (
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

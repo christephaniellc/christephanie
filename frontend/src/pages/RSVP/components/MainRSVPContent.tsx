@@ -7,10 +7,10 @@ import { rsvpStepperState } from '@/store/steppers';
 import MtvAnimatedTitle from '@/components/MtvAnimatedTitle';
 import { ButtonsContainer } from '@/components/Steppers/StyledComponents';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
-import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { LoadingSection } from './LoadingSection';
 import { CommentsSection } from './CommentsSection';
 import { MailingAddressSection } from './MailingAddressSection';
+import { CommunicationSection } from './CommunicationSection';
 import { SummarySection } from './SummarySection';
 import { AttendanceSection } from './AttendanceSection';
 import { RehearsalDinnerSection } from './RehearsalDinnerSection';
@@ -39,13 +39,25 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   
   // Current step name for accessibility labels
   const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
-
+  
   const FamilyQueryQuestion = useMemo(() => {
-    switch (rsvpStepper.currentStep[0]) {
+    const currentStep = rsvpStepper.currentStep[0];
+    console.log("Rendering content for step:", currentStep);
+    
+    // Special handling for debug
+    if (currentStep === 'communicationPreferences' || currentStep === 'communicationPreference') {
+      console.log("🔍 Found communication step:", currentStep);
+      console.log("⚠️ Rendering CommunicationSection");
+      return <CommunicationSection />;
+    }
+    
+    switch (currentStep) {
       case 'comments':
         return <CommentsSection />;
       case 'mailingAddress':
         return <MailingAddressSection />;
+      case 'communicationPreferences':
+        return <CommunicationSection />;
       case 'summary':
         return <SummarySection />;
       case 'weddingAttendance':
@@ -61,6 +73,7 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
       case 'accommodation':
         return <AccommodationSection />;
       default:
+        console.log("No matching case found, returning empty fragment");
         return <></>;
     }
   }, [rsvpStepper.currentStep, family]);
@@ -100,14 +113,14 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
             )}
             {genericQuestions && !familyActions.getFamilyUnitQuery.isError && (
               <Box
-                height={remainingQuestionHeight}
-                sx={{ overflow: 'auto' }}
-                role="region"
-                aria-label={`${currentStepName} form section`}
-              >
-                {FamilyQueryQuestion}
-              </Box>
-            )}
+              height={remainingQuestionHeight}
+              sx={{ overflow: 'auto' }}
+              role="region"
+              aria-label={`${currentStepName} form section`}
+            >
+              {FamilyQueryQuestion}
+            </Box>
+          )}
           </>
         )}
       </ButtonsContainer>

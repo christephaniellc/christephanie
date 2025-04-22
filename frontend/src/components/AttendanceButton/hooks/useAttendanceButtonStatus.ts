@@ -2,7 +2,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { guestSelector } from '@/store/family';
 import { useTheme } from '@mui/material';
 import { InvitationResponseEnum } from '@/types/api';
-import { stdStepperState, stdTabIndex } from '@/store/steppers/steppers';
+import { stdStepperState, stdTabIndex } from '@/store/steppers/saveTheDateStepper';
 
 export const useAttendanceButtonStatus = ({ guestId }: { guestId: string }) => {
   const guest = useRecoilValue(guestSelector(guestId));

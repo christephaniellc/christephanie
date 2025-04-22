@@ -31,7 +31,9 @@ import {
   Cake,
   FlightTakeoff,
   SupervisorAccount,
-  CleaningServices
+  CleaningServices,
+  Forest,
+  CircleNotifications
 } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
@@ -53,25 +55,153 @@ interface EventItem {
   icon: React.ReactNode;
   restricted?: boolean;
   visible?: boolean;
+  customContent?: boolean;
 }
+
+// WelcomeDinnerContent component
+const WelcomeDinnerContent: React.FC = () => {
+  const theme = useTheme();
+  
+  return (
+    <Box sx={{ display: 'flex', flexDirection: { 
+      xs: 'column', 
+      sm: 'column' }, 
+      alignItems: { sm: 'flex-start' } }}>
+      <Typography variant="body2" 
+        sx={{ 
+          flex: 1,
+          mb: 2
+         }}>
+        Join us for a potluck fourth of July grill!
+      </Typography>
+      
+      <Paper
+        id="4th-info"
+        sx={{ 
+          backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          padding: theme.spacing(1.5),
+          borderRadius: 1,
+          maxWidth: { xs: '100%', sm: '40%' },
+          textAlign: 'left',
+          boxShadow: theme.shadows[1],
+          position: 'relative',
+          zIndex: 1,
+          ml: { sm: 2 },
+          mt: { xs: 2, sm: 0 },
+          mb: 2,
+          alignSelf: { sm: 'stretch' },
+        }}
+      >
+        <Typography
+          variant="body2"
+          component="p"
+          sx={{ 
+            color: alpha('#FFFFFF', 0.8),
+            //opacity: 0.8,
+            position: 'relative',
+            zIndex: 1,
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
+            mt: 0.5,
+          }}
+        >
+          <span style={{
+            color: theme.palette.secondary.main, 
+            fontWeight: 'bold'
+          }}><strong>Please Bring Potluck Items:</strong></span>
+          <ul>
+            <li>Grill items (meat and non-meat)</li>
+            <li>Buns</li>
+            <li>Sides to share</li>
+            <li>BYOB</li>
+          </ul>
+        </Typography>
+      </Paper>
+    </Box>
+  );
+};
 
 function Schedule({handleTabLink}: ScheduleProps) {
   const { contentHeight } = useAppLayout();
   const theme = useTheme();
-  const [selectedDay, setSelectedDay] = useState('day2');
+  
+  // Get day parameter from URL if it exists
+  const getInitialDayFromUrl = (): string => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const dayParam = params.get('day');
+      
+      // Check if the day param is valid (friday, saturday, or sunday)
+      if (dayParam && ['friday', 'saturday', 'sunday'].includes(dayParam)) {
+        return dayParam;
+      }
+    }
+    // Default to Friday (friday) if no valid param
+    return 'friday';
+  };
+  
+  const [selectedDay, setSelectedDay] = useState(getInitialDayFromUrl());
   const currentUser = useRecoilValue(userState);
+  
+  // Update URL when selected day changes
+  const updateDayInUrl = (day: string) => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('day', day);
+      
+      // Update URL without reloading the page
+      window.history.pushState({}, '', url.toString());
+      
+      // Update state
+      setSelectedDay(day);
+    }
+  };
+  
+  // Listen for popstate event (browser back/forward) and update the selected day
+  React.useEffect(() => {
+    const handlePopState = () => {
+      setSelectedDay(getInitialDayFromUrl());
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
   
   // Check if user has staff or party roles
   const canViewRestrictedEvents = useMemo(() => isAdmin(currentUser), [currentUser]);
   
   // Event data
   const events = {
-    day1: {
+    friday: {
       title: 'Friday, July 4, 2025',
       subtitle: 'Pre-Wedding Events',
       events: [
         {
-          id: 'rehearsal-dinner',
+          id: 'camper-checkin',
+          name: 'Camper Check-In',
+          time: '3:30 PM',
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Earliest check-in for guests camping at the venue grounds.',
+          details: ['Set up your gear as early as 3:30 PM'],
+          icon: <Forest />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Camper, currentUser)
+        },
+        {
+          id: 'manor-checkin',
+          name: 'Manor Check-In',
+          time: '4:00 PM',
+          location: 'Stone Manor Inn, Lovettsville, VA',
+          description: 'Earliest check-in for guests staying at the manor.',
+          details: ['Manor guests only'],
+          icon: <SupervisorAccount />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor, currentUser)
+        },
+        {
+          id: 'rehearsal',
           name: 'Wedding Rehearsal',
           time: '5:00 PM - 6:00 PM',
           location: 'Stone Manor Inn, Lovettsville, VA',
@@ -83,21 +213,20 @@ function Schedule({handleTabLink}: ScheduleProps) {
         },
         {
           id: 'welcome-dinner',
-          name: 'Fourth of July: BBQ & Fireworks',
-          time: '6:00 PM - 9:00 PM',
+          name: 'Fourth of July: Potluck BBQ & Fireworks',
+          time: '6:00 PM - 10:00 PM',
           location: 'Stone Manor Inn, Lovettsville, VA',
-          description: 'Join us for a potluck fourth of July grill. Bring your instruments and (legal in Virginia) fireworks!',
+          description: 'Join us for a potluck fourth of July grill',
           details: ['Meet other guests!', 
             'Casual attire', 
-            'BYOB', 
-            'Bring BBQ meats, buns, or sides',
             'Bring your instruments', 
             'Bring your (legal in Virginia) fireworks!'],
-          icon: <Stream />
+          icon: <Stream />,
+          customContent: true
         }
       ]
     },
-    day2: {
+    saturday: {
       title: 'Saturday, July 5, 2025',
       subtitle: 'Wedding Day',
       events: [
@@ -170,7 +299,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
         }
       ]
     },
-    day3: {
+    sunday: {
       title: 'Sunday, July 6, 2025',
       subtitle: 'Post-Wedding Gathering',
       events: [
@@ -191,10 +320,34 @@ function Schedule({handleTabLink}: ScheduleProps) {
           time: '10:00 AM - 11:00 AM',
           location: 'Stone Manor Inn',
           description: 'Decorations must be removed by 11:00 AM. Help us out!',
-          details: ['Take down LED lights', 'Remove flowers', "Etc."],
+          details: ['Take down LED lights', 'Remove flowers', 'Etc.'],
           icon: <CleaningServices />,
           restricted: true,
           visible: hasRole(RoleEnum.Party, currentUser)
+        },
+        {
+          id: 'checkout-manor',
+          name: 'Manor Check-Out',
+          time: '11:00 AM',
+          location: 'Stone Manor Inn',
+          description: 'Manor guest check-out time.',
+          details: ['Please leave your rooms tidy', 
+            'All personal belongings must be removed from rooms by 11:00 AM'],
+          icon: <CircleNotifications />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor, currentUser)
+        },
+        {
+          id: 'checkout-campers',
+          name: 'Camper Check-Out',
+          time: '11:00 AM',
+          location: 'Stone Manor Inn',
+          description: 'Camper guest check-out time.',
+          details: ['Please leave no trace: all camping gear, trash, and personal items must be removed', 
+            'Check-out by 11:00 AM'],
+          icon: <CircleNotifications />,
+          restricted: true,
+          visible: hasRole(RoleEnum.Manor, currentUser)
         },
       ]
     }
@@ -315,9 +468,9 @@ function Schedule({handleTabLink}: ScheduleProps) {
   const EventCard = ({ event, delay = 0 }) => {
     // Add special styling for restricted events
     const isRestricted = event.restricted;
-    // if (event.comingSoon) {
-    //   return ComingSoonCard();
-    // }
+    if (event.comingSoon) {
+      return <ComingSoonCard />;
+    }
 
     return (
       <Grow in={true} timeout={500 + delay * 200}>
@@ -380,9 +533,13 @@ function Schedule({handleTabLink}: ScheduleProps) {
               </Box>
             </Box>
             
-            <Typography variant="body2" paragraph>
-              {event.description}
-            </Typography>
+            {event.id === 'welcome-dinner' ? (
+              <WelcomeDinnerContent />
+            ) : (
+              <Typography variant="body2" paragraph>
+                {event.description}
+              </Typography>
+            )}
             
             {event.details && (
               <>
@@ -562,27 +719,27 @@ function Schedule({handleTabLink}: ScheduleProps) {
         {/* Day selection buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mt: 2 }}>
           <DayButton
-            day="day1"
-            selected={selectedDay === 'day1'}
-            onClick={() => setSelectedDay('day1')}
+            day="friday"
+            selected={selectedDay === 'friday'}
+            onClick={() => updateDayInUrl('friday')}
           >
             <CalendarToday sx={{ mr: 1, fontSize: '1rem' }} />
             Fri, Jul 4
           </DayButton>
           
           <DayButton
-            day="day2"
-            selected={selectedDay === 'day2'}
-            onClick={() => setSelectedDay('day2')}
+            day="saturday"
+            selected={selectedDay === 'saturday'}
+            onClick={() => updateDayInUrl('saturday')}
           >
             <EmojiEvents sx={{ mr: 1, fontSize: '1rem' }} />
             Sat, Jul 5
           </DayButton>
           
           <DayButton
-            day="day3"
-            selected={selectedDay === 'day3'}
-            onClick={() => setSelectedDay('day3')}
+            day="sunday"
+            selected={selectedDay === 'sunday'}
+            onClick={() => updateDayInUrl('sunday')}
           >
             <FlightTakeoff sx={{ mr: 1, fontSize: '1rem' }} />
             Sun, Jul 6
@@ -624,7 +781,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
           ))}
         
         {/* Transportation card - show only on main wedding day */}
-        {selectedDay === 'day2' && 
+        {selectedDay === 'saturday' && 
           <ComingSoonCard />
           // <TransportationCard />
         }
