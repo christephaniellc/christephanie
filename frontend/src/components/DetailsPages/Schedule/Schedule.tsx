@@ -468,9 +468,9 @@ function Schedule({handleTabLink}: ScheduleProps) {
   const EventCard = ({ event, delay = 0 }) => {
     // Add special styling for restricted events
     const isRestricted = event.restricted;
-    // if (event.comingSoon) {
-    //   return ComingSoonCard();
-    // }
+    if (event.comingSoon) {
+      return <ComingSoonCard />;
+    }
 
     return (
       <Grow in={true} timeout={500 + delay * 200}>
@@ -781,7 +781,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
           ))}
         
         {/* Transportation card - show only on main wedding day */}
-        {selectedDay === 'day2' && 
+        {selectedDay === 'saturday' && 
           <ComingSoonCard />
           // <TransportationCard />
         }
