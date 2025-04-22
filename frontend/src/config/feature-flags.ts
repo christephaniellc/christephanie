@@ -28,8 +28,8 @@ export const FeatureFlags = {
   ENABLE_DETAILS_THINGS_TO_DO: false,
 
   // Phase
-  ENABLE_SURVEY_PHASE: false,
-  ENABLE_RSVP_PHASE: true,
+  ENABLE_SURVEY_PHASE: true,
+  ENABLE_RSVP_PHASE: false,
   ENABLE_WEDDING_PHASE: false,
   
   // RSVP Components
