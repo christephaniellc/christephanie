@@ -4,6 +4,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 
 import { FamilyUnitViewModel, InvitationResponseEnum, RsvpEnum, FoodPreferenceEnum, SleepPreferenceEnum } from '@/types/api';
 
@@ -62,7 +63,19 @@ export const getRsvpStatusIcon = (status?: RsvpEnum) => {
 };
 
 // Helper function to get Invitation status color
-export const getInvitationStatusColor = (status?: InvitationResponseEnum) => {
+export const getInvitationStatusColor = (status?: InvitationResponseEnum, 
+  confirmStatus?: RsvpEnum) => {
+  if (confirmStatus !== undefined 
+    && confirmStatus !== RsvpEnum.Pending) {
+    switch(confirmStatus) {
+      case RsvpEnum.Attending:
+        return 'success.main';
+      case RsvpEnum.Declined:
+        return 'error.main';
+      default:
+        return 'warning.main';
+    }
+  }
   switch(status) {
     case InvitationResponseEnum.Interested:
       return 'success.main';
@@ -75,7 +88,19 @@ export const getInvitationStatusColor = (status?: InvitationResponseEnum) => {
 };
 
 // Helper function to get Invitation status icon
-export const getInvitationStatusIcon = (status?: InvitationResponseEnum) => {
+export const getInvitationStatusIcon = (status?: InvitationResponseEnum, 
+  confirmStatus?: RsvpEnum) => {
+  if (confirmStatus !== undefined 
+    && confirmStatus !== RsvpEnum.Pending) {
+    switch(confirmStatus) {
+      case RsvpEnum.Attending:
+        return <ThumbUpIcon fontSize="small" />;
+      case RsvpEnum.Declined:
+        return <ThumbDownIcon fontSize="small" />;
+      default:
+        return <QuestionMarkIcon fontSize="small" />;
+    }
+  }
   switch(status) {
     case InvitationResponseEnum.Interested:
       return <ThumbUpIcon fontSize="small" />;
@@ -86,6 +111,30 @@ export const getInvitationStatusIcon = (status?: InvitationResponseEnum) => {
       return <QuestionMarkIcon fontSize="small" />;
   }
 };
+
+export const getExpandedInvitationStatusColor = (status?: InvitationResponseEnum, 
+  confirmStatus?: RsvpEnum) => {
+    if (confirmStatus !== undefined 
+      && confirmStatus !== RsvpEnum.Pending) {
+      switch(confirmStatus) {
+        case RsvpEnum.Attending:
+          return themePaletteToRgba('success.main', 0.3);
+        case RsvpEnum.Declined:
+          return themePaletteToRgba('error.main', 0.3);
+        default:
+          return themePaletteToRgba('warning.main', 0.2);
+      }
+    }
+    switch(status) {
+      case InvitationResponseEnum.Interested:
+        return themePaletteToRgba('success.main', 0.3);
+      case InvitationResponseEnum.Declined:
+        return themePaletteToRgba('error.main', 0.3);
+      case InvitationResponseEnum.Pending:
+      default:
+        return themePaletteToRgba('warning.main', 0.2);
+    }
+  };
 
 // Interface for guest detail popper state
 export interface GuestPopperState {
@@ -161,17 +210,18 @@ export const getSleepPreferenceDetails = (preference?: SleepPreferenceEnum) => {
 // Helper function to get overall family status color - updated to use InvitationResponseEnum
 export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
   const hasDeclined = family.guests?.some(
-    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-  );
-  
-  const allPending = family.guests?.every(
-    guest => !guest.rsvp?.invitationResponse || 
-             guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending
+    guest => 
+      guest.rsvp?.wedding === RsvpEnum.Declined ||
+      guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
   );
   
   const someInterested = family.guests?.some(
-    guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+    guest => 
+      guest.rsvp?.wedding === RsvpEnum.Attending ||
+      guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
   );
+
+  const allPending = !hasDeclined && !someInterested;
   
   if (hasDeclined && !someInterested) return 'error.light';
   if (allPending) return 'warning.light';
@@ -181,22 +231,67 @@ export const getFamilyStatusColor = (family: FamilyUnitViewModel) => {
 
 export function getLatestActivityAndGuest(family: FamilyUnitViewModel): { 
   firstName: string | null; lastActivity: Date | null } {
-  // Filter out guests without a valid LastActivity
-  const validGuests = family.guests.filter(guest => guest.lastActivity !== null);
   
-  // If no valid guest found, return null values
-  if (validGuests.length === 0) {
+  // Create a list of all guests with audit timestamps
+  const guestAudits: {
+    guest: any,
+    lastUpdate: Date
+  }[] = [];
+  
+  // Add all RSVP and invitation response audit entries
+  family.guests?.forEach(guest => {
+    // Check invitation response audit
+    if (guest.rsvp?.invitationResponseAudit?.lastUpdate) {
+      guestAudits.push({
+        guest,
+        lastUpdate: new Date(guest.rsvp.invitationResponseAudit.lastUpdate)
+      });
+    }
+    
+    // Check RSVP audit
+    if (guest.rsvp?.rsvpAudit?.lastUpdate) {
+      guestAudits.push({
+        guest,
+        lastUpdate: new Date(guest.rsvp.rsvpAudit.lastUpdate)
+      });
+    }
+    
+    // Also include lastActivity as a fallback
+    if (guest.lastActivity) {
+      guestAudits.push({
+        guest,
+        lastUpdate: new Date(guest.lastActivity)
+      });
+    }
+  });
+  
+  // If no valid audit entries found, return null values
+  if (guestAudits.length === 0) {
     return { firstName: null, lastActivity: null };
   }
   
-  // Find the guest with the latest LastActivity using reduce
-  const latestGuest = validGuests.reduce((prev, current) => {
-    const prevDate = new Date(prev.lastActivity!);
-    const currentDate = new Date(current.lastActivity!);
-    return prevDate > currentDate ? prev : current;
+  // Find the most recent audit entry
+  const latestAudit = guestAudits.reduce((latest, current) => {
+    return current.lastUpdate > latest.lastUpdate ? current : latest;
   });
   
-  return { firstName: latestGuest.firstName, lastActivity: new Date(latestGuest.lastActivity!) };
+  // Use audit username if available, otherwise use guest's firstName
+  // For RSVP or invitation response audits, check for username field
+  let name = latestAudit.guest.firstName;
+  
+  if (latestAudit.guest.rsvp?.invitationResponseAudit?.lastUpdate === latestAudit.lastUpdate.toISOString() &&
+      latestAudit.guest.rsvp?.invitationResponseAudit?.username) {
+    name = latestAudit.guest.rsvp.invitationResponseAudit.username;
+  } else if (latestAudit.guest.rsvp?.rsvpAudit?.lastUpdate === latestAudit.lastUpdate.toISOString() &&
+            latestAudit.guest.rsvp?.rsvpAudit?.username) {
+    name = latestAudit.guest.rsvp.rsvpAudit.username;
+  }
+  
+  // Return the guest name and timestamp
+  return { 
+    firstName: name, 
+    lastActivity: latestAudit.lastUpdate 
+  };
 }
 
 // Generate fun quotes for the guest narrative
