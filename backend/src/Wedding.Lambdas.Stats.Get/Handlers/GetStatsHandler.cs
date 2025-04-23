@@ -63,6 +63,7 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                     {
                         // Always count everyone in the totals for the pixel representation
                         stats.TotalGuests++;
+                        var confirmedAttending = false;
 
                         // Count by invitationResponse status
                         if (guest.Rsvp == null)
@@ -75,11 +76,16 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                             {
                                 stats.AttendingWeddingGuests++;
                                 familyAttendingWedding = true;
+                                confirmedAttending = true;
                             }
+
                             if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Interested)
                             {
-                                stats.InterestedGuests++;
-                                familyInterested = true;
+                                if (!confirmedAttending)
+                                {
+                                    stats.InterestedGuests++;
+                                    familyInterested = true;
+                                }
                             }
                             else if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Declined
                                      || (guest.Rsvp!.Wedding != null && guest.Rsvp?.Wedding == RsvpEnum.Declined))
@@ -88,12 +94,12 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                                 familyDeclined = true;
                             }
                             if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending
-                                     && (guest.Rsvp?.Wedding == null || guest.Rsvp?.Wedding == RsvpEnum.Pending))
+                                     && (guest.Rsvp!.Wedding == null || guest.Rsvp!.Wedding == RsvpEnum.Pending))
                             {
                                 stats.PendingWeddingGuests++;
                             }
 
-                            if (guest.Rsvp?.FourthOfJuly == null || guest.Rsvp?.FourthOfJuly == RsvpEnum.Pending)
+                            if (guest.Rsvp!.FourthOfJuly == null || guest.Rsvp!.FourthOfJuly == RsvpEnum.Pending)
                             {
                                 stats.Pending4thGuests++;
                             }

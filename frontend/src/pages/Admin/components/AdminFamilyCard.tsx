@@ -72,12 +72,12 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
         backgroundColor: `${statusColor}95`, // 95% opacity for better contrast
         backdropFilter: 'blur(20px)',
         position: 'relative',
-        overflow: 'visible', // Changed from hidden to allow content to overflow
+        overflow: 'visible', // Allow content to overflow
         borderRadius: 2,
-        transition: 'all 0.3s ease-in-out',
+        transition: 'box-shadow 0.3s ease-in-out', // Changed from 'all' to just 'box-shadow'
         '&:hover': {
-          transform: 'translateY(-5px)',
           boxShadow: theme.shadows[10],
+          // Removed transform to avoid layout shifts
         },
         '&::before': {
           content: '""',
