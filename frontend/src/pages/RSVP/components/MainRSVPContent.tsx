@@ -42,7 +42,7 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   
   const FamilyQueryQuestion = useMemo(() => {
     const currentStep = rsvpStepper.currentStep[0];
-    console.log("Rendering content for step:", currentStep);
+    //console.log("Rendering content for step:", currentStep);
     
     // Special handling for debug
     if (currentStep === 'communicationPreferences' || currentStep === 'communicationPreference') {
