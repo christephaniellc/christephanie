@@ -311,15 +311,23 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
                   Last Activity
                 </Typography>
                 <Typography variant="body2">
-                  {family.familyUnitLastLogin 
-                    ? `${new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
+                  {lastGuestActivity.lastActivity 
+                    ? `${new Date(lastGuestActivity.lastActivity).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
                     })}${lastGuestActivity.firstName ? ` by ${lastGuestActivity.firstName}` : ''}`
-                    : 'Never logged in'}
+                    : (family.familyUnitLastLogin 
+                        ? `${new Date(family.familyUnitLastLogin).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })} (Login only)`
+                        : 'Never logged in')}
                 </Typography>
               </Box>
             </Paper>

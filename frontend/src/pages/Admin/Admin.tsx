@@ -761,17 +761,29 @@ function AdminPage() {
       
       // Check for family comments
       if (family.invitationResponseNotes?.trim()) {
-        // Get latest guest activity 
-        const validGuests = family.guests?.filter(guest => guest.lastActivity !== null) || [];
+        // Get who updated the invitation response notes
         let lastUpdateName: string | null = null;
         
-        if (validGuests.length > 0) {
-          const latestGuest = validGuests.reduce((prev, current) => {
-            const prevDate = new Date(prev.lastActivity!);
-            const currentDate = new Date(current.lastActivity!);
-            return prevDate > currentDate ? prev : current;
-          });
-          lastUpdateName = latestGuest.firstName;
+        // Look through guests to find who updated the invitation response last
+        if (family.guests && family.guests.length > 0) {
+          // Find the guest with the most recent invitation response update
+          const guestsWithAudit = family.guests.filter(
+            guest => guest.rsvp?.invitationResponseAudit?.username
+          );
+          
+          if (guestsWithAudit.length > 0) {
+            // Sort by last update date, most recent first
+            const sortedGuests = [...guestsWithAudit].sort((a, b) => {
+              const dateA = a.rsvp?.invitationResponseAudit?.lastUpdate ? 
+                new Date(a.rsvp.invitationResponseAudit.lastUpdate).getTime() : 0;
+              const dateB = b.rsvp?.invitationResponseAudit?.lastUpdate ? 
+                new Date(b.rsvp.invitationResponseAudit.lastUpdate).getTime() : 0;
+              return dateB - dateA; // Most recent first
+            });
+            
+            // Get the username from the most recently updated guest
+            lastUpdateName = sortedGuests[0].rsvp?.invitationResponseAudit?.username || null;
+          }
         }
         
         familyComments.push({
@@ -783,10 +795,19 @@ function AdminPage() {
       }
       
       // Process guest preferences
-      let attendingGuests = family.guests?.filter(guest => 
-        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-        || guest.rsvp?.wedding === RsvpEnum.Attending
-      ) || [];
+      // let attendingGuests = family.guests?.filter(guest => 
+      //   guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+      //   || guest.rsvp?.wedding === RsvpEnum.Attending
+      // ) || [];
+      let attendingGuests = (family.guests?.filter(guest => 
+        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested ||
+        guest.rsvp?.wedding === RsvpEnum.Attending
+      ) || []).map(guest => ({
+        ...guest,
+        familyUnitName: family.unitName,
+        attending: guest.rsvp?.wedding === RsvpEnum.Attending
+      }));
+
       attendingGuests?.forEach(guest => {
         const guestAccommodation = familyGuestsByAccommodation.get(invitationCode)!;
         
@@ -826,7 +847,11 @@ function AdminPage() {
             }
             const entry = foodAllergies.get(allergy)!;
             entry.count++;
-            entry.guests.push(`${guest.firstName} ${guest.lastName || ''}`);
+            // Create a properly formatted guest name (handle '+1' case)
+            const fullName = guest.firstName === '+1' ? 
+              `+1 (${guest.familyUnitName})` : 
+              `${guest.firstName}${guest.lastName ? ' ' + guest.lastName : ''}`;
+            entry.guests.push(fullName);
             entry.families.add(family.unitName || '');
           });
         }
@@ -1120,7 +1145,7 @@ function AdminPage() {
                     <Box sx={{ ml: 2 }}>
                       {data.guests.map((name, i) => (
                         <Typography key={i} variant="body2">
-                          • {name} {name === '+1' ? `${name}` : ''}
+                          • {name}
                         </Typography>
                       ))}
                     </Box>
