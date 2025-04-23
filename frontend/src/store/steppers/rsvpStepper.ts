@@ -50,14 +50,6 @@ export const rsvpStepsState = atom<Record<string, RsvpStep>>({
       component: null,
       display: true,
     },
-    // transportation: {
-    //   id: 4,
-    //   completed: false,
-    //   label: 'Transportation Needs',
-    //   description: 'Let us know if you need transportation assistance',
-    //   component: null,
-    //   display: true,
-    // },
     accommodation: {
       id: 4,
       completed: false,

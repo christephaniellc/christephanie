@@ -182,6 +182,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
     
     // Interest data pie chart
     interestData: [
+      { name: 'Attending', value: stats?.attendingWeddingGuests || 0, color: '#63e368' },
       { name: 'Interested', value: stats?.interestedGuests || 0, color: '#4CAF50' },
       { name: 'Declined', value: stats?.declinedGuests || 0, color: '#F44336' },
       { name: 'Pending', value: stats?.pendingWeddingGuests || 0, color: '#FFC107' }
@@ -220,6 +221,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
     
     // Family status data pie chart
     familyStatusData: [
+      { name: 'Attending', value: stats?.attendingWeddingFamilies || 0, color: '#63e368' },
       { name: 'Interested', value: stats?.interestedFamilies || 0, color: '#4CAF50' },
       { name: 'Declined', value: stats?.declinedFamilies || 0, color: '#F44336' },
       { name: 'Pending', value: stats?.pendingFamilies || 0, color: '#FFC107' }
