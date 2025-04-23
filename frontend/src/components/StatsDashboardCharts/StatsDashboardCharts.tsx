@@ -8,7 +8,7 @@ import {
   PieChart, Pie, Sector, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 import { animated, useSpring } from 'react-spring';
-import { FeatureFlags } from '@/config';
+import { FeatureFlags, isFeatureEnabled } from '@/config';
 
 // Custom themed tooltip with 8-bit style
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -87,11 +87,13 @@ const PixelGuest = ({
 const PixelGuestGrid = ({ 
   totalGuests, 
   attendingGuests,
+  interestedGuests,
   declinedGuests,
   maxPerRow = 10
 }: { 
   totalGuests: number, 
   attendingGuests: number,
+  interestedGuests: number,
   declinedGuests: number,
   maxPerRow?: number
 }) => {
@@ -112,9 +114,11 @@ const PixelGuestGrid = ({
         let isHighlighted = false;
         
         if (index < attendingGuests) {
-          color = '#4CAF50'; // Green for attending
+          color = '#63e368'; // Bright green for attending
           isHighlighted = true;
-        } else if (index < attendingGuests + declinedGuests) {
+        } else if (index < attendingGuests + interestedGuests) {
+          color = '#3c823f'; // Green for interested
+        } else if (index < attendingGuests + interestedGuests + declinedGuests) {
           color = '#F44336'; // Red for declined
         }
         
@@ -183,7 +187,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
     // Interest data pie chart
     interestData: [
       { name: 'Attending', value: stats?.attendingWeddingGuests || 0, color: '#63e368' },
-      { name: 'Interested', value: stats?.interestedGuests || 0, color: '#4CAF50' },
+      { name: 'Interested', value: stats?.interestedGuests || 0, color: '#3c823f' },
       { name: 'Declined', value: stats?.declinedGuests || 0, color: '#F44336' },
       { name: 'Pending', value: stats?.pendingWeddingGuests || 0, color: '#FFC107' }
     ],
@@ -344,28 +348,36 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
         
         {/* Stats at the top as pixel art counters */}
         <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
-          <Grid item xs={6} sm={4}>
+          { isFeatureEnabled('ENABLE_RSVP_PHASE') && (
+            <Grid item xs={6} sm={4}>
+              <AnimatedCounter 
+                value={metrics.attendingGuests} 
+                label="Attending (Confirmed)"
+                color="#63e368" 
+              />
+            </Grid>
+          )}
+          <Grid item xs={3} sm={2}>
             <AnimatedCounter 
-              value={metrics.attendingMetric} 
-              label={FeatureFlags.ENABLE_RSVP_PHASE 
-                ? "Attending" : "Interested" }
-              color="#4CAF50" 
+              value={metrics.interestedGuests} 
+              label={ "Interested" }
+              color="#3c823f" 
             />
           </Grid>
-          <Grid item xs={6} sm={4}>
+          <Grid item xs={3} sm={2}>
             <AnimatedCounter 
               value={metrics.declinedGuests} 
               label="Declined" 
               color="#F44336" 
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={3} sm={2}>
             <AnimatedCounter 
               value={metrics.pendingGuests} 
               label="Pending" 
               color={
                 metrics.pendingGuests + metrics.attendingMetric > 250 
-                  ? "#F44336" // Red if pending + interested > 250
+                  ? "#f2ab3a" // Red if pending + interested > 250
                   : (metrics.pendingGuests + metrics.attendingMetric + 10) <= 250 
                     ? "#4CAF50" // Green if (pending + interested + 10) <= 250
                     : "#FFC107" // Yellow otherwise
@@ -392,7 +404,8 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
           </Typography>
           <PixelGuestGrid 
             totalGuests={metrics.totalGuests} 
-            attendingGuests={metrics.attendingMetric}
+            attendingGuests={metrics.attendingGuests}
+            interestedGuests={metrics.interestedGuests}
             declinedGuests={metrics.declinedGuests}
             maxPerRow={20}
           />
