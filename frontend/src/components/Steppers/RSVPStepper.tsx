@@ -16,25 +16,20 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
-import { useFamily, familyGuestsStates } from '@/store/family';
+import { useFamily, familyGuestsRsvpStates } from '@/store/family';
 import { RsvpEnum } from '@/types/api';
 import IconButton from '@mui/material/IconButton';
 import {
-  Check, CheckCircleOutlineTwoTone,
-  Circle,
-  CloseTwoTone, Publish,
-  PublishedWithChangesTwoTone, RadioButtonChecked, RadioButtonUnchecked, TaskAltTwoTone, TripOrigin,
-  Unpublished,
-  UnpublishedTwoTone,
+  CheckCircleOutlineTwoTone,
+  CloseTwoTone,
+  TripOrigin,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import {
-  RsvpStep,
   rsvpStepsState,
-  rsvpStepperState,
   rsvpTabIndex,
 } from '@/store/steppers';
 import { userState } from '@/store/user';
@@ -46,8 +41,8 @@ export default function RSVPStepper() {
   const location = useLocation();
   const { user: auth0User } = useAuth0();
   const [_, familyActions] = useFamily();
-  const familyState = useRecoilValue(familyGuestsStates);
-  const [rsvpSteps, updateSteps] = useRecoilState(rsvpStepsState);
+  const familyState = useRecoilValue(familyGuestsRsvpStates);
+  const [rsvpSteps, updateRsvpSteps] = useRecoilState(rsvpStepsState);
   const [tabIndex, setTabIndex] = useRecoilState(rsvpTabIndex);
 
   const [initialUrlProcessed, setInitialUrlProcessed] = useState(false);
@@ -60,7 +55,6 @@ export default function RSVPStepper() {
     'fourthOfJulyAttendance', 
     'foodPreferences', 
     'foodAllergies',
-    'transportation',
     'accommodation',
     'communicationPreferences',
     'mailingAddress', 
@@ -83,8 +77,11 @@ export default function RSVPStepper() {
       return step.display;
     });
     
+    
+    
     // When attendance status changes, we need to update the visibleStepIndex in the next render
     const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
+
     const newVisibleIndex = relevantSteps.findIndex(([key]) => key === currentStepKey);
     if (newVisibleIndex !== -1 && newVisibleIndex !== visibleStepIndex) {
       // Use setTimeout to avoid state updates during render
@@ -92,7 +89,6 @@ export default function RSVPStepper() {
         setVisibleStepIndex(newVisibleIndex);
       }, 0);
     }
-        
     return relevantSteps;
   }, [rsvpSteps, familyState, basicSteps, tabIndex]);
 
@@ -121,9 +117,9 @@ export default function RSVPStepper() {
         }
       } else {
         // If the step shouldn't be visible, redirect to the first visible step
-        const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
+        const firstVisibleStep = visibleSteps[0]?.[0] || 'weddingAttendance';
         const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
-        //console.log('Redirecting to first visible step:', firstVisibleStep);
+        //console.log('Step not visible, redirecting to first visible step:', firstVisibleStep);
         setTabIndex(firstVisibleIndex);
         setVisibleStepIndex(0); // First visible step
         navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
@@ -131,77 +127,92 @@ export default function RSVPStepper() {
       setInitialUrlProcessed(true);
     } else if (!initialUrlProcessed) {
       // No step in URL, initialize to the first visible step
-      const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
+      const firstVisibleStep = visibleSteps[0]?.[0] || 'weddingAttendance';
       const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
+      //console.log('No step in URL, initializing to:', firstVisibleStep);
       setTabIndex(firstVisibleIndex);
       setVisibleStepIndex(0);
+      navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
       setInitialUrlProcessed(true);
     }
-  }, [location.search, rsvpSteps, setTabIndex, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
+  }, [location.search, rsvpSteps, setTabIndex, initialUrlProcessed, familyState, visibleSteps, basicSteps, navigate]);
   
-  // Effect to update the visibleStepIndex when tabIndex, visibleSteps, or URL changes
+  // Single unified effect to handle URL and state synchronization
   useEffect(() => {
+    // Skip if we haven't processed the initial URL yet
     if (!initialUrlProcessed) return;
     
-    // Get the current step from the URL or tabIndex
+    // Get current values
     const params = new URLSearchParams(location.search);
     const stepFromUrl = params.get('step');
-    
-    // Prioritize step from URL if it exists
-    const currentStepKey = stepFromUrl || Object.keys(rsvpSteps)[tabIndex];
-    
-    // Find the index of the current step in the visible steps array
-    const visibleIndex = visibleSteps.findIndex(([key]) => key === currentStepKey);
-    
-    if (visibleIndex !== -1) {
-      // Current step is visible
-      if (visibleIndex !== visibleStepIndex) {
-        setVisibleStepIndex(visibleIndex);
-        //console.log('Setting visibleStepIndex to', visibleIndex, 'for step', currentStepKey);
-      }
-    } else {
-      // Current step is not visible, set to the first visible step
-      if (visibleStepIndex !== 0) {
-        setVisibleStepIndex(0);
-        //console.log('Step not found in visible steps, setting to 0');
+    const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
         
-        // Update URL to match the first visible step
-        const firstVisibleStep = visibleSteps[0]?.[0];
-        if (firstVisibleStep) {
-          navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
+    // Only do this work if there's actually a mismatch to fix
+    if (stepFromUrl !== currentStepKey || 
+        (!stepFromUrl && currentStepKey) || 
+        (stepFromUrl && !currentStepKey)) {
+      
+      // If URL has a step that exists in our steps
+      if (stepFromUrl && Object.keys(rsvpSteps).includes(stepFromUrl)) {
+        const isStepVisible = rsvpSteps[stepFromUrl].display;
+        
+        if (isStepVisible) {
+          // Step is valid and visible, update tab index to match URL
+          const newTabIndex = Object.keys(rsvpSteps).indexOf(stepFromUrl);
+          if (newTabIndex !== tabIndex) {
+            console.log('URL step differs from current step, updating tab index:', { stepFromUrl, newTabIndex });
+            setTabIndex(newTabIndex);
+          }
+          
+          // Also update visibleStepIndex
+          const visibleIndex = visibleSteps.findIndex(([key]) => key === stepFromUrl);
+          if (visibleIndex !== -1 && visibleIndex !== visibleStepIndex) {
+            console.log('Updating visible step index to match URL:', visibleIndex);
+            setVisibleStepIndex(visibleIndex);
+          }
+        } else {
+          // URL has a step that exists but isn't visible, redirect to first visible step
+          redirectToFirstVisibleStep();
         }
+      } 
+      // No valid step in URL, but we have a current step from tabIndex
+      else if (currentStepKey) {
+        const isStepVisible = rsvpSteps[currentStepKey]?.display;
+        
+        if (isStepVisible) {
+          // Current step is valid, update URL to match current step
+          //console.log('Updating URL to match current step:', currentStepKey);
+          navigate(`/rsvp?step=${currentStepKey}`, { replace: true });
+          
+          // Also update visibleStepIndex if needed
+          const visibleIndex = visibleSteps.findIndex(([key]) => key === currentStepKey);
+          if (visibleIndex !== -1 && visibleIndex !== visibleStepIndex) {
+            setVisibleStepIndex(visibleIndex);
+          }
+        } else {
+          // Current step isn't visible, redirect to first visible step
+          redirectToFirstVisibleStep();
+        }
+      } 
+      // No valid step in URL or tab index
+      else {
+        redirectToFirstVisibleStep();
       }
     }
-  }, [tabIndex, visibleSteps, rsvpSteps, initialUrlProcessed, location.search]);
-
-  // Effect to update URL when tab changes - only after initial URL is processed
-  useEffect(() => {
-    // Only update URL after we've processed the initial URL parameter
-    if (initialUrlProcessed) {
-      const currentStepKey = Object.keys(rsvpSteps)[tabIndex];
-      const params = new URLSearchParams(location.search);
-      const currentUrlStep = params.get('step');
+    
+    function redirectToFirstVisibleStep() {
+      const firstVisibleStep = visibleSteps[0]?.[0] || 'weddingAttendance';
+      const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
+      //console.log('Redirecting to first visible step:', firstVisibleStep);
       
-      // If the current step is not visible based on its display property, redirect
-      // Always show steps with display=true regardless of attendance status
-      const isStepVisible = rsvpSteps[currentStepKey]?.display;
-      
-      if (!isStepVisible) {
-        // Redirect to the first visible step
-        const firstVisibleStep = visibleSteps[0]?.[0] || 'welcome';
-        const firstVisibleIndex = Object.keys(rsvpSteps).indexOf(firstVisibleStep);
-        //console.log('Current step not visible, redirecting to:', firstVisibleStep);
-        setTabIndex(firstVisibleIndex);
-        const newUrl = `/rsvp?step=${firstVisibleStep}`;
-        window.history.replaceState(null, '', newUrl);
-      } else if (currentStepKey && currentUrlStep !== currentStepKey) {
-        //console.log('Updating URL to match current step:', currentStepKey);
-        // Use history.replaceState to update URL without adding new history entry
-        const newUrl = `/rsvp?step=${currentStepKey}`;
-        window.history.replaceState(null, '', newUrl);
-      }
+      // Update both state and URL in one go
+      setTabIndex(firstVisibleIndex);
+      setVisibleStepIndex(0);
+      navigate(`/rsvp?step=${firstVisibleStep}`, { replace: true });
     }
-  }, [tabIndex, rsvpSteps, location.search, initialUrlProcessed, familyState, visibleSteps, basicSteps]);
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUrlProcessed, location.search, rsvpSteps, tabIndex, visibleSteps, visibleStepIndex]);
 
   const handleNavigateToStep = (step: string) => {
     // Check if the step should be visible based on its display property

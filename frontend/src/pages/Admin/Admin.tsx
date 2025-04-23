@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactElement } from 'react';
-import { FamilyUnitDto, InvitationResponseEnum, GuestDto } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
 import { isAdmin } from '@/utils/roles';
@@ -52,8 +52,9 @@ interface TabPanelProps {
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   
-  // Special styles for Summary tab
+  // Check if this is the Summary or Details tab
   const isSummaryTab = index === 4;
+  const isDetailsTab = index === 0;
 
   return (
     <div
@@ -64,21 +65,21 @@ function TabPanel(props: TabPanelProps) {
       {...other}
       style={{ 
         width: '100%', 
-        height: isSummaryTab ? 'auto' : '100%', 
-        overflow: isSummaryTab ? 'visible' : 'auto',
-        minHeight: isSummaryTab ? '100%' : 'auto'
+        height: 'auto', // Let height be determined by content
+        overflow: 'visible', // Don't clip content
+        minHeight: '100%', // Take at least full height
+        display: value === index ? 'block' : 'none' // Use display instead of hidden to preserve scroll position
       }}
     >
-      {value === index && (
-        <Box sx={{ 
-          width: '100%', 
-          height: isSummaryTab ? 'auto' : '100%', 
-          position: 'relative',
-          overflow: isSummaryTab ? 'visible' : 'inherit'
-        }}>
-          {children}
-        </Box>
-      )}
+      {/* Only render children when the tab is active */}
+      <Box sx={{ 
+        width: '100%', 
+        height: 'auto', 
+        position: 'relative',
+        overflow: 'visible' // Always visible overflow to prevent scroll jumps
+      }}>
+        {children}
+      </Box>
     </div>
   );
 }
@@ -553,8 +554,8 @@ function AdminPage() {
     <Box sx={{ 
       p: { xs: 1, sm: 2, md: 3 }, 
       maxWidth: '100%',
-      height: '100%',
-      overflow: 'auto', // Make sure the content is scrollable
+      height: 'auto', // Changed from fixed height
+      position: 'relative', // Ensure proper positioning context
       userSelect: 'text',
       WebkitUserSelect: 'text',
       WebkitTouchCallout: 'default',
@@ -620,7 +621,8 @@ function AdminPage() {
           sx={{ 
             pb: 15,
             mt: 0, // Add explicit margin to prevent layout shifts
-            width: '100%'
+            width: '100%',
+            position: 'static' // Ensure grid doesn't create positioning context
           }}
           data-testid="admin-family-grid"
         >
@@ -781,7 +783,11 @@ function AdminPage() {
       }
       
       // Process guest preferences
-      family.guests?.forEach(guest => {
+      let attendingGuests = family.guests?.filter(guest => 
+        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
+        || guest.rsvp?.wedding === RsvpEnum.Attending
+      ) || [];
+      attendingGuests?.forEach(guest => {
         const guestAccommodation = familyGuestsByAccommodation.get(invitationCode)!;
         
         // Accommodation preferences
@@ -1114,7 +1120,7 @@ function AdminPage() {
                     <Box sx={{ ml: 2 }}>
                       {data.guests.map((name, i) => (
                         <Typography key={i} variant="body2">
-                          • {name}
+                          • {name} {name === '+1' ? `${name}` : ''}
                         </Typography>
                       ))}
                     </Box>
@@ -1181,8 +1187,9 @@ function AdminPage() {
       maxWidth={false}
       sx={{
         width: '100%',
-        height: '100vh', // Use viewport height for consistent sizing
-        overflow: 'hidden', // Hide overflow at the container level
+        minHeight: '100vh', // Use minimum viewport height
+        height: 'auto', // Let it grow with content
+        overflow: 'visible', // Don't clip content
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -1264,9 +1271,10 @@ function AdminPage() {
               flexGrow: 1, 
               width: '100%', 
               p: { xs: 1, sm: 2 },
-              height: 'auto', // Changed from fixed height
-              minHeight: 'calc(100vh - 108px)', // Minimum height
-              overflow: 'auto', // Changed to allow scrolling
+              height: 'auto',
+              minHeight: 'calc(100vh - 108px)',
+              overflow: 'visible', // Don't clip content, let children handle scrolling
+              position: 'relative' // Create a positioning context
             }}
           >
             <TabPanel value={tabIndex} index={0}>
