@@ -1,8 +1,9 @@
 import { Box, Avatar, Typography, Chip, useTheme, Tooltip, IconButton, Dialog, DialogContent } from '@mui/material';
-import { InvitationResponseEnum, NotificationPreferenceEnum } from '@/types/api';
-import { getInvitationStatusColor, getInvitationStatusIcon } from './StatsHelpers';
+import { InvitationResponseEnum, NotificationPreferenceEnum, RsvpEnum } from '@/types/api';
+import { getExpandedInvitationStatusColor, getInvitationStatusColor, getInvitationStatusIcon } from './StatsHelpers';
 import { themePaletteToRgba } from '@/components/AttendanceButton/AttendanceButton';
 import EmailIcon from '@mui/icons-material/Email';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 interface GuestStatusItemProps {
   invitationCode: string;
@@ -37,7 +38,10 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: Gu
     return null;
   }
   
-  const responseStatus = guest.rsvp?.invitationResponse || InvitationResponseEnum.Pending;
+  const confirmStatus = guest.rsvp?.wedding
+    || RsvpEnum.Pending;
+  const responseStatus = guest.rsvp?.invitationResponse 
+    || InvitationResponseEnum.Pending;
   
   // If compact mode, just return the avatar
   if (compact) {
@@ -46,7 +50,7 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: Gu
         sx={{ 
           width: 32, 
           height: 32, 
-          bgcolor: getInvitationStatusColor(responseStatus),
+          bgcolor: getInvitationStatusColor(responseStatus, confirmStatus),
           fontSize: '0.8rem',
           cursor: 'pointer',
           border: '2px solid',
@@ -74,11 +78,7 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: Gu
         alignItems: 'center',
         p: 1,
         borderRadius: 1,
-        backgroundColor: responseStatus === InvitationResponseEnum.Interested 
-          ? themePaletteToRgba(theme.palette.success.main, 0.3)
-          : responseStatus === InvitationResponseEnum.Declined
-            ? themePaletteToRgba(theme.palette.error.main, 0.3)
-            : themePaletteToRgba(theme.palette.warning.main, 0.2),
+        backgroundColor: getExpandedInvitationStatusColor(responseStatus, confirmStatus),
         cursor: 'pointer',
         transition: 'all 0.2s ease-in-out',
         '&:hover': {
@@ -86,22 +86,32 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: Gu
           transform: 'scale(1.02)',
         },
         border: '1px solid',
-        borderColor: responseStatus === InvitationResponseEnum.Interested 
-          ? 'success.main' 
-          : responseStatus === InvitationResponseEnum.Declined
-            ? 'error.main'
-            : 'warning.main',
+        borderColor: getInvitationStatusColor(responseStatus, confirmStatus),
         backdropFilter: 'blur(8px)'
       }}
       onClick={(e) => onClick(e, guest.guestId as string)}
       data-testid="guest-status-item"
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Confirmed RSVP icon*/}
+          {guest.rsvp?.wedding === RsvpEnum.Attending && (
+          <Tooltip title="RSVP confirmed">
+            <VerifiedIcon 
+              fontSize="small" 
+              sx={{ 
+                color: 'success.main', 
+                verticalAlign: 'middle', 
+                ml: 0.5,
+                fontSize: '0.8rem'
+              }} 
+            />
+          </Tooltip>
+        )}
         <Avatar 
           sx={{ 
             width: 28, 
             height: 28, 
-            bgcolor: getInvitationStatusColor(responseStatus),
+            bgcolor: getInvitationStatusColor(responseStatus, confirmStatus),
             fontSize: '0.875rem'
           }}
         >
@@ -138,12 +148,12 @@ const GuestStatusItem = ({ invitationCode, guest, onClick, compact = false }: Gu
         <Chip 
           size="small"
           label="Status"
-          icon={getInvitationStatusIcon(responseStatus)}
+          icon={getInvitationStatusIcon(responseStatus, confirmStatus)}
           sx={{ 
             backgroundColor: theme.palette.mode === 'dark' 
-              ? `${getInvitationStatusColor(responseStatus)}70` 
-              : `${getInvitationStatusColor(responseStatus)}40`,
-            color: getInvitationStatusColor(responseStatus)
+              ? `${getInvitationStatusColor(responseStatus, confirmStatus)}70` 
+              : `${getInvitationStatusColor(responseStatus, confirmStatus)}40`,
+            color: getInvitationStatusColor(responseStatus, confirmStatus)
           }}
         />
       </Box>
