@@ -60,9 +60,20 @@ export const familyGuestsStates = selector<FamilyGuestsStates | null>({
 
     const mailingAddressEntered = !!familyUnit.mailingAddress;
     const mailingAddressUspsVerified = familyUnit.mailingAddress?.uspsVerified;
-    const callByLastNames = Array.from(new Set(guests.map((user) => user.lastName)))
-      .map((lastName) => `${lastName}s`)
+    const callByLastNames = Array.from(
+      new Set(
+        guests
+          .map((user) => user.lastName?.trim())
+          .filter((lastName) => lastName)
+      )
+    )
+      .map((lastName) => {
+        // Apply proper English pluralization for last names
+        const endsInS = lastName.toLowerCase().endsWith('s');
+        return endsInS ? `${lastName}es` : `${lastName}s`;
+      })
       .join(' & ');
+    
     const saveTheDateComplete = mailingAddressUspsVerified && allUsersAttendanceResponded;
 
     return {
@@ -98,8 +109,8 @@ export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>
     const everyoneIsLame =
       familyUnit.guests?.every(
         (guest) =>
-          guest.rsvp.wedding === RsvpEnum.Declined ||
-          guest.rsvp.wedding === RsvpEnum.Pending,
+          guest.rsvp?.wedding === RsvpEnum.Declined ||
+          guest.rsvp?.wedding === RsvpEnum.Pending,
       ) ?? true;
     const atLeastOneAttending = !everyoneIsLame;
 
@@ -450,13 +461,23 @@ export const useFamily = () => {
 
   useEffect(() => {
     if (!family || !family.guests || !rsvpSteps) return;
-    const attendingGuests = family.guests.filter(
-      (guest) => guest.rsvp?.wedding === RsvpEnum.Pending,
+    
+    // Get guests who are either attending or pending (i.e., not declined)
+    const relevantGuests = family.guests.filter(
+      (guest) => guest.rsvp?.wedding === RsvpEnum.Attending || guest.rsvp?.wedding === RsvpEnum.Pending,
     );
-    //console.log('are some guests pending?', attendingGuests.some((guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending));
+    
+    // For completion tracking, we only care about guests who are explicitly attending
+    const attendingGuests = family.guests.filter(
+      (guest) => guest.rsvp?.wedding === RsvpEnum.Attending,
+    );
+    
+    // For guests who need to complete steps (both attending and pending)
+    const guestsToComplete = [...attendingGuests];
+    
     setRsvpSteps((prev) => ({
       weddingAttendance: {
-        ...prev.attendance,
+        ...prev.weddingAttendance,
         display: true,
         label: `${guestStates.guests.length > 1 ? 'Is your family' : 'Are you'} interested in attending the wedding?`,
         completed: !family.guests.some(
@@ -473,35 +494,32 @@ export const useFamily = () => {
       },
       // ageGroup: {
       //   ...prev.ageGroup,
-      //   display: attendingGuests.some(
-      //     (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
-      //   ),
+      //   display: relevantGuests.length > 0,
       //   label: `What kind of '${guestStates.guests.length > 1 ? 'people' : 'person'} are we catering to?`,
-      //   completed: attendingGuests.every((guest) => guest.ageGroup !== undefined),
+      //   completed: guestsToComplete.every((guest) => guest.ageGroup !== undefined),
       // },
       foodPreferences: {
         ...prev.foodPreferences,
-        display: attendingGuests.some(
-          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        display: relevantGuests.length > 0,
+        completed: guestsToComplete.length > 0 && guestsToComplete.every((guest) => 
+          guest.preferences && guest.preferences.foodPreference !== null
         ),
-        completed: attendingGuests.every((guest) => guest.preferences.foodPreference !== null),
       },
       foodAllergies: {
         ...prev.foodAllergies,
-        display: attendingGuests.some(
-          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
+        display: relevantGuests.length > 0,
+        completed: guestsToComplete.length > 0 && guestsToComplete.every((guest) => 
+          guest.preferences && !!guest.preferences.foodAllergies
         ),
-        completed: attendingGuests.every((guest) => !!guest.preferences.foodAllergies),
       },
       accommodation: {
         ...prev.accommodation,
-        display: attendingGuests.some(
-          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
-        ),
-        completed: attendingGuests.every(
+        display: relevantGuests.length > 0,
+        completed: guestsToComplete.length > 0 && guestsToComplete.every(
           (guest) =>
-            guest?.preferences?.sleepPreference !== undefined &&
-            guest?.preferences?.sleepPreference !== SleepPreferenceEnum.Unknown,
+            guest.preferences && 
+            guest.preferences.sleepPreference !== undefined &&
+            guest.preferences.sleepPreference !== SleepPreferenceEnum.Unknown,
         ),
       },
       mailingAddress: {
@@ -517,10 +535,8 @@ export const useFamily = () => {
       },
       communicationPreferences: {
         ...prev.communicationPreferences,
-        display: attendingGuests.some(
-          (guest) => guest.rsvp?.wedding !== RsvpEnum.Declined,
-        ),
-        completed: attendingGuests.some(
+        display: relevantGuests.length > 0,
+        completed: guestsToComplete.length > 0 && guestsToComplete.some(
           (value) => value?.phone?.verified || value?.email?.verified,
         ),
       },

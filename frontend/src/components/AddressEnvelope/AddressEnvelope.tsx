@@ -14,7 +14,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { guestSelector, useFamily, familyGuestsStates } from '@/store/family';
+import { guestSelector, useFamily, familyGuestsStates, familyGuestsRsvpStates } from '@/store/family';
 import {
   addressState,
   cityAddressState,
@@ -37,6 +37,7 @@ import FlagDE from '@/assets/flags/de.svg';
 import FlagNO from '@/assets/flags/no.svg';
 import FlagMX from '@/assets/flags/mx.svg';
 import FlagTH from '@/assets/flags/th.svg';
+import { isFeatureEnabled } from '@/config';
 
 // SVG data for the flags
 const FLAGS = {
@@ -133,6 +134,7 @@ const COUNTRIES: CountryOption[] = [
 const AddressEnvelope: React.FC = () => {
   const [familyUnit, familyActions] = useFamily();
   const attendanceState = useRecoilValue(familyGuestsStates);
+  const attendanceRsvpState = useRecoilValue(familyGuestsRsvpStates);
   const { contentHeight } = useAppLayout();
   const address = useRecoilValue(addressState);
   const setStreetAddress = useSetRecoilState(streetAddressState);
@@ -198,6 +200,24 @@ const AddressEnvelope: React.FC = () => {
     }
   }, [familyUnit, attendanceState]);
 
+  useEffect(() => {
+    if (familyUnit && familyUnit.mailingAddress) {
+      // Use nullish coalescing operator to only convert undefined to empty string,
+      // but keep null values as null
+      setStreetAddress(familyUnit.mailingAddress.streetAddress ?? null);
+      setSecondaryAddress(familyUnit.mailingAddress.secondaryAddress ?? null);
+      setCity(familyUnit.mailingAddress.city ?? null);
+      setState(familyUnit.mailingAddress.state ?? null);
+      setZipCode(familyUnit.mailingAddress.zipCode ?? null);
+      
+      // Set country if it exists, otherwise default to USA (null)
+      setCountry((familyUnit.mailingAddress as any)?.country ?? null);
+    }
+    if (familyUnit && isFeatureEnabled('ENABLE_RSVP_PHASE')) {
+      setWantsAnnouncement(false);
+    }
+  }, [familyUnit, attendanceRsvpState]);
+
   const saveAddressState = useMemo(() => {
     return familyActions.patchFamilyMutation.status;
   }, [familyActions.patchFamilyMutation]);
@@ -238,7 +258,8 @@ const AddressEnvelope: React.FC = () => {
         overflowY: 'auto',
       }}
     >
-      {!attendanceState?.atLeastOneAttending && (
+      {(!isFeatureEnabled('ENABLE_RSVP_PHASE') &&
+        !attendanceState?.atLeastOneAttending) && (
         <Fade in={true} timeout={500}>
           <Paper
             elevation={3}

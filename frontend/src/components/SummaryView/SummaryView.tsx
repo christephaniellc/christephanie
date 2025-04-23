@@ -352,7 +352,7 @@ const SummaryView: React.FC = () => {
         <CardContent>
           <Typography variant="h6" gutterBottom>
             {isRsvpFlow 
-              ? "Thank you for confirming details for your RSVP."
+              ? "Thank you for confirming RSVP details."
               : "Thank you for providing your information."
             }
           </Typography> 

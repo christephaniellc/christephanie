@@ -22,9 +22,19 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
   const rsvpStepper = useRecoilValue(rsvpStepperState);
 
   const handleNavigateToStep = (step: string) => {
-    familyActions.getFamily();
-    setTabIndex(Object.keys(rsvpSteps).indexOf(step));
-    navigate(`/rsvp?step=${step}`);
+    // Check if step exists and is visible before navigating
+    if (step && rsvpSteps[step] && rsvpSteps[step].display) {
+      //console.log(`NavigationButtons: Navigating to step ${step}`);
+      
+      // First update the tab index in state
+      const stepIndex = Object.keys(rsvpSteps).indexOf(step);
+      setTabIndex(stepIndex);
+      
+      // Then navigate to the URL with replace:true to avoid adding to history
+      navigate(`/rsvp?step=${step}`, { replace: true });
+    } else {
+      console.warn(`NavigationButtons: Attempted to navigate to invalid or invisible step ${step}`);
+    }
   };
 
   return (
@@ -51,41 +61,58 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
           flexShrink: 0,
         }}
         onClick={() => {
-          familyActions.getFamily();
-
-          // Find previous visible step using same logic as next button
-          const basicSteps = [
-            'weddingAttendance', 
-            'fourthOfJulyAttendance',
-            'mailingAddress',
-            'comments',
-            'summary',
-          ];
-          const atLeastOneAttending =
-            family?.guests?.some(
-              (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested,
+          // Immediately stop if we're transitioning between steps
+          if (familyActions.getFamilyUnitQuery.isFetching) {
+            //console.log('Navigation in progress, ignoring click');
+            return;
+          }
+          
+          try {
+            // Basic steps that are always shown
+            const basicSteps = [
+              'weddingAttendance',
+              'fourthOfJulyAttendance',
+              'mailingAddress',
+              'comments',
+              'summary',
+            ];
+            
+            // Get fresh family data asynchronously
+            familyActions.getFamily();
+            
+            // Check attendance status using current state
+            const anyAttending = family?.guests?.some(
+              (guest) => 
+                guest.rsvp?.wedding === 'Attending' || 
+                (guest.rsvp?.wedding === 'Pending' && guest.rsvp?.invitationResponse === 'Interested')
             ) ?? false;
             
-          // We've removed the welcome step
+            // Filter to visible steps (those with display=true or basic steps for non-attending)
+            const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
+              if (!step.display) return false;
+              
+              return anyAttending || basicSteps.includes(key);
+            });
+            
+            console.log('Back navigation data:', {
+              anyAttending,
+              currentStep: rsvpStepper.currentStep[0],
+              visibleSteps: visibleSteps.map(([key]) => key)
+            });
 
-          // Filter steps based on attendance
-          const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
-            if (atLeastOneAttending) {
-              return step.display;
-            } else {
-              return basicSteps.includes(key) && step.display;
+            // Find current position in visible steps
+            const currentVisibleIndex = visibleSteps.findIndex(
+              ([key]) => key === rsvpStepper.currentStep[0],
+            );
+
+            // If we found the current step and there's a previous step, go to it
+            if (currentVisibleIndex > 0) {
+              const prevStep = visibleSteps[currentVisibleIndex - 1][0];
+              console.log(`Moving to previous step: ${prevStep}`);
+              handleNavigateToStep(prevStep);
             }
-          });
-
-          // Find the current visible step index
-          const currentVisibleIndex = visibleSteps.findIndex(
-            ([key]) => key === rsvpStepper.currentStep[0],
-          );
-
-          // Go to the previous visible step
-          if (currentVisibleIndex > 0) {
-            const prevStep = visibleSteps[currentVisibleIndex - 1][0];
-            handleNavigateToStep(prevStep);
+          } catch (error) {
+            console.error('Error during back navigation:', error);
           }
         }}
       >
@@ -121,60 +148,67 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
           display: tabIndex < rsvpStepper.totalTabs ? 'inherit' : 'none',
         }}
         onClick={async () => {
+          // Immediately stop if we're transitioning between steps
+          if (familyActions.getFamilyUnitQuery.isFetching) {
+            //console.log('Navigation in progress, ignoring click');
+            return;
+          }
+          
           // If we're at the last tab, navigate home
           if (tabIndex >= rsvpStepper.totalTabs - 1) {
+            //console.log('At last tab, navigating home');
             navigate('/');
             return;
           }
 
-          // If we're at the comments step (last step before summary), navigate to summary
-          if (rsvpStepper.currentStep[0] === 'comments') {
-            handleNavigateToStep('summary');
-          } else {
-            // Otherwise find next visible step
-            // Basic steps to always include
-            const basicSteps = [
-              'weddingAttendance',
-              'fourthOfJulyAttendance',
-              'mailingAddress',
-              'comments',
-              'summary',
-            ];
+          try {
+            // If we're at the comments step (last step before summary), navigate to summary
+            if (rsvpStepper.currentStep[0] === 'comments') {
+              handleNavigateToStep('summary');
+            } else {
+              // Basic steps that are always shown
+              const basicSteps = [
+                'weddingAttendance',
+                'fourthOfJulyAttendance',
+                'mailingAddress',
+                'comments',
+                'summary',
+              ];
+              
+              // Get fresh family data if needed but don't wait
+              // This is just a background refresh to ensure latest data is available
+              familyActions.getFamily();
 
-            // Force a refresh of family data first to ensure we have latest state
-            // especially important after changing from Pending to Interested
-            await familyActions.getFamily();
-
-            // Re-check attendance status with fresh data
-            const refreshedAtLeastOneAttendingState =
-              family?.guests?.some(
-                (guest) => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested,
+              // Check attendance status - we'll use current state since we just refreshed it
+              const anyAttending = family?.guests?.some(
+                (guest) => 
+                  guest.rsvp?.wedding === 'Attending' || 
+                  (guest.rsvp?.wedding === 'Pending' && guest.rsvp?.invitationResponse === 'Interested')
               ) ?? false;
               
-            // We've removed the welcome step
+              // Filter to visible steps (those with display=true or basic steps for non-attending)
+              const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
+                if (!step.display) return false;
+                
+                return anyAttending || basicSteps.includes(key);
+              });
+              
+              // Find current position in visible steps
+              const currentVisibleIndex = visibleSteps.findIndex(
+                ([key]) => key === rsvpStepper.currentStep[0],
+              );
 
-            // Filter steps based on UPDATED attendance status
-            const visibleSteps = Object.entries(rsvpSteps).filter(([key, step]) => {
-              if (refreshedAtLeastOneAttendingState) {
-                return step.display;
+              // If we found the current step and there's a next step, go to it
+              if (currentVisibleIndex !== -1 && currentVisibleIndex < visibleSteps.length - 1) {
+                const nextStep = visibleSteps[currentVisibleIndex + 1][0];
+                handleNavigateToStep(nextStep);
               } else {
-                return basicSteps.includes(key) && step.display;
+                // Couldn't find current step or at end, go home
+                navigate('/');
               }
-            });
-
-            // Find the current visible step index
-            const currentVisibleIndex = visibleSteps.findIndex(
-              ([key]) => key === rsvpStepper.currentStep[0],
-            );
-
-            // Go to the next visible step
-            if (currentVisibleIndex < visibleSteps.length - 1) {
-              const nextStep = visibleSteps[currentVisibleIndex + 1][0];
-              handleNavigateToStep(nextStep);
-            } else {
-              // If no more visible steps, navigate home
-              navigate('/');
             }
+          } catch (error) {
+            console.error('Error during navigation:', error);
           }
         }}
       >
