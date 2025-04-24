@@ -524,4 +524,4 @@ const GuestEditor: React.FC<GuestEditorProps> = ({
   );
 };
 
-export default GuestEditor;
+export default React.memo(GuestEditor);
