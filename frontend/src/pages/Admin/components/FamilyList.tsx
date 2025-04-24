@@ -109,20 +109,20 @@ const FamilyList: React.FC<FamilyListProps> = ({
       return { label: 'No Guests', color: 'default' as const };
     }
     
-    const hasDeclined = family.guests.some(
-      guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
-    );
-    
-    if (hasDeclined) {
-      return { label: 'Declined', color: 'error' as const };
-    }
-    
     const hasInterested = family.guests.some(
       guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
     );
     
     if (hasInterested) {
       return { label: 'Interested', color: 'success' as const };
+    }
+    
+    const hasDeclined = family.guests.some(
+      guest => guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined
+    );
+    
+    if (hasDeclined) {
+      return { label: 'Declined', color: 'error' as const };
     }
     
     const hasRsvped = family.guests.some(
