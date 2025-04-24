@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Box,
   List,
@@ -56,6 +56,15 @@ const FamilyList: React.FC<FamilyListProps> = ({
   onSortChange
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Maintain focus on search input when components re-render
+  useEffect(() => {
+    // Don't grab focus initially, only if the search field already had focus
+    if (document.activeElement === searchInputRef.current) {
+      searchInputRef.current?.focus();
+    }
+  });
 
   // Filter families based on search term
   const filteredFamilies = searchTerm.trim() === '' 
@@ -143,6 +152,7 @@ const FamilyList: React.FC<FamilyListProps> = ({
           placeholder="Search families..."
           value={searchTerm}
           onChange={handleSearchChange}
+          inputRef={searchInputRef}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -209,35 +219,27 @@ const FamilyList: React.FC<FamilyListProps> = ({
                 >
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                          {family.unitName || 'Unnamed Family'}
-                        </Typography>
-                        <Chip 
-                          label={status.label} 
-                          color={status.color} 
-                          size="small"
-                        />
-                      </Box>
+                      <Typography
+                        component="div"
+                        variant="body1"
+                        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'medium' }}
+                      >
+                        <span>{family.unitName || 'Unnamed Family'}</span>
+                        <Chip label={status.label} color={status.color} size="small" />
+                      </Typography>
                     }
                     secondary={
-                      <Box>
-                        <Typography variant="caption" component="span">
-                          {family.invitationCode}
-                        </Typography>
-                        {family.tier && (
-                          <Typography variant="caption" component="span" sx={{ ml: 1 }}>
-                            • {family.tier}
-                          </Typography>
-                        )}
+                      <Typography component="div" variant="caption">
+                        <span>{family.invitationCode}</span>
+                        {family.tier && <span style={{ marginLeft: 8 }}>• {family.tier}</span>}
                         {family.guests && (
-                          <Typography variant="caption" component="span" sx={{ ml: 1 }}>
+                          <span style={{ marginLeft: 8 }}>
                             • {family.guests.length} {family.guests.length === 1 ? 'guest' : 'guests'}
-                          </Typography>
+                          </span>
                         )}
-                      </Box>
+                      </Typography>
                     }
-                  />
+                  />              
                 </StyledListItemButton>
               </ListItem>
             );
@@ -254,4 +256,4 @@ const FamilyList: React.FC<FamilyListProps> = ({
   );
 };
 
-export default FamilyList;
+export default React.memo(FamilyList);

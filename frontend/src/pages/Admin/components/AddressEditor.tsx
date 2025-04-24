@@ -590,4 +590,4 @@ const AddressEditor: React.FC<AddressEditorProps> = ({
   );
 };
 
-export default AddressEditor;
+export default React.memo(AddressEditor);

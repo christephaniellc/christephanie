@@ -379,4 +379,4 @@ const GuestList: React.FC<GuestListProps> = ({
   );
 };
 
-export default GuestList;
+export default React.memo(GuestList);

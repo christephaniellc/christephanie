@@ -480,4 +480,4 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
   );
 };
 
-export default FamilyDetails;
+export default React.memo(FamilyDetails);
