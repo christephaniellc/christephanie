@@ -1,4 +1,4 @@
-import { useEffect, useState, ReactElement } from 'react';
+import { useEffect, useState, ReactElement, useCallback, useMemo } from 'react';
 import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
@@ -39,6 +39,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 // Import custom components
 import FamilyList, { SortOption } from './components/FamilyList';
 import FamilyDetails from './components/FamilyDetails';
+import React from 'react';
 
 // Define the TabPanel props interface
 interface TabPanelProps {
@@ -49,7 +50,7 @@ interface TabPanelProps {
 }
 
 // TabPanel component for displaying tab content
-function TabPanel(props: TabPanelProps) {
+const TabPanel = React.memo(function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   
   // Check if this is the Summary or Details tab
@@ -78,11 +79,11 @@ function TabPanel(props: TabPanelProps) {
         position: 'relative',
         overflow: 'visible' // Always visible overflow to prevent scroll jumps
       }}>
-        {children}
+        {value === index ? children : null}
       </Box>
     </div>
   );
-}
+});
 
 // Helper function for tab accessibility props
 function a11yProps(index: number) {
@@ -116,7 +117,8 @@ function AdminPage() {
 
   const [expandedFamilyCodes, setExpandedFamilyCodes] = useState<Set<string>>(new Set());
   
-  const toggleExpanded = (invitationCode: string) => {
+  // Memoize toggle function to avoid recreation on every render
+  const toggleExpanded = useCallback((invitationCode: string) => {
     setExpandedFamilyCodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(invitationCode)) {
@@ -126,7 +128,7 @@ function AdminPage() {
       }
       return newSet;
     });
-  };
+  }, []);
 
   // Initial tab index based on the current URL path
   const initialTabIndex = pathToTabIndex[location.pathname] || 0;
@@ -195,8 +197,8 @@ function AdminPage() {
     }
   };
   
-  // Handle guest click to show detail popper
-  const handleGuestClick = (event: React.MouseEvent<HTMLElement>, guestId: string) => {
+  // Handle guest click to show detail popper - memoized to prevent rerenders
+  const handleGuestClick = useCallback((event: React.MouseEvent<HTMLElement>, guestId: string) => {
     const flipAxis = getRandomAxis();
     setPopperState({
       open: true,
@@ -205,18 +207,18 @@ function AdminPage() {
       flipped: false,
       flipAxis
     });
-  };
+  }, []);
 
-  // Handle closing the popper
-  const handleClosePopper = () => {
-    setPopperState({
-      ...popperState,
+  // Handle closing the popper - memoized to prevent rerenders
+  const handleClosePopper = useCallback(() => {
+    setPopperState(prevState => ({
+      ...prevState,
       open: false
-    });
-  };
+    }));
+  }, []);
 
-  // Find a guest by ID
-  const findGuestById = (guestId: string | null) => {
+  // Find a guest by ID - memoized to improve performance
+  const findGuestById = useCallback((guestId: string | null) => {
     if (!guestId) {
       return null;
     }
@@ -243,17 +245,17 @@ function AdminPage() {
     }
     
     return null;
-  };
+  }, [adminData]);
 
-  // Handle flipping the card
-  const handleFlipCard = () => {
-    setPopperState({
-      ...popperState,
-      flipped: !popperState.flipped
-    });
-  };
+  // Handle flipping the card - memoized to prevent rerenders
+  const handleFlipCard = useCallback(() => {
+    setPopperState(prevState => ({
+      ...prevState,
+      flipped: !prevState.flipped
+    }));
+  }, []);
   
-  // Sort families based on selected sort option - specific for FamilyUnitDto arrays
+  // Sort families based on selected sort option
   const sortFamilies = (families: FamilyUnitDto[], sortOption: SortOption): FamilyUnitDto[] => {
     const filteredFamilies = [...families];
     
@@ -370,7 +372,7 @@ function AdminPage() {
     }
   };
 
-  // Handle sorting selector change
+  // Handle sorting selector change - memoized to prevent recreating on each render
   const handleSortChange = (event: SelectChangeEvent) => {
     setSortOption(event.target.value as SortOption);
   };
@@ -396,69 +398,43 @@ function AdminPage() {
       console.error('Error fetching detailed family data:', err);
       setFamilyDetailsLoading(false);
     }
-  };
+  }
 
   // Function to sort admin data when the sort option changes
-  useEffect(() => {
-    if (adminData.length > 0) {
-      const sortedFamilies = sortFamilies([...adminData], sortOption);
-      setAdminData(sortedFamilies);
-    }
-  }, [sortOption]); // Only re-sort when the sort option changes
+  const sortedAdminData = useMemo(() => {
+    const sorted = sortFamilies([...adminData], sortOption);
+    return sorted;
+  }, [adminData, sortOption]);
     
   // Fetch admin data (admin-only endpoint) only if user is admin
   useEffect(() => {
-    // Only fetch admin data if the user has admin role
     if (!userIsAdmin) {
       setLoading(false);
       return;
     }
-    
-    const fetchAdminData = async () => {
+  
+    const fetchData = async () => {
       try {
-        // Check if we already have cached data
-        if (getAllFamiliesQuery.data && getAllFamiliesQuery.data.length > 0) {
-          const sortedFamilies = sortFamilies(getAllFamiliesQuery.data, sortOption);
-          setAdminData(sortedFamilies);
-          
-          // Select the first family by default when data loads
-          if (sortedFamilies.length > 0 && !selectedFamily) {
-            setSelectedFamily(sortedFamilies[0]);
-          }
-          
-          setLoading(false);
-          return;
-        }
-        
         const result = await getAllFamiliesQuery.refetch();
-        
+  
         if (result.status === 'success' && result.data) {
-          const sortedFamilies = sortFamilies(result.data, sortOption);
-          setAdminData(sortedFamilies);
-          
-          // Select the first family by default when data loads
-          if (sortedFamilies.length > 0 && !selectedFamily) {
-            setSelectedFamily(sortedFamilies[0]);
-          }
-          
-          setLoading(false);
+          setAdminData(result.data);
+          setError(null);
         } else {
-          console.error('Failed to load admin data');
-          setError('Failed to load admin data. Please try again later.');
-          setLoading(false);
+          setError('Failed to load admin data.');
         }
       } catch (err) {
-        console.error('Error fetching admin data:', err);
-        setError('Error loading admin data. Please try again later.');
+        console.error('Fetch error:', err);
+        setError('Error loading admin data.');
+      } finally {
         setLoading(false);
       }
     };
-
-    fetchAdminData();
-    // Only run once on mount if user is admin
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getAllFamiliesQuery, userIsAdmin]);
   
+    fetchData();
+    // DO NOT include `getAllFamiliesQuery.data` here or it won’t run on mount
+    // DO NOT debounce — we always want a guaranteed fetch on mount
+  }, [userIsAdmin, getAllFamiliesQuery.refetch]);   
 
   // If user is not an admin, redirect to home page
   if (!loading && !userIsAdmin) {
@@ -466,88 +442,89 @@ function AdminPage() {
   }
 
   // Define the component for each tab
-  const EditTabContent = () => (
-    <Grid container spacing={2} sx={{ height: '100%' }}>
-      {/* Left Panel - Family List */}
-      <Grid item xs={12} md={4} lg={3} sx={{ 
-        height: isMobile ? 'auto' : 'calc(100vh - 200px)', // Adjusted for tabs
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Paper elevation={3} sx={{ 
-          p: 2, 
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Family Units
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          
-          {/* Family List component - allow it to fill available space */}
-          <Box sx={{ 
-            flex: 1, 
-            display: 'flex', 
-            flexDirection: 'column',
-            overflow: 'auto'
-          }}>
-            <FamilyList 
-              families={adminData}
-              selectedFamily={selectedFamily}
-              onFamilySelect={handleFamilySelect}
-              sortOption={sortOption}
-              onSortChange={handleSortChange}
-            />
-          </Box>
-        </Paper>
-      </Grid>
-      
-      {/* Right Panel - Family Details */}
-      <Grid item xs={12} md={8} lg={9} sx={{ 
-        height: isMobile ? 'auto' : 'calc(100vh - 200px)', // Adjusted for tabs
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Paper elevation={3} sx={{ 
-          p: 2, 
-          height: '100%',
+  const EditTabContent = () => {
+    return (
+      <Grid container spacing={2} sx={{ height: '100%' }}>
+        {/* Left Panel - Family List */}
+        <Grid item xs={12} md={4} lg={3} sx={{ 
+          height: isMobile ? 'auto' : 'calc(100vh - 200px)', // Adjusted for tabs
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {/* Family Details component */}
-          <FamilyDetails 
-            family={selectedFamily} 
-            loading={familyDetailsLoading}
-            onFamilyUpdate={async () => {
-              // Refresh all families data
-              try {
-                const result = await getAllFamiliesQuery.refetch();
-                if (result.status === 'success' && result.data) {
-                  const sortedFamilies = sortFamilies(result.data, sortOption);
-                  setAdminData(sortedFamilies);
-                  
-                  // Also update the selected family
-                  if (selectedFamily) {
-                    const updatedFamily = result.data.find(
-                      f => f.invitationCode === selectedFamily.invitationCode
-                    );
-                    if (updatedFamily) {
-                      setSelectedFamily(updatedFamily);
+          <Paper elevation={3} sx={{ 
+            p: 2, 
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Family Units
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            
+            {/* Family List component - allow it to fill available space */}
+            <Box sx={{ 
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column',
+              overflow: 'auto'
+            }}>
+              <FamilyList 
+                families={sortedAdminData}
+                selectedFamily={selectedFamily}
+                onFamilySelect={handleFamilySelect}
+                sortOption={sortOption}
+                onSortChange={handleSortChange}
+              />
+            </Box>
+          </Paper>
+        </Grid>
+        
+        {/* Right Panel - Family Details */}
+        <Grid item xs={12} md={8} lg={9} sx={{ 
+          height: isMobile ? 'auto' : 'calc(100vh - 200px)', // Adjusted for tabs
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <Paper elevation={3} sx={{ 
+            p: 2, 
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Family Details component */}
+            <FamilyDetails 
+              family={selectedFamily} 
+              loading={familyDetailsLoading}
+              onFamilyUpdate={async () => {
+                // Refresh all families data
+                try {
+                  const result = await getAllFamiliesQuery.refetch();
+                  if (result.status === 'success' && result.data != null) {
+                    setAdminData(result.data);
+                    
+                    // Also update the selected family
+                    if (selectedFamily) {
+                      const updatedFamily = result.data.find(
+                        f => f.invitationCode === selectedFamily.invitationCode
+                      );
+                      if (updatedFamily) {
+                        setSelectedFamily(updatedFamily);
+                      }
                     }
                   }
+                } catch (err) {
+                  console.error('Error refreshing admin data:', err);
                 }
-              } catch (err) {
-                console.error('Error refreshing admin data:', err);
-              }
-            }}
-          />
-        </Paper>
+              }}
+            />
+          </Paper>
+        </Grid>
       </Grid>
-    </Grid>
-  );
+    );
+  };
 
   // Details tab content with just families and guests
   const DetailsTabContent = () => (
@@ -626,7 +603,7 @@ function AdminPage() {
           }}
           data-testid="admin-family-grid"
         >
-          {adminData.map((family) => (
+          {sortedAdminData.map((family) => (
             <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
               <AdminFamilyCard 
                 family={family} 
@@ -1324,4 +1301,4 @@ function AdminPage() {
   );
 }
 
-export default AdminPage;
+export default React.memo(AdminPage);
