@@ -329,8 +329,16 @@ export const WelcomeSection: React.FC = () => {
     // Set loading state for the specific guest and response
     setLoadingGuestId(guestId);
     
-    // Update the RSVP
-    familyActions.updateFamilyGuestRsvp(guestId, response);
+    // Get the current guest's wedding RSVP status
+    const guest = family.guests.find(g => g.guestId === guestId);
+    const currentResponse = guest?.rsvp?.wedding || null;
+    
+    // Only set to "Pending" if the clicked button matches the current selection
+    // Otherwise, use the selected response value
+    const valueToSet = currentResponse === response ? RsvpEnum.Pending : response;
+    
+    // Update with the appropriate value
+    familyActions.updateFamilyGuestRsvp(guestId, valueToSet);
     
     // Set a timeout to clear the loading state after a reasonable time
     // This ensures users see the loading state even if the operation is quick
@@ -477,7 +485,7 @@ export const WelcomeSection: React.FC = () => {
               }}
             >
               Please confirm final attendance for each guest.
-            </Typography>
+p            </Typography>
           </Box>
           
           <List 
