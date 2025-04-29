@@ -124,6 +124,9 @@ jobs:
           WEBSERVICE_URL: "${{ env.WEBSERVICE_URL }}"
           RETURN_TO: "${{ env.WEBSERVICE_URL }}"
           STRIPE_PUBLIC_KEY: "${{ env.STRIPE_PUBLIC_KEY }}"
+      
+      - name: Write version.txt
+        run: echo "${{ env.VITE_APP_VERSION }}" > frontend/dist/version.txt
 
       - name: Upload assets (everything except index.html)
         run: |
