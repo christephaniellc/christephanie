@@ -66,7 +66,7 @@ export default defineConfig({
           { url: '/version.txt', revision: appVersion },
         ],
       },
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       // Check for updates more frequently
       injectRegister: 'auto',
       // Set a shorter interval (every 10 minutes = 10 * 60 * 1000)
