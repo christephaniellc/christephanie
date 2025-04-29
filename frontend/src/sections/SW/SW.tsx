@@ -49,7 +49,7 @@ function SW() {
       // Check for updates every minute
       if (registration) {
         setInterval(() => {
-          console.log('Manually checking for SW updates...');
+          //console.log('Manually checking for SW updates...');
           registration.update().catch(console.error);
         }, 60 * 1000);
       }
@@ -84,7 +84,7 @@ function SW() {
     
     const checkVersionAndRefresh = async () => {
       const currentVersion = await fetchCurrentVersion();
-      console.log('Current version:', currentVersion);
+      //console.log('Current version:', currentVersion);
       
       if (currentVersion) {
         if (lastKnownVersion === null) {
@@ -92,7 +92,7 @@ function SW() {
           lastKnownVersion = currentVersion;
         } else if (lastKnownVersion !== currentVersion) {
           // Version changed, set needRefresh to true
-          console.log(`Version changed from ${lastKnownVersion} to ${currentVersion}`);
+          console.log(`Application version changed from ${lastKnownVersion} to ${currentVersion}. Refreshing...`);
           setNeedRefresh(true);
         }
       }
