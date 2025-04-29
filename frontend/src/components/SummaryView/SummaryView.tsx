@@ -110,7 +110,7 @@ const SummaryView: React.FC = () => {
           const pendingCount = isRsvpFlow 
           ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
           : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
-        console.log(`${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`)
+        //console.log(`${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`)
         return `${attendingCount} interested, ${decliningCount} declining, ${pendingCount} pending`;
       
       case 'fourthOfJulyAttendance':
@@ -126,7 +126,7 @@ const SummaryView: React.FC = () => {
           const fourthPendingCount = isRsvpFlow 
           ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
           : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
-        console.log(`${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`)
+        //console.log(`${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`)
         return `${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`;
       
       case 'ageGroup':
