@@ -84,7 +84,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
       flexDirection="column" 
       alignItems="center" 
       width="100%" 
-      py={2}
+      py={isMobile ? 1 : 2}
       sx={{ 
         cursor: isMobile ? 'pointer' : 'default',
       }}
@@ -93,8 +93,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
         sx={{
           width: '100%',
           maxWidth: 600,
-          p: 1,
-          //mb: 2,
+          p: { xs: 0.75, sm: 1 },
           background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(20px)',
           border: `1px dashed ${theme.palette.secondary.main}`,
@@ -105,8 +104,11 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
       <Typography variant="h6" gutterBottom
         sx={{ 
           alignContent: 'left',
-          mb: 3,
+          mb: { xs: 1.5, sm: 3 },
           textAlign: 'left',
+          fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          px: { xs: 1, sm: 1 },
+          pt: { xs: 0.5, sm: 0 },
         }}>
         {guest.firstName}
       </Typography>
@@ -130,7 +132,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             color="error"
             icons={
               <>
-                <Weekend fontSize="inherit" sx={{ mr: 1 }} />
+                <Weekend fontSize="inherit" sx={{ mr: { xs: 0.5, sm: 1 } }} />
                 <TvOutlined fontSize="inherit" />
               </>
             }
@@ -147,7 +149,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             color="info"
             icons={
               <>
-                <Timer fontSize="inherit" sx={{ mr: 1 }} />
+                <Timer fontSize="inherit" sx={{ mr: { xs: 0.5, sm: 1 } }} />
                 <WbTwilight fontSize="inherit" />
               </>
             }
@@ -164,7 +166,7 @@ const RehearsalDinnerAttendance: React.FC<RehearsalDinnerAttendanceProps> = ({
             color="success"
             icons={
               <>
-                <LocalFireDepartment fontSize="inherit" sx={{ mr: 1 }} />
+                <LocalFireDepartment fontSize="inherit" sx={{ mr: { xs: 0.5, sm: 1 } }} />
                 <Fireplace fontSize="inherit" />
               </>
             }

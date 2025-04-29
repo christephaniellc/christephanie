@@ -7,29 +7,6 @@ import RehearsalDinnerAttendance from '@/components/WeddingAttendanceRadios/Rehe
 import { StephsActualFavoriteTypographyNoDrop, StephsStyledTypography } from '@/components/AttendanceButton/components/StyledComponents';
 import { EventAvailable } from '@mui/icons-material';
 
-const TitlePaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  borderRadius: theme.spacing(1),
-  textAlign: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  boxShadow: theme.shadows[5],
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent)',
-    backgroundSize: '10px 10px',
-    zIndex: 1,
-  },
-}));
-
 const InfoBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),
   textAlign: 'center',
@@ -47,7 +24,8 @@ const InfoBox = styled(Box)(({ theme }) => ({
 export const RehearsalDinnerSection: React.FC = () => {
   const [family] = useFamily();
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
+  const isXsScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
   
   if (!family) return null;
   
@@ -74,15 +52,6 @@ export const RehearsalDinnerSection: React.FC = () => {
 
   return (
     <>
-      {/* Title section - only shown once */}
-      {/* <TitlePaper elevation={3} sx={{ width: '100%', maxWidth: 600, mx: 'auto' }}>
-        <Typography variant="h5" fontWeight="bold" sx={{ position: 'relative', zIndex: 2 }}>
-          4th of July BBQ Dinner
-        </Typography>
-        <Typography variant="subtitle1" sx={{ position: 'relative', zIndex: 2 }}>
-          Burgers & Dogs - BYOB
-        </Typography>
-      </TitlePaper> */}
       <Box
         sx={{
           position: 'relative',
@@ -93,9 +62,10 @@ export const RehearsalDinnerSection: React.FC = () => {
           mb: 3,
           background: alpha(theme.palette.primary.main, 0.1),
           borderRadius: 1,
-          py: 2,
+          py: { xs: 1.5, sm: 2 },
           border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
           overflow: 'hidden',
+          width: '100%',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -129,8 +99,8 @@ export const RehearsalDinnerSection: React.FC = () => {
             alignItems: { xs: 'center', sm: 'flex-start' },
             justifyContent: 'space-between',
             width: '100%',
-            mb: 1,
-            px: 2,
+            mb: { xs: 0.5, sm: 1 },
+            px: { xs: 1, sm: 2 },
           }}
         >
           <Box 
@@ -141,36 +111,46 @@ export const RehearsalDinnerSection: React.FC = () => {
               alignItems: { xs: 'center', sm: 'flex-start' },
               position: 'relative',
               zIndex: 1,
-              mb: 1,
+              mb: { xs: 0.5, sm: 1 },
               flex: '1 1 auto',
+              width: '100%',
             }}
           >
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                mb: 1,
+                mb: 0.5,
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'center', sm: 'flex-start' },
+                width: '100%',
               }}
             >
               <EventAvailable 
                 sx={{ 
-                  mr: 1.5, 
+                  mr: { xs: 0.5, sm: 10.5 }, 
                   color: theme.palette.primary.main,
-                  fontSize: { xs: '1.8rem', sm: '2rem' },
+                  fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2rem' },
                   filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                 }} 
               />
               <StephsActualFavoriteTypographyNoDrop
-                variant="h5"
-                fontSize={isMobile ? '1.2rem' : '1.5rem'}
+                variant={isXsScreen ? "h6" : "h5"}
+                fontSize={isSmallMobile ? '1rem' : isXsScreen ? '1.1rem' : '1.5rem'}
                 sx={{ 
                   my: 0, 
-                  textAlign: 'center', 
-                  letterSpacing: '0.05em',
+                  textAlign: { xs: 'center', sm: 'left' }, 
+                  letterSpacing: { xs: '0.03em', sm: '0.05em' },
                   fontWeight: 500,
+                  lineHeight: { xs: 1.2, sm: 1.5 },
+                  // Give it full width on mobile to ensure proper centering
+                  ...(isXsScreen && {
+                    width: '100%',
+                    mt: 0.5,
+                  }),
                 }}
               >
-                4th of July: Potluck BBQ Dinner & Fireworks
+                4th of July: Potluck BBQ{isXsScreen ? <br /> : ' '}& Fireworks
               </StephsActualFavoriteTypographyNoDrop>
             </Box>
             <Typography
@@ -183,9 +163,9 @@ export const RehearsalDinnerSection: React.FC = () => {
                 zIndex: 1,
                 fontWeight: '800',
                 textAlign: { xs: 'center', sm: 'left' },
-                fontSize: { xs: '0.9rem', sm: '1.0rem' },
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.0rem' },
                 mt: 0.5,
-                pl: { sm: 3 },
+                pl: { xs: 0, sm: 3 },
               }}
             >
               Friday, July 4th
@@ -198,10 +178,11 @@ export const RehearsalDinnerSection: React.FC = () => {
                 opacity: 0.8,
                 position: 'relative',
                 zIndex: 1,
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                 mt: 0.5,
-                pl: { sm: 3 },
+                pl: { xs: 0, sm: 3 },
                 textAlign: { xs: 'center', sm: 'left' },
+                px: { xs: 1, sm: 0 },
               }}
             >
               Join us at the venue the day before for a potluck BBQ and fireworks!
@@ -211,15 +192,16 @@ export const RehearsalDinnerSection: React.FC = () => {
             id="4th-info"
             sx={{ 
               backgroundColor: alpha(theme.palette.primary.main, 0.2),
-              padding: theme.spacing(1.5),
+              padding: { xs: theme.spacing(1), sm: theme.spacing(1.5) },
               borderRadius: 1,
-              maxWidth: { xs: '90%', sm: '40%' },
+              width: { xs: '100%', sm: 'auto' },
+              maxWidth: { xs: '100%', sm: '40%' },
               textAlign: 'left',
               boxShadow: theme.shadows[1],
               position: 'relative',
               zIndex: 1,
               ml: { sm: 2 },
-              mt: { xs: 2, sm: 0 },
+              mt: { xs: 1.5, sm: 0 },
               alignSelf: { sm: 'stretch' },
             }}
           >
@@ -231,12 +213,19 @@ export const RehearsalDinnerSection: React.FC = () => {
                 opacity: 0.8,
                 position: 'relative',
                 zIndex: 1,
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                mt: 0.5,
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                mt: { xs: 0, sm: 0.5 },
               }}
             >
-              <strong>Please Bring:</strong>
-              <ul>
+              <span style={{
+                  color: theme.palette.secondary.main,
+                  fontWeight: 'bold',
+                }}>Please Bring:</span>
+              <ul style={{ 
+                margin: isXsScreen ? '0.25rem 0 0.25rem 1.25rem' : '0.5rem 0 0.5rem 1.5rem', 
+                paddingLeft: 0,
+                lineHeight: isXsScreen ? 1.3 : 1.5
+              }}>
                 <li>Grill items, buns, and sides to share</li>
                 <li>BYOB</li>
                 <li>Fireworks (legal in Virginia)</li>
@@ -248,21 +237,36 @@ export const RehearsalDinnerSection: React.FC = () => {
       </Box>
       
       {/* Guest attendance buttons */}
-      {family.guests.map((guest: GuestViewModel) => (
-        <Box key={guest.guestId} sx={{ mb: 0, width: '100%' }}>
-          <RehearsalDinnerAttendance 
-            guestId={guest.guestId} 
-            showHeader={false} 
-          />
-        </Box>
-      ))}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        width: '100%',
+        gap: { xs: 0.5, sm: 1 }
+      }}>
+        {family.guests.map((guest: GuestViewModel) => (
+          <Box key={guest.guestId} sx={{ width: '100%' }}>
+            <RehearsalDinnerAttendance 
+              guestId={guest.guestId} 
+              showHeader={false} 
+            />
+          </Box>
+        ))}
+      </Box>
       
       {/* Bottom message - only shown once */}
-      <InfoBox>
+      <InfoBox sx={{
+        padding: { xs: theme.spacing(1.5), sm: theme.spacing(2) },
+        fontSize: { xs: '0.85rem', sm: '1rem' },
+        minHeight: { xs: '60px', sm: '80px' },
+      }}>
         <Typography 
-          variant="body1" 
+          variant={isXsScreen ? "body2" : "body1"} 
           color={anyPending ? 'info.main' : 'success.main'}
-          sx={{ lineHeight: 1.2 }}
+          sx={{ 
+            lineHeight: 1.2,
+            fontSize: { xs: '0.85rem', sm: '1rem' },
+            px: { xs: 1, sm: 2 }
+          }}
         >
           {getMessage()}
         </Typography>
