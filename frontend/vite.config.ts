@@ -112,7 +112,7 @@ export default defineConfig({
           { url: '/version.txt', revision: buildTimestamp }
         ],
       },
-      registerType: 'prompt',
+      registerType: 'autoUpdate', // Automatically update the service worker
       // Check for updates more frequently
       injectRegister: 'auto',
       // Set a shorter interval (every 10 minutes = 10 * 60 * 1000)
