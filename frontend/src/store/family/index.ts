@@ -131,6 +131,7 @@ export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>
 
     return {
       allUsersResponded: allUsersAttendanceResponded,
+      allUsers4thAttendanceResponded: allUsers4thAttendanceResponded,
       attendingLastNames,
       callByLastNames,
       guests,
