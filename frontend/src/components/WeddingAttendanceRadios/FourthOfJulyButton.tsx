@@ -109,8 +109,8 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
       sx={{
         lineHeight: 1.2,
         justifyContent: 'center',
-        paddingY: 1.5,
-        paddingX: 2,
+        paddingY: { xs: 1, sm: 1.5 },
+        paddingX: { xs: 1, sm: 2 },
         width: isBreakpointUpMin ? '33.33%' : '100%',
         height: !isBreakpointUpMin ? '33.33%' : '100%',
         ...styles.button
@@ -120,21 +120,24 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
         display="flex"
         justifyContent="center"
         alignItems="center"
-        gap={1}
-        height={80}
+        gap={{ xs: 0.5, sm: 1 }}
+        height={{ xs: 60, sm: 80 }}
         sx={{ width: '100%', position: 'relative' }}
       >
-        <IconContainer sx={{ opacity: loading ? 0.4 : 1 }}>
+        <IconContainer sx={{ 
+          opacity: loading ? 0.4 : 1,
+          fontSize: { xs: '1.5rem', sm: '2rem' }
+        }}>
           {icons}
         </IconContainer>
         <StephsStyledTypography
-          fontSize="1.5rem"
+          fontSize={{ xs: '1.1rem', sm: '1.3rem', md: '1.5rem' }}
           useWhite={response !== RsvpEnum.Pending || currentResponse !== response}
           animate={false}
           textColor={styles.typography.textColor}
           shadowColor={styles.typography.shadowColor}
           sx={{
-            lineHeight: '1.4rem',
+            lineHeight: { xs: '1.2rem', sm: '1.4rem' },
             textShadow: styles.typography.textShadow,
             opacity: loading ? 0.4 : 1,
           }}
@@ -144,14 +147,14 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
         
         {loading && (
           <CircularProgress 
-            size={28} 
+            size={isMobile ? 24 : 28} 
             color={color} 
             sx={{ 
               position: 'absolute',
               left: '50%',
               top: '50%',
-              marginLeft: '-14px',
-              marginTop: '-14px',
+              marginLeft: isMobile ? '-12px' : '-14px',
+              marginTop: isMobile ? '-12px' : '-14px',
               zIndex: 10,
             }} 
           />
