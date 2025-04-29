@@ -131,7 +131,7 @@ const FourthOfJulyButton: React.FC<FourthOfJulyButtonProps> = ({
           {icons}
         </IconContainer>
         <StephsStyledTypography
-          fontSize={{ xs: '1.1rem', sm: '1.3rem', md: '1.5rem' }}
+          fontSize="1.5rem"
           useWhite={response !== RsvpEnum.Pending || currentResponse !== response}
           animate={false}
           textColor={styles.typography.textColor}
