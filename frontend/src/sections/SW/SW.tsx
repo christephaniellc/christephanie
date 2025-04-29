@@ -72,7 +72,7 @@ function SW() {
             window.location.reload();
           });
         } else {
-          window.location.reload();
+          (window as Window).location.reload();
         }
       }, 1500);
     } catch (error) {
