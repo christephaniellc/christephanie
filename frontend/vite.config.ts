@@ -11,6 +11,7 @@ const isProduction = process.env.DEPLOY_ENV === 'prod';
 console.log(
   `env: ${env}, isProduction: ${isProduction}, process.env.DEPLOY_ENV: ${process.env.DEPLOY_ENV}, process.env.VITE_ENV: ${process.env.VITE_ENV}`,
 );
+const appVersion = new Date().toISOString();
 
 // Get current Git branch directly
 let gitBranch = 'unknown';
@@ -60,6 +61,10 @@ export default defineConfig({
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,
+        navigateFallback: '/index.html',
+        additionalManifestEntries: [
+          { url: '/version.txt', revision: appVersion },
+        ],
       },
       registerType: 'autoUpdate',
       // Check for updates more frequently
