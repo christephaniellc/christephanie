@@ -35,7 +35,7 @@ const blink = keyframes`
   50% { opacity: 0.9; }
   100% { opacity: 0.3; }
 `;
-
+  
 // Styled component for the attendance button
 const StyledAttendanceButton = styled(Button)(({ theme }) => ({
   position: 'relative',
@@ -306,9 +306,12 @@ export const WelcomeSection: React.FC = () => {
   const [family, familyActions] = useFamily();
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
-  const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
+  //const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    
   const isSmallDevice = useMediaQuery(theme.breakpoints.down('sm'));
   const [loadingGuestId, setLoadingGuestId] = useState<string | null>(null);
+  console.log(`isMobile: ${isMobile} isSmallDevice: ${isSmallDevice}`);
 
   // Force a refresh to ensure we have the latest data
   useEffect(() => {
@@ -350,7 +353,7 @@ export const WelcomeSection: React.FC = () => {
   // Check if form is in a loading/submitting state
   const isLoading = familyActions.patchFamilyGuestMutation.status === 'pending' || 
                     familyActions.getFamilyUnitQuery.isFetching;
-
+   
   return (
     <Box sx={{ width: '100%', py: 2 }}>
       <Card 
@@ -387,7 +390,7 @@ export const WelcomeSection: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               mb: 3,
-              background: alpha(theme.palette.primary.main, 0.1),
+              background: alpha(theme.palette.primary.main, 0.3),
               borderRadius: 1,
               py: 2,
               border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
@@ -428,6 +431,7 @@ export const WelcomeSection: React.FC = () => {
                 mb: 1,
               }}
             >
+              {!isMobile && (
               <EventAvailable 
                 sx={{ 
                   mr: 1.5, 
@@ -436,6 +440,7 @@ export const WelcomeSection: React.FC = () => {
                   filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                 }} 
               />
+              )}
               <StephsActualFavoriteTypographyNoDrop
                 variant="h5"
                 //component="h2"

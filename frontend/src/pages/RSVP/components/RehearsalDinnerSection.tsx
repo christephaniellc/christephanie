@@ -26,7 +26,8 @@ export const RehearsalDinnerSection: React.FC = () => {
   const theme = useTheme();
   const isXsScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isSmallMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    
   if (!family) return null;
   
   // Find if any guests are undecided
@@ -60,8 +61,9 @@ export const RehearsalDinnerSection: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           mb: 3,
-          background: alpha(theme.palette.primary.main, 0.1),
+          background: alpha(theme.palette.primary.main, 0.3),
           borderRadius: 1,
+          backdropFilter: 'blur(5px)',
           py: { xs: 1.5, sm: 2 },
           border: `1px dashed ${alpha(theme.palette.primary.main, 0.5)}`,
           overflow: 'hidden',
@@ -126,6 +128,7 @@ export const RehearsalDinnerSection: React.FC = () => {
                 width: '100%',
               }}
             >
+              {!isMobile && (
               <EventAvailable 
                 sx={{ 
                   mr: { xs: 0.5, sm: 10.5 }, 
@@ -134,6 +137,7 @@ export const RehearsalDinnerSection: React.FC = () => {
                   filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                 }} 
               />
+              )}
               <StephsActualFavoriteTypographyNoDrop
                 variant={isXsScreen ? "h6" : "h5"}
                 fontSize={isSmallMobile ? '1rem' : isXsScreen ? '1.1rem' : '1.5rem'}
@@ -158,7 +162,7 @@ export const RehearsalDinnerSection: React.FC = () => {
               component="p"
               sx={{ 
                 color: alpha(theme.palette.secondary.main, 0.8),
-                opacity: 0.8,
+                opacity: 1.0,
                 position: 'relative',
                 zIndex: 1,
                 fontWeight: '800',
@@ -166,6 +170,7 @@ export const RehearsalDinnerSection: React.FC = () => {
                 fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.0rem' },
                 mt: 0.5,
                 pl: { xs: 0, sm: 3 },
+                pb: 2
               }}
             >
               Friday, July 4th
@@ -185,13 +190,13 @@ export const RehearsalDinnerSection: React.FC = () => {
                 px: { xs: 1, sm: 0 },
               }}
             >
-              Join us at the venue the day before for a potluck BBQ and fireworks!
+              The day before the wedding, join us at the venue for a potluck BBQ and fireworks!
             </Typography>
           </Box>
           <Paper
             id="4th-info"
             sx={{ 
-              backgroundColor: alpha(theme.palette.primary.main, 0.2),
+              backgroundColor: alpha(theme.palette.primary.main, 0.3),
               padding: { xs: theme.spacing(1), sm: theme.spacing(1.5) },
               borderRadius: 1,
               width: { xs: '100%', sm: 'auto' },
