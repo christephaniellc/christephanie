@@ -16,6 +16,7 @@ export interface FamilyGuestsStates {
 export interface FamilyGuestsWeddingStates {
   [x: string]: any;
   allUsersResponded: boolean;
+  allUsers4thAttendanceResponded: boolean;
   attendingLastNames: string[];
   callByLastNames: string;
   guests: GuestViewModel[];
