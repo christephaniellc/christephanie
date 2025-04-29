@@ -1,4 +1,6 @@
 import welcome from '@/utils/welcome';
+// Load the force-refresh utility to make it available globally
+import '@/utils/force-refresh';
 
 // Root contains the main dependencies and providers of the base app
 //  - React, ReactDom, RecoilRoot, HelmetProvider, ThemeProvider, MUI-core)
@@ -14,6 +16,16 @@ Promise.all([import('@/Root'), import('@/App')]).then(([{ default: render }, { d
 
 // welcome message for users in the console
 welcome();
+
+// Add version info to console for debugging
+console.log(
+  `%cApp Version: ${import.meta.env.VITE_APP_VERSION || 'dev'}`, 
+  'background:#1976d2; color:white; padding:4px 8px; border-radius:4px; font-weight:bold'
+);
+console.log(
+  `%cTo force a clean refresh, run: window.forceRefresh()`, 
+  'background:#4caf50; color:white; padding:4px 8px; border-radius:4px; font-weight:bold'
+);
 
 // ts(1208)
 export {};

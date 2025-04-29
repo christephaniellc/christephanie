@@ -5,13 +5,23 @@ import { VitePWA } from 'vite-plugin-pwa';
 import manifest from './manifest.json';
 import { execSync } from 'child_process';
 import { Plugin } from 'vite';
+import fs from 'fs';
 
 const env = process.env.VITE_ENV || 'development';
 const isProduction = process.env.DEPLOY_ENV === 'prod';
 console.log(
   `env: ${env}, isProduction: ${isProduction}, process.env.DEPLOY_ENV: ${process.env.DEPLOY_ENV}, process.env.VITE_ENV: ${process.env.VITE_ENV}`,
 );
-const appVersion = new Date().toISOString();
+
+// Create a version based on timestamp and git hash
+const timestamp = new Date().toISOString();
+let gitHash = 'unknown';
+try {
+  gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+} catch (error) {
+  console.warn('Could not determine Git hash:', error);
+}
+const appVersion = `${timestamp}-${gitHash}`;
 
 // Get current Git branch directly
 let gitBranch = 'unknown';
@@ -20,6 +30,21 @@ try {
 } catch (error) {
   console.warn('Could not determine Git branch:', error);
 }
+
+// Create version.txt during build
+const generateVersionFile = (): Plugin => {
+  return {
+    name: 'generate-version-file',
+    closeBundle() {
+      const distDir = path.resolve(__dirname, 'dist');
+      if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(distDir, 'version.txt'), timestamp);
+      console.log(`Version file created: ${timestamp}`);
+    },
+  };
+};
 
 // Custom plugin to inject Lucky Orange script in production builds only
 const injectProductionScripts = (): Plugin => {
@@ -45,6 +70,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    generateVersionFile(),
     VitePWA({
       manifest,
       includeAssets: ['./public/favicon.ico', './public/favicon.svg', './public/robots.txt', './public/apple-touch-icon.png'],
@@ -62,8 +88,10 @@ export default defineConfig({
         // Clean old caches
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
+        // Add version.txt as an additional manifest entry with the current timestamp
+        // This will force the service worker to update when the version changes
         additionalManifestEntries: [
-          { url: '/version.txt', revision: appVersion },
+          { url: '/version.txt', revision: timestamp }
         ],
       },
       registerType: 'prompt',
@@ -83,6 +111,7 @@ export default defineConfig({
   },
   define: {
     'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
   },
   test: {
     environment: 'jsdom',
