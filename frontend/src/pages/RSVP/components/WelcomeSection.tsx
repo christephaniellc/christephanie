@@ -457,7 +457,7 @@ export const WelcomeSection: React.FC = () => {
               component="p"
               sx={{ 
                 color: alpha(theme.palette.secondary.main, 0.8),
-                opacity: 0.8,
+                opacity: 1.0,
                 position: 'relative',
                 zIndex: 1,
                 fontWeight: '800',
@@ -485,7 +485,7 @@ export const WelcomeSection: React.FC = () => {
               }}
             >
               Please confirm final attendance for each guest.
-p            </Typography>
+            </Typography>
           </Box>
           
           <List 
