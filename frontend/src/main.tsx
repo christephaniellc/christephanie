@@ -17,9 +17,10 @@ Promise.all([import('@/Root'), import('@/App')]).then(([{ default: render }, { d
 // welcome message for users in the console
 welcome();
 
-// Add version info to console for debugging
+// Add debug info to console
+const appVersion = import.meta.env.VITE_APP_VERSION || 'development';
 console.log(
-  `%cApp Version: ${import.meta.env.VITE_APP_VERSION || 'dev'}`, 
+  `%cBuild: ${appVersion}`, 
   'background:#1976d2; color:white; padding:4px 8px; border-radius:4px; font-weight:bold'
 );
 console.log(
