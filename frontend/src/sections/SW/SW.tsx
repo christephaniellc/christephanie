@@ -17,36 +17,23 @@ function SW() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
+    // Immediately check for updates on component mount
     immediate: true,
-    onRegisteredSW(swUrl, r) {
-      console.log(`Service Worker registered at: ${swUrl}`);
-      
-      // Check for updates every 10 minutes
-      const intervalMS = 10 * 60 * 1000;
-      
-      setInterval(() => {
-        console.log('Checking for SW updates...');
-        r?.update().catch(console.error);
-      }, intervalMS);
+    // Use auto-update strategy
+    onRegisteredSW(swUrl, registration) {
+      console.log('Service worker registered:', swUrl);
+      // Force a check for updates immediately
+      if (registration) {
+        setInterval(() => {
+          console.log('Checking for service worker updates...');
+          registration.update().catch(console.error);
+        }, 10 * 60 * 1000); // Check every 10 minutes
+      }
     },
     onRegisterError(error) {
-      console.error('SW registration error', error);
+      console.error('Service worker registration error:', error);
     }
   });
-  
-  // Force the app to allow screenshots on mobile devices
-  useEffect(() => {
-    // Add meta tag to allow screenshots
-    const metaTag = document.createElement('meta');
-    metaTag.name = 'allow-screenshots';
-    metaTag.content = 'true';
-    document.head.appendChild(metaTag);
-
-    // Make sure webkit touch callout is enabled
-    document.documentElement.style.setProperty('-webkit-touch-callout', 'default', 'important');
-    document.documentElement.style.setProperty('-webkit-user-select', 'auto', 'important');
-    document.documentElement.style.setProperty('user-select', 'auto', 'important');
-  }, []);
 
   const close = useCallback(() => {
     setOfflineReady(false);
@@ -58,20 +45,36 @@ function SW() {
   }, [setOfflineReady, setNeedRefresh, notificationsActions]);
 
   const handleReload = useCallback(() => {
-    //console.log('Updating service worker and reloading the page');
+    console.log('Updating service worker and reloading the page');
     // First close the notification
     close();
     // Then trigger the service worker update and force reload
     try {
       // Force update with skipWaiting to ensure the new service worker takes over immediately
       updateServiceWorker(true);
-
+      // Add a clear indication in the console for debugging
+      console.log('%cService worker update triggered - reload should happen automatically', 
+        'background:green; color:white; padding:4px 8px; border-radius:4px; font-weight:bold');
+      
       // As a fallback, force page reload after a short delay if the updateServiceWorker
       // doesn't trigger a reload by itself
-      setTimeout(() => {        
-         //console.log('Forcing page reload as fallback');
-         window.location.reload();
-       }, 1000);
+      setTimeout(() => {
+        console.log('%cForcing page reload as fallback', 
+          'background:orange; color:black; padding:4px 8px; border-radius:4px; font-weight:bold');
+        // Clear caches before reloading as an extra precaution
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            cacheNames.forEach(cacheName => {
+              console.log('Clearing cache:', cacheName);
+              caches.delete(cacheName);
+            });
+            // Now force reload
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+      }, 1500);
     } catch (error) {
       console.error('Error updating service worker, forcing reload:', error);
       (window as Window).location.reload();
