@@ -16,7 +16,23 @@ function SW() {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({
+    immediate: true,
+    onRegisteredSW(swUrl, r) {
+      console.log(`Service Worker registered at: ${swUrl}`);
+      
+      // Check for updates every 10 minutes
+      const intervalMS = 10 * 60 * 1000;
+      
+      setInterval(() => {
+        console.log('Checking for SW updates...');
+        r?.update().catch(console.error);
+      }, intervalMS);
+    },
+    onRegisterError(error) {
+      console.error('SW registration error', error);
+    }
+  });
   
   // Force the app to allow screenshots on mobile devices
   useEffect(() => {
