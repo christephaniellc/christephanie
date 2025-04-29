@@ -15,6 +15,7 @@ const VERSION_CHECK_INTERVAL = 30 * 1000; // 30 seconds
 const BYPASS_CACHE_PARAM = 'nocache';
 
 // Function to fetch the current version from version.txt
+// This uses the internal timestamp for comparisons only, not display
 async function fetchCurrentVersion() {
   try {
     // Bypass cache by adding a timestamp parameter

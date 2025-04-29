@@ -13,15 +13,28 @@ console.log(
   `env: ${env}, isProduction: ${isProduction}, process.env.DEPLOY_ENV: ${process.env.DEPLOY_ENV}, process.env.VITE_ENV: ${process.env.VITE_ENV}`,
 );
 
-// Create a version based on timestamp and git hash
-const timestamp = new Date().toISOString();
-let gitHash = 'unknown';
-try {
-  gitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch (error) {
-  console.warn('Could not determine Git hash:', error);
+// Get the env-provided app version or create one in the format: YYMMDD.HHMM.hash
+let appVersion = process.env.VITE_APP_VERSION || '';
+
+if (!appVersion) {
+  // Generate version in the same format as CI: YYMMDD.HHMM.hash
+  const now = new Date();
+  const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
+  const timeStr = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0');
+  
+  let gitHash = 'unknown';
+  try {
+    gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+  } catch (error) {
+    console.warn('Could not determine Git hash:', error);
+  }
+  
+  appVersion = `${dateStr}.${timeStr}.${gitHash}`;
+  console.log(`Generated app version: ${appVersion}`);
 }
-const appVersion = `${timestamp}-${gitHash}`;
+
+// For service worker updates, we need a simple timestamp 
+const buildTimestamp = new Date().toISOString();
 
 // Get current Git branch directly
 let gitBranch = 'unknown';
@@ -40,8 +53,13 @@ const generateVersionFile = (): Plugin => {
       if (!fs.existsSync(distDir)) {
         fs.mkdirSync(distDir, { recursive: true });
       }
-      fs.writeFileSync(path.join(distDir, 'version.txt'), timestamp);
-      console.log(`Version file created: ${timestamp}`);
+      // For version checking, we use a timestamp that will change with every build
+      fs.writeFileSync(path.join(distDir, 'version.txt'), buildTimestamp);
+      console.log(`Version file created with timestamp: ${buildTimestamp}`);
+      
+      // Also write the display version for debugging
+      fs.writeFileSync(path.join(distDir, 'display-version.txt'), appVersion);
+      console.log(`Display version file created: ${appVersion}`);
     },
   };
 };
@@ -91,7 +109,7 @@ export default defineConfig({
         // Add version.txt as an additional manifest entry with the current timestamp
         // This will force the service worker to update when the version changes
         additionalManifestEntries: [
-          { url: '/version.txt', revision: timestamp }
+          { url: '/version.txt', revision: buildTimestamp }
         ],
       },
       registerType: 'prompt',
@@ -112,6 +130,8 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
+    // Also make the build timestamp available for internal tracking
+    'import.meta.env.VITE_BUILD_TIMESTAMP': JSON.stringify(buildTimestamp),
   },
   test: {
     environment: 'jsdom',
