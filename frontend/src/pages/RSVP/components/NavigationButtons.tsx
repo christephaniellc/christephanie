@@ -94,11 +94,11 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
               return anyAttending || basicSteps.includes(key);
             });
             
-            console.log('Back navigation data:', {
-              anyAttending,
-              currentStep: rsvpStepper.currentStep[0],
-              visibleSteps: visibleSteps.map(([key]) => key)
-            });
+            // console.log('Back navigation data:', {
+            //   anyAttending,
+            //   currentStep: rsvpStepper.currentStep[0],
+            //   visibleSteps: visibleSteps.map(([key]) => key)
+            // });
 
             // Find current position in visible steps
             const currentVisibleIndex = visibleSteps.findIndex(
@@ -108,7 +108,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
             // If we found the current step and there's a previous step, go to it
             if (currentVisibleIndex > 0) {
               const prevStep = visibleSteps[currentVisibleIndex - 1][0];
-              console.log(`Moving to previous step: ${prevStep}`);
+              //console.log(`Moving to previous step: ${prevStep}`);
               handleNavigateToStep(prevStep);
             }
           } catch (error) {
