@@ -46,8 +46,8 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
     
     // Special handling for debug
     if (currentStep === 'communicationPreferences' || currentStep === 'communicationPreference') {
-      console.log("🔍 Found communication step:", currentStep);
-      console.log("⚠️ Rendering CommunicationSection");
+      //console.log("🔍 Found communication step:", currentStep);
+      //console.log("⚠️ Rendering CommunicationSection");
       return <CommunicationSection />;
     }
     
@@ -73,7 +73,7 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
       case 'accommodation':
         return <AccommodationSection />;
       default:
-        console.log("No matching case found, returning empty fragment");
+        //console.log("No matching case found, returning empty fragment");
         return <></>;
     }
   }, [rsvpStepper.currentStep, family]);
