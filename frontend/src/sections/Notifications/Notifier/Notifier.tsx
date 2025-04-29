@@ -51,7 +51,7 @@ function Notifier() {
       // keep track of snackbars that we've displayed
       options.key && storeDisplayed(options.key);
     });
-  });
+  }, [notifications, actions, closeSnackbar, enqueueSnackbar]); // Add dependencies
 
   return null;
 }
