@@ -44,6 +44,8 @@ import theme from '@/store/theme';
 // Create a custom New Content component that includes the sparkle effect
 const NewContentBadge = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  
   return (
     
     <Paper sx={{ 
@@ -148,14 +150,106 @@ const NewContentBadge = () => {
           />
         ))}        
         </Box>
-        <Box sx={{ mt: 1, ml: '20px' }}>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>RSVP</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Stats</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Details</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Registry</Typography>
+        <Box sx={{ 
+          mt: 1, 
+          ml: '20px', 
+          display: 'flex', 
+          flexWrap: 'nowrap', // Prevent wrapping
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          width: 'calc(100% - 20px)',
+          overflowX: 'auto', // Allow horizontal scrolling if needed
+          gap: { xs: 0.5, sm: 1 }, // Reduce gap on mobile
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+          '&::-webkit-scrollbar': { 
+            display: 'none' // Hide scrollbar on WebKit browsers
+          },
+          scrollbarWidth: 'none', // Hide scrollbar in Firefox
+          msOverflowStyle: 'none' // Hide scrollbar in IE/Edge
+        }}>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/rsvp'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            RSVP
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/stats'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Stats
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/details'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Details
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/registry'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Registry
+          </Button>
         </Box>
     </Paper>
   );
