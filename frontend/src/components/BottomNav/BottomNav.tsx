@@ -54,8 +54,8 @@ export const BottomNav = () => {
     if (path === routes[Pages.RSVP].path) return 2;
     if (path === routes[Pages.Details].path) return 3;
     if (path === routes[Pages.Registry].path) return 4;
-    if (path === routes[Pages.Bureaucracy].path) return 5;
-    if (path === routes[Pages.Stats].path) return 6;
+    if (path === routes[Pages.Stats].path) return 5;
+    if (path === routes[Pages.Bureaucracy].path) return 6;
     if (path === routes[Pages.Admin].path) return 7;
     //if (path === routes[Pages.PrintedRsvp].path) return 8;
     return -1; // No tab selected
@@ -117,11 +117,11 @@ export const BottomNav = () => {
         markVisited('registry');
         break;
       case 5:
-        navigate(routes[Pages.Bureaucracy].path!);
-        break;
+          navigate(routes[Pages.Stats].path!);
+          markVisited('stats');
+          break;
       case 6:
-        navigate(routes[Pages.Stats].path!);
-        markVisited('stats');
+        navigate(routes[Pages.Bureaucracy].path!);
         break;
       case 7:
         navigate(routes[Pages.Admin].path!);
@@ -167,8 +167,17 @@ export const BottomNav = () => {
       <Box
         position="fixed"
         bottom={0}
+        left={0}
+        right={0}
         width="100%"
-        sx={{ backgroundColor: 'transparent', zIndex: 1000, height: 65, borderRadius: 0 }}
+        sx={{ 
+          backgroundColor: 'transparent', 
+          zIndex: 1000, 
+          height: 65, 
+          borderRadius: 0,
+          overflow: 'hidden', // Prevent overflow to avoid scrolling
+          maxWidth: '100vw' // Ensure it doesn't exceed viewport width
+        }}
         component={Paper}
         elevation={5}
         role="navigation"
@@ -182,6 +191,11 @@ export const BottomNav = () => {
             height: 65,
             boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
             borderRadius: 0,
+            // Set a maximum number of items to display based on available space
+            '& > *': {
+              flexGrow: 1, 
+              maxWidth: 'none',
+            },
             '& .MuiBottomNavigationAction-root.Mui-selected': {
               backgroundColor: theme.palette.primary.main,
               color: 'white',
@@ -190,13 +204,30 @@ export const BottomNav = () => {
               minWidth: '42px',
               padding: '0 0',
               fontSize: '0.6rem',
+              // Make text smaller on mobile
+              '& .MuiBottomNavigationAction-label': {
+                fontSize: '0.6rem',  
+                lineHeight: 1,
+                marginTop: '2px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+              },
+              // Progressively increase size with screen width
               '@media (min-width: 400px)': {
                 minWidth: '56px',
-                padding: '0 1px',
+                padding: '0 2px',
+                '& .MuiBottomNavigationAction-label': {
+                  fontSize: '0.65rem',
+                },
               },
               '@media (min-width: 600px)': {
                 minWidth: '65px',
-                padding: '0 2px',
+                padding: '0 4px',
+                '& .MuiBottomNavigationAction-label': {
+                  fontSize: '0.7rem',
+                },
               },
             },
           }}
@@ -309,14 +340,6 @@ export const BottomNav = () => {
             }}
           />
 
-          {/* Bureaucracy */}
-          <BottomNavigationAction
-            label="Bureaucracy"
-            icon={<GavelIcon />}
-            aria-label="View legal information and bureaucracy pages"
-            disabled={false}
-          />
-
           {/* Stats (only for authenticated users) */}
           <BottomNavigationAction
             label="Stats"
@@ -343,6 +366,14 @@ export const BottomNav = () => {
             sx={{ 
               display: auth0User ? 'flex' : 'none',
             }}
+          />
+
+          {/* Bureaucracy */}
+          <BottomNavigationAction
+            label="Bureaucracy"
+            icon={<GavelIcon />}
+            aria-label="View legal information and bureaucracy pages"
+            disabled={false}
           />
 
           {/* Admin Updates (only for admin users) */}
