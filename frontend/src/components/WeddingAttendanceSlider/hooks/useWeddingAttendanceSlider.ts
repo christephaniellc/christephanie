@@ -39,7 +39,7 @@ export const useWeddingAttendanceSlider = (guestId: string) => {
   useEffect(() => {
     if (guest) {
       const position = getSliderPosition();
-      console.log(`Setting initial position for ${guest.firstName || guestId} to:`, position);
+      //console.log(`Setting initial position for ${guest.firstName || guestId} to:`, position);
       setSliderPosition(position);
     }
   }, [guest, guestId]);
@@ -52,7 +52,7 @@ export const useWeddingAttendanceSlider = (guestId: string) => {
     () => debounce(async (position: number) => {
       if (!guest) return;
       
-      console.log(`Updating database for ${guest.firstName || guestId} to position:`, position);
+      //console.log(`Updating database for ${guest.firstName || guestId} to position:`, position);
       setIsUpdating(true);
       try {
         // Map slider position to invitation response and wedding RSVP
@@ -77,7 +77,7 @@ export const useWeddingAttendanceSlider = (guestId: string) => {
             weddingRsvp = RsvpEnum.Pending;
         }
         
-        console.log(`Mapped to invitationResponse=${invitationResponse}, wedding=${weddingRsvp}`);
+        //console.log(`Mapped to invitationResponse=${invitationResponse}, wedding=${weddingRsvp}`);
         
         // Update both invitation response and wedding RSVP
         await familyActions.patchFamilyGuestMutation.mutate({
@@ -101,7 +101,7 @@ export const useWeddingAttendanceSlider = (guestId: string) => {
   // Handle slider change event - accept React's event type AND Material-UI's event type
   const handleSliderChange = (event: Event | SyntheticEvent, newValue: number | number[]) => {
     const position = Array.isArray(newValue) ? newValue[0] : newValue;
-    console.log(`Slider changed for ${guest?.firstName || guestId} to:`, position);
+    //console.log(`Slider changed for ${guest?.firstName || guestId} to:`, position);
     setSliderPosition(position);
     updateStatusInDatabase(position);
   };

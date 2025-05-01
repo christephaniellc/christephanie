@@ -18,9 +18,14 @@ import {
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { InvitationResponseEnum, RsvpEnum } from '@/types/api';
 import { userState } from '@/store/user';
+import {
+  rsvpStepperState,
+  rsvpStepsState,
+  rsvpTabIndex,
+} from '@/store/steppers';
 import { saveTheDateStepsState, stdStepperState } from '@/store/steppers/saveTheDateStepper';
 import routes from '@/routes';
 import { Pages } from '@/routes/types';
@@ -32,13 +37,15 @@ import { BlockTextTypography, BlockTextTypographyLess, StephsActualFavoriteTypog
 import styled from '@emotion/styled';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingBox from '@/components/LoadingBox';
-import { familyGuestsStates } from '@/store/family';
+import { familyGuestsRsvpStates, familyGuestsStates } from '@/store/family';
 import { isFeatureEnabled } from '@/config';
 import theme from '@/store/theme';
 
 // Create a custom New Content component that includes the sparkle effect
 const NewContentBadge = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  
   return (
     
     <Paper sx={{ 
@@ -143,14 +150,106 @@ const NewContentBadge = () => {
           />
         ))}        
         </Box>
-        <Box sx={{ mt: 1, ml: '20px' }}>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>RSVP</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Stats</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Details</Typography>
-          <Typography component="span" variant="body2" color="common.white"> - </Typography>
-          <Typography component="span" variant="body2" color="secondary" sx={{ fontWeight: 'bold' }}>Registry</Typography>
+        <Box sx={{ 
+          mt: 1, 
+          ml: '20px', 
+          display: 'flex', 
+          flexWrap: 'nowrap', // Prevent wrapping
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          width: 'calc(100% - 20px)',
+          overflowX: 'auto', // Allow horizontal scrolling if needed
+          gap: { xs: 0.5, sm: 1 }, // Reduce gap on mobile
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+          '&::-webkit-scrollbar': { 
+            display: 'none' // Hide scrollbar on WebKit browsers
+          },
+          scrollbarWidth: 'none', // Hide scrollbar in Firefox
+          msOverflowStyle: 'none' // Hide scrollbar in IE/Edge
+        }}>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/rsvp'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            RSVP
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/stats'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Stats
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/details'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Details
+          </Button>
+          <Typography component="span" variant="body2" color="common.white" sx={{ mx: 0 }}>-</Typography>
+          <Button 
+            component="span" 
+            onClick={() => window.location.href = '/registry'}
+            variant="text" 
+            color="secondary" 
+            size="small"
+            sx={{ 
+              fontWeight: 'bold', 
+              minWidth: 'auto', 
+              py: 0, 
+              px: { xs: 0.3, sm: 0.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.1),
+              }
+            }}
+          >
+            Registry
+          </Button>
         </Box>
     </Paper>
   );
@@ -169,7 +268,7 @@ export interface Step {
 }
 
 // Define steps
-const steps: { [step: string]: Step } = {
+const welcomeSteps: { [step: string]: Step } = {
   saveTheDate: {
     id: 0,
     label: 'Save the Date Survey',
@@ -220,11 +319,14 @@ const WelcomeStepper = () => {
   const theme = useTheme();
   const { user: auth0User } = useAuth0();
   const attendanceState = useRecoilValue(familyGuestsStates);
+  const rsvpAttendanceState = useRecoilValue(familyGuestsRsvpStates);
   const [activeStep, setActiveStep] = React.useState(0);
   const user = useRecoilValue(userState);
-  const [rsvpSteps, setRsvpSteps] = React.useState(steps);
+  const [stepsState, setStepsState] = React.useState(welcomeSteps);
   const stdSteps = useRecoilValue(saveTheDateStepsState);
   const stdStepper = useRecoilValue(stdStepperState);
+  const rsvpSteps = useRecoilValue(rsvpStepsState);
+  const rsvpStepper = useRecoilValue(rsvpStepperState);
   //const rsvpSteps = useRecoilValue(saveTheDateStepsState);
   const navigate = useNavigate();
   const location = useLocation();
@@ -252,6 +354,10 @@ const WelcomeStepper = () => {
     return Object.values(stdSteps).every((step) => step.completed);
   }, [stdSteps]);
 
+  const allRsvpStepsCompleted = useMemo(() => {
+    return Object.values(rsvpSteps).every((step) => step.completed);
+  }, [rsvpSteps]);
+
   // Find the first applicable incomplete step based on RSVP status
   const firstIncompleteStep = useMemo(() => {
     // Define which steps are relevant for pending/declined guests
@@ -267,8 +373,22 @@ const WelcomeStepper = () => {
     return incompleteStep ? incompleteStep[0] : null;
   }, [stdSteps, attendanceState]);
 
+  const firstIncompleteRsvpStep = useMemo(() => {
+    // Define which steps are relevant for pending/declined guests
+    const basicSteps = ['weddingAttendance', 'mailingAddress', 'comments', 'summary'];
+    
+    // If user is not attending (declined or pending), only show basic steps
+    const relevantSteps = rsvpAttendanceState?.atLeastOneAttending 
+      ? Object.entries(rsvpSteps) 
+      : Object.entries(rsvpSteps).filter(([key]) => basicSteps.includes(key));
+    
+    // Find the first incomplete relevant step
+    const incompleteStep = relevantSteps?.find(([_, step]) => !step.completed);
+    return incompleteStep ? incompleteStep[0] : null;
+  }, [rsvpSteps, rsvpAttendanceState]);
+
   // Current active step information
-  const activeStepInfo = Object.values(rsvpSteps)[activeStep];
+  const activeStepInfo = Object.values(stepsState)[activeStep];
 
   const calculateChipColor = useCallback((key: string) => {
     //console.log(`key: ${key}, invite: ${user.rsvp?.invitationResponse}, wedding: ${user.rsvp?.wedding}}`)
@@ -318,25 +438,49 @@ const WelcomeStepper = () => {
   }, [user.rsvp]);
 
   // Handle primary action button click
-  const handleActionButtonClick = () => {
-    if ((attendanceState?.atLeastOneAttending && allStepsCompleted) || 
-        (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
-         stdSteps['attendance']?.completed && 
-         stdSteps['mailingAddress']?.completed)) {
-      // If user is attending and all steps are completed, or
-      // If user has declined and completed the required steps,
-      // go back to SaveTheDate
-      navigate(routes[Pages.SaveTheDate].path);
-    } else if (firstIncompleteStep) {
-      // If there are incomplete steps, navigate to the first incomplete step
-      // Direct navigation with query parameter
-      const targetPage = routes[Pages.SaveTheDate].path;
-      
-      // Force a hard navigation to make sure the step parameter is recognized
-      window.location.href = `${window.location.origin}${targetPage}?step=${firstIncompleteStep}`;
-    } else {
-      // Fallback to the main SaveTheDate page
-      navigate(routes[Pages.SaveTheDate].path);
+  const handleActionButtonClick = ({ stepKey }: { stepKey: string }) => {
+    if (stepKey !== 'saveTheDate') {     
+      // RSVP
+      if ((rsvpAttendanceState?.atLeastOneAttending && allRsvpStepsCompleted) || 
+          (user.rsvp?.wedding === RsvpEnum.Declined && 
+          rsvpSteps['weddingAttendance']?.completed && 
+          rsvpSteps['mailingAddress']?.completed)) {
+        // If user is attending and all steps are completed, or
+        // If user has declined and completed the required steps,
+        // go back to SaveTheDate
+        navigate(routes[Pages.RSVP].path);
+      } else if (firstIncompleteRsvpStep) {
+        // If there are incomplete steps, navigate to the first incomplete step
+        // Direct navigation with query parameter
+        const targetPage = routes[Pages.RSVP].path;
+        
+        // Force a hard navigation to make sure the step parameter is recognized
+        window.location.href = `${window.location.origin}${targetPage}?step=${firstIncompleteRsvpStep}`;
+      } else {
+        // Fallback to the main SaveTheDate page
+        navigate(routes[Pages.RSVP].path);
+      }
+    } else { 
+      // SAVE THE DATE
+      if ((attendanceState?.atLeastOneAttending && allStepsCompleted) || 
+          (user.rsvp?.invitationResponse === InvitationResponseEnum.Declined && 
+          stdSteps['attendance']?.completed && 
+          stdSteps['mailingAddress']?.completed)) {
+        // If user is attending and all steps are completed, or
+        // If user has declined and completed the required steps,
+        // go back to SaveTheDate
+        navigate(routes[Pages.SaveTheDate].path);
+      } else if (firstIncompleteStep) {
+        // If there are incomplete steps, navigate to the first incomplete step
+        // Direct navigation with query parameter
+        const targetPage = routes[Pages.SaveTheDate].path;
+        
+        // Force a hard navigation to make sure the step parameter is recognized
+        window.location.href = `${window.location.origin}${targetPage}?step=${firstIncompleteStep}`;
+      } else {
+        // Fallback to the main SaveTheDate page
+        navigate(routes[Pages.SaveTheDate].path);
+      }
     }
   };
 
@@ -362,30 +506,28 @@ const WelcomeStepper = () => {
   }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.invitationResponse]);
 
   const rsvpActionButtonText = useMemo(() => {
-    // TODO SKS
-    // if ((attendanceState?.atLeastOneAttending  && allStepsCompleted) || 
-    //     (user.rsvp?.wedding === RsvpEnum.Declined && 
-    //       rsvpSteps['attendance']?.completed && 
-    //       rsvpSteps['mailingAddress']?.completed)) {
-    //   return 'Update RSVP';
-    // } 
-    // // else if (firstIncompleteStep) {
-    // //   return `${stdSteps[firstIncompleteStep].label}`;
-    // // } 
-    // else if (firstIncompleteStep) {
-    //   return 'Continue RSVP';
-    // }
-    // else if (user.rsvp?.wedding === RsvpEnum.Declined || 
-    //            user.rsvp?.wedding === RsvpEnum.Pending) {
-    //   return 'Complete RSVP Required Info';
-    // }
+    if ((rsvpAttendanceState?.atLeastOneAttending  && allRsvpStepsCompleted) || 
+        (user.rsvp?.wedding === RsvpEnum.Declined && 
+          rsvpSteps['weddingAttendance']?.completed && 
+          rsvpSteps['mailingAddress']?.completed)) {
+      return 'Update RSVP';
+    } 
+    else if (firstIncompleteRsvpStep) {
+      return 'Continue RSVP';
+    }
+    else if (user.rsvp?.wedding === RsvpEnum.Declined || 
+               user.rsvp?.wedding === RsvpEnum.Pending) {
+      return 'Complete RSVP Required Info';
+    }
     return isMobile ? 'RSVP' : 'Submit RSVP';
-  }, [attendanceState , allStepsCompleted, firstIncompleteStep, stdSteps, user.rsvp?.wedding]);
+  }, [attendanceState , allRsvpStepsCompleted, firstIncompleteRsvpStep, rsvpSteps, user.rsvp?.wedding]);
 
   React.useEffect(() => {
-    setRsvpSteps((prev) => {
+    setStepsState((prev) => {
       const newSteps = { ...prev };
       newSteps.saveTheDate.stepCompleted = false;
+      newSteps.rsvp.stepCompleted = false;
+      newSteps.wedding.stepCompleted = false;
       return newSteps;
     });
   }, []);
@@ -476,7 +618,7 @@ const WelcomeStepper = () => {
           color={firstIncompleteStep ? 'secondary' : 'primary'}
           size="large"
           fullWidth
-          onClick={handleActionButtonClick}
+          onClick={() => handleActionButtonClick({ stepKey })}
           sx={{
             fontWeight: 'medium',
             py: { xs: 0.75, sm: 1.25 },
@@ -534,7 +676,7 @@ const WelcomeStepper = () => {
           }}
         >
           {/* Render only enabled steps */}
-          {Object.entries(rsvpSteps)
+          {Object.entries(welcomeSteps)
             .filter(([_, step]) => step.enabled) // Only show steps with enabled=true
             .map(([key, step]) => (
             

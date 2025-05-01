@@ -131,6 +131,7 @@ export const familyGuestsRsvpStates = selector<FamilyGuestsWeddingStates | null>
 
     return {
       allUsersResponded: allUsersAttendanceResponded,
+      allUsers4thAttendanceResponded: allUsers4thAttendanceResponded,
       attendingLastNames,
       callByLastNames,
       guests,
@@ -487,7 +488,7 @@ export const useFamily = () => {
       fourthOfJulyAttendance: {
         ...prev.fourthOfJulyAttendance,
         display: true,
-        label: `${guestStates.guests.length > 1 ? 'Is your family' : 'Are you'} interested in attending the 4th of July BBQ potluck?`,
+        label: `${guestStates.guests.length > 1 ? 'Does your family' : 'Do you'} enjoy BBQ potlucks?`,
         completed: !family.guests.some(
           (guest) => guest.rsvp?.fourthOfJuly === RsvpEnum.Pending,
         ),
