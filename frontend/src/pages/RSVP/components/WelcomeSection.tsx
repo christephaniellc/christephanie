@@ -306,9 +306,7 @@ export const WelcomeSection: React.FC = () => {
   const [family, familyActions] = useFamily();
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
-  //const isMobile = useMediaQuery('(max-width:375px)'); // iPhone SE size
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    
   const isSmallDevice = useMediaQuery(theme.breakpoints.down('sm'));
   const [loadingGuestId, setLoadingGuestId] = useState<string | null>(null);
   console.log(`isMobile: ${isMobile} isSmallDevice: ${isSmallDevice}`);
@@ -472,7 +470,7 @@ export const WelcomeSection: React.FC = () => {
                 px: 2,
               }}
             >
-              Saturday, July 5th
+              Saturday, July 5th at 6:00 PM
             </Typography>
             <Typography
               variant="body2"
