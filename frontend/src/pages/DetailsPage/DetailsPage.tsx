@@ -387,6 +387,8 @@ function DetailsPage() {
         sx={{
           width: '100%',
           position: 'sticky',
+          maxWidth: '100%',
+          overflowX: 'auto',
           top: 0,
           zIndex: 100,
           backgroundColor: theme.palette.background.paper,
@@ -399,7 +401,6 @@ function DetailsPage() {
           scrollButtons="auto"
           textColor="primary"
           indicatorColor="secondary"
-          centered
           aria-label="Wedding details tabs"
           sx={{
             borderBottom: 1,
@@ -407,10 +408,13 @@ function DetailsPage() {
             width: '100%', // Ensure tabs take full width
             '& .MuiTabs-flexContainer': {
               justifyContent: 'center', // Center the tab items
-              paddingLeft: { xs: '12px', sm: 0 }, // Add left padding on mobile to make first tab more accessible
-            },
-            '& .MuiTabs-scroller': {
-              overflow: 'visible !important', // Ensures tabs are visible outside the container
+              paddingLeft: { 
+                xs: '12px', 
+                sm: '330px', 
+                md: 0, 
+                lg: 0, 
+                xl: 0 
+              }, // Add left padding on mobile to make first tab more accessible
             },
           }}
         >
