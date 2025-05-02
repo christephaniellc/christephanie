@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Paper, Box, Typography, alpha, useTheme, Button } from '@mui/material';
+import { Stack, Paper, Box, Typography, alpha, useTheme, Button, useMediaQuery } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { CampingPreferencesProps } from './types';
@@ -11,12 +11,14 @@ import {
 import theme from '@/store/theme'; 
 import {StephsActualFavoriteTypographyNoDrop} from '@/components/AttendanceButton/AttendanceButton';
 import { OpenInNew } from '@mui/icons-material';
+import { is } from '@react-spring/shared';
 
 const CampingPreferences: React.FC<CampingPreferencesProps> = ({ 
   guestId, guestFirstName }) => {
   const { boxShadow, handleMouseMove } = useBoxShadow();
   const theme = useTheme();
   const { screenWidth } = useAppLayout();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {
     campingPreferences,
     campingValue,
@@ -56,40 +58,83 @@ const CampingPreferences: React.FC<CampingPreferencesProps> = ({
           overflow: 'hidden',
         }}
       >   
-        <Box sx={{ p: 2, 
+        <Box sx={{ 
+          p: 2, 
           pb: 1, 
           width: '100%',
-          display: 'flex',
-          //border: `1px solid ${theme.palette.primary.main}`,
           background: alpha(theme.palette.background.paper, 0.9),
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` 
         }}>
-          <StephsActualFavoriteTypographyNoDrop 
-            variant="h6" 
-            fontWeight="500" 
-            color="white"
-            id="camping-preferences-heading"
-            sx={{
-              color: '#FFFFFF', 
-            }}
-          >
-            {guestFirstName}
-          </StephsActualFavoriteTypographyNoDrop>
-          <Button
-              variant="contained"
-              color="primary"
-              endIcon={<OpenInNew />}
-              sx={{ 
-                mt: 1, 
-                align: 'flex-end',
-                //alignSelf: 'flex-end',
-                mb: 2,
-                ml: 2
+          {/* For Mobile View - Stacked Layout */}
+          {isMobile && (
+            <>
+              <Box sx={{ width: '100%', mb: 2 }}>
+                <StephsActualFavoriteTypographyNoDrop 
+                  variant="h6" 
+                  fontWeight="500"
+                  id="camping-preferences-heading-mobile"
+                  sx={{
+                    color: '#FFFFFF',
+                    display: 'block',
+                    mb: 1.5
+                  }}
+                >
+                  {guestFirstName}
+                </StephsActualFavoriteTypographyNoDrop>
+                
+                <Button
+                  variant="contained"
+                  color="primary"
+                  endIcon={<OpenInNew />}
+                  fullWidth
+                  sx={{ 
+                    display: 'block',
+                    fontSize: '0.8rem',
+                    mt: 0.5
+                  }}
+                  onClick={() => window.open(`details/accommodations`)}
+                >
+                  Accommodation Details
+                </Button>
+              </Box>
+            </>
+          )}
+          
+          {/* For Desktop View - Side by Side Layout */}
+          {!isMobile && (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <StephsActualFavoriteTypographyNoDrop 
+                variant="h6" 
+                fontWeight="500"
+                id="camping-preferences-heading-desktop"
+                sx={{
+                  color: '#FFFFFF'
                 }}
-              onClick={() => window.open(`details/accommodations`)}
-            >
-            Click for Accommodation Details
-          </Button>
+              >
+                {guestFirstName}
+              </StephsActualFavoriteTypographyNoDrop>
+              
+              <Button
+                variant="contained"
+                color="primary"
+                endIcon={<OpenInNew />}
+                sx={{ 
+                  ml: 2,
+                  fontSize: '0.875rem',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => window.open(`details/accommodations`)}
+              >
+                Click for Accommodation Details
+              </Button>
+            </Box>
+          )}
         </Box>    
         {/* Selection buttons */}
         <PreferenceButtonGroup
