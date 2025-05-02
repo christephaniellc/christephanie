@@ -14,6 +14,9 @@ export const rsvpScrollTriggerState = atom({
   default: 0, // Just a counter we'll increment to trigger effects
 });
 
+// We'll use this to share the scroll trigger function across components
+export let triggerRsvpScrollToTop: () => void;
+
 function RSVPPage() {
   const { contentHeight } = useAppLayout();
   const rsvpSteps = useRecoilValue(rsvpStepsState);
@@ -23,17 +26,22 @@ function RSVPPage() {
   
   // Function to trigger scrolling throughout the app
   const triggerScrollToTop = useCallback(() => {
-    // Increment the scroll trigger to notify all components
-    setScrollTrigger(prev => prev + 1);
-    
-    // Also do an immediate window scroll
+    // First do a window scroll to the top
     window.scrollTo(0, 0);
     
-    // Find and scroll any scrollable content regions
+    // Find and scroll any scrollable content regions - this is the primary goal
     const scrollableBoxes = document.querySelectorAll('[role="region"][aria-label$="form section"]');
     scrollableBoxes.forEach(box => {
       if (box instanceof HTMLElement) {
         box.scrollTop = 0;
+        
+        // Also find and scroll any nested scrollable elements
+        const nestedScrollables = box.querySelectorAll('[style*="overflow: auto"], [style*="overflow:auto"]');
+        nestedScrollables.forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.scrollTop = 0;
+          }
+        });
       }
     });
     
@@ -50,20 +58,18 @@ function RSVPPage() {
         parent = parent.parentElement;
       }
     }
-  }, [setScrollTrigger]);
+  }, []);
+  
+  // Assign to the exported variable so it can be used by other components
+  triggerRsvpScrollToTop = triggerScrollToTop;
   
   // Expose the scroll function to the window for debugging
   useEffect(() => {
     (window as any).__scrollRSVPToTop = triggerScrollToTop;
   }, [triggerScrollToTop]);
   
-  // Scroll to top when tab index changes
-  useEffect(() => {
-    // Using setTimeout to ensure this happens after rendering
-    setTimeout(() => {
-      triggerScrollToTop();
-    }, 0);
-  }, [tabIndex, rsvpStepper.currentStep[0], triggerScrollToTop]);
+  // We've removed automatic scrolling on tab index changes
+  // Now scrolling is only triggered by the navigation buttons
   
   // Debug logging for component mounting
   //console.log("RSVPPage rendering, current step:", rsvpStepper.currentStep[0]);
