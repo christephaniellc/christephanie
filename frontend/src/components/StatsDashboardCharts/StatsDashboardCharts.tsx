@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper } from '@mui/material';
+import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper, useMediaQuery } from '@mui/material';
 import { StatsViewModel } from '@/types/api';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { rgba } from 'polished';
@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { animated, useSpring } from 'react-spring';
 import { FeatureFlags, isFeatureEnabled } from '@/config';
+
 
 // Custom themed tooltip with 8-bit style
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -165,7 +166,7 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
   );
 };
 
-type AdminTab = 'overview' | 'food' | 'accommodation' | 'interest' | 'client-info';
+type AdminTab = 'overview' | 'july4' | 'food' | 'accommodation' | 'interest' | 'client-info';
 
 interface AdminDashboardChartsProps {
   stats: StatsViewModel;
@@ -173,7 +174,8 @@ interface AdminDashboardChartsProps {
 }
 
 const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, loading }) => {
-  const theme = useTheme();
+  const theme = useTheme();  
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   // Prepare data for charts using the stats from backend
@@ -191,6 +193,12 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
       { name: 'Declined', value: stats?.declinedGuests || 0, color: '#F44336' },
       { name: 'Pending', value: stats?.pendingWeddingGuests || 0, color: '#FFC107' }
     ],
+    
+    // 4th of July data (only attending)
+    fourthOfJulyData: {
+      attending: stats?.attending4thGuests || 0,
+      total: stats?.attendingWeddingGuests + stats?.interestedGuests || 0
+    },
     
     // Age data bar chart
     ageData: [
@@ -347,9 +355,9 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
         </Typography>
         
         {/* Stats at the top as pixel art counters */}
-        <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+        <Grid container spacing={2} justifyContent="center" sx={{ mb: 5 }}>
           { isFeatureEnabled('ENABLE_RSVP_PHASE') && (
-            <Grid item xs={6} sm={4}>
+            <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
               <AnimatedCounter 
                 value={metrics.attendingGuests} 
                 label="Attending (Confirmed)"
@@ -357,21 +365,21 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
               />
             </Grid>
           )}
-          <Grid item xs={3} sm={2}>
+          <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
             <AnimatedCounter 
               value={metrics.interestedGuests} 
               label={ "Interested" }
               color="#3c823f" 
             />
           </Grid>
-          <Grid item xs={3} sm={2}>
+          <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
             <AnimatedCounter 
               value={metrics.declinedGuests} 
               label="Declined" 
               color="#F44336" 
             />
           </Grid>
-          <Grid item xs={3} sm={2}>
+          <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
             <AnimatedCounter 
               value={metrics.pendingGuests} 
               label="Pending" 
@@ -456,6 +464,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
             }}
           >
             <Tab label="Overview" value="overview" />
+            <Tab label="4th of July BBQ" value="july4" />
             <Tab label="Food" value="food" />
             <Tab label="Accommodation" value="accommodation" />
             <Tab label="Interest Details" value="interest" />
@@ -465,8 +474,8 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
         
         {/* Chart content based on active tab */}
         {activeTab === 'overview' && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={4} sx={{ mt: 1 }}>
+            <Grid item xs={12} md={6} sx={{ mb: { xs: 3, md: 0 } }}>
               <Box sx={{ height: 300 }}>
                 <Box>
                   <Typography 
@@ -480,7 +489,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
                       overflowWrap: 'break-word'
                     }}
                   >
-                    Interest Status
+                    Wedding Attendance
                   </Typography>
                   <Typography 
                     variant="body2" 
@@ -516,7 +525,8 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
                 </ResponsiveContainer>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            
+            <Grid item xs={12} md={6} sx={{ mb: { xs: 3, md: 0 } }}>
               <Box sx={{ height: 300 }}>
                 <Box>
                   <Typography 
@@ -576,6 +586,184 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
               </Box>
             </Grid>
           </Grid>
+        )}
+        
+        {activeTab === 'july4' && (
+          <Box sx={{ mt: 1 }}>
+            <Box sx={{ height: 450, maxWidth: '600px', mx: 'auto' }}>
+              <Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 1, 
+                    color: 'white',
+                    fontFamily: 'monospace',
+                    textAlign: 'center',
+                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                    overflowWrap: 'break-word'
+                  }}
+                >
+                  4th of July BBQ 🎆
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mb: 2, 
+                    color: 'white',
+                    fontFamily: 'monospace',
+                    textAlign: 'center',
+                    opacity: 0.8
+                  }}
+                >
+                  {metrics.fourthOfJulyData.attending} attending of {metrics.fourthOfJulyData.total} guests
+                </Typography>
+              </Box>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                height: '350px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Fireworks Background */}
+                <Box sx={{ 
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  backgroundImage: 'radial-gradient(circle, rgba(20,20,40,0.7) 0%, rgba(0,0,0,0.95) 100%)',
+                  zIndex: 0
+                }}>
+                  {/* Fireworks "bursts" using CSS */}
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Box 
+                      key={`firework-${index}`}
+                      sx={{
+                        position: 'absolute',
+                        top: `${10 + (index * 15)}%`,
+                        left: `${10 + (index * 15)}%`,
+                        width: `${8 + (index % 3) * 10}px`,
+                        height: `${8 + (index % 3) * 10}px`,
+                        borderRadius: '50%',
+                        backgroundColor: index % 3 === 0 ? '#FF5252' : index % 3 === 1 ? '#3388ff' : '#FFEB3B',
+                        boxShadow: `0 0 ${10 + (index * 3)}px ${5 + (index * 2)}px ${index % 3 === 0 ? '#FF5252' : index % 3 === 1 ? '#3388ff' : '#FFEB3B'}`,
+                        opacity: 0.7,
+                        animation: `fireworkBurst${index} 3s infinite ${index * 0.5}s`,
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          width: '120%',
+                          height: '120%',
+                          borderRadius: '50%',
+                          background: `radial-gradient(circle, ${index % 3 === 0 ? '#FF5252' : index % 3 === 1 ? '#3388ff' : '#FFEB3B'} 20%, transparent 70%)`,
+                          transform: 'translate(-50%, -50%)',
+                          opacity: 0.7,
+                          zIndex: -1
+                        },
+                        '@keyframes fireworkBurst0': {
+                          '0%': { transform: 'scale(0.5)', opacity: 0.3 },
+                          '50%': { transform: 'scale(1.4)', opacity: 0.7 },
+                          '100%': { transform: 'scale(0.5)', opacity: 0.3 }
+                        },
+                        '@keyframes fireworkBurst1': {
+                          '0%': { transform: 'scale(0.7)', opacity: 0.5 },
+                          '40%': { transform: 'scale(1.2)', opacity: 0.8 },
+                          '100%': { transform: 'scale(0.7)', opacity: 0.5 }
+                        },
+                        '@keyframes fireworkBurst2': {
+                          '0%': { transform: 'scale(0.6)', opacity: 0.4 },
+                          '60%': { transform: 'scale(1.3)', opacity: 0.7 },
+                          '100%': { transform: 'scale(0.6)', opacity: 0.4 }
+                        },
+                        '@keyframes fireworkBurst3': {
+                          '0%': { transform: 'scale(0.8)', opacity: 0.6 },
+                          '45%': { transform: 'scale(1.5)', opacity: 0.9 },
+                          '100%': { transform: 'scale(0.8)', opacity: 0.6 }
+                        },
+                        '@keyframes fireworkBurst4': {
+                          '0%': { transform: 'scale(0.9)', opacity: 0.5 },
+                          '55%': { transform: 'scale(1.4)', opacity: 0.8 },
+                          '100%': { transform: 'scale(0.9)', opacity: 0.5 }
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
+                
+                {/* Main content - display the count with fireworks style */}
+                <Box sx={{ 
+                  position: 'relative', 
+                  zIndex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
+                  {/* Stars above the count */}
+                  <Box sx={{ mb: 2, width: '100%', textAlign: 'center' }}>
+                    <Typography 
+                      component="span" 
+                      sx={{ 
+                        fontSize: '2.5rem', 
+                        color: '#FFEB3B',
+                        textShadow: '0 0 10px #FFEB3B',
+                        fontFamily: 'monospace'
+                      }}
+                    >
+                      ✨ ✨ ✨
+                    </Typography>
+                  </Box>
+                  
+                  {/* Attendee count */}
+                  <Typography 
+                    variant="h1" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      fontFamily: 'monospace',
+                      fontSize: { xs: '5rem', md: '6rem' },
+                      color: '#FF5252',
+                      textShadow: '0 0 20px rgba(255,82,82,0.8), 0 0 30px rgba(255,82,82,0.6), 0 0 40px rgba(255,82,82,0.4)',
+                      mb: 2,
+                      letterSpacing: '2px'
+                    }}
+                  >
+                    {metrics.fourthOfJulyData.attending}
+                  </Typography>
+                  
+                  {/* Attendee text */}
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontFamily: 'monospace',
+                      color: '#FFFFFF',
+                      textShadow: '0 0 10px rgba(255,255,255,0.7)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '2px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    Potluck BBQ Attendees
+                  </Typography>
+                  
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      fontFamily: 'monospace',
+                      color: '#FFFFFF',
+                      opacity: 0.8,
+                      mt: 3,
+                      textAlign: 'center',
+                      maxWidth: '80%'
+                    }}
+                  >
+                    Join us for food, fun, and fireworks on Independence Day!
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         )}
         
         {activeTab === 'food' && (
