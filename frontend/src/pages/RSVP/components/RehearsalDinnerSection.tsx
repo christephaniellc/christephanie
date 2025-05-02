@@ -54,6 +54,7 @@ export const RehearsalDinnerSection: React.FC = () => {
   return (
     <>
       <Box
+        id="bbq-info"
         sx={{
           position: 'relative',
           display: 'flex',
