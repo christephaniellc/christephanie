@@ -6,6 +6,7 @@ import { GuestViewModel, RsvpEnum } from '@/types/api';
 import RehearsalDinnerAttendance from '@/components/WeddingAttendanceRadios/RehearsalDinnerAttendance';
 import { StephsActualFavoriteTypographyNoDrop, StephsStyledTypography } from '@/components/AttendanceButton/components/StyledComponents';
 import { EventAvailable } from '@mui/icons-material';
+import { Link } from '@mui/material';
 
 const InfoBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -174,7 +175,7 @@ export const RehearsalDinnerSection: React.FC = () => {
                 pb: 2
               }}
             >
-              Friday, July 4th
+              Friday, July 4th at 6:00 PM
             </Typography>
             <Typography
               variant="body2"
@@ -192,6 +193,14 @@ export const RehearsalDinnerSection: React.FC = () => {
               }}
             >
               The day before the wedding, join us at the venue for a potluck BBQ and fireworks!
+              <p>  
+                <Link 
+                  href="https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?usp=sharing" 
+                  target="_blank"
+                  color="secondary">
+                    Potluck Signup Sheet
+                </Link>
+              </p> 
             </Typography>
           </Box>
           <Paper
@@ -235,7 +244,7 @@ export const RehearsalDinnerSection: React.FC = () => {
                 <li>Grill items, buns, and sides to share</li>
                 <li>BYOB</li>
                 <li>Fireworks (legal in Virginia)</li>
-                <li>Instruments</li>  
+                <li>Instruments</li> 
               </ul>
             </Typography>
           </Paper>

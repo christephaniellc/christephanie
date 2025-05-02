@@ -10,10 +10,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useFamily, familyGuestsStates } from '@/store/family';
 import { userCommentState } from '@/store/userComment/userComment';
 import { StephsActualFavoriteTypographyNoDrop } from '@/components/AttendanceButton/AttendanceButton';
-import { darken } from '@mui/system';
+import { alpha, darken } from '@mui/system';
 import { useBoxShadow } from '@/hooks/useBoxShadow';
 import { AgeGroupEnum, GuestViewModel, RsvpEnum } from '@/types/api';
 import StickFigureIcon from '@/components/StickFigureIcon';
+import { Link } from '@mui/material';
 
 // Icons
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
@@ -368,6 +369,32 @@ const SummaryView: React.FC = () => {
           
           <Typography variant="body2" color="text.secondary" paragraph>
             Here's a summary of what you've shared with us. Click on any item to update your information.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" paragraph>
+            <Button 
+              variant="contained" 
+              component="span" 
+              onClick={() => window.location.href = '/details/schedule'}
+              color="secondary" 
+              endIcon={<EventAvailableIcon />}
+              size="small"
+              sx={{ 
+                fontWeight: 'bold', 
+                borderRadius: 1,
+                //boxShadow: 3,
+                minWidth: 'auto', 
+                py: 1, 
+                px: 4,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                whiteSpace: 'nowrap',
+                '&:hover': {
+                  backgroundColor: alpha('#ffffff', 0.1),
+                }
+              }}
+            >
+              View Schedule & Details
+            </Button>
           </Typography>
 
           {!isRsvpFlow && (
