@@ -20,7 +20,6 @@ import { TransportationSection } from './TransportationSection';
 import { AccommodationSection } from './AccommodationSection';
 import { WelcomeSection } from './WelcomeSection';
 import { useFamily } from '@/store/family';
-import { rsvpScrollTriggerState } from '../RSVPPage';
 
 interface MainRSVPContentProps {
   contentHeightWithStepper: string | number;
@@ -38,25 +37,9 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
   const [family, familyActions] = useFamily();
   const rsvpStepper = useRecoilValue(rsvpStepperState);
   const scrollableContentRef = useRef<HTMLDivElement | null>(null);
-  const scrollTrigger = useRecoilValue(rsvpScrollTriggerState);
   
   // Current step name for accessibility labels
   const currentStepName = rsvpStepper.currentStep[0] || 'welcome';
-  
-  // Scroll the content box to top whenever the step changes or scroll is triggered
-  useEffect(() => {
-    if (scrollableContentRef.current) {
-      scrollableContentRef.current.scrollTop = 0;
-      
-      // Also ensure any scrollable children start at the top
-      const scrollableChildren = scrollableContentRef.current.querySelectorAll('[style*="overflow: auto"], [style*="overflow:auto"]');
-      scrollableChildren.forEach(el => {
-        if (el instanceof HTMLElement) {
-          el.scrollTop = 0;
-        }
-      });
-    }
-  }, [rsvpStepper.currentStep, scrollTrigger]);
   
   const FamilyQueryQuestion = useMemo(() => {
     const currentStep = rsvpStepper.currentStep[0];
