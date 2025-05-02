@@ -98,6 +98,9 @@ export default function RSVPStepper() {
     const params = new URLSearchParams(location.search);
     const step = params.get('step');
     
+    // When URL changes, scroll to top immediately
+    window.scrollTo(0, 0);
+    
     if (step && Object.keys(rsvpSteps).includes(step)) {
       // Check if the step should be visible based on its display property
       // Always show steps with display=true regardless of attendance status
@@ -220,6 +223,9 @@ export default function RSVPStepper() {
     const isStepVisible = rsvpSteps[step].display;
     
     if (isStepVisible) {
+      // Scroll to top immediately with no animation
+      window.scrollTo(0, 0);
+      
       familyActions.getFamily();
       // Set the global tab index
       setTabIndex(Object.keys(rsvpSteps).indexOf(step));
