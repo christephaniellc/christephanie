@@ -10,7 +10,8 @@ import {
   Chip,
   alpha,
   Fade,
-  Grow
+  Grow,
+  Link
 } from '@mui/material';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 import { useTheme } from '@mui/material/styles';
@@ -81,7 +82,7 @@ const WelcomeDinnerContent: React.FC = () => {
           backgroundColor: alpha(theme.palette.primary.main, 0.2),
           padding: theme.spacing(1.5),
           borderRadius: 1,
-          maxWidth: { xs: '100%', sm: '40%' },
+          maxWidth: { xs: '100%', sm: '100%' },
           textAlign: 'left',
           boxShadow: theme.shadows[1],
           position: 'relative',
@@ -114,6 +115,13 @@ const WelcomeDinnerContent: React.FC = () => {
             <li>Sides to share</li>
             <li>BYOB</li>
           </ul>
+          
+          <Link 
+            href="https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?usp=sharing" 
+            target="_blank"
+            color="secondary">
+              Potluck Signup Sheet
+          </Link>
         </Typography>
       </Paper>
     </Box>
