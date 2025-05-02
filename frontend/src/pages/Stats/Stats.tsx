@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { 
-  Box, Typography, CircularProgress 
+  Box, Typography, CircularProgress, 
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 
 import { StatsViewModel } from '@/types/api';
@@ -12,6 +14,9 @@ function Stats() {
   const [statsData, setStatsData] = useState<StatsViewModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const theme = useTheme();
+  
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Use stats query
   const { getStatsQuery } = useStatsQueries();
