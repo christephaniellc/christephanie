@@ -8,7 +8,7 @@ import { rsvpStepsState, rsvpStepperState, rsvpTabIndex } from '@/store/steppers
 import { StephsActualFavoriteTypographyBackNext } from '@/components/AttendanceButton/AttendanceButton';
 import { useFamily } from '@/store/family';
 import { InvitationResponseEnum } from '@/types/api';
-import { rsvpScrollTriggerState } from '../RSVPPage';
+import { triggerRsvpScrollToTop } from '../RSVPPage';
 
 interface NavigationButtonsProps {
   tabIndex: number;
@@ -21,23 +21,15 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
   const rsvpSteps = useRecoilValue(rsvpStepsState);
   const [tabIndexState, setTabIndex] = useRecoilState(rsvpTabIndex);
   const rsvpStepper = useRecoilValue(rsvpStepperState);
-  const setScrollTrigger = useSetRecoilState(rsvpScrollTriggerState);
 
   const handleNavigateToStep = (step: string) => {
     // Check if step exists and is visible before navigating
     if (step && rsvpSteps[step] && rsvpSteps[step].display) {
       //console.log(`NavigationButtons: Navigating to step ${step}`);
       
-      // Trigger scrolling via shared atom
-      setScrollTrigger(prev => prev + 1);
-      
-      // Scroll window to top immediately
-      window.scrollTo(0, 0);
-      
-      // Try to find the scrollable content box and scroll it too
-      const scrollableBox = document.querySelector('[role="region"][aria-label$="form section"]');
-      if (scrollableBox) {
-        (scrollableBox as HTMLElement).scrollTop = 0;
+      // Trigger scrolling via the shared function (this scrolls both window and content box)
+      if (triggerRsvpScrollToTop) {
+        triggerRsvpScrollToTop();
       }
       
       // First update the tab index in state
@@ -75,23 +67,13 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
           flexShrink: 0,
         }}
         onClick={() => {
-          // Trigger scrolling via shared atom
-          setScrollTrigger(prev => prev + 1);
-          
-          // Scroll window to top
-          window.scrollTo(0, 0);
-          
-          // Try to find the scrollable content box and scroll it too
-          const scrollableBox = document.querySelector('[role="region"][aria-label$="form section"]');
-          if (scrollableBox) {
-            (scrollableBox as HTMLElement).scrollTop = 0;
-          }
-          
           // Immediately stop if we're transitioning between steps
           if (familyActions.getFamilyUnitQuery.isFetching) {
             //console.log('Navigation in progress, ignoring click');
             return;
           }
+          
+          // No need to call triggerRsvpScrollToTop() here since it will be called by handleNavigateToStep
           
           try {
             // Basic steps that are always shown
@@ -174,28 +156,21 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ tabIndex }
           display: tabIndex < rsvpStepper.totalTabs ? 'inherit' : 'none',
         }}
         onClick={async () => {
-          // Trigger scrolling via shared atom
-          setScrollTrigger(prev => prev + 1);
-          
-          // Scroll window to top
-          window.scrollTo(0, 0);
-          
-          // Try to find the scrollable content box and scroll it too
-          const scrollableBox = document.querySelector('[role="region"][aria-label$="form section"]');
-          if (scrollableBox) {
-            (scrollableBox as HTMLElement).scrollTop = 0;
-          }
-          
           // Immediately stop if we're transitioning between steps
           if (familyActions.getFamilyUnitQuery.isFetching) {
             //console.log('Navigation in progress, ignoring click');
             return;
           }
           
+          // No need to call triggerRsvpScrollToTop() here since it will be called by handleNavigateToStep
+          
           // If we're at the last tab, navigate home
           if (tabIndex >= rsvpStepper.totalTabs - 1) {
             //console.log('At last tab, navigating home');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Use the shared scroll function
+            if (triggerRsvpScrollToTop) {
+              triggerRsvpScrollToTop();
+            }
             navigate('/');
             return;
           }
