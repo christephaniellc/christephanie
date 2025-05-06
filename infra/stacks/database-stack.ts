@@ -11,6 +11,7 @@ export class DatabaseStack extends cdk.Stack {
   public readonly guestTable: dynamodb.Table;
   public readonly designTable: dynamodb.Table;
   public readonly paymentTable: dynamodb.Table;
+  public readonly emailTrackingTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, {...props, description: "Creates DynamoDB table with index. (Destroy does not delete table)"});
@@ -83,6 +84,30 @@ export class DatabaseStack extends cdk.Stack {
     //   sortKey: { name: 'CategorySortKey', type: dynamodb.AttributeType.STRING },
     //     projectionType: cdk.aws_dynamodb.ProjectionType.ALL,
     // });
+
+    // EMAIL TRACKING TABLE
+    this.emailTrackingTable = new dynamodb.Table(this, `${applicationName}-notifications`, {
+      tableName: `${applicationName}-notification-tracking-${environment}`,
+      partitionKey: { name: 'PartitionKey', type: dynamodb.AttributeType.STRING }, // ex: EMAIL#<GuestId>
+      sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },           // ex: <Timestamp>#<EmailType>
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    // GSI: Group emails by campaign (e.g., RSVP-Nudge-May19)
+    this.emailTrackingTable.addGlobalSecondaryIndex({
+      indexName: 'CampaignIndex',
+      partitionKey: { name: 'CampaignId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GuestId', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Output ARN for reference
+    new cdk.CfnOutput(this, 'DynamoDBEmailTrackingTableArn', {
+      value: this.emailTrackingTable.tableArn,
+      description: 'DynamoDBTable emailTrackingTable ARN',
+});
+
 
     // Print outputs
     new cdk.CfnOutput(this, 'DynamoDBDesignTableArn', {

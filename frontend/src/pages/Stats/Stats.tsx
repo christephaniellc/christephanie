@@ -59,14 +59,7 @@ function Stats() {
       mb: 10,
       maxWidth: '100%',
       maxHeight: '100vh',
-      overflow: 'auto',
-      userSelect: 'text',
-      WebkitUserSelect: 'text',
-      WebkitTouchCallout: 'default',
-      WebkitUserModify: 'read-write',
-      MozUserSelect: 'text',
-      msUserSelect: 'text',
-      cursor: 'auto'
+      overflow: 'auto'
     }}>
       <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ 
         mb: 4,
