@@ -79,8 +79,8 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.PartitionKey.Should().Be("EMAIL#abc123");
             entity.SortKey.Should().Be("2025-05-02T12:00:00Z#FOURTH_DETAILS");
 
-            entity.CampaignIndexPartitionKey.Should().Be("CAMPAIGN#campaign-002");
-            entity.CampaignIndexSortKey.Should().Be("GUEST#abc123");
+            entity.CampaignTypeIndexPartitionKey.Should().Be("CAMPAIGN#campaign-002");
+            entity.CampaignTypeIndexSortKey.Should().Be("GUEST#abc123");
 
             entity.GuestEmailLogId.Should().Be("log-xyz");
             entity.GuestId.Should().Be("abc123");

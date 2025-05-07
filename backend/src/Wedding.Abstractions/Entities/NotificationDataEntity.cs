@@ -40,10 +40,10 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty]
         public Dictionary<string, string>? Metadata { get; set; }
 
-        [DynamoDBGlobalSecondaryIndexHashKey("CampaignIndex")]
-        public string? CampaignIndexPartitionKey { get; set; } // "CAMPAIGN#<GuestId>"
+        [DynamoDBGlobalSecondaryIndexHashKey("CampaignTypeIndex")]
+        public string? CampaignTypeIndexPartitionKey { get; set; } // "CAMPAIGN#<GuestId>"
 
-        [DynamoDBGlobalSecondaryIndexRangeKey("CampaignIndex")]
-        public string? CampaignIndexSortKey { get; set; } // "GUEST#<GuestId>"
+        [DynamoDBGlobalSecondaryIndexRangeKey("CampaignTypeIndex")]
+        public string? CampaignTypeIndexSortKey { get; set; } // "GUEST#<GuestId>"
     }
 }
