@@ -32,8 +32,8 @@ namespace Wedding.Abstractions.UnitTests.Converters
         [Test]
         public void ToEntry_Should_Serialize_Annotated_Enum_As_EnumMember_Value()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
-            var entry = converter.ToEntry(EmailTypeEnum.RsvpNotify);
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
+            var entry = converter.ToEntry(CampaignTypeEnum.RsvpNotify);
 
             entry.Should().BeOfType<Primitive>().Which.AsString().Should().Be("RSVP_NOTIFY");
         }
@@ -41,25 +41,25 @@ namespace Wedding.Abstractions.UnitTests.Converters
         [Test]
         public void FromEntry_Should_Deserialize_Annotated_EnumMember_Value()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
-            var enumValue = (EmailTypeEnum)converter.FromEntry(new Primitive("THANK_YOU"));
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
+            var enumValue = (CampaignTypeEnum)converter.FromEntry(new Primitive("THANK_YOU"));
 
-            enumValue.Should().Be(EmailTypeEnum.ThankYou);
+            enumValue.Should().Be(CampaignTypeEnum.ThankYou);
         }
 
         [Test]
         public void FromEntry_Should_Fallback_To_Enum_Name_If_EnumMember_Not_Found()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
-            var enumValue = (EmailTypeEnum)converter.FromEntry(new Primitive("RsvpNotify"));
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
+            var enumValue = (CampaignTypeEnum)converter.FromEntry(new Primitive("RsvpNotify"));
 
-            enumValue.Should().Be(EmailTypeEnum.RsvpNotify);
+            enumValue.Should().Be(CampaignTypeEnum.RsvpNotify);
         }
 
         [Test]
         public void FromEntry_Should_Throw_On_Invalid_Value()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
             var action = () => converter.FromEntry(new Primitive("INVALID_VALUE"));
 
             action.Should().Throw<InvalidOperationException>()
@@ -69,10 +69,10 @@ namespace Wedding.Abstractions.UnitTests.Converters
         [Test]
         public void FromEntry_Should_Return_Default_On_Null_Or_Empty_String()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
 
-            var nullResult = (EmailTypeEnum)converter.FromEntry(new Primitive((string?)null));
-            var emptyResult = (EmailTypeEnum)converter.FromEntry(new Primitive(""));
+            var nullResult = (CampaignTypeEnum)converter.FromEntry(new Primitive((string?)null));
+            var emptyResult = (CampaignTypeEnum)converter.FromEntry(new Primitive(""));
 
             nullResult.Should().Be(default);
             emptyResult.Should().Be(default);
@@ -81,10 +81,10 @@ namespace Wedding.Abstractions.UnitTests.Converters
         [Test]
         public void FromString_Should_Behave_Like_FromEntry()
         {
-            var converter = new EnumToStringConverter<EmailTypeEnum>();
+            var converter = new EnumToStringConverter<CampaignTypeEnum>();
 
-            converter.FromString("RSVP_NOTIFY").Should().Be(EmailTypeEnum.RsvpNotify);
-            converter.FromString("ThankYou").Should().Be(EmailTypeEnum.ThankYou);
+            converter.FromString("RSVP_NOTIFY").Should().Be(CampaignTypeEnum.RsvpNotify);
+            converter.FromString("ThankYou").Should().Be(CampaignTypeEnum.ThankYou);
             converter.FromString("INVALID").Should().BeNull();
         }
     }
