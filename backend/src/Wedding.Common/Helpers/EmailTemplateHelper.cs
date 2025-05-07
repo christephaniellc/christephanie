@@ -3,6 +3,7 @@ using System;
 using Wedding.Abstractions.Dtos;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.Helpers.JwtClaim;
+using Stripe;
 
 namespace Wedding.Common.Helpers
 {
@@ -171,7 +172,7 @@ namespace Wedding.Common.Helpers
         {
             Console.WriteLine($"Sending notification email using Amazon SES. Name: {name}. Email: {email}. Code: {invitationCode}. Previous interest? {guestInterested}");
             
-            var interestedBlurb = guestInterested ? ", even though you have already expressed interest in attending. " +
+            var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending. " +
                                                      "Hit refresh to see our new content!" : ".";
             var htmlBody = $@"
             <html>
@@ -188,29 +189,42 @@ namespace Wedding.Common.Helpers
             </head>
             <body>
                 <div class=""header"">
-                    <h1>Please RSVP!</h1>
+                    <h1>Stubler-Sikorra Wedding: Please RSVP</h1>
                 </div>
                 <div class=""content"">
                     <p>Dear {name},</p>
                     <p>Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
                         you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
-                        We've got new site content: the RSVP section, plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
+                        We've got new site content, including wedding Registry, Details (accommodation, attire, schedule, etc.), 
                         and Stats.
                     </p>
+
+                    <h3>Wedding (July 5):</h3>
                     <p>
-                    Please RSVP by May 19, 2025.
+                        <b>Please RSVP <a href=""https://christephanie.com?inviteCode={invitationCode}"">HERE</a> by May 19, 2025.</b>
                     </p>
-                    <p>
-                        Haven't logged in before? No prob! Just click this link, and enter your first name:<br/>
-                        <a href=""https://christephanie.com?inviteCode={invitationCode}"">{invitationCode}</a>
-                    </p>
-                    
+                           
+                    <h3>Friday Before: 4th of July Potluck BBQ</h3>             
                     <p>
                         We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
-                        know if you will attend, and what you can bring!
+                        know if you will attend, and what you can bring!<br/>
+                        <a href=""https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?gid=0#gid=0"">4th of July Potluck Signup Sheet
                     </p>
 
-                    <p><a href=""https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?gid=0#gid=0"">4th of July Potluck Signup Sheet</p>
+                    <div class=""receipt"">
+                        <table>
+                            <tr>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
+                                    Haven't logged in before? No prob! Just go to:
+                                    <a href=""https://christephanie.com"">https://christephanie.com</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">And enter your first name and your family's Invitation Code. <b>Your code is:</b></td>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: right;"">{invitationCode}</td>
+                            </tr>
+                        </table>
+                    </div>          
 
                     <p>Much love,<br>
                     Steph & Topher</p>
@@ -223,16 +237,18 @@ namespace Wedding.Common.Helpers
             </html>";
 
             var textBody = $@"
-                RSVP Phase Begins
+                RSVP Phase Has Begun
 
                 Dear {name},
 
-                Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
-                you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
-                We've got new site content: the RSVP section, plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
-                and Stats.
+                Our RSVP phase has arrived! 
 
                 Please RSVP by May 19, 2025.
+
+                As we finalize our headcounts, we'd appreciate if
+                you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
+                We've got new site content: plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
+                and Stats.                
 
                 Haven't logged in before? No prob! Just go to:
                 https://christephanie.com
