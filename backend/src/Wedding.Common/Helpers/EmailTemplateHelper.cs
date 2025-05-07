@@ -172,8 +172,8 @@ namespace Wedding.Common.Helpers
         {
             Console.WriteLine($"Sending notification email using Amazon SES. Name: {name}. Email: {email}. Code: {invitationCode}. Previous interest? {guestInterested}");
             
-            var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending. " +
-                                                     "Hit refresh to see our new content!" : ".";
+            var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending. " 
+                                                        : ".";
             var htmlBody = $@"
             <html>
             <head>
@@ -194,17 +194,24 @@ namespace Wedding.Common.Helpers
                 <div class=""content"">
                     <p>Dear {name},</p>
                     <p>Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
-                        you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
-                        We've got new site content, including wedding Registry, Details (accommodation, attire, schedule, etc.), 
-                        and Stats.
+                        you could take a moment to log in to our site and confirm your RSVP{interestedBlurb}
+                    </p>
+                    <p>
+                        Hit refresh to see our new site content:
+                            <ul>
+                                <li>Wedding Registry</li>
+                                <li>Details (accommodation, attire, schedule, etc.)</li>               
+                                <li>Stats</li>
+                            </ul>           
                     </p>
 
-                    <h3>Wedding (July 5):</h3>
+                    <h3>Wedding (Saturday, July 5):</h3>
                     <p>
-                        <b>Please RSVP <a href=""https://christephanie.com?inviteCode={invitationCode}"">HERE</a> by May 19, 2025.</b>
+                        <b>Please RSVP here by May 19, 2025:</b><br/>
+                        <a href=""https://christephanie.com?inviteCode={invitationCode}"">https://christephanie.com?inviteCode={invitationCode}</a>
                     </p>
                            
-                    <h3>Friday Before: 4th of July Potluck BBQ</h3>             
+                    <h3>4th of July Potluck BBQ (Friday, July 4)</h3>             
                     <p>
                         We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
                         know if you will attend, and what you can bring!<br/>
@@ -217,10 +224,11 @@ namespace Wedding.Common.Helpers
                                 <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
                                     Haven't logged in before? No prob! Just go to:
                                     <a href=""https://christephanie.com"">https://christephanie.com</a>
+                                    And enter your first name and your family's Invitation Code. 
                                 </td>
                             </tr>
                             <tr>
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">And enter your first name and your family's Invitation Code. <b>Your code is:</b></td>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""><b>Your code is:</b></td>
                                 <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: right;"">{invitationCode}</td>
                             </tr>
                         </table>
@@ -237,8 +245,6 @@ namespace Wedding.Common.Helpers
             </html>";
 
             var textBody = $@"
-                RSVP Phase Has Begun
-
                 Dear {name},
 
                 Our RSVP phase has arrived! 
@@ -247,8 +253,11 @@ namespace Wedding.Common.Helpers
 
                 As we finalize our headcounts, we'd appreciate if
                 you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
-                We've got new site content: plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
-                and Stats.                
+
+                Hit refresh to see our new site content: 
+                    - Wedding Registry
+                    - Details (accommodation, attire, schedule, etc.)
+                    - Stats                
 
                 Haven't logged in before? No prob! Just go to:
                 https://christephanie.com
