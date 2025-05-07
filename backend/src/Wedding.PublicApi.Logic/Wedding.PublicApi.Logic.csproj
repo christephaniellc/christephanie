@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Health\Wedding.Lambdas.Health.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Notify.Email\Wedding.Lambdas.Notify.Email.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Payments.Contributions\Wedding.Lambdas.Payments.Contributions.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Payments.Intent\Wedding.Lambdas.Payments.Intent.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Stats.Get\Wedding.Lambdas.Stats.Get.csproj" />

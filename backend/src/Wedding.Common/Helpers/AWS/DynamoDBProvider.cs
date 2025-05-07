@@ -444,5 +444,16 @@ namespace Wedding.Common.Helpers.AWS
             var partitionKey = DynamoKeys.GetPartitionKey(paymentId);
             await _repository.DeleteAsync<WeddingEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
         }
+
+
+        public async Task SaveNotificationAsync(string audience, NotificationDataEntity entity, CancellationToken cancellationToken = default)
+        {
+            entity.PartitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(entity.GuestId);
+            entity.SortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.EmailType.Value);
+            entity.CampaignIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.CampaignId);
+            entity.CampaignIndexSortKey = DynamoKeys.GetGuestSortKey(entity.GuestId);
+
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
+        }
     }
 }

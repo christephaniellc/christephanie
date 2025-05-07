@@ -106,7 +106,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
 
             var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
 
-            var result = await provider.GetPaymentByIdAsync(Audience, paymentId, timestamp);
+            var result = await provider.GetPaymentByIdAsync(Audience, paymentId);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(paymentId, result.PaymentIntentId);
@@ -167,6 +167,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             return new PaymentIntentEntity
             {
                 PaymentIntentId = "pi_test_123",
+                InvitationCode = "ABCDE",
                 GuestId = guestId,
                 GuestName = "Test Guest",
                 Amount = 5000,

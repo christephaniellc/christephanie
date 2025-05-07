@@ -48,6 +48,7 @@
     <ProjectReference Include="..\Wedding.Lambdas.Guest.MaskedValues.Get\Wedding.Lambdas.Guest.MaskedValues.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Guest.Patch\Wedding.Lambdas.Guest.Patch.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.HelloWorld\Wedding.Lambdas.HelloWorld.csproj" />
+    <ProjectReference Include="..\Wedding.Lambdas.Notify.Email\Wedding.Lambdas.Notify.Email.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.Stats.Get\Wedding.Lambdas.Stats.Get.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Find\Wedding.Lambdas.User.Find.csproj" />
     <ProjectReference Include="..\Wedding.Lambdas.User.Get\Wedding.Lambdas.User.Get.csproj" />

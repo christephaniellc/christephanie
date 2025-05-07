@@ -66,6 +66,34 @@ namespace Wedding.Common.Helpers.AWS
             return result;
         }
 
+        public async Task<SendEmailResponse?> SendRsvpNotificationEmail(
+            string name, 
+            string email, 
+            bool familyInterested,
+            string invitationCode,
+            CancellationToken cancellationToken)
+        {
+            var subject = "Stubler-Sikorra Wedding: Please RSVP by May 19";
+            var bodies = EmailTemplateHelper.SendRsvpNotificationEmailTemplate(
+                _config,
+                name,
+                email,
+                familyInterested,
+                invitationCode,
+                cancellationToken);
+
+            var result = await SendEmail(
+                toAddresses: new List<string> { email },
+                subject: subject,
+                textBody: bodies.textBody,
+                htmlBody: bodies.htmlBody,
+                cancellationToken);
+
+            Console.WriteLine($"RSVP Notification Email SES response: {JsonSerializer.Serialize(result)}");
+            Console.WriteLine($"RSVP Notification Email sent. Message ID: {result.MessageId}");
+            return result;
+        }
+
         public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, string subject, string textBody, string htmlBody, CancellationToken cancellationToken)
         {
             using (var sesClient = CreateSesClient())

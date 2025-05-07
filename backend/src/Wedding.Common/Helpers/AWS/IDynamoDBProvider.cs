@@ -28,14 +28,19 @@ namespace Wedding.Common.Helpers.AWS
         Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default);
         Task<List<PaymentIntentEntity>> GetPaymentsByCategoryAsync(string audience, string giftCategory, CancellationToken cancellationToken = default);
 
-        // Save and delete data
         Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default);
+
+        // Designs
         Task DeleteAsync(string audience, string invitationCode, string sortKey, CancellationToken cancellationToken = default);
         Task SaveDesignAsync(string audience, DesignConfigurationEntity entity, CancellationToken cancellationToken = default);
         Task DeleteDesignAsync(string audience, string guestId, string configurationId, CancellationToken cancellationToken = default);
+
+        // Payments
         Task SavePaymentAsync(string audience, PaymentIntentEntity entity, CancellationToken cancellationToken = default);
         Task UpdatePaymentStatusAsync(string audience, PaymentIntentEntity entity, string status, CancellationToken cancellationToken = default);
         Task DeletePaymentAsync(string audience, string paymentId, CancellationToken cancellationToken = default);
 
+        // Notifications
+        Task SaveNotificationAsync(string audience, NotificationDataEntity entity, CancellationToken cancellationToken = default);
     }
 }
