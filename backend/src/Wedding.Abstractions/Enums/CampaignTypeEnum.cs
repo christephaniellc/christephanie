@@ -2,7 +2,7 @@
 
 namespace Wedding.Abstractions.Enums
 {
-    public enum EmailTypeEnum
+    public enum CampaignTypeEnum
     {
         [EnumMember(Value = "RSVP_NOTIFY")]
         RsvpNotify,

@@ -396,6 +396,49 @@ namespace Wedding.Common.Helpers.AWS
         }
         #endregion
 
+        #region Notifications
+        public async Task<List<GuestEmailLogDto>> GetEmailLogsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+
+            var results = await _repository.QueryAsync<NotificationDataEntity>(partitionKey, config)
+                .GetRemainingAsync(cancellationToken);
+
+            return results.Select(e => _mapper.Map<GuestEmailLogDto>(e)).ToList();
+        }
+
+        public async Task<List<GuestEmailLogDto>> GetEmailLogsByCampaignTypeAsync(
+            string audience,
+            CampaignTypeEnum campaignType,
+            CancellationToken cancellationToken = default)
+        {
+            // Get the string value from the [EnumMember] attribute or fallback to ToString()
+            var campaignTypeValue = campaignType.ToString(); // assumes you store EnumMember string via converter
+
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+            config.IndexName = "CampaignTypeIndex";
+
+            var results = await _repository
+                .QueryAsync<NotificationDataEntity>(campaignTypeValue, config)
+                .GetRemainingAsync(cancellationToken);
+
+            return results
+                .Select(e => _mapper.Map<GuestEmailLogDto>(e))
+                .ToList();
+        }
+
+        public async Task<GuestEmailLogDto?> GetEmailLogByGuestAndTimestampAsync(string audience, string guestId, string timestamp, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
+            var sortKey = NotificationKeys.GetSortKey(timestamp, campaignType);
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+
+            var entity = await _repository.LoadAsync<NotificationDataEntity>(partitionKey, sortKey, config, cancellationToken);
+            return entity != null ? _mapper.Map<GuestEmailLogDto>(entity) : null;
+        }
+        #endregion
+
         public async Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default)
         {
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.GuestData), cancellationToken);
@@ -450,10 +493,24 @@ namespace Wedding.Common.Helpers.AWS
         {
             entity.PartitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(entity.GuestId);
             entity.SortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.EmailType.Value);
-            entity.CampaignIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.CampaignId);
-            entity.CampaignIndexSortKey = DynamoKeys.GetGuestSortKey(entity.GuestId);
+            entity.CampaignTypeIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.CampaignId);
+            entity.CampaignTypeIndexSortKey = DynamoKeys.GetGuestSortKey(entity.GuestId);
 
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
         }
+
+        // public async Task UpdateNotificationAsync(string audience, NotificationDataEntity entity, string status, CancellationToken cancellationToken = default)
+        // {
+        //     entity.Status = status;
+        //
+        //     await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
+        // }
+
+        // public async Task DeleteNotificationAsync(string audience, string guestId, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default)
+        // {
+        //     var partitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(guestId);
+        //     var sortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.CampaignType.Value);
+        //     await _repository.DeleteAsync<WeddingEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
+        // }
     }
 }

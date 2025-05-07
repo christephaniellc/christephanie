@@ -36,7 +36,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
                 SortKey = "2025-05-01T18:00:00Z#RSVP_REMINDER",
                 GuestEmailLogId = "log-xyz",
                 GuestId = "abc123",
-                EmailType = EmailTypeEnum.RsvpReminder,
+                EmailType = CampaignTypeEnum.RsvpReminder,
                 CampaignId = "campaign-001",
                 Timestamp = "2025-05-01T18:00:00Z",
                 DeliveryStatus = "SUCCESS",
@@ -49,7 +49,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
 
             dto.GuestEmailLogId.Should().Be("log-xyz");
             dto.GuestId.Should().Be("abc123");
-            dto.EmailType.Should().Be(EmailTypeEnum.RsvpReminder);
+            dto.CampaignType.Should().Be(CampaignTypeEnum.RsvpReminder);
             dto.CampaignId.Should().Be("campaign-001");
             dto.Timestamp.Should().Be("2025-05-01T18:00:00Z");
             dto.DeliveryStatus.Should().Be("SUCCESS");
@@ -65,7 +65,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             {
                 GuestEmailLogId = "log-xyz",
                 GuestId = "abc123",
-                EmailType = EmailTypeEnum.FourthDetails,
+                CampaignType = CampaignTypeEnum.FourthDetails,
                 CampaignId = "campaign-002",
                 Timestamp = "2025-05-02T12:00:00Z",
                 DeliveryStatus = "PENDING",
@@ -79,12 +79,12 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             entity.PartitionKey.Should().Be("EMAIL#abc123");
             entity.SortKey.Should().Be("2025-05-02T12:00:00Z#FOURTH_DETAILS");
 
-            entity.CampaignIndexPartitionKey.Should().Be("CAMPAIGN#campaign-002");
-            entity.CampaignIndexSortKey.Should().Be("GUEST#abc123");
+            entity.CampaignTypeIndexPartitionKey.Should().Be("CAMPAIGN#campaign-002");
+            entity.CampaignTypeIndexSortKey.Should().Be("GUEST#abc123");
 
             entity.GuestEmailLogId.Should().Be("log-xyz");
             entity.GuestId.Should().Be("abc123");
-            entity.EmailType.Should().Be(EmailTypeEnum.FourthDetails);
+            entity.EmailType.Should().Be(CampaignTypeEnum.FourthDetails);
             entity.CampaignId.Should().Be("campaign-002");
             entity.Timestamp.Should().Be("2025-05-02T12:00:00Z");
             entity.DeliveryStatus.Should().Be("PENDING");

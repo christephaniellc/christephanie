@@ -126,14 +126,14 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             var log = result.First();
             log.EmailAddress.Should().Be("john.doe@gmail.com");
             log.DeliveryStatus.Should().Be("SUCCESS");
-            log.EmailType.Should().Be(EmailTypeEnum.RsvpNotify);
+            log.CampaignType.Should().Be(CampaignTypeEnum.RsvpNotify);
             log.GuestId.Should().Be(guest.GuestId);
             log.Verified.Should().BeTrue();
             log.GuestEmailLogId.Should().Be("msg-123");
 
             savedEntity.Should().NotBeNull();
             savedEntity!.GuestId.Should().Be(guest.GuestId);
-            savedEntity.EmailType.Should().Be(EmailTypeEnum.RsvpNotify);
+            savedEntity.EmailType.Should().Be(CampaignTypeEnum.RsvpNotify);
             savedEntity.DeliveryStatus.Should().Be("SUCCESS");
             savedEntity.EmailAddress.Should().Be("john.doe@gmail.com");
         }
@@ -159,7 +159,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             result.Should().NotBeNull().And.HaveCount(1);
             result[0].DeliveryStatus.Should().Be("SUCCESS");
             savedEntity.Should().NotBeNull();
-            savedEntity!.EmailType.Should().Be(EmailTypeEnum.RsvpNotify);
+            savedEntity!.EmailType.Should().Be(CampaignTypeEnum.RsvpNotify);
         }
 
         [Test]
