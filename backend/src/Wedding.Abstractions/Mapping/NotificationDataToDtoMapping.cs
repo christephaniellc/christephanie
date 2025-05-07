@@ -35,10 +35,10 @@ namespace Wedding.Abstractions.Mapping
                 CreateMap<GuestEmailLogDto, NotificationDataEntity>()
                     .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => $"{DynamoKeys.NotificationKeys.GetPartitionKey(src.GuestId)}"))
                     .ForMember(dest => dest.SortKey, opt => opt.MapFrom(src => $"{DynamoKeys.NotificationKeys.GetSortKey(src.Timestamp, src.CampaignType)}"))
-
-                    .ForMember(dest => dest.CampaignIndexPartitionKey, opt => opt.MapFrom(src => $"{DynamoKeys.NotificationKeys.GetCampaignIdGSI(src.CampaignId)}"))
-                    .ForMember(dest => dest.CampaignIndexSortKey, opt => opt.MapFrom(src => $"{DynamoKeys.Guest}#{src.GuestId}"))
-
+                    
+                    .ForMember(dest => dest.CampaignTypeIndexPartitionKey, opt => opt.MapFrom(src => src.CampaignType.ToString()))
+                    .ForMember(dest => dest.CampaignTypeIndexSortKey, opt => opt.MapFrom(src => src.Timestamp))
+                    
                     .ForMember(dest => dest.GuestEmailLogId, opt => opt.MapFrom(src => src.GuestEmailLogId))
                     .ForMember(dest => dest.GuestId, opt => opt.MapFrom(src => src.GuestId))
                     .ForMember(dest => dest.EmailType, opt => opt.MapFrom(src => src.CampaignType))
