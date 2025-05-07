@@ -533,13 +533,6 @@ function AdminPage() {
       maxWidth: '100%',
       height: 'auto', // Changed from fixed height
       position: 'relative', // Ensure proper positioning context
-      userSelect: 'text',
-      WebkitUserSelect: 'text',
-      WebkitTouchCallout: 'default',
-      WebkitUserModify: 'read-write',
-      MozUserSelect: 'text',
-      msUserSelect: 'text',
-      cursor: 'auto'
     }}>
       <StephsActualFavoriteTypography variant="h1" gutterBottom sx={{ 
         mb: 4,
