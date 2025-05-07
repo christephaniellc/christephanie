@@ -74,7 +74,7 @@ namespace Wedding.Common.Multitenancy
                     }
                     else if (table == DatabaseTableEnum.NotificationTracking)
                     {
-                        databaseTable = $"christephanie-wedding-notification-tracking-prod";
+                        databaseTable = $"christephanie-wedding-notification-tracking";
                     }
                     else
                     {
@@ -103,7 +103,7 @@ namespace Wedding.Common.Multitenancy
                     }
                     else if (table == DatabaseTableEnum.NotificationTracking)
                     {
-                        databaseTable = $"christephanie-wedding-notification-tracking-dev";
+                        databaseTable = $"christephanie-wedding-notification-tracking";
                     }
                     else
                     {

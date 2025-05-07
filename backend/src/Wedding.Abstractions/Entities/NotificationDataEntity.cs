@@ -11,7 +11,7 @@ namespace Wedding.Abstractions.Entities
         public string? PartitionKey { get; set; } // e.g., "EMAIL#<GuestId>"
 
         [DynamoDBRangeKey]
-        public string? SortKey { get; set; } = ""; // e.g., "2025-04-03T12:00:00Z#<EmailType>"
+        public string? SortKey { get; set; } = ""; // e.g., "2025-04-03T12:00:00Z#<CampaignType>"
 
         [DynamoDBProperty]
         public required string GuestEmailLogId { get; set; } = "";
@@ -19,8 +19,8 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty]
         public string GuestId { get; set; } = "";
 
-        [DynamoDBProperty(typeof(EnumToStringConverter<EmailTypeEnum>))]
-        public EmailTypeEnum? EmailType { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<CampaignTypeEnum>))]
+        public CampaignTypeEnum? EmailType { get; set; }
 
         [DynamoDBProperty]
         public string? CampaignId { get; set; }
@@ -40,10 +40,10 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty]
         public Dictionary<string, string>? Metadata { get; set; }
 
-        [DynamoDBGlobalSecondaryIndexHashKey("CampaignIndex")]
-        public string? CampaignIndexPartitionKey { get; set; } // "CAMPAIGN#<GuestId>"
+        [DynamoDBGlobalSecondaryIndexHashKey("CampaignTypeIndex")]
+        public string? CampaignTypeIndexPartitionKey { get; set; } // "CAMPAIGN#<GuestId>"
 
-        [DynamoDBGlobalSecondaryIndexRangeKey("CampaignIndex")]
-        public string? CampaignIndexSortKey { get; set; } // "GUEST#<GuestId>"
+        [DynamoDBGlobalSecondaryIndexRangeKey("CampaignTypeIndex")]
+        public string? CampaignTypeIndexSortKey { get; set; } // "GUEST#<GuestId>"
     }
 }
