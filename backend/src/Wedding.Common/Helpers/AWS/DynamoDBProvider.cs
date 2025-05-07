@@ -397,6 +397,16 @@ namespace Wedding.Common.Helpers.AWS
         #endregion
 
         #region Notifications
+        public async Task<List<GuestEmailLogDto>> GetAllEmailLogsAsync(string audience, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+
+            var results = await _repository.QueryAsync<NotificationDataEntity>(partitionKey, config)
+                .GetRemainingAsync(cancellationToken);
+
+            return results.Select(e => _mapper.Map<GuestEmailLogDto>(e)).ToList();
+        }
         public async Task<List<GuestEmailLogDto>> GetEmailLogsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
         {
             var partitionKey = NotificationKeys.GetPartitionKey(guestId);
