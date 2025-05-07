@@ -2,9 +2,12 @@ import { useEffect, useState, ReactElement, useCallback, useMemo } from 'react';
 import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
+import Api from '@/api/Api';
 import { isAdmin } from '@/utils/roles';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
+import { useAuth0 } from '@auth0/auth0-react';
+import { getConfig } from '@/auth_config';
 import { getTierDetails } from './components/AdminHelpers';
 import { GuestPopperState, getRandomAxis } from '../Stats/components/StatsHelpers';
 import GuestDetailCard from '../Stats/components/GuestDetailCard';
@@ -1139,18 +1142,591 @@ function AdminPage() {
     );
   };
   
-  // Placeholder for the Notifications tab
-  const NotificationsTabContent = () => (
-    <Paper elevation={3} sx={{ p: 4, height: isMobile ? 'auto' : 'calc(100vh - 200px)' }}>
-      <Typography variant="h5" component="h2" gutterBottom>
-        Send Notifications
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
-      <Typography variant="body1">
-        This tab will allow you to send notifications to guests. Functionality will be implemented soon.
-      </Typography>
-    </Paper>
-  );
+  // Notifications tab content
+  const NotificationsTabContent = () => {
+    const apiContext = useApiContext();
+    const { getAccessTokenSilently } = useAuth0();
+    const [sending, setSending] = useState<Record<string, boolean>>({});
+    const [results, setResults] = useState<Record<string, { success: boolean; message: string }>>({});
+    const [directApi, setDirectApi] = useState<Api | null>(null);
+    const [apiBaseUrl, setApiBaseUrl] = useState<string>('');
+    
+    // Initialize API base URL from config
+    useEffect(() => {
+      try {
+        const config = getConfig();
+        console.log('API config from getConfig():', config);
+        if (config && config.webserviceUrl) {
+          setApiBaseUrl(config.webserviceUrl);
+          console.log('API base URL set to:', config.webserviceUrl);
+        } else {
+          // Fallback
+          const fallbackUrl = window.location.origin + '/api';
+          setApiBaseUrl(fallbackUrl);
+          console.log('API base URL fallback to:', fallbackUrl);
+        }
+      } catch (error) {
+        console.error('Error getting API base URL:', error);
+        setApiBaseUrl(window.location.origin + '/api');
+      }
+    }, []);
+    
+    // Initialize a direct API instance as backup
+    useEffect(() => {
+      const getToken = async () => {
+        try {
+          return await getAccessTokenSilently();
+        } catch (err) {
+          console.error('Failed to get token:', err);
+          return null;
+        }
+      };
+      
+      const api = new Api(getToken);
+      setDirectApi(api);
+      console.log('Direct API initialized');
+    }, [getAccessTokenSilently]);
+    
+    // Debug info - check if sendRsvpNotification is available
+    useEffect(() => {
+      console.log('API Context in Notifications tab:', apiContext);
+      console.log('sendRsvpNotification available:', typeof apiContext.sendRsvpNotification === 'function');
+      console.log('API instance available:', !!apiContext.apiInstance);
+      if (apiContext.apiInstance) {
+        console.log('API instance methods:', Object.keys(apiContext.apiInstance));
+      }
+    }, [apiContext]);
+    
+    // Get families and guests with valid emails first
+    const familiesWithVerifiedEmails = useMemo(() => {
+      // First filter families with verified emails
+      const verified = adminData.filter(family => 
+        family.guests?.some(guest => guest.email?.verified === true)
+      );
+      
+      // Then get families without verified emails
+      const unverified = adminData.filter(family => 
+        !family.guests?.some(guest => guest.email?.verified === true)
+      );
+      
+      return [...verified, ...unverified];
+    }, [adminData]);
+    
+    const handleSendNotification = async (guestId: string) => {
+      try {
+        setSending(prev => ({ ...prev, [guestId]: true }));
+        
+        console.log('Sending notification to guest:', guestId);
+        
+        let response;
+        
+        // Try multiple approaches to make the API call
+        try {
+          // First try: use API context
+          if (typeof apiContext.sendRsvpNotification === 'function') {
+            console.log('Using apiContext.sendRsvpNotification');
+            response = await apiContext.sendRsvpNotification(guestId);
+          } 
+          // Second try: use API instance from context
+          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendRsvpNotification === 'function') {
+            console.log('Using apiContext.apiInstance.sendRsvpNotification');
+            response = await apiContext.apiInstance.sendRsvpNotification(guestId);
+          }
+          // Third try: use direct API instance 
+          else if (directApi && typeof directApi.sendRsvpNotification === 'function') {
+            console.log('Using directApi.sendRsvpNotification');
+            response = await directApi.sendRsvpNotification(guestId);
+          }
+          // Last resort: Make a direct fetch call
+          else {
+            console.log('Using direct fetch call');
+            const token = await getAccessTokenSilently();
+            const url = `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}`;
+            
+            console.log('Fetch URL:', url);
+            response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            }).then(res => {
+              if (!res.ok) {
+                throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+              }
+              return res.json();
+            });
+          }
+        } catch (callError) {
+          console.error('API call failed, trying alternatives:', callError);
+          
+          // If the first attempt fails, try direct fetch with alternate URL
+          const token = await getAccessTokenSilently();
+          
+          // Try multiple possible API endpoints
+          const possibleEndpoints = [
+            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}`,
+            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}`,
+            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}`
+          ];
+          
+          // Try each endpoint until one succeeds
+          let lastError;
+          for (const url of possibleEndpoints) {
+            try {
+              console.log('Trying URL:', url);
+              response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                }
+              }).then(res => {
+                if (!res.ok) {
+                  throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+              });
+              
+              // If we got here, the request succeeded
+              console.log('Success with URL:', url);
+              break;
+            } catch (endpointError) {
+              console.error(`Failed with URL ${url}:`, endpointError);
+              lastError = endpointError;
+            }
+          }
+          
+          // If we still don't have a response, throw the last error
+          if (!response && lastError) {
+            throw lastError;
+          }
+        }
+        
+        console.log('Notification response:', response);
+        
+        // Check response and update results
+        if (response) {
+          setResults(prev => ({ 
+            ...prev, 
+            [guestId]: { 
+              success: true, 
+              message: 'Email notification sent successfully' 
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+        setResults(prev => ({ 
+          ...prev, 
+          [guestId]: { 
+            success: false, 
+            message: error instanceof Error ? error.message : 'Failed to send notification'
+          }
+        }));
+        
+        // Add an alert for better visibility
+        alert(`Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setSending(prev => ({ ...prev, [guestId]: false }));
+      }
+    };
+    
+    const handleSendAllNotifications = async () => {
+      try {
+        setSending(prev => ({ ...prev, all: true }));
+        
+        console.log('Sending notifications to all guests');
+        
+        let response;
+        
+        // Try multiple approaches to make the API call
+        try {
+          // First try: use API context
+          if (typeof apiContext.sendRsvpNotification === 'function') {
+            console.log('Using apiContext.sendRsvpNotification');
+            response = await apiContext.sendRsvpNotification();
+          } 
+          // Second try: use API instance from context
+          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendRsvpNotification === 'function') {
+            console.log('Using apiContext.apiInstance.sendRsvpNotification');
+            response = await apiContext.apiInstance.sendRsvpNotification();
+          }
+          // Third try: use direct API instance 
+          else if (directApi && typeof directApi.sendRsvpNotification === 'function') {
+            console.log('Using directApi.sendRsvpNotification');
+            response = await directApi.sendRsvpNotification();
+          }
+          // Last resort: Make a direct fetch call
+          else {
+            console.log('Using direct fetch call');
+            const token = await getAccessTokenSilently();
+            const url = `${apiBaseUrl}/notify/email`;
+            
+            console.log('Fetch URL:', url);
+            response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            }).then(res => {
+              if (!res.ok) {
+                throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+              }
+              return res.json();
+            });
+          }
+        } catch (callError) {
+          console.error('API call failed, trying alternatives:', callError);
+          
+          // If the first attempt fails, try direct fetch with alternate URL
+          const token = await getAccessTokenSilently();
+          
+          // Try multiple possible API endpoints
+          const possibleEndpoints = [
+            `${apiBaseUrl}/notify/email`,
+            `${window.location.origin}/api/notify/email`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email`,
+            `https://fianceapi.wedding.christephanie.com/notify/email`
+          ];
+          
+          // Try each endpoint until one succeeds
+          let lastError;
+          for (const url of possibleEndpoints) {
+            try {
+              console.log('Trying URL:', url);
+              response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                }
+              }).then(res => {
+                if (!res.ok) {
+                  throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+              });
+              
+              // If we got here, the request succeeded
+              console.log('Success with URL:', url);
+              break;
+            } catch (endpointError) {
+              console.error(`Failed with URL ${url}:`, endpointError);
+              lastError = endpointError;
+            }
+          }
+          
+          // If we still don't have a response, throw the last error
+          if (!response && lastError) {
+            throw lastError;
+          }
+        }
+        
+        console.log('All notifications response:', response);
+        
+        // Check response and update results
+        if (response) {
+          setResults(prev => ({ 
+            ...prev, 
+            all: { 
+              success: true, 
+              message: `Sent ${response.length || 0} email notifications successfully` 
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to send all notifications:', error);
+        setResults(prev => ({ 
+          ...prev, 
+          all: { 
+            success: false, 
+            message: error instanceof Error ? error.message : 'Failed to send notifications'
+          }
+        }));
+        
+        // Add an alert for better visibility
+        alert(`Failed to send notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setSending(prev => ({ ...prev, all: false }));
+      }
+    };
+    
+    const getEmailVerificationStatus = (guest: GuestDto) => {
+      if (!guest.email) {
+        return <Typography color="error" variant="caption">No email</Typography>;
+      }
+      
+      if (guest.email.verified) {
+        return <Typography color="success.main" variant="caption">Verified</Typography>;
+      }
+      
+      return <Typography color="warning.main" variant="caption">Unverified</Typography>;
+    };
+    
+    // Gets the status dot indicators for each guest
+    const getGuestStatusDots = (guest: GuestDto) => {
+      // Determine which dot should be filled based on priority
+      let filledDotIndex = -1;
+      
+      // Priority 1: Red - Declined (either invitation or wedding)
+      if (guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+          guest.rsvp?.wedding === RsvpEnum.Declined) {
+        filledDotIndex = 0;
+      }
+      // Priority 2: Green - Attending wedding
+      else if (guest.rsvp?.wedding === RsvpEnum.Attending) {
+        filledDotIndex = 3;
+      }
+      // Priority 3: Light Green - Interested
+      else if (guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested) {
+        filledDotIndex = 2;
+      }
+      // Priority 4: Yellow - Pending
+      else if (guest.rsvp?.invitationResponse === InvitationResponseEnum.Pending || 
+               !guest.rsvp?.invitationResponse) {
+        filledDotIndex = 1;
+      }
+      
+      // Define dot colors
+      const dotColors = [
+        { outline: '#d32f2f', fill: filledDotIndex === 0 ? '#d32f2f' : 'transparent' }, // Red
+        { outline: '#ffc107', fill: filledDotIndex === 1 ? '#ffc107' : 'transparent' }, // Yellow
+        { outline: '#8bc34a', fill: filledDotIndex === 2 ? '#8bc34a' : 'transparent' }, // Light Green
+        { outline: '#4caf50', fill: filledDotIndex === 3 ? '#4caf50' : 'transparent' }  // Green
+      ];
+      
+      return (
+        <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+          {dotColors.map((color, index) => (
+            <Box 
+              key={index}
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                border: `1px solid ${color.outline}`,
+                backgroundColor: color.fill,
+              }}
+            />
+          ))}
+        </Box>
+      );
+    };
+    
+    return (
+      <Box sx={{ p: 0, height: 'auto', overflow: 'auto' }}>
+        <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Send Notifications
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          
+          {/* Campaign section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Email Campaigns
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  borderLeft: '4px solid',
+                  borderLeftColor: 'primary.main'
+                }}
+              >
+                <Typography variant="subtitle1" gutterBottom>
+                  RSVP Notification
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  Send RSVP notification emails to all guests with verified email addresses.
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={sending.all}
+                    onClick={handleSendAllNotifications}
+                  >
+                    {sending.all ? 'Sending...' : 'Send to All Verified Emails'}
+                  </Button>
+                  
+                  {results.all && (
+                    <Box sx={{ ml: 2 }}>
+                      <Alert 
+                        severity={results.all.success ? 'success' : 'error'}
+                        sx={{ py: 0 }}
+                      >
+                        {results.all.message}
+                      </Alert>
+                    </Box>
+                  )}
+                </Box>
+              </Paper>
+            </Box>
+          </Box>
+          
+          {/* Individual guests section */}
+          <Typography variant="h6" gutterBottom>
+            Send to Individual Guests
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Guests with verified emails are shown at the top. You can send test emails to individual guests.
+          </Typography>
+          
+          {/* Status dots legend */}
+          <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box 
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: '1px solid #d32f2f',
+                  backgroundColor: '#d32f2f',
+                  mr: 1
+                }}
+              />
+              <Typography variant="caption">Declined</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box 
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: '1px solid #ffc107',
+                  backgroundColor: '#ffc107',
+                  mr: 1
+                }}
+              />
+              <Typography variant="caption">Pending</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box 
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: '1px solid #8bc34a',
+                  backgroundColor: '#8bc34a',
+                  mr: 1
+                }}
+              />
+              <Typography variant="caption">Interested</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box 
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: '1px solid #4caf50',
+                  backgroundColor: '#4caf50',
+                  mr: 1
+                }}
+              />
+              <Typography variant="caption">Attending</Typography>
+            </Box>
+          </Box>
+          
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={2}>
+              {familiesWithVerifiedEmails.map((family) => (
+                <Grid item xs={12} key={family.invitationCode}>
+                  <Paper 
+                    variant="outlined" 
+                    sx={{ 
+                      p: 2,
+                      borderLeft: '4px solid',
+                      borderLeftColor: family.guests?.some(g => g.email?.verified) 
+                        ? 'success.main' 
+                        : 'text.disabled',
+                      opacity: family.guests?.some(g => g.email?.verified) ? 1 : 0.7
+                    }}
+                  >
+                    <Typography variant="subtitle1" gutterBottom>
+                      {family.unitName}
+                      <Typography 
+                        component="span" 
+                        variant="caption" 
+                        sx={{ ml: 1, color: 'text.secondary' }}
+                      >
+                        ({family.invitationCode})
+                      </Typography>
+                    </Typography>
+                    
+                    <Divider sx={{ my: 1 }} />
+                    
+                    <Grid container spacing={2}>
+                      {family.guests?.map((guest) => (
+                        <Grid item xs={12} sm={6} md={4} key={guest.guestId}>
+                          <Box 
+                            sx={{ 
+                              display: 'flex',
+                              flexDirection: 'column',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              borderRadius: 1,
+                              p: 2,
+                              height: '100%'
+                            }}
+                          >
+                            <Box sx={{ mb: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="subtitle2">
+                                  {guest.firstName} {guest.lastName}
+                                </Typography>
+                                {getGuestStatusDots(guest)}
+                              </Box>
+                              <Typography variant="body2" color="text.secondary">
+                                {guest.email?.value || 'No email'} {getEmailVerificationStatus(guest)}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center' }}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                disabled={sending[guest.guestId] || !guest.email?.verified}
+                                onClick={() => handleSendNotification(guest.guestId)}
+                                sx={{ 
+                                  opacity: guest.email?.verified ? 1 : 0.5 
+                                }}
+                              >
+                                {sending[guest.guestId] ? 'Sending...' : 'Send Notification'}
+                              </Button>
+                              
+                              {results[guest.guestId] && (
+                                <Box sx={{ ml: 1 }}>
+                                  {results[guest.guestId].success ? (
+                                    <Typography variant="caption" color="success.main">✓</Typography>
+                                  ) : (
+                                    <Typography variant="caption" color="error">✗</Typography>
+                                  )}
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Paper>
+      </Box>
+    );
+  };
 
   // Create tab items array
   const tabItems: TabItem[] = [

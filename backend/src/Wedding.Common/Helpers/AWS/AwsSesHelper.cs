@@ -31,7 +31,7 @@ namespace Wedding.Common.Helpers.AWS
             var bodies = EmailTemplateHelper.SendVerificationCodeTemplate(_config, email, token, cancellationToken);
 
             var result = await SendEmail(toAddresses: new List<string> { email.Value },
-                subject: "Email Verification Link",
+                subject: _config.ApplicationName + " Email Verification Link",
                 textBody: bodies.textBody,
                 htmlBody: bodies.htmlBody,
                 cancellationToken);
@@ -56,10 +56,10 @@ namespace Wedding.Common.Helpers.AWS
 
             var result = await SendEmail(
                 toAddresses: new List<string> { email },
-                subject: "Payment Confirmation - Thank You for Your Contribution",
+                subject: _config.ApplicationName + " Payment Confirmation - Thank You for Your Contribution",
                 textBody: bodies.textBody,
                 htmlBody: bodies.htmlBody,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
             Console.WriteLine($"Payment Confirmation SES response: {JsonSerializer.Serialize(result)}");
             Console.WriteLine($"Payment Confirmation email sent. Message ID: {result.MessageId}");
@@ -87,14 +87,18 @@ namespace Wedding.Common.Helpers.AWS
                 subject: subject,
                 textBody: bodies.textBody,
                 htmlBody: bodies.htmlBody,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
             Console.WriteLine($"RSVP Notification Email SES response: {JsonSerializer.Serialize(result)}");
             Console.WriteLine($"RSVP Notification Email sent. Message ID: {result.MessageId}");
             return result;
         }
 
-        public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, string subject, string textBody, string htmlBody, CancellationToken cancellationToken)
+        public async Task<SendEmailResponse?> SendEmail(List<string> toAddresses, 
+            string subject, 
+            string textBody, 
+            string htmlBody, 
+            CancellationToken cancellationToken = default)
         {
             using (var sesClient = CreateSesClient())
             {
@@ -108,7 +112,7 @@ namespace Wedding.Common.Helpers.AWS
                     },
                     Message = new Message
                     {
-                        Subject = new Content(_config.ApplicationName + " " + subject),
+                        Subject = new Content(subject),
                         Body = new Body
                         {
                             Html = new Content { Charset = "UTF-8", Data = htmlBody },
