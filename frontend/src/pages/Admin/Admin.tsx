@@ -44,6 +44,64 @@ import FamilyList, { SortOption } from './components/FamilyList';
 import FamilyDetails from './components/FamilyDetails';
 import React from 'react';
 
+// Email campaign types (must match backend EmailTypeEnum)
+export enum EmailCampaignType {
+  RsvpNotify = 'RsvpNotify',
+  RsvpReminder = 'RsvpReminder',
+  ManorDetails = 'ManorDetails',
+  FourthDetails = 'FourthDetails',
+  WeddingDetails = 'WeddingDetails',
+  ThankYou = 'ThankYou'
+}
+
+// Campaign display information
+export interface CampaignInfo {
+  type: EmailCampaignType;
+  displayName: string;
+  description: string;
+  color: string;
+}
+
+// Campaign definitions with distinct colors
+export const EMAIL_CAMPAIGNS: CampaignInfo[] = [
+  {
+    type: EmailCampaignType.RsvpNotify,
+    displayName: 'RSVP Notification',
+    description: 'Initial notification for guests to RSVP for the wedding',
+    color: '#3f51b5' // Blue
+  },
+  {
+    type: EmailCampaignType.RsvpReminder,
+    displayName: 'RSVP Reminder',
+    description: 'Reminder for guests who haven\'t responded yet',
+    color: '#ff9800' // Orange - changed from warning.main (yellow) to be more distinct
+  },
+  {
+    type: EmailCampaignType.ManorDetails,
+    displayName: 'Manor Details',
+    description: 'Information about accommodations at the manor',
+    color: '#9c27b0' // Purple - changed from secondary.main to be more distinct from warning
+  },
+  {
+    type: EmailCampaignType.FourthDetails,
+    displayName: 'July 4th Details',
+    description: 'Details about the July 4th celebration',
+    color: '#f44336' // Red
+  },
+  {
+    type: EmailCampaignType.WeddingDetails,
+    displayName: 'Wedding Details',
+    description: 'Final details and information about the wedding day',
+    color: '#00bcd4' // Cyan - more vibrant than info.main
+  },
+  {
+    type: EmailCampaignType.ThankYou,
+    displayName: 'Thank You',
+    description: 'Thank you messages after the wedding',
+    color: '#4caf50' // Green
+  }
+];
+
 // Define the TabPanel props interface
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1197,51 +1255,82 @@ function AdminPage() {
       }
     }, [apiContext]);
     
-    // Get families and guests with valid emails first
+    // Get families and guests with valid emails first and declined families last
     const familiesWithVerifiedEmails = useMemo(() => {
-      // First filter families with verified emails
-      const verified = adminData.filter(family => 
-        family.guests?.some(guest => guest.email?.verified === true)
+      // Check if all family members have declined
+      const isAllDeclined = (family: FamilyUnitDto): boolean => {
+        if (!family.guests || family.guests.length === 0) return false;
+        
+        return family.guests.every(guest => 
+          guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+          guest.rsvp?.wedding === RsvpEnum.Declined
+        );
+      };
+      
+      // First filter families with verified emails (non-declined)
+      const verifiedNonDeclined = adminData.filter(family => 
+        family.guests?.some(guest => guest.email?.verified === true) && 
+        !isAllDeclined(family)
       );
       
-      // Then get families without verified emails
-      const unverified = adminData.filter(family => 
-        !family.guests?.some(guest => guest.email?.verified === true)
+      // Then get families without verified emails (non-declined)
+      const unverifiedNonDeclined = adminData.filter(family => 
+        !family.guests?.some(guest => guest.email?.verified === true) && 
+        !isAllDeclined(family)
       );
       
-      return [...verified, ...unverified];
+      // Then get families with all declined members (verified first)
+      const verifiedDeclined = adminData.filter(family => 
+        family.guests?.some(guest => guest.email?.verified === true) && 
+        isAllDeclined(family)
+      );
+      
+      // Then families with all declined members and no verified emails
+      const unverifiedDeclined = adminData.filter(family => 
+        !family.guests?.some(guest => guest.email?.verified === true) && 
+        isAllDeclined(family)
+      );
+      
+      return [...verifiedNonDeclined, ...unverifiedNonDeclined, ...verifiedDeclined, ...unverifiedDeclined];
     }, [adminData]);
     
-    const handleSendNotification = async (guestId: string) => {
+    // Create a unique key for tracking sending status and results
+    const getSendingKey = (guestId: string, campaignType: EmailCampaignType): string => {
+      return `${guestId}:${campaignType}`;
+    };
+    
+    const handleSendNotification = async (guestId: string, campaignType: EmailCampaignType = EmailCampaignType.RsvpNotify) => {
+      const sendingKey = getSendingKey(guestId, campaignType);
+      
       try {
-        setSending(prev => ({ ...prev, [guestId]: true }));
+        setSending(prev => ({ ...prev, [sendingKey]: true }));
         
-        console.log('Sending notification to guest:', guestId);
+        console.log(`Sending ${campaignType} notification to guest:`, guestId);
         
         let response;
         
         // Try multiple approaches to make the API call
         try {
-          // First try: use API context
-          if (typeof apiContext.sendRsvpNotification === 'function') {
-            console.log('Using apiContext.sendRsvpNotification');
-            response = await apiContext.sendRsvpNotification(guestId);
-          } 
+          // First try: use API context with new method
+          if (typeof apiContext.sendEmailNotification === 'function') {
+            console.log('Using apiContext.sendEmailNotification');
+            response = await apiContext.sendEmailNotification(campaignType, guestId);
+          }
           // Second try: use API instance from context
-          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendRsvpNotification === 'function') {
-            console.log('Using apiContext.apiInstance.sendRsvpNotification');
-            response = await apiContext.apiInstance.sendRsvpNotification(guestId);
+          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendEmailNotification === 'function') {
+            console.log('Using apiContext.apiInstance.sendEmailNotification');
+            response = await apiContext.apiInstance.sendEmailNotification(campaignType, guestId);
           }
           // Third try: use direct API instance 
-          else if (directApi && typeof directApi.sendRsvpNotification === 'function') {
-            console.log('Using directApi.sendRsvpNotification');
-            response = await directApi.sendRsvpNotification(guestId);
+          else if (directApi && typeof directApi.sendEmailNotification === 'function') {
+            console.log('Using directApi.sendEmailNotification');
+            response = await directApi.sendEmailNotification(campaignType, guestId);
           }
           // Last resort: Make a direct fetch call
           else {
             console.log('Using direct fetch call');
             const token = await getAccessTokenSilently();
-            const url = `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}`;
+            const url = `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`;
             
             console.log('Fetch URL:', url);
             response = await fetch(url, {
@@ -1265,10 +1354,10 @@ function AdminPage() {
           
           // Try multiple possible API endpoints
           const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}`,
-            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}`,
-            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}`
+            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
+            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
+            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`
           ];
           
           // Try each endpoint until one succeeds
@@ -1304,65 +1393,67 @@ function AdminPage() {
           }
         }
         
-        console.log('Notification response:', response);
+        console.log(`${campaignType} notification response:`, response);
         
         // Check response and update results
         if (response) {
           setResults(prev => ({ 
             ...prev, 
-            [guestId]: { 
+            [sendingKey]: { 
               success: true, 
-              message: 'Email notification sent successfully' 
+              message: `${campaignType} email sent successfully` 
             }
           }));
         }
       } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.error(`Failed to send ${campaignType} notification:`, error);
         setResults(prev => ({ 
           ...prev, 
-          [guestId]: { 
+          [sendingKey]: { 
             success: false, 
-            message: error instanceof Error ? error.message : 'Failed to send notification'
+            message: error instanceof Error ? error.message : `Failed to send ${campaignType} notification`
           }
         }));
         
         // Add an alert for better visibility
-        alert(`Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(`Failed to send ${campaignType} notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
-        setSending(prev => ({ ...prev, [guestId]: false }));
+        setSending(prev => ({ ...prev, [sendingKey]: false }));
       }
     };
     
-    const handleSendAllNotifications = async () => {
+    const handleSendAllNotifications = async (campaignType: EmailCampaignType = EmailCampaignType.RsvpNotify) => {
+      const sendingKey = `all:${campaignType}`;
+      
       try {
-        setSending(prev => ({ ...prev, all: true }));
+        setSending(prev => ({ ...prev, [sendingKey]: true }));
         
-        console.log('Sending notifications to all guests');
+        console.log(`Sending ${campaignType} notifications to all guests`);
         
         let response;
         
         // Try multiple approaches to make the API call
         try {
-          // First try: use API context
-          if (typeof apiContext.sendRsvpNotification === 'function') {
-            console.log('Using apiContext.sendRsvpNotification');
-            response = await apiContext.sendRsvpNotification();
-          } 
+          // First try: use API context with new method
+          if (typeof apiContext.sendEmailNotification === 'function') {
+            console.log('Using apiContext.sendEmailNotification');
+            response = await apiContext.sendEmailNotification(campaignType);
+          }
           // Second try: use API instance from context
-          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendRsvpNotification === 'function') {
-            console.log('Using apiContext.apiInstance.sendRsvpNotification');
-            response = await apiContext.apiInstance.sendRsvpNotification();
+          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendEmailNotification === 'function') {
+            console.log('Using apiContext.apiInstance.sendEmailNotification');
+            response = await apiContext.apiInstance.sendEmailNotification(campaignType);
           }
           // Third try: use direct API instance 
-          else if (directApi && typeof directApi.sendRsvpNotification === 'function') {
-            console.log('Using directApi.sendRsvpNotification');
-            response = await directApi.sendRsvpNotification();
+          else if (directApi && typeof directApi.sendEmailNotification === 'function') {
+            console.log('Using directApi.sendEmailNotification');
+            response = await directApi.sendEmailNotification(campaignType);
           }
           // Last resort: Make a direct fetch call
           else {
             console.log('Using direct fetch call');
             const token = await getAccessTokenSilently();
-            const url = `${apiBaseUrl}/notify/email`;
+            const url = `${apiBaseUrl}/notify/email?emailType=${campaignType}`;
             
             console.log('Fetch URL:', url);
             response = await fetch(url, {
@@ -1386,10 +1477,10 @@ function AdminPage() {
           
           // Try multiple possible API endpoints
           const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email`,
-            `${window.location.origin}/api/notify/email`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email`,
-            `https://fianceapi.wedding.christephanie.com/notify/email`
+            `${apiBaseUrl}/notify/email?emailType=${campaignType}`,
+            `${window.location.origin}/api/notify/email?emailType=${campaignType}`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email?emailType=${campaignType}`,
+            `https://fianceapi.wedding.christephanie.com/notify/email?emailType=${campaignType}`
           ];
           
           // Try each endpoint until one succeeds
@@ -1425,32 +1516,32 @@ function AdminPage() {
           }
         }
         
-        console.log('All notifications response:', response);
+        console.log(`All ${campaignType} notifications response:`, response);
         
         // Check response and update results
         if (response) {
           setResults(prev => ({ 
             ...prev, 
-            all: { 
+            [sendingKey]: { 
               success: true, 
-              message: `Sent ${response.length || 0} email notifications successfully` 
+              message: `Sent ${response.length || 0} ${campaignType} email notifications successfully` 
             }
           }));
         }
       } catch (error) {
-        console.error('Failed to send all notifications:', error);
+        console.error(`Failed to send all ${campaignType} notifications:`, error);
         setResults(prev => ({ 
           ...prev, 
-          all: { 
+          [sendingKey]: { 
             success: false, 
-            message: error instanceof Error ? error.message : 'Failed to send notifications'
+            message: error instanceof Error ? error.message : `Failed to send ${campaignType} notifications`
           }
         }));
         
         // Add an alert for better visibility
-        alert(`Failed to send notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(`Failed to send ${campaignType} notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
-        setSending(prev => ({ ...prev, all: false }));
+        setSending(prev => ({ ...prev, [sendingKey]: false }));
       }
     };
     
@@ -1529,44 +1620,65 @@ function AdminPage() {
             <Typography variant="h6" gutterBottom>
               Email Campaigns
             </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 2,
-                  borderLeft: '4px solid',
-                  borderLeftColor: 'primary.main'
-                }}
-              >
-                <Typography variant="subtitle1" gutterBottom>
-                  RSVP Notification
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Send RSVP notification emails to all guests with verified email addresses.
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={sending.all}
-                    onClick={handleSendAllNotifications}
-                  >
-                    {sending.all ? 'Sending...' : 'Send to All Verified Emails'}
-                  </Button>
-                  
-                  {results.all && (
-                    <Box sx={{ ml: 2 }}>
-                      <Alert 
-                        severity={results.all.success ? 'success' : 'error'}
-                        sx={{ py: 0 }}
-                      >
-                        {results.all.message}
-                      </Alert>
-                    </Box>
-                  )}
-                </Box>
-              </Paper>
-            </Box>
+            
+            {/* Campaign cards - 3x2 Grid layout */}
+            <Grid container spacing={2}>
+              {EMAIL_CAMPAIGNS.map((campaign) => {
+                const sendingKey = `all:${campaign.type}`;
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={campaign.type}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderTop: '4px solid',
+                        borderTopColor: campaign.color
+                      }}
+                    >
+                      <Typography variant="subtitle1" gutterBottom>
+                        {campaign.displayName}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2, flexGrow: 1 }}>
+                        {campaign.description}
+                      </Typography>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        flexWrap: 'wrap', 
+                        gap: 1 
+                      }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{ 
+                            backgroundColor: campaign.color,
+                            '&:hover': {
+                              backgroundColor: `${campaign.color}dd`
+                            }
+                          }}
+                          disabled={sending[sendingKey]}
+                          onClick={() => handleSendAllNotifications(campaign.type)}
+                        >
+                          {sending[sendingKey] ? 'Sending...' : `Send to All`}
+                        </Button>
+                        
+                        {results[sendingKey] && (
+                          <Alert 
+                            severity={results[sendingKey].success ? 'success' : 'error'}
+                            sx={{ py: 0, flexGrow: 1 }}
+                          >
+                            {results[sendingKey].message}
+                          </Alert>
+                        )}
+                      </Box>
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Box>
           
           {/* Individual guests section */}
@@ -1578,58 +1690,88 @@ function AdminPage() {
           </Typography>
           
           {/* Status dots legend */}
-          <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box 
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  border: '1px solid #d32f2f',
-                  backgroundColor: '#d32f2f',
-                  mr: 1
-                }}
-              />
-              <Typography variant="caption">Declined</Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" gutterBottom>Guest Status Legend:</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    border: '1px solid #d32f2f',
+                    backgroundColor: '#d32f2f',
+                    mr: 1
+                  }}
+                />
+                <Typography variant="caption">Declined</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    border: '1px solid #ffc107',
+                    backgroundColor: '#ffc107',
+                    mr: 1
+                  }}
+                />
+                <Typography variant="caption">Pending</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    border: '1px solid #8bc34a',
+                    backgroundColor: '#8bc34a',
+                    mr: 1
+                  }}
+                />
+                <Typography variant="caption">Interested</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    border: '1px solid #4caf50',
+                    backgroundColor: '#4caf50',
+                    mr: 1
+                  }}
+                />
+                <Typography variant="caption">Attending</Typography>
+              </Box>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box 
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  border: '1px solid #ffc107',
-                  backgroundColor: '#ffc107',
-                  mr: 1
-                }}
-              />
-              <Typography variant="caption">Pending</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box 
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  border: '1px solid #8bc34a',
-                  backgroundColor: '#8bc34a',
-                  mr: 1
-                }}
-              />
-              <Typography variant="caption">Interested</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box 
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  border: '1px solid #4caf50',
-                  backgroundColor: '#4caf50',
-                  mr: 1
-                }}
-              />
-              <Typography variant="caption">Attending</Typography>
+            
+            {/* Campaign buttons legend */}
+            <Typography variant="subtitle2" gutterBottom>Campaign Button Legend:</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              {EMAIL_CAMPAIGNS.map(campaign => (
+                <Box key={campaign.type} sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box 
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 0.5,
+                      border: `1px solid ${campaign.color}`,
+                      backgroundColor: `${campaign.color}20`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 1,
+                      fontSize: '10px',
+                      color: campaign.color
+                    }}
+                  >
+                    {campaign.type.charAt(0)}
+                  </Box>
+                  <Typography variant="caption">{campaign.displayName}</Typography>
+                </Box>
+              ))}
             </Box>
           </Box>
           
@@ -1641,18 +1783,33 @@ function AdminPage() {
             <Grid container spacing={2}>
               {familiesWithVerifiedEmails.map((family) => (
                 <Grid item xs={12} key={family.invitationCode}>
-                  <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                      p: 2,
-                      borderLeft: '4px solid',
-                      borderLeftColor: family.guests?.some(g => g.email?.verified) 
-                        ? 'success.main' 
-                        : 'text.disabled',
-                      opacity: family.guests?.some(g => g.email?.verified) ? 1 : 0.7
-                    }}
-                  >
-                    <Typography variant="subtitle1" gutterBottom>
+                  {(() => {
+                    // Determine if all family members have declined
+                    const allDeclined = family.guests?.every(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+                      g.rsvp?.wedding === RsvpEnum.Declined
+                    );
+                    
+                    // Determine border color
+                    let borderColor = 'text.disabled';
+                    if (allDeclined) {
+                      borderColor = 'error.main';
+                    } else if (family.guests?.some(g => g.email?.verified)) {
+                      borderColor = 'success.main';
+                    }
+                    
+                    return (
+                      <Paper 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 2,
+                          borderLeft: '4px solid',
+                          borderLeftColor: borderColor,
+                          opacity: allDeclined ? 0.6 : (family.guests?.some(g => g.email?.verified) ? 1 : 0.7),
+                          backgroundColor: allDeclined ? 'rgba(211, 47, 47, 0.05)' : 'inherit'
+                        }}
+                      >
+                        <Typography variant="subtitle1" gutterBottom>
                       {family.unitName}
                       <Typography 
                         component="span" 
@@ -1676,7 +1833,9 @@ function AdminPage() {
                               borderColor: 'divider',
                               borderRadius: 1,
                               p: 2,
-                              height: '100%'
+                              height: '100%',
+                              minHeight: '150px', // Ensure consistent card height
+                              position: 'relative' // For proper positioning of buttons at bottom
                             }}
                           >
                             <Box sx={{ mb: 1 }}>
@@ -1691,34 +1850,86 @@ function AdminPage() {
                               </Typography>
                             </Box>
                             
-                            <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center' }}>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                disabled={sending[guest.guestId] || !guest.email?.verified}
-                                onClick={() => handleSendNotification(guest.guestId)}
-                                sx={{ 
-                                  opacity: guest.email?.verified ? 1 : 0.5 
-                                }}
-                              >
-                                {sending[guest.guestId] ? 'Sending...' : 'Send Notification'}
-                              </Button>
+                            <Box sx={{ mt: 'auto' }}>
+                              {/* Last sent information (placeholder for future implementation) */}
+                              <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {/* Will be populated with sent email history once the GET endpoint is available */}
+                              </Box>
                               
-                              {results[guest.guestId] && (
-                                <Box sx={{ ml: 1 }}>
-                                  {results[guest.guestId].success ? (
-                                    <Typography variant="caption" color="success.main">✓</Typography>
-                                  ) : (
-                                    <Typography variant="caption" color="error">✗</Typography>
-                                  )}
-                                </Box>
-                              )}
+                              {/* Campaign buttons */}
+                              <Box sx={{ 
+                                display: 'flex', 
+                                flexWrap: 'wrap', 
+                                gap: 1,
+                                minHeight: '32px', // Ensure consistent height even when buttons expand
+                                alignItems: 'flex-start'
+                              }}>
+                                {EMAIL_CAMPAIGNS.map(campaign => {
+                                  const sendingKey = getSendingKey(guest.guestId, campaign.type);
+                                  return (
+                                    <Box key={campaign.type} sx={{ position: 'relative' }}>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        disabled={sending[sendingKey] || !guest.email?.verified}
+                                        onClick={() => handleSendNotification(guest.guestId, campaign.type)}
+                                        sx={{ 
+                                          opacity: guest.email?.verified ? 1 : 0.5,
+                                          // Dynamic width when sending
+                                          minWidth: sending[sendingKey] ? '120px' : '28px',
+                                          maxWidth: sending[sendingKey] ? '120px' : '28px',
+                                          padding: '4px 8px',
+                                          borderColor: campaign.color,
+                                          color: campaign.color,
+                                          backgroundColor: `${campaign.color}10`,
+                                          transition: 'all 0.3s ease',
+                                          '&:hover': {
+                                            borderColor: campaign.color,
+                                            backgroundColor: `${campaign.color}20`
+                                          },
+                                          whiteSpace: 'nowrap',
+                                          overflow: 'hidden'
+                                        }}
+                                        title={`Send ${campaign.displayName} to ${guest.firstName} ${guest.lastName}`}
+                                      >
+                                        {sending[sendingKey] ? `Sending email...` : campaign.type.charAt(0)}
+                                      </Button>
+                                      
+                                      {/* Status indicator */}
+                                      {results[sendingKey] && (
+                                        <Box 
+                                          sx={{ 
+                                            position: 'absolute', 
+                                            top: -4, 
+                                            right: -4,
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            backgroundColor: results[sendingKey].success ? 'success.main' : 'error.main',
+                                            border: '1px solid white',
+                                            boxShadow: '0 0 4px rgba(0,0,0,0.3)',
+                                            animation: results[sendingKey].success ? 'pulse 1.5s infinite' : 'none',
+                                            '@keyframes pulse': {
+                                              '0%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0.7)' },
+                                              '70%': { boxShadow: '0 0 0 5px rgba(76, 175, 80, 0)' },
+                                              '100%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0)' }
+                                            }
+                                          }} 
+                                          title={results[sendingKey].message}
+                                        />
+                                      )}
+                                    </Box>
+                                  );
+                                })}
+                              </Box>
                             </Box>
                           </Box>
                         </Grid>
                       ))}
                     </Grid>
                   </Paper>
+                    );
+                  })()}
                 </Grid>
               ))}
             </Grid>

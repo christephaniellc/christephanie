@@ -235,15 +235,29 @@ export default class Api {
     return this.delete(`/admin/configuration/invitation?designId=${encodeURIComponent(designId)}`);
   }
   
-  async sendRsvpNotification(guestId?: string): Promise<any> {
+  async sendEmailNotification(emailType: string = 'RsvpNotify', guestId?: string): Promise<any> {
     try {
-      console.log('Sending RSVP notification for guestId:', guestId || 'ALL');
-      const queryParam = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
-      return await this.post(`/notify/email${queryParam}`, {});
+      console.log(`Sending ${emailType} notification for guestId:`, guestId || 'ALL');
+      let queryParams = '';
+      
+      // Build query params
+      if (guestId || emailType) {
+        const params = [];
+        if (guestId) params.push(`guestId=${encodeURIComponent(guestId)}`);
+        if (emailType) params.push(`emailType=${encodeURIComponent(emailType)}`);
+        queryParams = `?${params.join('&')}`;
+      }
+      
+      return await this.post(`/notify/email${queryParams}`, {});
     } catch (error) {
-      console.error('Error in sendRsvpNotification:', error);
+      console.error(`Error in sendEmailNotification (${emailType}):`, error);
       throw error;
     }
+  }
+  
+  // Legacy method for backward compatibility
+  async sendRsvpNotification(guestId?: string): Promise<any> {
+    return this.sendEmailNotification('RsvpNotify', guestId);
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
