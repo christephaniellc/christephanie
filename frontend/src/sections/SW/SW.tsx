@@ -188,20 +188,40 @@ function SW() {
     document.documentElement.style.setProperty('user-select', 'auto', 'important');
   }, []);
 
+  // Use separate effects for different state changes to prevent conflicts
+  useEffect(() => {
+    // Only handle notification removal
+    if (notificationKey.current) {
+      notificationsActions.close(notificationKey.current);
+      notificationKey.current = null;
+    }
+  }, [notificationsActions]);
+
+  // Handle offline ready notification
   useEffect(() => {
     if (offlineReady) {
+      // Auto-hide offline notification after 4.5 seconds
       notificationsActions.push({
         options: {
           autoHideDuration: 4500,
           content: <Alert severity="success">App is ready to work offline.</Alert>,
         },
       });
-    } else if (needRefresh) {
-      notificationKey.current = notificationsActions.push({
+    }
+  }, [offlineReady, notificationsActions]);
+
+  // Handle update notification
+  useEffect(() => {
+    if (needRefresh) {
+      // To prevent stacking of multiple persistent notifications,
+      // we ensure there's only one update notification at a time
+      const uniqueKey = `sw-update-${Date.now()}`;
+      const key = notificationsActions.push({
         message: 'New content is available, click to reload.',
         options: {
           variant: 'warning',
           persist: true,
+          key: uniqueKey,
           action: (
             <>
               <Button onClick={handleReload}>Reload</Button>
@@ -210,8 +230,11 @@ function SW() {
           ),
         },
       });
+      
+      // Store the notification key for later cleanup
+      notificationKey.current = key;
     }
-  }, [close, needRefresh, offlineReady, notificationsActions, handleReload]);
+  }, [needRefresh, notificationsActions, close, handleReload]);
 
   return null;
 }

@@ -332,10 +332,6 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
         p: { xs: 1.5, sm: 2, md: 3 }, 
         borderRadius: 2, 
         mb: 4,
-        // Allow screenshots
-        userSelect: 'text',
-        WebkitUserSelect: 'text',
-        WebkitTouchCallout: 'default'
       }}>
         <StephsActualFavoriteTypography variant="h2" sx={{ mb: 3, textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
           Wedding Dashboard

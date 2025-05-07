@@ -22,18 +22,27 @@ function Notifier() {
   }
 
   useEffect(() => {
-    notifications.forEach(({ message, options, dismissed }) => {
+    // Process notifications in a way that prevents infinite loops
+    const notificationsToProcess = notifications.filter(notification => {
+      // Skip already displayed notifications
+      if (notification.options.key && displayed.current.includes(notification.options.key)) {
+        return false;
+      }
+      return true;
+    });
+
+    // Process each notification
+    notificationsToProcess.forEach(({ message, options, dismissed }) => {
       if (dismissed) {
         // dismiss snackbar using notistack
-        closeSnackbar(options.key);
+        if (options.key) {
+          closeSnackbar(options.key);
+        }
         return;
       }
 
-      // do nothing if snackbar is already displayed
-      if (options.key && displayed.current.includes(options.key)) return;
-
       // display snackbar using notistack
-      if (message) {
+      if (message && options.key) {
         // Ensure variant is one of the accepted values
         const safeOptions: OptionsObject<VariantType | 'primary' | 'secondary'> = {
           ...options,
@@ -45,11 +54,11 @@ function Notifier() {
             removeDisplayed(key);
           },
         };
+        
+        // Add to displayed list before enqueueing to prevent race conditions
+        storeDisplayed(options.key);
         enqueueSnackbar(message, safeOptions);
       }
-
-      // keep track of snackbars that we've displayed
-      options.key && storeDisplayed(options.key);
     });
   }, [notifications, actions, closeSnackbar, enqueueSnackbar]); // Add dependencies
 
