@@ -160,5 +160,104 @@ namespace Wedding.Common.Helpers
             var token = ValidationTokenProvider.GenerateJwtToken(jwtAudience, invitationCode, guestId, code, config.EncryptionKey);
             return $"https://{config.DomainName}/verify-email?token={token}";
         }
+
+        public static (string textBody, string htmlBody) SendRsvpNotificationEmailTemplate(
+            ApplicationConfiguration config,
+            string name,
+            string email,
+            bool guestInterested,
+            string invitationCode,
+            CancellationToken cancellationToken = default)
+        {
+            Console.WriteLine($"Sending notification email using Amazon SES. Name: {name}. Email: {email}. Code: {invitationCode}. Previous interest? {guestInterested}");
+            
+            var interestedBlurb = guestInterested ? ", even though you have already expressed interest in attending. " +
+                                                     "Hit refresh to see our new content!" : ".";
+            var htmlBody = $@"
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+                    .header {{ background-color: #6B21A8; color: white; padding: 20px; text-align: center; }}
+                    .content {{ padding: 20px; }}
+                    .footer {{ text-align: center; margin-top: 30px; font-size: 12px; color: #666; }}
+                    .receipt {{ background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-top: 20px; }}
+                    table {{ width: 100%; border-collapse: collapse; }}
+                    .check-icon {{ color: #10B981; font-size: 48px; text-align: center; margin: 10px 0; }}
+                </style>
+            </head>
+            <body>
+                <div class=""header"">
+                    <h1>Please RSVP!</h1>
+                </div>
+                <div class=""content"">
+                    <p>Dear {name},</p>
+                    <p>Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
+                        you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
+                        We've got new site content: the RSVP section, plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
+                        and Stats.
+                    </p>
+                    <p>
+                    Please RSVP by May 19, 2025.
+                    </p>
+                    <p>
+                        Haven't logged in before? No prob! Just click this link, and enter your first name:<br/>
+                        <a href=""https://christephanie.com?inviteCode={invitationCode}"">{invitationCode}</a>
+                    </p>
+                    
+                    <p>
+                        We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
+                        know if you will attend, and what you can bring!
+                    </p>
+
+                    <p><a href=""https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?gid=0#gid=0"">4th of July Potluck Signup Sheet</p>
+
+                    <p>Much love,<br>
+                    Steph & Topher</p>
+                </div>
+                <div class=""footer"">
+                    <p>This is an automated email, please do not reply.</p>
+                    <p>&copy; {DateTime.Now.Year} {config.ApplicationName}. All rights reserved.</p>
+                </div>
+            </body>
+            </html>";
+
+            var textBody = $@"
+                RSVP Phase Begins
+
+                Dear {name},
+
+                Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
+                you could take a moment to log in to our site and confirm your RSVP{interestedBlurb} 
+                We've got new site content: the RSVP section, plus wedding Registry, Details (accommodation, attire, schedule, etc.), 
+                and Stats.
+
+                Please RSVP by May 19, 2025.
+
+                Haven't logged in before? No prob! Just go to:
+                https://christephanie.com
+
+                And enter your first name and your family's Invitation Code. Your code is:
+                {invitationCode}
+
+                Or, copy and paste this link:
+                https://christephanie.com?inviteCode={invitationCode}
+
+                We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
+                know if you will attend, and what you can bring!
+
+                4th of July Potluck Signup Sheet:
+                https://docs.google.com/spreadsheets/d/1Wz-5LNN4bGuLc7RERxuTrnMNvvlnVOnLcAe95wJcugc/edit?gid=0#gid=0
+
+                Much love,
+                Steph & Topher
+
+                This is an automated email, please do not reply.
+                © {DateTime.Now.Year} {config.ApplicationName}. All rights reserved.
+                ";
+
+            return (textBody, htmlBody);
+        }
     }
 }
+                

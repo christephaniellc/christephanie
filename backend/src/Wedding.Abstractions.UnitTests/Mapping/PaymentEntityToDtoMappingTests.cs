@@ -39,6 +39,7 @@ namespace Wedding.Abstractions.UnitTests.Mapping
             var entity = new PaymentIntentEntity
             {
                 PaymentIntentId = "pi_test_123",
+                InvitationCode = "ABCDE",
                 GuestId = "guest_456",
                 Amount = 9900,
                 Currency = "usd",
