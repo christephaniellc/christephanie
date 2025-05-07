@@ -234,6 +234,17 @@ export default class Api {
   deleteInvitationDesign(designId: string): Promise<void> {
     return this.delete(`/admin/configuration/invitation?designId=${encodeURIComponent(designId)}`);
   }
+  
+  async sendRsvpNotification(guestId?: string): Promise<any> {
+    try {
+      console.log('Sending RSVP notification for guestId:', guestId || 'ALL');
+      const queryParam = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+      return await this.post(`/notify/email${queryParam}`, {});
+    } catch (error) {
+      console.error('Error in sendRsvpNotification:', error);
+      throw error;
+    }
+  }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {

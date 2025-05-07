@@ -66,6 +66,7 @@ interface ApiContextProps {
   adminGetAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
+  sendRsvpNotification: (guestId?: string) => Promise<any>; // Function to send RSVP notifications
   apiInstance?: Api; // Expose the API instance for direct access
 }
 
@@ -430,6 +431,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     return false;
   };
 
+  // Function to send RSVP notifications
+  const sendRsvpNotification = async (guestId?: string): Promise<any> => {
+    try {
+      return await apiRef.current.sendRsvpNotification(guestId);
+    } catch (error) {
+      console.error('Failed to send RSVP notification:', error);
+      throw error;
+    }
+  };
+
   return (
     <ApiContext.Provider
       value={{
@@ -446,6 +457,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         adminGetAllFamilies,
         updateClientInfo,
         clearTokenCache, // Add the clearTokenCache function
+        sendRsvpNotification, // Add the sendRsvpNotification function
         apiInstance: apiRef.current, // Expose the API instance
       }}
     >
