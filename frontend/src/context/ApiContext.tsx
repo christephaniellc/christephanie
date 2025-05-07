@@ -66,7 +66,8 @@ interface ApiContextProps {
   adminGetAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
-  sendRsvpNotification: (guestId?: string) => Promise<any>; // Function to send RSVP notifications
+  sendRsvpNotification: (guestId?: string) => Promise<any>; // Legacy function to send RSVP notifications
+  sendEmailNotification: (emailType?: string, guestId?: string) => Promise<any>; // Function to send email notifications by type
   apiInstance?: Api; // Expose the API instance for direct access
 }
 
@@ -431,10 +432,20 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     return false;
   };
 
-  // Function to send RSVP notifications
+  // Function to send email notifications by type
+  const sendEmailNotification = async (emailType?: string, guestId?: string): Promise<any> => {
+    try {
+      return await apiRef.current.sendEmailNotification(emailType, guestId);
+    } catch (error) {
+      console.error(`Failed to send ${emailType} notification:`, error);
+      throw error;
+    }
+  };
+  
+  // Legacy function to send RSVP notifications
   const sendRsvpNotification = async (guestId?: string): Promise<any> => {
     try {
-      return await apiRef.current.sendRsvpNotification(guestId);
+      return await sendEmailNotification('RsvpNotify', guestId);
     } catch (error) {
       console.error('Failed to send RSVP notification:', error);
       throw error;
@@ -457,7 +468,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         adminGetAllFamilies,
         updateClientInfo,
         clearTokenCache, // Add the clearTokenCache function
-        sendRsvpNotification, // Add the sendRsvpNotification function
+        sendRsvpNotification, // Legacy function for backward compatibility
+        sendEmailNotification, // Add the new email notification function
         apiInstance: apiRef.current, // Expose the API instance
       }}
     >
