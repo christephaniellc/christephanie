@@ -5,6 +5,7 @@
         GuestData,
         RateLimiting,
         InvitationDesign,
-        PaymentData
+        PaymentData,
+        NotificationTracking
     }
 }

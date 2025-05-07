@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using Wedding.Abstractions.Enums;
 
 namespace Wedding.Abstractions.Keys
@@ -11,6 +14,8 @@ namespace Wedding.Abstractions.Keys
         public const string Config = "CONFIG";
         public const string Invitation = "INVITATION";
         public const string Payment = "PAYMENT";
+        public const string EmailNotification = "EMAIL";
+        public const string NotificationCampaign = "CAMPAIGN";
         public const string GiftCategory = "CATEGORY";
         public const string GiftMetadata = "METADATA";
         public const string GuestInfo = "GUESTINFO";
@@ -76,6 +81,22 @@ namespace Wedding.Abstractions.Keys
 
             public static string GetGuestIdGSI(string guestId) => $"{DynamoKeys.Guest}#{guestId}";
             public static string GetGiftCategoryGSI(string category) => $"{DynamoKeys.GiftCategory}#{category}";
+        }
+
+        public static class NotificationKeys
+        {
+            public static string GetPartitionKey(string guestId) => $"{DynamoKeys.EmailNotification}#{guestId}"; 
+            public static string GetSortKey(string timestamp, EmailTypeEnum emailType)
+            {
+                var memberInfo = typeof(EmailTypeEnum).GetMember(emailType.ToString()).FirstOrDefault();
+                var enumMember = memberInfo?.GetCustomAttribute<EnumMemberAttribute>();
+                var value = enumMember?.Value ?? emailType.ToString(); // fallback
+
+                return $"{timestamp}#{value}";
+            }
+
+            public static string GetCampaignIdGSI(string campaignId) => $"{DynamoKeys.NotificationCampaign}#{campaignId}";
+
         }
     }
 }

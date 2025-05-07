@@ -106,6 +106,8 @@ export class ApiStack extends cdk.Stack {
         { name: 'Wedding.Lambdas.Payments.Intent', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.GET], path: `/payments/intent`, v1payload: true },
         { name: 'Wedding.Lambdas.Payments.Intent.Confirm', method: apigateway.HttpMethod.POST, path: `/payments/intent/confirm`, unauthorized: true  },
         { name: 'Wedding.Lambdas.Payments.Contributions', method: apigateway.HttpMethod.GET, path: `/payments/contributions`},
+        { name: 'Wedding.Lambdas.Notify.Email', methods: [apigateway.HttpMethod.POST, apigateway.HttpMethod.GET], path: `/notify/email`, v1payload: true },
+        
       ];
 
       lambdaConfigs.forEach(lambdaConfig => {

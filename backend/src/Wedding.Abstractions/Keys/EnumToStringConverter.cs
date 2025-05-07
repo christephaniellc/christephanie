@@ -1,37 +1,59 @@
-﻿namespace Wedding.Abstractions.Keys
-{
-    using Amazon.DynamoDBv2.DataModel;
-    using Amazon.DynamoDBv2.DocumentModel;
-    using System;
+﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using System;
+using System.Reflection;
+using System.Runtime.Serialization;
 
+namespace Wedding.Abstractions.Keys
+{
     public class EnumToStringConverter<TEnum> : IPropertyConverter where TEnum : struct, Enum
     {
         public object FromEntry(DynamoDBEntry entry)
         {
-            if (entry == null || string.IsNullOrEmpty(entry.AsString()))
+            var str = entry.AsString();
+
+            if (string.IsNullOrEmpty(str))
                 return default(TEnum);
 
-            if (Enum.TryParse(entry.AsString(), true, out TEnum enumValue))
-                return enumValue;
+            // Try to match EnumMember values
+            foreach (var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                var attr = field.GetCustomAttribute<EnumMemberAttribute>();
+                if (attr?.Value == str)
+                    return Enum.Parse(typeof(TEnum), field.Name);
+            }
 
-            throw new InvalidOperationException($"Unable to convert '{entry.AsString()}' to enum of type '{typeof(TEnum).Name}'.");
+            // Fallback: Try parse normally
+            if (Enum.TryParse(str, ignoreCase: true, out TEnum result))
+                return result;
+
+            throw new InvalidOperationException($"Unable to convert '{str}' to enum {typeof(TEnum).Name}");
         }
 
         public DynamoDBEntry ToEntry(object value)
         {
-            return value?.ToString();
+            if (value == null)
+                return new Primitive();
+
+            var enumValue = (TEnum)value;
+            var field = typeof(TEnum).GetField(enumValue.ToString());
+            var attr = field?.GetCustomAttribute<EnumMemberAttribute>();
+
+            var stringValue = attr?.Value ?? enumValue.ToString();
+
+            return new Primitive(stringValue); // ✅ Wrap in Primitive
         }
 
         public object? FromString(string entry)
         {
-            if (entry == null || string.IsNullOrEmpty(entry))
+            try
+            {
+                return FromEntry(new Primitive(entry));
+            }
+            catch
+            {
                 return null;
-
-            if (Enum.TryParse(entry, true, out TEnum enumValue))
-                return enumValue;
-
-            return null;
+            }
         }
     }
-
 }
