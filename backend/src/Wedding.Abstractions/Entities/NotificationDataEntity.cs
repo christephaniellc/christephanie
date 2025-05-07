@@ -11,7 +11,7 @@ namespace Wedding.Abstractions.Entities
         public string? PartitionKey { get; set; } // e.g., "EMAIL#<GuestId>"
 
         [DynamoDBRangeKey]
-        public string? SortKey { get; set; } = ""; // e.g., "2025-04-03T12:00:00Z#<EmailType>"
+        public string? SortKey { get; set; } = ""; // e.g., "2025-04-03T12:00:00Z#<CampaignType>"
 
         [DynamoDBProperty]
         public required string GuestEmailLogId { get; set; } = "";
@@ -19,8 +19,8 @@ namespace Wedding.Abstractions.Entities
         [DynamoDBProperty]
         public string GuestId { get; set; } = "";
 
-        [DynamoDBProperty(typeof(EnumToStringConverter<EmailTypeEnum>))]
-        public EmailTypeEnum? EmailType { get; set; }
+        [DynamoDBProperty(typeof(EnumToStringConverter<CampaignTypeEnum>))]
+        public CampaignTypeEnum? EmailType { get; set; }
 
         [DynamoDBProperty]
         public string? CampaignId { get; set; }

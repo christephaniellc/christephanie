@@ -90,7 +90,7 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                             CampaignId = Guid.NewGuid().ToString(),
                             DeliveryStatus = sendMessageResult != null ? "SUCCESS" : "FAILED",
                             EmailAddress = guest.Email.Value,
-                            EmailType = EmailTypeEnum.RsvpNotify,
+                            CampaignType = CampaignTypeEnum.RsvpNotify,
                             GuestId = guest.GuestId,
                             Verified = guest.Email.Verified,
                             Timestamp = DateTime.UtcNow.ToString("o"),
@@ -101,9 +101,9 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                             }
                         };
 
-                        _logger.LogInformation("Adding notification with status {Status} : EmailType : {EmailType} : Email: {EmailAddress}",
+                        _logger.LogInformation("Adding notification with status {Status} : CampaignType : {CampaignType} : Email: {EmailAddress}",
                             emailLog.DeliveryStatus,
-                            emailLog.EmailType,
+                            emailLog.CampaignType,
                             emailLog.EmailAddress);
 
                         var entity = _mapper.Map<NotificationDataEntity>(emailLog);
@@ -118,7 +118,7 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                             CampaignId = Guid.NewGuid().ToString(),
                             DeliveryStatus = "FAILED",
                             EmailAddress = guest.Email?.Value ?? "unknown",
-                            EmailType = EmailTypeEnum.RsvpNotify,
+                            CampaignType = CampaignTypeEnum.RsvpNotify,
                             GuestId = guest.GuestId,
                             Verified = guest.Email?.Verified ?? false,
                             Timestamp = DateTime.UtcNow.ToString("o"),

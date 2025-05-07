@@ -7,7 +7,7 @@ namespace Wedding.Abstractions.Dtos
     {
         public string GuestEmailLogId { get; set; }
         public string GuestId { get; set; } = "";
-        public EmailTypeEnum EmailType { get; set; }
+        public CampaignTypeEnum CampaignType { get; set; }
         public string? CampaignId { get; set; }
         public string Timestamp { get; set; }
         public string DeliveryStatus { get; set; } = "PENDING";

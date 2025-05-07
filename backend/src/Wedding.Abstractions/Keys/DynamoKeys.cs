@@ -86,11 +86,11 @@ namespace Wedding.Abstractions.Keys
         public static class NotificationKeys
         {
             public static string GetPartitionKey(string guestId) => $"{DynamoKeys.EmailNotification}#{guestId}"; 
-            public static string GetSortKey(string timestamp, EmailTypeEnum emailType)
+            public static string GetSortKey(string timestamp, CampaignTypeEnum campaignType)
             {
-                var memberInfo = typeof(EmailTypeEnum).GetMember(emailType.ToString()).FirstOrDefault();
+                var memberInfo = typeof(CampaignTypeEnum).GetMember(campaignType.ToString()).FirstOrDefault();
                 var enumMember = memberInfo?.GetCustomAttribute<EnumMemberAttribute>();
-                var value = enumMember?.Value ?? emailType.ToString(); // fallback
+                var value = enumMember?.Value ?? campaignType.ToString(); // fallback
 
                 return $"{timestamp}#{value}";
             }

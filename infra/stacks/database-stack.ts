@@ -87,7 +87,7 @@ export class DatabaseStack extends cdk.Stack {
 
     // EMAIL TRACKING TABLE
     this.emailTrackingTable = new dynamodb.Table(this, `${applicationName}-notifications`, {
-      tableName: `${applicationName}-notification-tracking-${environment}`,
+      tableName: `${applicationName}-notification-tracking`,
       partitionKey: { name: 'PartitionKey', type: dynamodb.AttributeType.STRING }, // ex: EMAIL#<GuestId>
       sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },           // ex: <Timestamp>#<EmailType>
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -96,9 +96,9 @@ export class DatabaseStack extends cdk.Stack {
 
     // GSI: Group emails by campaign (e.g., RSVP-Nudge-May19)
     this.emailTrackingTable.addGlobalSecondaryIndex({
-      indexName: 'CampaignIndex',
-      partitionKey: { name: 'CampaignId', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'GuestId', type: dynamodb.AttributeType.STRING },
+      indexName: 'CampaignTypeIndex',
+      partitionKey: { name: 'CampaignTypeGSI', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'CampaignTypeSortKey', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
