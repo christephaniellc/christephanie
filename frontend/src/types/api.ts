@@ -169,6 +169,14 @@ export interface GuestEmailLogDto {
   emailAddress: string;
   verified: boolean;
   metadata?: { [key: string]: string };
+  // Additional fields that may be present in API responses
+  emailType?: string;
+  type?: string;
+  dateCreated?: string;
+  date?: string;
+  sentAt?: string;
+  status?: string;
+  to?: string;
 }
 
 export enum FoodPreferenceEnum {

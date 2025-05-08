@@ -1358,7 +1358,7 @@ function AdminPage() {
                 guestId = notification.metadata.guestId;
               }
               // Check for 'To' field which might contain email
-              else if (notification.to && guest.email?.value) {
+              else if (notification.to) {
                 // This is a potential notification for this guest based on email
                 const guestWithEmail = adminData.flatMap(family => family.guests || [])
                   .find(g => g.email?.value === notification.to);
@@ -1431,7 +1431,7 @@ function AdminPage() {
                     console.log(`Found object at key "${key}", checking if it's a notification`);
                     processNotification({
                       ...value,
-                      guestId: value.guestId || key // Use the key as guestId if not in the object
+                      guestId: (value as any).guestId || key // Use the key as guestId if not in the object
                     });
                   }
                 });
@@ -1509,7 +1509,7 @@ function AdminPage() {
     };
     
     // Get the most recent notification for a guest and campaign type
-    const getLatestNotification = (guestId: string, campaignType: CampaignType): any => {
+    const getLatestNotification = (guestId: string, campaignType: EmailCampaignType | CampaignType): any => {
       if (!guestId || !notificationHistory[guestId]) {
         // No notifications for this guest
         return null;
@@ -1525,8 +1525,8 @@ function AdminPage() {
         if (notification.campaignType) {
           if (typeof notification.campaignType === 'string') {
             return notification.campaignType === campaignTypeStr;
-          } else if (typeof notification.campaignType === 'object' && notification.campaignType.toString) {
-            return notification.campaignType.toString() === campaignTypeStr;
+          } else if (typeof notification.campaignType === 'object' && notification.campaignType && typeof (notification.campaignType as any).toString === 'function') {
+            return (notification.campaignType as any).toString() === campaignTypeStr;
           }
         }
         
@@ -1792,8 +1792,8 @@ function AdminPage() {
               
               notifications.forEach(notification => {
                 // Extract guestId from the notification or metadata
-                const notifGuestId = notification.guestId || 
-                  (notification.metadata ? notification.metadata.guestId : null);
+                const notifGuestId = (notification as any).guestId || 
+                  ((notification as any).metadata ? (notification as any).metadata.guestId : null);
                 
                 if (!notifGuestId) {
                   console.log('Skipping notification without guestId:', notification);
@@ -1805,15 +1805,15 @@ function AdminPage() {
                 }
                 
                 // Create a normalized notification object
-                const normalizedNotification = {
+                const normalizedNotification: GuestEmailLogDto = {
                   guestId: notifGuestId,
-                  campaignType: notification.campaignType || campaignType || 'RsvpNotify',
-                  timestamp: notification.timestamp || new Date().toISOString(),
-                  deliveryStatus: notification.deliveryStatus || 'sent',
-                  emailAddress: notification.emailAddress || notification.to || '',
-                  verified: notification.verified || true,
-                  guestEmailLogId: notification.guestEmailLogId || notification.id || `${notifGuestId}-${Date.now()}`,
-                  ...notification // Include any other fields
+                  campaignType: ((notification as any).campaignType || campaignType || 'RsvpNotify') as CampaignType,
+                  timestamp: (notification as any).timestamp || new Date().toISOString(),
+                  deliveryStatus: (notification as any).deliveryStatus || (notification as any).status || 'sent',
+                  emailAddress: (notification as any).emailAddress || (notification as any).to || '',
+                  verified: (notification as any).verified || true,
+                  guestEmailLogId: notification.guestEmailLogId || notification.id || `${notifGuestId}-${Date.now()}`
+                  // Do not spread notification to avoid type errors
                 };
                 
                 newHistory[notifGuestId].unshift(normalizedNotification);
@@ -1834,9 +1834,9 @@ function AdminPage() {
                 }
                 
                 // Create a basic notification object
-                const basicNotification = {
+                const basicNotification: GuestEmailLogDto = {
                   guestId: guestId,
-                  campaignType: campaignType,
+                  campaignType: campaignType as unknown as CampaignType,
                   timestamp: new Date().toISOString(),
                   deliveryStatus: 'sent',
                   emailAddress: '',
@@ -2335,7 +2335,7 @@ function AdminPage() {
                                       // Find the most recent notification for this campaign type and guest
                                       const latestNotification = getLatestNotification(
                                         guest.guestId || '', 
-                                        campaign.type as CampaignType
+                                        campaign.type as unknown as CampaignType
                                       );
                                       
                                       if (!latestNotification) {
@@ -2378,8 +2378,8 @@ function AdminPage() {
                                             }
                                           }}
                                           title={`${campaign.displayName} sent on ${
-                                            typeof timestamp === 'object' ? timestamp.toLocaleString() : 
-                                            new Date(timestamp).toLocaleString()
+                                            typeof timestamp === 'object' && timestamp !== null ? timestamp.toLocaleString() : 
+                                            timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'
                                           }\nStatus: ${deliveryStatus}`}
                                         >
                                           <Typography
@@ -2403,7 +2403,7 @@ function AdminPage() {
                                     {guest.guestId && notificationHistory[guest.guestId] &&
                                       notificationHistory[guest.guestId].length > 0 &&
                                       !EMAIL_CAMPAIGNS.some(campaign => 
-                                        getLatestNotification(guest.guestId || '', campaign.type as CampaignType)) && (
+                                        getLatestNotification(guest.guestId || '', campaign.type as unknown as CampaignType)) && (
                                       // If we have notifications but none match our campaign types, show them generically
                                       notificationHistory[guest.guestId].slice(0, 3).map((notification, idx) => {
                                         // Try to determine campaign type
@@ -2423,10 +2423,10 @@ function AdminPage() {
                                         const color = matchingCampaign?.color || '#666666';
                                         
                                         // Get timestamp with fallbacks
-                                        const timestamp = notification.timestamp || 
+                                        const timestamp: Date | string | number = (notification.timestamp || 
                                           notification.dateCreated || 
                                           notification.date || 
-                                          Date.now();
+                                          Date.now()) as (Date | string | number);
                                           
                                         // Check if recent
                                         const isRecent = isRecentNotification(timestamp);
@@ -2452,8 +2452,9 @@ function AdminPage() {
                                               }
                                             }}
                                             title={`${campaignTypeStr} sent on ${
-                                              typeof timestamp === 'object' ? timestamp.toLocaleString() : 
-                                              new Date(timestamp).toLocaleString()
+                                              (typeof timestamp === 'object' && timestamp !== null) ? 
+                                                timestamp.toLocaleString() : 
+                                              (timestamp ? new Date(String(timestamp)).toLocaleString() : 'Unknown')
                                             }`}
                                           >
                                             <Typography
@@ -2544,7 +2545,7 @@ function AdminPage() {
                                       const sendingKey = getSendingKey(guest.guestId || '', campaign.type);
                                       const latestNotification = getLatestNotification(
                                         guest.guestId || '', 
-                                        campaign.type as CampaignType
+                                        campaign.type as unknown as CampaignType
                                       );
                                       
                                       // Determine if this is a resend
