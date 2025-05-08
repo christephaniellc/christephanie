@@ -6,6 +6,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Wedding.Abstractions.Enums;
 using Wedding.Common.Configuration.Identity;
 using Wedding.Common.DI;
 using Wedding.Common.Helpers.AWS;
@@ -79,7 +80,10 @@ public class Function
                 case "POST":
                 {
                     var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
-                    var command = new SendRsvpNotificationCommand(authContext, guestId);
+                    var campaignTypeString = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "campaignType");
+                    Enum.TryParse(campaignTypeString, out CampaignTypeEnum campaignType);
+                    
+                    var command = new SendEmailNotificationCommand(authContext, campaignType, guestId);
                     var handler = scope.ServiceProvider.GetRequiredService<SendEmailNotificationHandler>();
 
                     var results = await handler.ExecuteAsync(command);
