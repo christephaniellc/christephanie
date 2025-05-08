@@ -89,7 +89,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
                 Verified = true
             };
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext, null);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify, null);
 
             _mockAwsSesHelper = new Mock<IAwsSesHelper>();
             _mockAwsSesHelper
@@ -145,7 +145,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             SetupMockGuest(withVerifiedEmail: true);
             SetupMockSes(success: true);
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify);
 
             NotificationDataEntity? savedEntity = null;
             _dynamoDbProviderMock.Setup(x => x.SaveNotificationAsync(It.IsAny<string>(), It.IsAny<NotificationDataEntity>(), It.IsAny<CancellationToken>()))
@@ -169,7 +169,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             SetupMockGuest(withVerifiedEmail: true);
             SetupMockSes(success: false); // returns null
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify);
 
             NotificationDataEntity? savedEntity = null;
             _dynamoDbProviderMock.Setup(x => x.SaveNotificationAsync(It.IsAny<string>(), It.IsAny<NotificationDataEntity>(), It.IsAny<CancellationToken>()))
@@ -192,7 +192,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             _dynamoDbProviderMock.Setup(x => x.GetFamilyUnitsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<FamilyUnitDto>()); // empty list
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify);
 
             Func<Task> act = async () => await _handler.ExecuteAsync(command);
 
@@ -206,7 +206,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             SetupMockGuest(withVerifiedEmail: false);
             SetupMockSes(success: true);
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify);
 
             var result = await _handler.ExecuteAsync(command);
 
@@ -236,7 +236,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
 
             SetupMockSes(success: true);
 
-            var command = new SendRsvpNotificationCommand(_fakeAuthContext);
+            var command = new SendEmailNotificationCommand(_fakeAuthContext, CampaignTypeEnum.RsvpNotify);
 
             var result = await _handler.ExecuteAsync(command);
 

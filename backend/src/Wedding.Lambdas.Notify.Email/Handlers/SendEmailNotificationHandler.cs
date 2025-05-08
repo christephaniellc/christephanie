@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.SimpleEmail.Model;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Wedding.Abstractions.Dtos;
@@ -16,8 +17,7 @@ using Wedding.Lambdas.Notify.Email.Validation;
 namespace Wedding.Lambdas.Notify.Email.Handlers
 {
     public class SendEmailNotificationHandler : 
-        IAsyncCommandHandler<SendRsvpNotificationCommand, List<GuestEmailLogDto>>,
-        IAsyncCommandHandler<SendRsvpNagCommand, GuestEmailLogDto>
+        IAsyncCommandHandler<SendEmailNotificationCommand, List<GuestEmailLogDto>>
     {
         private readonly ILogger<SendEmailNotificationHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -35,7 +35,7 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
             _sesHelper = sesHelper;
         }
 
-        public async Task<List<GuestEmailLogDto>> ExecuteAsync(SendRsvpNotificationCommand command,
+        public async Task<List<GuestEmailLogDto>> ExecuteAsync(SendEmailNotificationCommand command,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             command.Validate(nameof(command));
@@ -77,12 +77,22 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                 {
                     try
                     {
-                        var sendMessageResult = await _sesHelper.SendRsvpNotificationEmail(
-                            guest.FirstName + " " + guest.LastName,
-                            guest.Email.Value,
-                            (guest.Rsvp != null && guest.Rsvp.InvitationResponse == InvitationResponseEnum.Interested),
-                            guest.InvitationCode,
-                            cancellationToken);
+                        SendEmailResponse? sendMessageResult = null;
+
+                        switch (command.CampaignType)
+                        {
+                            case (CampaignTypeEnum.RsvpNotify):
+                                sendMessageResult = await _sesHelper.SendRsvpNotificationEmail(
+                                    guest.FirstName + " " + guest.LastName,
+                                    guest.Email.Value,
+                                    (guest.Rsvp != null && guest.Rsvp.InvitationResponse ==
+                                        InvitationResponseEnum.Interested),
+                                    guest.InvitationCode,
+                                    cancellationToken);
+                                break;
+                            default:
+                                throw new NotImplementedException("Campaign not yet implemented.");
+                        }
 
                         var emailLog = new GuestEmailLogDto
                         {
@@ -90,7 +100,7 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                             CampaignId = Guid.NewGuid().ToString(),
                             DeliveryStatus = sendMessageResult != null ? "SUCCESS" : "FAILED",
                             EmailAddress = guest.Email.Value,
-                            CampaignType = CampaignTypeEnum.RsvpNotify,
+                            CampaignType = command.CampaignType,
                             GuestId = guest.GuestId,
                             Verified = guest.Email.Verified,
                             Timestamp = DateTime.UtcNow.ToString("o"),
@@ -101,14 +111,21 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                             }
                         };
 
-                        _logger.LogInformation("Adding notification with status {Status} : CampaignType : {CampaignType} : Email: {EmailAddress}",
+                        _logger.LogInformation(
+                            "Adding notification with status {Status} : CampaignType : {CampaignType} : Email: {EmailAddress}",
                             emailLog.DeliveryStatus,
                             emailLog.CampaignType,
                             emailLog.EmailAddress);
 
                         var entity = _mapper.Map<NotificationDataEntity>(emailLog);
-                        await _dynamoDBProvider.SaveNotificationAsync(command.AuthContext.Audience, entity, cancellationToken);
+                        await _dynamoDBProvider.SaveNotificationAsync(command.AuthContext.Audience, entity,
+                            cancellationToken);
                         emailResults.Add(emailLog);
+                    }
+                    catch (NotImplementedException ex)
+                    {
+                        _logger.LogError(ex, "An error occurred while sending email notifications.");
+                        throw new UnauthorizedAccessException($"Notification sending failed. {ex.Message}");
                     }
                     catch (Exception ex)
                     {
@@ -149,11 +166,6 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
             }
 
             return emailResults;
-        }
-
-        public async Task<GuestEmailLogDto> ExecuteAsync(SendRsvpNagCommand command, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
         }
     }
 }
