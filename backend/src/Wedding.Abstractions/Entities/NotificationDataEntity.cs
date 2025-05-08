@@ -41,9 +41,9 @@ namespace Wedding.Abstractions.Entities
         public Dictionary<string, string>? Metadata { get; set; }
 
         [DynamoDBGlobalSecondaryIndexHashKey("CampaignTypeIndex")]
-        public string? CampaignTypeIndexPartitionKey { get; set; } // "CAMPAIGN#<GuestId>"
+        public string? CampaignTypeIndexPartitionKey { get; set; } // e.g., "RSVP_NOTIFY"
 
         [DynamoDBGlobalSecondaryIndexRangeKey("CampaignTypeIndex")]
-        public string? CampaignTypeIndexSortKey { get; set; } // "GUEST#<GuestId>"
+        public string? CampaignTypeIndexSortKey { get; set; } // e.g., "GUEST#<GuestId>"
     }
 }
