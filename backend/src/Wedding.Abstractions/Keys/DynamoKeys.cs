@@ -88,11 +88,15 @@ namespace Wedding.Abstractions.Keys
             public static string GetPartitionKey(string guestId) => $"{DynamoKeys.EmailNotification}#{guestId}"; 
             public static string GetSortKey(string timestamp, CampaignTypeEnum campaignType)
             {
+                var type = GetCampaignType(campaignType);
+                return $"{timestamp}#{type}";
+            }
+
+            public static string GetCampaignType(CampaignTypeEnum campaignType)
+            {
                 var memberInfo = typeof(CampaignTypeEnum).GetMember(campaignType.ToString()).FirstOrDefault();
                 var enumMember = memberInfo?.GetCustomAttribute<EnumMemberAttribute>();
-                var value = enumMember?.Value ?? campaignType.ToString(); // fallback
-
-                return $"{timestamp}#{value}";
+                return enumMember?.Value ?? campaignType.ToString();
             }
 
             public static string GetCampaignIdGSI(string campaignId) => $"{DynamoKeys.NotificationCampaign}#{campaignId}";

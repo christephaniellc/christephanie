@@ -14,5 +14,15 @@ namespace Wedding.Lambdas.Notify.Email.Validation
             this SendRsvpNotificationCommand obj,
             object? context = default)
             => ValidateHelpers.Validate<SendRsvpNotificationCommand, SendRsvpNotificationCommandValidator>(obj, context);
+        
+        /// <summary>
+        /// Validates the specified command.
+        /// </summary>
+        /// <param name="obj">The command.</param>
+        /// <param name="context">The context.</param>
+        public static void Validate(
+            this GetEmailNotificationsQuery obj,
+            object? context = default)
+            => ValidateHelpers.Validate<GetEmailNotificationsQuery, GetEmailNotificationsQueryValidator>(obj, context);
     }
 }

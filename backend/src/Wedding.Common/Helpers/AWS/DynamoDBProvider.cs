@@ -413,8 +413,7 @@ namespace Wedding.Common.Helpers.AWS
             CampaignTypeEnum campaignType,
             CancellationToken cancellationToken = default)
         {
-            // Get the string value from the [EnumMember] attribute or fallback to ToString()
-            var campaignTypeValue = campaignType.ToString(); // assumes you store EnumMember string via converter
+            var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType);
 
             var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
             config.IndexName = "CampaignTypeIndex";
