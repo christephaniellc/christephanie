@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactElement, useCallback, useMemo } from 'react';
-import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum, GuestEmailLogDto, CampaignType } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
 import Api from '@/api/Api';
@@ -1208,6 +1208,9 @@ function AdminPage() {
     const [results, setResults] = useState<Record<string, { success: boolean; message: string }>>({});
     const [directApi, setDirectApi] = useState<Api | null>(null);
     const [apiBaseUrl, setApiBaseUrl] = useState<string>('');
+    const [notificationHistory, setNotificationHistory] = useState<Record<string, GuestEmailLogDto[]>>({});
+    const [loadingHistory, setLoadingHistory] = useState<boolean>(false);
+    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
     
     // Initialize API base URL from config
     useEffect(() => {
@@ -1255,6 +1258,212 @@ function AdminPage() {
       }
     }, [apiContext]);
     
+    // Fetch notification history
+    useEffect(() => {
+      const fetchNotificationHistory = async () => {
+        if (!apiContext.getEmailNotifications) {
+          console.log('getEmailNotifications not available yet');
+          return;
+        }
+        
+        try {
+          setLoadingHistory(true);
+          console.log('Fetching email notification history...');
+          
+          let notificationsData;
+          
+          // Try multiple approaches to fetch notification history
+          try {
+            // First try: use API context
+            notificationsData = await apiContext.getEmailNotifications();
+            // Log the raw response to debug
+            console.log('Raw notification data from API:', JSON.stringify(notificationsData, null, 2));
+          } catch (callError) {
+            console.error('API call failed, trying alternatives:', callError);
+            
+            // If context call fails, try direct API instance
+            if (directApi && typeof directApi.getEmailNotifications === 'function') {
+              console.log('Using directApi.getEmailNotifications');
+              notificationsData = await directApi.getEmailNotifications();
+              console.log('Raw notification data from direct API:', JSON.stringify(notificationsData, null, 2));
+            } else {
+              // Last resort: Make a direct fetch call
+              console.log('Using direct fetch call');
+              const token = await getAccessTokenSilently();
+              
+              // Try multiple possible API endpoints
+              const possibleEndpoints = [
+                `${apiBaseUrl}/notify/email`,
+                `${window.location.origin}/api/notify/email`,
+                `https://fianceapi.dev.wedding.christephanie.com/notify/email`,
+                `https://fianceapi.wedding.christephanie.com/notify/email`
+              ];
+              
+              // Try each endpoint until one succeeds
+              let lastError;
+              for (const url of possibleEndpoints) {
+                try {
+                  console.log('Trying URL:', url);
+                  const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    }
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                  }
+                  
+                  notificationsData = await response.json();
+                  console.log('Raw notification data from direct fetch:', JSON.stringify(notificationsData, null, 2));
+                  
+                  // If we got here, the request succeeded
+                  console.log('Success with URL:', url);
+                  break;
+                } catch (endpointError) {
+                  console.error(`Failed with URL ${url}:`, endpointError);
+                  lastError = endpointError;
+                }
+              }
+              
+              // If we still don't have data, throw the last error
+              if (!notificationsData && lastError) {
+                throw lastError;
+              }
+            }
+          }
+          
+          // Group notifications by guestId for easier lookup
+          const groupedNotifications: Record<string, GuestEmailLogDto[]> = {};
+          
+          console.log('Type of notificationsData:', typeof notificationsData);
+          console.log('Is array?', Array.isArray(notificationsData));
+          
+          const processNotification = (notification: any) => {
+            // Skip if notification is not an object
+            if (!notification || typeof notification !== 'object') {
+              console.warn('Skipping invalid notification:', notification);
+              return;
+            }
+            
+            // Try to extract guestId from the notification object
+            let guestId = notification.guestId;
+            
+            // If no guestId directly, try to find it in other properties
+            if (!guestId) {
+              // Check in metadata
+              if (notification.metadata && notification.metadata.guestId) {
+                guestId = notification.metadata.guestId;
+              }
+              // Check for 'To' field which might contain email
+              else if (notification.to && guest.email?.value) {
+                // This is a potential notification for this guest based on email
+                const guestWithEmail = adminData.flatMap(family => family.guests || [])
+                  .find(g => g.email?.value === notification.to);
+                
+                if (guestWithEmail) {
+                  guestId = guestWithEmail.guestId;
+                }
+              }
+            }
+            
+            if (!guestId) {
+              console.warn('Found notification without guestId:', notification);
+              return;
+            }
+            
+            if (!groupedNotifications[guestId]) {
+              groupedNotifications[guestId] = [];
+            }
+            
+            // Make a copy of the notification with all fields
+            // to ensure we have all possible data available
+            groupedNotifications[guestId].push({
+              ...notification,
+              // Ensure these required fields are present
+              guestId,
+              campaignType: notification.campaignType || notification.emailType || notification.type || 'RsvpNotify',
+              timestamp: notification.timestamp || notification.dateCreated || notification.date || new Date().toISOString(),
+              deliveryStatus: notification.deliveryStatus || notification.status || 'sent',
+              emailAddress: notification.emailAddress || notification.to || notification.email || '',
+              verified: notification.verified || true,
+              guestEmailLogId: notification.guestEmailLogId || notification.id || notification.notificationId || guestId
+            });
+          };
+          
+          if (Array.isArray(notificationsData)) {
+            // Process array of notification records
+            console.log('Processing as array with', notificationsData.length, 'items');
+            notificationsData.forEach(processNotification);
+          } else if (notificationsData && typeof notificationsData === 'object') {
+            // First check for common nested structures
+            const possibleArrayProps = ['items', 'notifications', 'logs', 'emailLogs', 'results', 'data'];
+            
+            // Check if any of these properties exist and contain arrays
+            let foundArrayProp = false;
+            for (const prop of possibleArrayProps) {
+              if (notificationsData[prop] && Array.isArray(notificationsData[prop])) {
+                console.log(`Processing as object with ${prop} array containing`, notificationsData[prop].length, 'items');
+                notificationsData[prop].forEach(processNotification);
+                foundArrayProp = true;
+                break;
+              }
+            }
+            
+            if (!foundArrayProp) {
+              // Check if this is a single notification object
+              if (notificationsData.guestId || notificationsData.emailAddress || notificationsData.to) {
+                console.log('Processing as a single notification object');
+                processNotification(notificationsData);
+              } else {
+                // Try to process as a record object of guestId -> notifications
+                console.log('Processing as object with entries, keys:', Object.keys(notificationsData));
+                
+                Object.entries(notificationsData).forEach(([key, value]) => {
+                  if (Array.isArray(value)) {
+                    // This could be a map of guestId -> notifications[]
+                    console.log(`Found array at key "${key}" with ${value.length} items`);
+                    value.forEach(processNotification);
+                  } else if (value && typeof value === 'object') {
+                    // This might be a single notification with the key as guestId
+                    console.log(`Found object at key "${key}", checking if it's a notification`);
+                    processNotification({
+                      ...value,
+                      guestId: value.guestId || key // Use the key as guestId if not in the object
+                    });
+                  }
+                });
+              }
+            }
+          }
+          
+          // Sort notifications by timestamp (newest first) for each guest
+          Object.keys(groupedNotifications).forEach(guestId => {
+            groupedNotifications[guestId].sort((a, b) => {
+              return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+            });
+          });
+          
+          console.log('Grouped notifications by guestId:', Object.keys(groupedNotifications));
+          console.log('Example of grouped notifications (if available):', 
+            Object.keys(groupedNotifications).length > 0 
+              ? JSON.stringify(groupedNotifications[Object.keys(groupedNotifications)[0]], null, 2)
+              : 'No notifications found'
+          );
+          
+          setNotificationHistory(groupedNotifications);
+        } catch (error) {
+          console.error('Failed to fetch notification history:', error);
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+      
+      fetchNotificationHistory();
+    }, [apiContext, apiBaseUrl, directApi, getAccessTokenSilently, refreshTrigger]);
+    
     // Get families and guests with valid emails first and declined families last
     const familiesWithVerifiedEmails = useMemo(() => {
       // Check if all family members have declined
@@ -1297,6 +1506,131 @@ function AdminPage() {
     // Create a unique key for tracking sending status and results
     const getSendingKey = (guestId: string, campaignType: EmailCampaignType): string => {
       return `${guestId}:${campaignType}`;
+    };
+    
+    // Get the most recent notification for a guest and campaign type
+    const getLatestNotification = (guestId: string, campaignType: CampaignType): any => {
+      if (!guestId || !notificationHistory[guestId]) {
+        // No notifications for this guest
+        return null;
+      }
+      
+      // Convert campaignType to string for comparison
+      const campaignTypeStr = String(campaignType);
+      
+      // Find notification with matching campaign type, trying various field names
+      const notification = notificationHistory[guestId].find(notification => {
+        // Try all possible field names and formats for campaign type
+        // First check the standard field name
+        if (notification.campaignType) {
+          if (typeof notification.campaignType === 'string') {
+            return notification.campaignType === campaignTypeStr;
+          } else if (typeof notification.campaignType === 'object' && notification.campaignType.toString) {
+            return notification.campaignType.toString() === campaignTypeStr;
+          }
+        }
+        
+        // Try alternative field names
+        const altFieldNames = ['emailType', 'type', 'notificationType', 'campaign'];
+        for (const fieldName of altFieldNames) {
+          if (notification[fieldName] && String(notification[fieldName]) === campaignTypeStr) {
+            return true;
+          }
+        }
+        
+        // Check if there's a 'metadata' object with a campaign type field
+        if (notification.metadata) {
+          for (const fieldName of ['campaignType', 'emailType', 'type']) {
+            if (notification.metadata[fieldName] && String(notification.metadata[fieldName]) === campaignTypeStr) {
+              return true;
+            }
+          }
+        }
+        
+        return false;
+      });
+      
+      if (notification) {
+        // Log successful match for debugging
+        console.log(`Found notification for ${guestId}, campaign ${campaignTypeStr}:`, notification);
+      }
+      
+      return notification || null;
+    };
+    
+    // Format date in a readable format
+    const formatDate = (dateString: string | number | Date): string => {
+      try {
+        // If it's a unix timestamp in seconds, convert to milliseconds
+        if (typeof dateString === 'number' || (typeof dateString === 'string' && !isNaN(Number(dateString)))) {
+          const numValue = Number(dateString);
+          // Check if it's seconds (Unix timestamp) rather than milliseconds
+          if (numValue < 10000000000) { // Approx year 2286 in seconds since epoch
+            dateString = new Date(numValue * 1000);
+          } else {
+            dateString = new Date(numValue);
+          }
+        }
+        
+        const date = new Date(dateString);
+        
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid date provided:', dateString);
+          return 'Just now'; // Fallback for invalid dates
+        }
+        
+        // Check if date is today
+        const today = new Date();
+        const isToday = date.getDate() === today.getDate() &&
+                        date.getMonth() === today.getMonth() &&
+                        date.getFullYear() === today.getFullYear();
+        
+        if (isToday) {
+          // Format as time only if today
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+          // Format as date and time if not today
+          return date.toLocaleDateString([], { 
+            month: 'short', 
+            day: 'numeric' 
+          }) + ' ' + date.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+        }
+      } catch (error) {
+        console.error('Error formatting date:', error, 'Original value:', dateString);
+        return 'Recent'; // Fallback error case
+      }
+    };
+    
+    // Check if a notification is recent (within the last hour)
+    const isRecentNotification = (dateString: string | number | Date): boolean => {
+      try {
+        let notificationTime: number;
+        
+        if (typeof dateString === 'number') {
+          // If it's a Unix timestamp in seconds, convert to milliseconds
+          if (dateString < 10000000000) { // Approx year 2286 in seconds since epoch
+            notificationTime = dateString * 1000;
+          } else {
+            notificationTime = dateString;
+          }
+        } else {
+          notificationTime = new Date(dateString).getTime();
+        }
+        
+        if (isNaN(notificationTime)) {
+          console.warn('Invalid date for recent check:', dateString);
+          return true; // If we can't parse it, assume it's recent (better UX to highlight)
+        }
+        
+        const oneHourAgo = Date.now() - (60 * 60 * 1000); // One hour ago in milliseconds
+        return notificationTime > oneHourAgo;
+      } catch (error) {
+        console.error('Error checking if notification is recent:', error);
+        return true; // If there's an error, assume it's recent (better UX to highlight)
+      }
     };
     
     const handleSendNotification = async (guestId: string, campaignType: EmailCampaignType = EmailCampaignType.RsvpNotify) => {
@@ -1394,6 +1728,8 @@ function AdminPage() {
         }
         
         console.log(`${campaignType} notification response:`, response);
+        console.log(`${campaignType} notification response type:`, typeof response);
+        console.log(`${campaignType} notification response format:`, JSON.stringify(response, null, 2));
         
         // Check response and update results
         if (response) {
@@ -1404,6 +1740,121 @@ function AdminPage() {
               message: `${campaignType} email sent successfully` 
             }
           }));
+          
+          // Add response data to notification history immediately if possible
+          // Even if the response doesn't match our expected format exactly,
+          // we'll create a normalized notification object to display
+          
+          // For a specific guest notification (has guestId and possibly a campaignType)
+          if (guestId && campaignType) {
+            console.log('Adding new notification directly to history for', guestId);
+            
+            // Create a normalized notification object with the required fields
+            const newNotification = {
+              guestId: guestId,
+              campaignType: campaignType,
+              timestamp: new Date().toISOString(), // Use current timestamp
+              deliveryStatus: 'sent',
+              emailAddress: '',
+              verified: true,
+              guestEmailLogId: `${guestId}-${Date.now()}`,
+              ...response // Include any fields from the response
+            };
+            
+            // Update notification history with the new notification
+            setNotificationHistory(prev => {
+              const newHistory = {...prev};
+              
+              if (!newHistory[guestId]) {
+                newHistory[guestId] = [];
+              }
+              
+              // Add to the beginning of the array (most recent first)
+              newHistory[guestId].unshift(newNotification);
+              
+              console.log(`Added notification for guestId ${guestId}:`, newNotification);
+              return newHistory;
+            });
+          } 
+          // For a bulk email campaign without specific guestId
+          else if (typeof response === 'object' || Array.isArray(response)) {
+            console.log('Handling response from bulk email campaign');
+            
+            // Try to extract notifications from the response
+            const notifications = Array.isArray(response) ? response : 
+              (response.items ? response.items : [response]);
+            
+            console.log('Extracted notifications:', notifications);
+            
+            // Update notification history
+            setNotificationHistory(prev => {
+              const newHistory = {...prev};
+              
+              notifications.forEach(notification => {
+                // Extract guestId from the notification or metadata
+                const notifGuestId = notification.guestId || 
+                  (notification.metadata ? notification.metadata.guestId : null);
+                
+                if (!notifGuestId) {
+                  console.log('Skipping notification without guestId:', notification);
+                  return;
+                }
+                
+                if (!newHistory[notifGuestId]) {
+                  newHistory[notifGuestId] = [];
+                }
+                
+                // Create a normalized notification object
+                const normalizedNotification = {
+                  guestId: notifGuestId,
+                  campaignType: notification.campaignType || campaignType || 'RsvpNotify',
+                  timestamp: notification.timestamp || new Date().toISOString(),
+                  deliveryStatus: notification.deliveryStatus || 'sent',
+                  emailAddress: notification.emailAddress || notification.to || '',
+                  verified: notification.verified || true,
+                  guestEmailLogId: notification.guestEmailLogId || notification.id || `${notifGuestId}-${Date.now()}`,
+                  ...notification // Include any other fields
+                };
+                
+                newHistory[notifGuestId].unshift(normalizedNotification);
+                console.log(`Added notification for guestId ${notifGuestId}:`, normalizedNotification);
+              });
+              
+              return newHistory;
+            });
+          } else {
+            // If we can't parse the response, create a local history entry anyway
+            if (guestId) {
+              console.log('Creating local history entry for', guestId);
+              setNotificationHistory(prev => {
+                const newHistory = {...prev};
+                
+                if (!newHistory[guestId]) {
+                  newHistory[guestId] = [];
+                }
+                
+                // Create a basic notification object
+                const basicNotification = {
+                  guestId: guestId,
+                  campaignType: campaignType,
+                  timestamp: new Date().toISOString(),
+                  deliveryStatus: 'sent',
+                  emailAddress: '',
+                  verified: true,
+                  guestEmailLogId: `${guestId}-${Date.now()}`
+                };
+                
+                newHistory[guestId].unshift(basicNotification);
+                console.log('Added basic notification to history:', basicNotification);
+                return newHistory;
+              });
+            }
+          }
+          
+          // Refresh notification history after a short delay
+          setTimeout(() => {
+            setRefreshTrigger(prev => prev + 1);
+          }, 2000);
         }
       } catch (error) {
         console.error(`Failed to send ${campaignType} notification:`, error);
@@ -1527,6 +1978,11 @@ function AdminPage() {
               message: `Sent ${response.length || 0} ${campaignType} email notifications successfully` 
             }
           }));
+          
+          // Refresh notification history after a short delay
+          setTimeout(() => {
+            setRefreshTrigger(prev => prev + 1);
+          }, 2000);
         }
       } catch (error) {
         console.error(`Failed to send all ${campaignType} notifications:`, error);
@@ -1607,12 +2063,27 @@ function AdminPage() {
       );
     };
     
+    // Manually refresh notification history
+    const handleRefreshHistory = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
     return (
       <Box sx={{ p: 0, height: 'auto', overflow: 'auto' }}>
         <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Send Notifications
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" component="h2">
+              Send Notifications
+            </Typography>
+            <Button 
+              size="small" 
+              onClick={handleRefreshHistory}
+              disabled={loadingHistory}
+              startIcon={loadingHistory ? <CircularProgress size={16} /> : null}
+            >
+              {loadingHistory ? 'Loading...' : 'Refresh History'}
+            </Button>
+          </Box>
           <Divider sx={{ mb: 3 }} />
           
           {/* Campaign section */}
@@ -1810,124 +2281,340 @@ function AdminPage() {
                         }}
                       >
                         <Typography variant="subtitle1" gutterBottom>
-                      {family.unitName}
-                      <Typography 
-                        component="span" 
-                        variant="caption" 
-                        sx={{ ml: 1, color: 'text.secondary' }}
-                      >
-                        ({family.invitationCode})
-                      </Typography>
-                    </Typography>
-                    
-                    <Divider sx={{ my: 1 }} />
-                    
-                    <Grid container spacing={2}>
-                      {family.guests?.map((guest) => (
-                        <Grid item xs={12} sm={6} md={4} key={guest.guestId}>
-                          <Box 
-                            sx={{ 
-                              display: 'flex',
-                              flexDirection: 'column',
-                              border: '1px solid',
-                              borderColor: 'divider',
-                              borderRadius: 1,
-                              p: 2,
-                              height: '100%',
-                              minHeight: '150px', // Ensure consistent card height
-                              position: 'relative' // For proper positioning of buttons at bottom
-                            }}
+                          {family.unitName}
+                          <Typography 
+                            component="span" 
+                            variant="caption" 
+                            sx={{ ml: 1, color: 'text.secondary' }}
                           >
-                            <Box sx={{ mb: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Typography variant="subtitle2">
-                                  {guest.firstName} {guest.lastName}
-                                </Typography>
-                                {getGuestStatusDots(guest)}
-                              </Box>
-                              <Typography variant="body2" color="text.secondary">
-                                {guest.email?.value || 'No email'} {getEmailVerificationStatus(guest)}
-                              </Typography>
-                            </Box>
-                            
-                            <Box sx={{ mt: 'auto' }}>
-                              {/* Last sent information (placeholder for future implementation) */}
-                              <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                {/* Will be populated with sent email history once the GET endpoint is available */}
-                              </Box>
-                              
-                              {/* Campaign buttons */}
-                              <Box sx={{ 
-                                display: 'flex', 
-                                flexWrap: 'wrap', 
-                                gap: 1,
-                                minHeight: '32px', // Ensure consistent height even when buttons expand
-                                alignItems: 'flex-start'
-                              }}>
-                                {EMAIL_CAMPAIGNS.map(campaign => {
-                                  const sendingKey = getSendingKey(guest.guestId, campaign.type);
-                                  return (
-                                    <Box key={campaign.type} sx={{ position: 'relative' }}>
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        disabled={sending[sendingKey] || !guest.email?.verified}
-                                        onClick={() => handleSendNotification(guest.guestId, campaign.type)}
-                                        sx={{ 
-                                          opacity: guest.email?.verified ? 1 : 0.5,
-                                          // Dynamic width when sending
-                                          minWidth: sending[sendingKey] ? '120px' : '28px',
-                                          maxWidth: sending[sendingKey] ? '120px' : '28px',
-                                          padding: '4px 8px',
-                                          borderColor: campaign.color,
-                                          color: campaign.color,
-                                          backgroundColor: `${campaign.color}10`,
-                                          transition: 'all 0.3s ease',
-                                          '&:hover': {
-                                            borderColor: campaign.color,
-                                            backgroundColor: `${campaign.color}20`
-                                          },
-                                          whiteSpace: 'nowrap',
-                                          overflow: 'hidden'
-                                        }}
-                                        title={`Send ${campaign.displayName} to ${guest.firstName} ${guest.lastName}`}
-                                      >
-                                        {sending[sendingKey] ? `Sending email...` : campaign.type.charAt(0)}
-                                      </Button>
+                            ({family.invitationCode})
+                          </Typography>
+                        </Typography>
+                        
+                        <Divider sx={{ my: 1 }} />
+                        
+                        <Grid container spacing={2}>
+                          {family.guests?.map((guest) => (
+                            <Grid item xs={12} sm={6} md={4} key={guest.guestId}>
+                              <Box 
+                                sx={{ 
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  border: '1px solid',
+                                  borderColor: 'divider',
+                                  borderRadius: 1,
+                                  p: 2,
+                                  height: '100%',
+                                  minHeight: '180px', // Increased to accommodate notification history
+                                  position: 'relative' // For proper positioning of buttons at bottom
+                                }}
+                              >
+                                <Box sx={{ mb: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <Typography variant="subtitle2">
+                                      {guest.firstName} {guest.lastName}
+                                    </Typography>
+                                    {getGuestStatusDots(guest)}
+                                  </Box>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {guest.email?.value || 'No email'} {getEmailVerificationStatus(guest)}
+                                  </Typography>
+                                </Box>
+                                
+                                {/* Last sent notification information */}
+                                <Box sx={{ mt: 1, mb: 2, display: 'flex', flexDirection: 'column' }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+                                    {guest.guestId && notificationHistory[guest.guestId] ? 
+                                      `Last notifications sent (${notificationHistory[guest.guestId].length}):` : 
+                                      'No notification history found'}
+                                  </Typography>
+                                  
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {/* First approach: show notifications grouped by campaign type */}
+                                    {EMAIL_CAMPAIGNS.map(campaign => {
+                                      // Find the most recent notification for this campaign type and guest
+                                      const latestNotification = getLatestNotification(
+                                        guest.guestId || '', 
+                                        campaign.type as CampaignType
+                                      );
                                       
-                                      {/* Status indicator */}
-                                      {results[sendingKey] && (
-                                        <Box 
-                                          sx={{ 
-                                            position: 'absolute', 
-                                            top: -4, 
-                                            right: -4,
-                                            width: 12,
-                                            height: 12,
-                                            borderRadius: '50%',
-                                            backgroundColor: results[sendingKey].success ? 'success.main' : 'error.main',
-                                            border: '1px solid white',
-                                            boxShadow: '0 0 4px rgba(0,0,0,0.3)',
-                                            animation: results[sendingKey].success ? 'pulse 1.5s infinite' : 'none',
+                                      if (!latestNotification) {
+                                        return null;
+                                      }
+                                      
+                                      // Get timestamp from notification, with fallbacks
+                                      const timestamp = latestNotification.timestamp 
+                                        || latestNotification['dateCreated'] 
+                                        || latestNotification['date'] 
+                                        || latestNotification['sentAt']
+                                        || Date.now(); // fallback to now if no timestamp
+                                      
+                                      // Check if it's a recent notification (within the last hour)
+                                      const isRecent = isRecentNotification(timestamp);
+                                      
+                                      // Get delivery status with fallback
+                                      const deliveryStatus = latestNotification.deliveryStatus 
+                                        || latestNotification['status'] 
+                                        || 'sent';
+                                      
+                                      return (
+                                        <Box
+                                          key={campaign.type}
+                                          sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            borderRadius: '8px',
+                                            padding: '2px 6px',
+                                            fontSize: '0.7rem',
+                                            backgroundColor: `${campaign.color}20`,
+                                            border: `1px solid ${campaign.color}`,
+                                            color: 'text.primary',
+                                            whiteSpace: 'nowrap',
+                                            animation: isRecent ? 'pulse 2s infinite' : 'none',
                                             '@keyframes pulse': {
-                                              '0%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0.7)' },
-                                              '70%': { boxShadow: '0 0 0 5px rgba(76, 175, 80, 0)' },
-                                              '100%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0)' }
+                                              '0%': { boxShadow: `0 0 0 0 ${campaign.color}40` },
+                                              '70%': { boxShadow: `0 0 0 4px ${campaign.color}00` },
+                                              '100%': { boxShadow: `0 0 0 0 ${campaign.color}00` }
                                             }
-                                          }} 
-                                          title={results[sendingKey].message}
-                                        />
+                                          }}
+                                          title={`${campaign.displayName} sent on ${
+                                            typeof timestamp === 'object' ? timestamp.toLocaleString() : 
+                                            new Date(timestamp).toLocaleString()
+                                          }\nStatus: ${deliveryStatus}`}
+                                        >
+                                          <Typography
+                                            component="span" 
+                                            sx={{ 
+                                              fontWeight: 'bold',
+                                              color: campaign.color,
+                                              mr: 0.5
+                                            }}
+                                          >
+                                            {campaign.type.charAt(0)}:
+                                          </Typography>
+                                          <Typography component="span">
+                                            {formatDate(timestamp)}
+                                          </Typography>
+                                        </Box>
+                                      );
+                                    })}
+                                    
+                                    {/* Alternate approach: show most recent notifications regardless of type */}
+                                    {guest.guestId && notificationHistory[guest.guestId] &&
+                                      notificationHistory[guest.guestId].length > 0 &&
+                                      !EMAIL_CAMPAIGNS.some(campaign => 
+                                        getLatestNotification(guest.guestId || '', campaign.type as CampaignType)) && (
+                                      // If we have notifications but none match our campaign types, show them generically
+                                      notificationHistory[guest.guestId].slice(0, 3).map((notification, idx) => {
+                                        // Try to determine campaign type
+                                        const campaignTypeStr = String(
+                                          notification.campaignType || 
+                                          notification.emailType || 
+                                          notification.type || 
+                                          'Notification'
+                                        );
+                                        
+                                        // Try to find matching campaign
+                                        const matchingCampaign = EMAIL_CAMPAIGNS.find(
+                                          c => String(c.type) === campaignTypeStr
+                                        );
+                                        
+                                        // Use matching campaign color or a default
+                                        const color = matchingCampaign?.color || '#666666';
+                                        
+                                        // Get timestamp with fallbacks
+                                        const timestamp = notification.timestamp || 
+                                          notification.dateCreated || 
+                                          notification.date || 
+                                          Date.now();
+                                          
+                                        // Check if recent
+                                        const isRecent = isRecentNotification(timestamp);
+                                        
+                                        return (
+                                          <Box
+                                            key={`notification-${idx}`}
+                                            sx={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              borderRadius: '8px',
+                                              padding: '2px 6px',
+                                              fontSize: '0.7rem',
+                                              backgroundColor: `${color}20`,
+                                              border: `1px solid ${color}`,
+                                              color: 'text.primary',
+                                              whiteSpace: 'nowrap',
+                                              animation: isRecent ? 'pulse 2s infinite' : 'none',
+                                              '@keyframes pulse': {
+                                                '0%': { boxShadow: `0 0 0 0 ${color}40` },
+                                                '70%': { boxShadow: `0 0 0 4px ${color}00` },
+                                                '100%': { boxShadow: `0 0 0 0 ${color}00` }
+                                              }
+                                            }}
+                                            title={`${campaignTypeStr} sent on ${
+                                              typeof timestamp === 'object' ? timestamp.toLocaleString() : 
+                                              new Date(timestamp).toLocaleString()
+                                            }`}
+                                          >
+                                            <Typography
+                                              component="span" 
+                                              sx={{ 
+                                                fontWeight: 'bold',
+                                                color: color,
+                                                mr: 0.5
+                                              }}
+                                            >
+                                              {campaignTypeStr.charAt(0)}:
+                                            </Typography>
+                                            <Typography component="span">
+                                              {formatDate(timestamp)}
+                                            </Typography>
+                                          </Box>
+                                        );
+                                      })
+                                    )}
+                                  </Box>
+                                </Box>
+                                
+                                {/* Debug information - will help diagnose if notifications are being received properly */}
+                                {(guest.guestId && notificationHistory[guest.guestId] && notificationHistory[guest.guestId].length > 0) ? (
+                                  <Box sx={{ 
+                                    mt: 1, 
+                                    mb: 1,
+                                    p: 1,
+                                    borderRadius: 1,
+                                    backgroundColor: 'rgba(0,0,0,0.03)', 
+                                    fontSize: '0.7rem',
+                                    display: 'block' // Always show for debugging
+                                  }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                                      Debug: {notificationHistory[guest.guestId].length} notification(s)
+                                    </Typography>
+                                    <Box component="pre" sx={{ 
+                                      fontSize: '0.65rem', 
+                                      overflowX: 'auto',
+                                      m: 0,
+                                      p: 0.5
+                                    }}>
+                                      {notificationHistory[guest.guestId].slice(0, 1).map((notification, idx) => 
+                                        JSON.stringify({
+                                          idx,
+                                          guestId: notification.guestId,
+                                          type: notification.campaignType,
+                                          timestamp: notification.timestamp,
+                                          status: notification.deliveryStatus,
+                                          keys: Object.keys(notification)
+                                        }, null, 1)
                                       )}
                                     </Box>
-                                  );
-                                })}
+                                  </Box>
+                                ) : (
+                                  <Box sx={{ 
+                                    mt: 1, 
+                                    mb: 1,
+                                    p: 1,
+                                    borderRadius: 1,
+                                    backgroundColor: 'rgba(255,0,0,0.03)', 
+                                    fontSize: '0.7rem'
+                                  }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                      No notification history found for guest {guest.guestId || 'unknown'}
+                                    </Typography>
+                                    <Box sx={{ mt: 0.5 }}>
+                                      <Typography variant="caption" color="text.secondary">
+                                        Available guest IDs in notification history: {Object.keys(notificationHistory).length > 0 ? 
+                                          Object.keys(notificationHistory).slice(0, 3).join(', ') + 
+                                          (Object.keys(notificationHistory).length > 3 ? '...' : '')
+                                          : 'none'}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                )}
+                                
+                                <Box sx={{ mt: 'auto' }}>
+                                  {/* Campaign buttons */}
+                                  <Box sx={{ 
+                                    display: 'flex', 
+                                    flexWrap: 'wrap', 
+                                    gap: 1,
+                                    minHeight: '32px', // Ensure consistent height even when buttons expand
+                                    alignItems: 'flex-start'
+                                  }}>
+                                    {EMAIL_CAMPAIGNS.map(campaign => {
+                                      const sendingKey = getSendingKey(guest.guestId || '', campaign.type);
+                                      const latestNotification = getLatestNotification(
+                                        guest.guestId || '', 
+                                        campaign.type as CampaignType
+                                      );
+                                      
+                                      // Determine if this is a resend
+                                      const isResend = !!latestNotification;
+                                      
+                                      return (
+                                        <Box key={campaign.type} sx={{ position: 'relative' }}>
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            disabled={sending[sendingKey] || !guest.email?.verified}
+                                            onClick={() => handleSendNotification(guest.guestId || '', campaign.type)}
+                                            sx={{ 
+                                              opacity: guest.email?.verified ? 1 : 0.5,
+                                              // Dynamic width when sending
+                                              minWidth: sending[sendingKey] ? '120px' : '28px',
+                                              maxWidth: sending[sendingKey] ? '120px' : '28px',
+                                              padding: '4px 8px',
+                                              borderColor: campaign.color,
+                                              color: campaign.color,
+                                              backgroundColor: `${campaign.color}10`,
+                                              transition: 'all 0.3s ease',
+                                              '&:hover': {
+                                                borderColor: campaign.color,
+                                                backgroundColor: `${campaign.color}20`
+                                              },
+                                              whiteSpace: 'nowrap',
+                                              overflow: 'hidden'
+                                            }}
+                                            title={`${isResend ? 'Resend' : 'Send'} ${campaign.displayName} to ${guest.firstName} ${guest.lastName}${isResend ? ` (Last sent: ${formatDate(latestNotification.timestamp)})` : ''}`}
+                                          >
+                                            {sending[sendingKey] ? 
+                                              `Sending email...` : 
+                                              (isResend ? `${campaign.type.charAt(0)}↻` : campaign.type.charAt(0))
+                                            }
+                                          </Button>
+                                          
+                                          {/* Status indicator */}
+                                          {results[sendingKey] && (
+                                            <Box 
+                                              sx={{ 
+                                                position: 'absolute', 
+                                                top: -4, 
+                                                right: -4,
+                                                width: 12,
+                                                height: 12,
+                                                borderRadius: '50%',
+                                                backgroundColor: results[sendingKey].success ? 'success.main' : 'error.main',
+                                                border: '1px solid white',
+                                                boxShadow: '0 0 4px rgba(0,0,0,0.3)',
+                                                animation: results[sendingKey].success ? 'pulse 1.5s infinite' : 'none',
+                                                '@keyframes pulse': {
+                                                  '0%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0.7)' },
+                                                  '70%': { boxShadow: '0 0 0 5px rgba(76, 175, 80, 0)' },
+                                                  '100%': { boxShadow: '0 0 0 0 rgba(76, 175, 80, 0)' }
+                                                }
+                                              }} 
+                                              title={results[sendingKey].message}
+                                            />
+                                          )}
+                                        </Box>
+                                      );
+                                    })}
+                                  </Box>
+                                </Box>
                               </Box>
-                            </Box>
-                          </Box>
+                            </Grid>
+                          ))}
                         </Grid>
-                      ))}
-                    </Grid>
-                  </Paper>
+                      </Paper>
                     );
                   })()}
                 </Grid>
