@@ -205,13 +205,15 @@ namespace Wedding.Common.Helpers
                             </ul>           
                     </p>
 
+                    <hr/>
+
                     <h2>Wedding (Saturday, July 5)</h2>
                     <p>
-                        <b>Please RSVP here by May 19, 2025:</b><br/>
+                        Please RSVP here <b>by May 19, 2025:</b><br/>
                         <a href=""https://christephanie.com?inviteCode={invitationCode}"">https://christephanie.com?inviteCode={invitationCode}</a>
                     </p>
                            
-                    <h3>4th of July Potluck BBQ (Friday, July 4)</h3>             
+                    <h2>4th of July Potluck BBQ (Friday, July 4)</h2>             
                     <p>
                         We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
                         know if you will attend, and what you can bring!<br/>
@@ -226,18 +228,20 @@ namespace Wedding.Common.Helpers
                                 </td>
                             </tr>
                             <tr>
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
+                                <td style=""padding: 10px; padding-left: 20px; border-bottom: 1px solid #eee; text-align: left;"">
                                     Just go to:
                                     <a href=""https://christephanie.com"">https://christephanie.com</a>
                                 </td>
                             </tr>
                             <tr>       
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""> 
+                                <td style=""padding: 10px; padding-left: 20px; border-bottom: 1px solid #eee; text-align: left;""> 
                                     and enter your first name and your family's <b>Invitation Code</b>. 
                                 </td>
                             </tr>
                             <tr>
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""><b>Your code is:</b> {invitationCode}</td>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
+                                    <b>Your invitation code is:</b> {invitationCode}
+                                </td>
                             </tr>
                         </table>
                     </div>          

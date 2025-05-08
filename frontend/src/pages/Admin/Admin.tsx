@@ -1643,28 +1643,18 @@ function AdminPage() {
         
         let response;
         
-        // Try multiple approaches to make the API call
+        // Use a single approach to make the API call based on availability
         try {
-          // First try: use API context with new method
+          // Prefer the API context method as the primary approach
           if (typeof apiContext.sendEmailNotification === 'function') {
             console.log('Using apiContext.sendEmailNotification');
             response = await apiContext.sendEmailNotification(campaignType, guestId);
           }
-          // Second try: use API instance from context
-          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendEmailNotification === 'function') {
-            console.log('Using apiContext.apiInstance.sendEmailNotification');
-            response = await apiContext.apiInstance.sendEmailNotification(campaignType, guestId);
-          }
-          // Third try: use direct API instance 
-          else if (directApi && typeof directApi.sendEmailNotification === 'function') {
-            console.log('Using directApi.sendEmailNotification');
-            response = await directApi.sendEmailNotification(campaignType, guestId);
-          }
-          // Last resort: Make a direct fetch call
+          // Fallback to direct fetch call if API context method is not available
           else {
-            console.log('Using direct fetch call');
+            console.log('Using direct fetch call - API context method not available');
             const token = await getAccessTokenSilently();
-            const url = `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`;
+            const url = `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`;
             
             console.log('Fetch URL:', url);
             response = await fetch(url, {
@@ -1681,50 +1671,11 @@ function AdminPage() {
             });
           }
         } catch (callError) {
-          console.error('API call failed, trying alternatives:', callError);
+          console.error('API call failed:', callError);
           
-          // If the first attempt fails, try direct fetch with alternate URL
-          const token = await getAccessTokenSilently();
-          
-          // Try multiple possible API endpoints
-          const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
-            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
-            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`
-          ];
-          
-          // Try each endpoint until one succeeds
-          let lastError;
-          for (const url of possibleEndpoints) {
-            try {
-              console.log('Trying URL:', url);
-              response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                }
-              }).then(res => {
-                if (!res.ok) {
-                  throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
-                }
-                return res.json();
-              });
-              
-              // If we got here, the request succeeded
-              console.log('Success with URL:', url);
-              break;
-            } catch (endpointError) {
-              console.error(`Failed with URL ${url}:`, endpointError);
-              lastError = endpointError;
-            }
-          }
-          
-          // If we still don't have a response, throw the last error
-          if (!response && lastError) {
-            throw lastError;
-          }
+          // Instead of trying multiple endpoints, just throw the error
+          // This avoids sending duplicate emails and provides a clear error message
+          throw callError;
         }
         
         console.log(`${campaignType} notification response:`, response);
@@ -1883,28 +1834,18 @@ function AdminPage() {
         
         let response;
         
-        // Try multiple approaches to make the API call
+        // Use a single approach to make the API call based on availability
         try {
-          // First try: use API context with new method
+          // Prefer the API context method as the primary approach
           if (typeof apiContext.sendEmailNotification === 'function') {
-            console.log('Using apiContext.sendEmailNotification');
+            console.log('Using apiContext.sendEmailNotification for bulk notification');
             response = await apiContext.sendEmailNotification(campaignType);
           }
-          // Second try: use API instance from context
-          else if (apiContext.apiInstance && typeof apiContext.apiInstance.sendEmailNotification === 'function') {
-            console.log('Using apiContext.apiInstance.sendEmailNotification');
-            response = await apiContext.apiInstance.sendEmailNotification(campaignType);
-          }
-          // Third try: use direct API instance 
-          else if (directApi && typeof directApi.sendEmailNotification === 'function') {
-            console.log('Using directApi.sendEmailNotification');
-            response = await directApi.sendEmailNotification(campaignType);
-          }
-          // Last resort: Make a direct fetch call
+          // Fallback to direct fetch call if API context method is not available
           else {
-            console.log('Using direct fetch call');
+            console.log('Using direct fetch call for bulk notification - API context method not available');
             const token = await getAccessTokenSilently();
-            const url = `${apiBaseUrl}/notify/email?emailType=${campaignType}`;
+            const url = `${apiBaseUrl}/notify/email?campaignType=${campaignType}`;
             
             console.log('Fetch URL:', url);
             response = await fetch(url, {
@@ -1921,50 +1862,11 @@ function AdminPage() {
             });
           }
         } catch (callError) {
-          console.error('API call failed, trying alternatives:', callError);
+          console.error('API call failed:', callError);
           
-          // If the first attempt fails, try direct fetch with alternate URL
-          const token = await getAccessTokenSilently();
-          
-          // Try multiple possible API endpoints
-          const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email?campaignType=${campaignType}`,
-            `${window.location.origin}/api/notify/email?campaignType=${campaignType}`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email?campaignType=${campaignType}`,
-            `https://fianceapi.wedding.christephanie.com/notify/email?campaignType=${campaignType}`
-          ];
-          
-          // Try each endpoint until one succeeds
-          let lastError;
-          for (const url of possibleEndpoints) {
-            try {
-              console.log('Trying URL:', url);
-              response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                }
-              }).then(res => {
-                if (!res.ok) {
-                  throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
-                }
-                return res.json();
-              });
-              
-              // If we got here, the request succeeded
-              console.log('Success with URL:', url);
-              break;
-            } catch (endpointError) {
-              console.error(`Failed with URL ${url}:`, endpointError);
-              lastError = endpointError;
-            }
-          }
-          
-          // If we still don't have a response, throw the last error
-          if (!response && lastError) {
-            throw lastError;
-          }
+          // Instead of trying multiple endpoints, just throw the error
+          // This avoids sending duplicate emails and provides a clear error message
+          throw callError;
         }
         
         console.log(`All ${campaignType} notifications response:`, response);
