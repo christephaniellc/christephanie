@@ -413,7 +413,9 @@ namespace Wedding.Common.Helpers.AWS
             CampaignTypeEnum campaignType,
             CancellationToken cancellationToken = default)
         {
-            var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType);
+            var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType); 
+            _logger.LogInformation("Querying GSI CampaignTypeIndex with partition key: {Key}", campaignTypeValue);
+
             var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
             config.IndexName = "CampaignTypeIndex";
 
@@ -422,7 +424,7 @@ namespace Wedding.Common.Helpers.AWS
                 IndexName = "CampaignTypeIndex",
                 KeyExpression = new Expression
                 {
-                    ExpressionStatement = "CampaignTypeGSI = :v_campaignType",
+                    ExpressionStatement = "CampaignTypeIndexPartitionKey = :v_campaignType",
                     ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
                     {
                         { ":v_campaignType", campaignTypeValue }
