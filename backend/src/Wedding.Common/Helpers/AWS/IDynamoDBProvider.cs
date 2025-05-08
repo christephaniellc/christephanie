@@ -3,6 +3,7 @@ using System.Threading;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Dtos;
 using System.Collections.Generic;
+using Wedding.Abstractions.Enums;
 
 namespace Wedding.Common.Helpers.AWS
 {
@@ -27,6 +28,12 @@ namespace Wedding.Common.Helpers.AWS
         Task<PaymentIntentEntity?> GetPaymentByIdAsync(string audience, string paymentIntentId, CancellationToken cancellationToken = default);
         Task<List<PaymentIntentEntity>> GetPaymentsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default);
         Task<List<PaymentIntentEntity>> GetPaymentsByCategoryAsync(string audience, string giftCategory, CancellationToken cancellationToken = default);
+
+        // Notification data
+        Task<List<GuestEmailLogDto>> GetEmailLogsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default);
+        Task<List<GuestEmailLogDto>> GetEmailLogsByCampaignTypeAsync(string audience, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default); 
+        Task<GuestEmailLogDto?> GetEmailLogByGuestAndTimestampAsync(string audience, string guestId, string timestamp, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default);
+
 
         Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default);
 

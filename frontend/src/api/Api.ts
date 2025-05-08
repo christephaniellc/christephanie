@@ -255,7 +255,6 @@ export default class Api {
     }
   }
   
-  // Legacy method for backward compatibility
   async sendRsvpNotification(guestId?: string): Promise<any> {
     return this.sendEmailNotification('RsvpNotify', guestId);
   }
