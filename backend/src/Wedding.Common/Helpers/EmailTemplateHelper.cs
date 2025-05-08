@@ -194,10 +194,10 @@ namespace Wedding.Common.Helpers
                 <div class=""content"">
                     <p>Dear {name},</p>
                     <p>Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
-                        you could take a moment to log in to our site and confirm your RSVP{interestedBlurb}
+                        you could take a moment to log in to our site and <b>confirm your RSVP</b>{interestedBlurb}
                     </p>
                     <p>
-                        Hit refresh to see our new site content:
+                        <b>Hit refresh</b> to see our new site content:
                             <ul>
                                 <li>Wedding Registry</li>
                                 <li>Details (accommodation, attire, schedule, etc.)</li>               
@@ -205,7 +205,7 @@ namespace Wedding.Common.Helpers
                             </ul>           
                     </p>
 
-                    <h3>Wedding (Saturday, July 5):</h3>
+                    <h2>Wedding (Saturday, July 5)</h2>
                     <p>
                         <b>Please RSVP here by May 19, 2025:</b><br/>
                         <a href=""https://christephanie.com?inviteCode={invitationCode}"">https://christephanie.com?inviteCode={invitationCode}</a>
@@ -222,14 +222,22 @@ namespace Wedding.Common.Helpers
                         <table>
                             <tr>
                                 <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
-                                    Haven't logged in before? No prob! Just go to:
-                                    <a href=""https://christephanie.com"">https://christephanie.com</a>
-                                    And enter your first name and your family's Invitation Code. 
+                                    Haven't logged in before? No prob!
                                 </td>
                             </tr>
                             <tr>
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""><b>Your code is:</b></td>
-                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: right;"">{invitationCode}</td>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
+                                    Just go to:
+                                    <a href=""https://christephanie.com"">https://christephanie.com</a>
+                                </td>
+                            </tr>
+                            <tr>       
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""> 
+                                    and enter your first name and your family's <b>Invitation Code</b>. 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;""><b>Your code is:</b> {invitationCode}</td>
                             </tr>
                         </table>
                     </div>          

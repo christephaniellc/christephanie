@@ -250,7 +250,7 @@ export default class Api {
       
       return await this.post(`/notify/email${queryParams}`, {});
     } catch (error) {
-      console.error(`Error in sendEmailNotification (${emailType}):`, error);
+      console.error(`Error in sendEmailNotification (${campaignType}):`, error);
       throw error;
     }
   }
