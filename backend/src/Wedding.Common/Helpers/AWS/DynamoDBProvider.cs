@@ -414,12 +414,24 @@ namespace Wedding.Common.Helpers.AWS
             CancellationToken cancellationToken = default)
         {
             var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType);
-
             var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
             config.IndexName = "CampaignTypeIndex";
 
+            var query = new QueryOperationConfig
+            {
+                IndexName = "CampaignTypeIndex",
+                KeyExpression = new Expression
+                {
+                    ExpressionStatement = "CampaignTypeGSI = :v_campaignType",
+                    ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
+                    {
+                        { ":v_campaignType", campaignTypeValue }
+                    }
+                }
+            };
+
             var results = await _repository
-                .QueryAsync<NotificationDataEntity>(campaignTypeValue, config)
+                .FromQueryAsync<NotificationDataEntity>(query, config)
                 .GetRemainingAsync(cancellationToken);
 
             return results

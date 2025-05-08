@@ -138,6 +138,39 @@ export interface FindUserResponse {
   auth0Id?: string | null;
 }
 
+// Email notification types matching backend EmailTypeEnum
+export enum EmailType {
+  RsvpNotify = 'RsvpNotify',
+  RsvpReminder = 'RsvpReminder',
+  ManorDetails = 'ManorDetails',
+  FourthDetails = 'FourthDetails',
+  WeddingDetails = 'WeddingDetails',
+  ThankYou = 'ThankYou'
+}
+
+// Campaign types matching backend CampaignTypeEnum
+export enum CampaignType {
+  RsvpNotify = 'RsvpNotify',
+  RsvpReminder = 'RsvpReminder',
+  ManorDetails = 'ManorDetails',
+  FourthDetails = 'FourthDetails',
+  WeddingDetails = 'WeddingDetails',
+  ThankYou = 'ThankYou'
+}
+
+// Email notification log record
+export interface GuestEmailLogDto {
+  guestEmailLogId: string;
+  guestId: string;
+  campaignType: CampaignType;
+  campaignId?: string;
+  timestamp: string;
+  deliveryStatus: string;
+  emailAddress: string;
+  verified: boolean;
+  metadata?: { [key: string]: string };
+}
+
 export enum FoodPreferenceEnum {
   Unknown = 'Unknown',
   Omnivore = 'Omnivore',

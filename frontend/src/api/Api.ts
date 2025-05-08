@@ -258,6 +258,16 @@ export default class Api {
   async sendRsvpNotification(guestId?: string): Promise<any> {
     return this.sendEmailNotification('RsvpNotify', guestId);
   }
+  
+  async getEmailNotifications(): Promise<any> {
+    try {
+      console.log('Fetching email notification history');
+      return await this.get('/notify/email');
+    } catch (error) {
+      console.error('Error in getEmailNotifications:', error);
+      throw error;
+    }
+  }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {
