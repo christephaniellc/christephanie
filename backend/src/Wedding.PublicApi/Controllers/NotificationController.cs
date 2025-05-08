@@ -21,6 +21,7 @@ using Wedding.Lambdas.Payments.Contributions.Commands;
 using Wedding.Lambdas.Payments.Intent.Commands;
 using Wedding.Abstractions.Enums;
 using Wedding.Lambdas.Payments.Intent.Validation;
+using System;
 
 namespace Wedding.PublicApi.Controllers
 {
@@ -51,7 +52,7 @@ namespace Wedding.PublicApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<GuestEmailLogDto>>> SendNotificationEmails(string guestId, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<List<GuestEmailLogDto>>> SendNotificationEmails(string campaignType, string guestId, CancellationToken cancellationToken = default)
         {
 #if !DEBUG_ANONYMOUS
             var token = HeaderHelper.GetToken(HttpContext.Request.Headers);
@@ -60,9 +61,11 @@ namespace Wedding.PublicApi.Controllers
                 LambdaArns.AdminFamilyUnitCreate, ipAddress, token);
             var authContext = await _lambdaAuthorizer.GetAsync(authRequest, cancellationToken);
 #endif
-            var command = new SendRsvpNotificationCommand(authContext, guestId);
+            Enum.TryParse(campaignType, out CampaignTypeEnum campaignTypeParsed);
+
+            var command = new SendEmailNotificationCommand(authContext, campaignTypeParsed, guestId);
             command.Validate();
-            var result = await _dispatcher.ExecuteAsync<SendRsvpNotificationCommand, List<GuestEmailLogDto>>(command, cancellationToken);
+            var result = await _dispatcher.ExecuteAsync<SendEmailNotificationCommand, List<GuestEmailLogDto>>(command, cancellationToken);
 
             return Ok(result);
         }

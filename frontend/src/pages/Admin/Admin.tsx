@@ -1688,10 +1688,10 @@ function AdminPage() {
           
           // Try multiple possible API endpoints
           const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
-            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`,
-            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&emailType=${campaignType}`
+            `${apiBaseUrl}/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
+            `${window.location.origin}/api/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`,
+            `https://fianceapi.wedding.christephanie.com/notify/email?guestId=${encodeURIComponent(guestId)}&campaignType=${campaignType}`
           ];
           
           // Try each endpoint until one succeeds
@@ -1928,10 +1928,10 @@ function AdminPage() {
           
           // Try multiple possible API endpoints
           const possibleEndpoints = [
-            `${apiBaseUrl}/notify/email?emailType=${campaignType}`,
-            `${window.location.origin}/api/notify/email?emailType=${campaignType}`,
-            `https://fianceapi.dev.wedding.christephanie.com/notify/email?emailType=${campaignType}`,
-            `https://fianceapi.wedding.christephanie.com/notify/email?emailType=${campaignType}`
+            `${apiBaseUrl}/notify/email?campaignType=${campaignType}`,
+            `${window.location.origin}/api/notify/email?campaignType=${campaignType}`,
+            `https://fianceapi.dev.wedding.christephanie.com/notify/email?campaignType=${campaignType}`,
+            `https://fianceapi.wedding.christephanie.com/notify/email?campaignType=${campaignType}`
           ];
           
           // Try each endpoint until one succeeds
