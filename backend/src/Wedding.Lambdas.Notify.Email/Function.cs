@@ -79,17 +79,19 @@ public class Function
                 case "POST":
                 {
                     var guestId = APIGatewayProxyRequestExtensions.GetCaseInsensitiveParam(request, "guestId");
-                    var queryUnits = new SendRsvpNotificationCommand(authContext, guestId);
+                    var command = new SendRsvpNotificationCommand(authContext, guestId);
                     var handler = scope.ServiceProvider.GetRequiredService<SendEmailNotificationHandler>();
 
-                    var results = await handler.ExecuteAsync(queryUnits);
+                    var results = await handler.ExecuteAsync(command);
                     return results.OkResponse();
                     break;
                 }
                 case "GET":
                 {
                     var handler = scope.ServiceProvider.GetRequiredService<GetEmailNotificationsHandler>();
-                    throw new NotImplementedException("GET method is not implemented yet.");
+                    var query = new GetEmailNotificationsQuery(authContext);
+                    var results = await handler.GetAsync(query);
+                    return results.OkResponse();
                     break;
                 }
                 default:

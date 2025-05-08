@@ -35,7 +35,7 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
 
             try
             {
-                foreach (var campaign in CampaignTypeEnum.GetValuesAsUnderlyingType<CampaignTypeEnum>())
+                foreach (var campaign in Enum.GetValues(typeof(CampaignTypeEnum)))
                 {
                     var resultLogs = await
                         _dynamoDBProvider.GetEmailLogsByCampaignTypeAsync(query.AuthContext.Audience, (CampaignTypeEnum) campaign);

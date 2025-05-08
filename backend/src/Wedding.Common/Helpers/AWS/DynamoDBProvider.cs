@@ -397,16 +397,6 @@ namespace Wedding.Common.Helpers.AWS
         #endregion
 
         #region Notifications
-        public async Task<List<GuestEmailLogDto>> GetAllEmailLogsAsync(string audience, CancellationToken cancellationToken = default)
-        {
-            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
-            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
-
-            var results = await _repository.QueryAsync<NotificationDataEntity>(partitionKey, config)
-                .GetRemainingAsync(cancellationToken);
-
-            return results.Select(e => _mapper.Map<GuestEmailLogDto>(e)).ToList();
-        }
         public async Task<List<GuestEmailLogDto>> GetEmailLogsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
         {
             var partitionKey = NotificationKeys.GetPartitionKey(guestId);
@@ -423,8 +413,7 @@ namespace Wedding.Common.Helpers.AWS
             CampaignTypeEnum campaignType,
             CancellationToken cancellationToken = default)
         {
-            // Get the string value from the [EnumMember] attribute or fallback to ToString()
-            var campaignTypeValue = campaignType.ToString(); // assumes you store EnumMember string via converter
+            var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType);
 
             var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
             config.IndexName = "CampaignTypeIndex";
