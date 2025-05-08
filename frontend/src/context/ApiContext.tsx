@@ -434,11 +434,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   };
 
   // Function to send email notifications by type
-  const sendEmailNotification = async (emailType?: string, guestId?: string): Promise<any> => {
+  const sendEmailNotification = async (campaignType?: string, guestId?: string): Promise<any> => {
     try {
-      return await apiRef.current.sendEmailNotification(emailType, guestId);
+      return await apiRef.current.sendEmailNotification(campaignType, guestId);
     } catch (error) {
-      console.error(`Failed to send ${emailType} notification:`, error);
+      console.error(`Failed to send ${campaignType} notification:`, error);
       throw error;
     }
   };

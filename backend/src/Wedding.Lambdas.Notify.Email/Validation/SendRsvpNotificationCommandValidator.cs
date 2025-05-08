@@ -10,7 +10,7 @@ namespace Wedding.Lambdas.Notify.Email.Validation
     /// Implements the <see cref="AbstractValidator{T}" />
     /// </summary>
     /// <seealso cref="AbstractValidator{T}" />
-    internal class SendRsvpNotificationCommandValidator : AbstractValidator<SendRsvpNotificationCommand>, IValidate<SendRsvpNotificationCommand>
+    internal class SendRsvpNotificationCommandValidator : AbstractValidator<SendEmailNotificationCommand>, IValidate<SendEmailNotificationCommand>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendRsvpNotificationCommandValidator" /> class.
@@ -22,7 +22,7 @@ namespace Wedding.Lambdas.Notify.Email.Validation
                 .SetValidator(new AuthContextValidator(true));
         }
 
-        public void IsValid(SendRsvpNotificationCommand obj, object? _ = null)
+        public void IsValid(SendEmailNotificationCommand obj, object? _ = null)
             => this.ValidateAndThrow(obj);
     }
 }

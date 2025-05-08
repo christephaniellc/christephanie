@@ -235,16 +235,16 @@ export default class Api {
     return this.delete(`/admin/configuration/invitation?designId=${encodeURIComponent(designId)}`);
   }
   
-  async sendEmailNotification(emailType: string = 'RsvpNotify', guestId?: string): Promise<any> {
+  async sendEmailNotification(campaignType: string = 'RsvpNotify', guestId?: string): Promise<any> {
     try {
-      console.log(`Sending ${emailType} notification for guestId:`, guestId || 'ALL');
+      console.log(`Sending ${campaignType} notification for guestId:`, guestId || 'ALL');
       let queryParams = '';
       
       // Build query params
-      if (guestId || emailType) {
+      if (guestId || campaignType) {
         const params = [];
         if (guestId) params.push(`guestId=${encodeURIComponent(guestId)}`);
-        if (emailType) params.push(`emailType=${encodeURIComponent(emailType)}`);
+        if (campaignType) params.push(`campaignType=${encodeURIComponent(campaignType)}`);
         queryParams = `?${params.join('&')}`;
       }
       
