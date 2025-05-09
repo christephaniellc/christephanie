@@ -205,10 +205,10 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
                           left: '50%',
                           transform: 'translateX(-50%)',
                           zIndex: 2,
-                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                          backgroundColor: 'secondary.main',
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           borderRadius: '8px',
-                          padding: '4px 8px',
+                          padding: '4px 16px 4px 16px',
                           display: 'flex',
                           alignItems: 'center',
                           animation: 'pulse 2s infinite',
@@ -222,6 +222,7 @@ export const MainRSVPContent: React.FC<MainRSVPContentProps> = ({
                         <KeyboardArrowDown color="primary" />
                         <Box component="span" 
                         fontSize="0.75rem" 
+                        fontWeight={900}
                         color="primary.main"
                         ml={0.5}>Scroll for more</Box>
                       </Box>
