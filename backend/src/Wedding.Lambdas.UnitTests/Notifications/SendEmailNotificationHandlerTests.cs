@@ -97,6 +97,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
+                    It.IsAny<bool>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(sendResponse);
@@ -212,7 +213,8 @@ namespace Wedding.Lambdas.UnitTests.Notifications
 
             result.Should().BeEmpty();
             _mockAwsSesHelper.Verify(x => x.SendRsvpNotificationEmail(
-                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(),
+                    It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -266,6 +268,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             _mockAwsSesHelper.Setup(x => x.SendRsvpNotificationEmail(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()))
