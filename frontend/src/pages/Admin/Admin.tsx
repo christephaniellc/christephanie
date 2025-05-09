@@ -35,7 +35,8 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Chip
 } from '@mui/material';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
@@ -1270,38 +1271,26 @@ function AdminPage() {
           setLoadingHistory(true);
           console.log('Fetching email notification history...');
           
-          // Since the notification history endpoint seems to be having issues,
-          // let's just use our locally stored notification records instead of making API calls
+          // Attempt to fetch notification history from the API
+          console.log('Attempting to fetch email notification history from API');
           
-          // NOTE: In a production app, we would fix the backend endpoint
-          // For now, we'll just use the notifications we've added to local state when sending emails
-          
-          console.log('Using local notification history only');
-          
-          /* Commenting out the actual API calls since they seem to be failing with 401/403 errors
-          let notificationsData;
+          // Initialize with a default empty object in case API call fails
+          let notificationsData: Record<string, GuestEmailLogDto[]> = {}; // Now expected as Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
           
           // Try to fetch from API
           try {
-            notificationsData = await apiContext.getEmailNotifications();
-            console.log('Raw notification data from API:', JSON.stringify(notificationsData, null, 2));
+            const apiResponse = await apiContext.getEmailNotifications();
+            console.log('Raw notification data from API:', JSON.stringify(apiResponse, null, 2));
+            
+            // The backend now returns Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
+            // So we need to handle this structure, where keys are campaign types and values are lists of notifications
+            if (apiResponse && typeof apiResponse === 'object') {
+              notificationsData = apiResponse;
+            }
           } catch (error) {
             console.warn('Could not fetch notification history, using local data only:', error);
+            // Keep using the initialized empty object
           }
-          */
-          
-          // Initialize notificationsData as empty object with proper shape since API call is commented out
-          const notificationsData: { [key: string]: any[] } & { 
-            guestId?: string; 
-            emailAddress?: string; 
-            to?: string;
-            items?: any[];
-            notifications?: any[];
-            logs?: any[];
-            emailLogs?: any[];
-            results?: any[];
-            data?: any[];
-          } = {};
           
           // No need to process API data since we're using local state
           
@@ -1309,7 +1298,7 @@ function AdminPage() {
           const groupedNotifications: Record<string, GuestEmailLogDto[]> = {};
           
           console.log('Type of notificationsData:', typeof notificationsData);
-          console.log('Is array?', Array.isArray(notificationsData));
+          console.log('Campaign types in response:', Object.keys(notificationsData));
           
           const processNotification = (notification: any) => {
             // Skip if notification is not an object
@@ -1363,50 +1352,32 @@ function AdminPage() {
             });
           };
           
-          if (Array.isArray(notificationsData)) {
-            // Process array of notification records
-            console.log('Processing as array with', notificationsData.length, 'items');
-            notificationsData.forEach(processNotification);
-          } else if (notificationsData && typeof notificationsData === 'object') {
-            // First check for common nested structures
-            const possibleArrayProps = ['items', 'notifications', 'logs', 'emailLogs', 'results', 'data'];
+          // New response format is Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
+          // Process each campaign type and its notifications
+          if (notificationsData && typeof notificationsData === 'object') {
+            console.log('Processing notifications grouped by campaign type');
             
-            // Check if any of these properties exist and contain arrays
-            let foundArrayProp = false;
-            for (const prop of possibleArrayProps) {
-              if (notificationsData[prop] && Array.isArray(notificationsData[prop])) {
-                console.log(`Processing as object with ${prop} array containing`, notificationsData[prop].length, 'items');
-                notificationsData[prop].forEach(processNotification);
-                foundArrayProp = true;
-                break;
-              }
-            }
-            
-            if (!foundArrayProp) {
-              // Check if this is a single notification object
-              if (notificationsData.guestId || notificationsData.emailAddress || notificationsData.to) {
-                console.log('Processing as a single notification object');
-                processNotification(notificationsData);
-              } else {
-                // Try to process as a record object of guestId -> notifications
-                console.log('Processing as object with entries, keys:', Object.keys(notificationsData));
+            // Iterate through each campaign type
+            Object.entries(notificationsData).forEach(([campaignType, notifications]) => {
+              if (Array.isArray(notifications)) {
+                console.log(`Processing ${notifications.length} notifications for campaign type: ${campaignType}`);
                 
-                Object.entries(notificationsData).forEach(([key, value]) => {
-                  if (Array.isArray(value)) {
-                    // This could be a map of guestId -> notifications[]
-                    console.log(`Found array at key "${key}" with ${value.length} items`);
-                    value.forEach(processNotification);
-                  } else if (value && typeof value === 'object') {
-                    // This might be a single notification with the key as guestId
-                    console.log(`Found object at key "${key}", checking if it's a notification`);
-                    processNotification({
-                      ...(typeof value === 'object' ? value : {}),
-                      guestId: (value as any)?.guestId || key // Use the key as guestId if not in the object
-                    });
-                  }
+                // Process each notification in this campaign type group
+                notifications.forEach(notification => {
+                  // Ensure campaign type is set correctly from the dictionary key
+                  const notificationWithCampaignType = {
+                    ...notification,
+                    campaignType: notification.campaignType || campaignType
+                  };
+                  
+                  processNotification(notificationWithCampaignType);
                 });
+              } else {
+                console.warn(`Expected array for campaign type ${campaignType}, but got:`, typeof notifications);
               }
-            }
+            });
+          } else {
+            console.warn('Unexpected format for notifications data:', notificationsData);
           }
           
           // Sort notifications by timestamp (newest first) for each guest
@@ -1423,7 +1394,38 @@ function AdminPage() {
               : 'No notifications found'
           );
           
-          setNotificationHistory(groupedNotifications);
+          // Merge API notifications with the existing local notification history
+          // This ensures we don't lose any local notifications that haven't been synced to the backend
+          const mergedNotifications = { ...notificationHistory };
+          
+          // Add new notifications from the API
+          Object.entries(groupedNotifications).forEach(([guestId, notifications]) => {
+            if (!mergedNotifications[guestId]) {
+              mergedNotifications[guestId] = [];
+            }
+            
+            // Add only new notifications that don't exist in the local state
+            notifications.forEach(notification => {
+              const exists = mergedNotifications[guestId].some(
+                n => n.guestEmailLogId === notification.guestEmailLogId
+              );
+              
+              if (!exists) {
+                mergedNotifications[guestId].push(notification);
+              }
+            });
+            
+            // Sort by timestamp (newest first)
+            mergedNotifications[guestId].sort((a, b) => {
+              const dateA = new Date(a.timestamp);
+              const dateB = new Date(b.timestamp);
+              return dateB.getTime() - dateA.getTime();
+            });
+          });
+          
+          console.log('Merged API and local notification history:', mergedNotifications);
+          
+          setNotificationHistory(mergedNotifications);
         } catch (error) {
           console.error('Failed to fetch notification history:', error);
         } finally {
@@ -1549,25 +1551,26 @@ function AdminPage() {
           return 'Just now'; // Fallback for invalid dates
         }
         
-        // Check if date is today
+        // Always show both date and time for clarity
+        // Format: "May 8, 2:30 PM" or "May 8 '25, 2:30 PM" for different years
         const today = new Date();
-        const isToday = date.getDate() === today.getDate() &&
-                        date.getMonth() === today.getMonth() &&
-                        date.getFullYear() === today.getFullYear();
+        const isCurrentYear = date.getFullYear() === today.getFullYear();
         
-        if (isToday) {
-          // Format as time only if today
-          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } else {
-          // Format as date and time if not today
-          return date.toLocaleDateString([], { 
-            month: 'short', 
-            day: 'numeric' 
-          }) + ' ' + date.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        // Create date part
+        const datePart = date.toLocaleDateString([], { 
+          month: 'short', 
+          day: 'numeric',
+          year: isCurrentYear ? undefined : '2-digit'
+        });
+        
+        // Create time part
+        const timePart = date.toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit'
           });
-        }
+          
+          // Return date and time together
+          return `${datePart}, ${timePart}`;
       } catch (error) {
         console.error('Error formatting date:', error, 'Original value:', dateString);
         return 'Recent'; // Fallback error case
@@ -2037,12 +2040,11 @@ function AdminPage() {
     
     // Manually refresh notification history
     const handleRefreshHistory = () => {
-      // Don't use actual refresh if it's failing
-      // Instead, just show success message for sent notifications
-      // setRefreshTrigger(prev => prev + 1);
+      // Trigger a refresh of the notification history
+      setRefreshTrigger(prev => prev + 1);
       
-      // Show feedback that we received the notification request
-      alert('Notification sent successfully! The backend may still be processing it.');
+      // The useEffect will handle fetching the data and updating the loading state
+      console.log('Refreshing notification history...');
     };
     
     return (
@@ -2062,6 +2064,14 @@ function AdminPage() {
             </Button>
           </Box>
           <Divider sx={{ mb: 3 }} />
+          
+          {/* Loading state for the entire section */}
+          {loadingHistory && Object.keys(notificationHistory).length === 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+              <CircularProgress size={40} sx={{ mb: 2 }} />
+              <Typography variant="body1">Loading notification history...</Typography>
+            </Box>
+          )}
           
           {/* Campaign section */}
           <Box sx={{ mb: 4 }}>
@@ -2232,18 +2242,43 @@ function AdminPage() {
               {familiesWithVerifiedEmails.map((family) => (
                 <Grid item xs={12} key={family.invitationCode}>
                   {(() => {
-                    // Determine if all family members have declined
+                    // Check for each of the four statuses
+                    const hasConfirmedAttending = family.guests?.some(g => 
+                      g.rsvp?.wedding === RsvpEnum.Attending
+                    );
+                    
+                    const hasInterested = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+                      g.rsvp?.wedding !== RsvpEnum.Declined
+                    );
+                    
+                    const hasDeclined = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+                      g.rsvp?.wedding === RsvpEnum.Declined
+                    );
+                    
                     const allDeclined = family.guests?.every(g => 
                       g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
                       g.rsvp?.wedding === RsvpEnum.Declined
                     );
                     
-                    // Determine border color
-                    let borderColor = 'text.disabled';
-                    if (allDeclined) {
-                      borderColor = 'error.main';
-                    } else if (family.guests?.some(g => g.email?.verified)) {
-                      borderColor = 'success.main';
+                    // Determine styling based on status priority
+                    // Default to pending (yellow/orange)
+                    let borderColor = 'warning.main';
+                    let isConfirmed = false;
+                    let isInterested = false;
+                    let isDeclined = false;
+                    
+                    // Status priority: Attending > Interested > Declined > Pending
+                    if (hasConfirmedAttending) {
+                      borderColor = 'success.main'; // Bright green for confirmed
+                      isConfirmed = true;
+                    } else if (hasInterested) {
+                      borderColor = 'success.main'; // Same green, but will use outline style
+                      isInterested = true;
+                    } else if (allDeclined) {
+                      borderColor = 'error.main'; // Red for declined
+                      isDeclined = true;
                     }
                     
                     return (
@@ -2251,22 +2286,90 @@ function AdminPage() {
                         variant="outlined" 
                         sx={{ 
                           p: 2,
-                          borderLeft: '4px solid',
+                          borderLeft: '8px solid', // Wider border for emphasis
                           borderLeftColor: borderColor,
-                          opacity: allDeclined ? 0.6 : (family.guests?.some(g => g.email?.verified) ? 1 : 0.7),
-                          backgroundColor: allDeclined ? 'rgba(211, 47, 47, 0.05)' : 'inherit'
+                          opacity: 1, // Full opacity for all cards
+                          boxShadow: isDeclined 
+                            ? `inset 0 0 15px rgba(211, 47, 47, 0.1)` // Light red shadow for declined
+                            : `inset 0 0 15px ${theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                          backgroundColor: isConfirmed 
+                            ? theme.palette.mode === 'dark' 
+                              ? 'rgba(46, 125, 50, 0.2)'   // Darker green background in dark mode
+                              : 'rgba(46, 125, 50, 0.05)'  // Light green background in light mode
+                            : 'inherit', // Keep default for others
+                          position: 'relative',
+                          
+                          // Top bar for all cards
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '4px',
+                            backgroundColor: borderColor,
+                            opacity: 0.7
+                          },
+                          
+                          // Dashed border for "Interested" to create outline style
+                          ...(isInterested && {
+                            border: '2px dashed',
+                            borderColor: 'success.main',
+                            borderLeft: '8px solid',
+                            borderLeftColor: 'success.main',
+                          })
                         }}
                       >
-                        <Typography variant="subtitle1" gutterBottom>
-                          {family.unitName}
-                          <Typography 
-                            component="span" 
-                            variant="caption" 
-                            sx={{ ml: 1, color: 'text.secondary' }}
-                          >
-                            ({family.invitationCode})
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                          <Typography variant="subtitle1">
+                            {family.unitName}
+                            <Typography 
+                              component="span" 
+                              variant="caption" 
+                              sx={{ ml: 1, color: 'text.secondary' }}
+                            >
+                              ({family.invitationCode})
+                            </Typography>
                           </Typography>
-                        </Typography>
+                          
+                          {isConfirmed && (
+                            <Chip 
+                              size="small" 
+                              label="Confirmed" 
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem',
+                                fontWeight: 'bold' 
+                              }}
+                            />
+                          )}
+                          
+                          {isInterested && (
+                            <Chip 
+                              size="small" 
+                              label="Interested" 
+                              variant="outlined"
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem' 
+                              }}
+                            />
+                          )}
+                          
+                          {isDeclined && (
+                            <Chip 
+                              size="small" 
+                              label="Declined" 
+                              color="error"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem'
+                              }}
+                            />
+                          )}
+                        </Box>
                         
                         <Divider sx={{ my: 1 }} />
                         
@@ -2301,9 +2404,16 @@ function AdminPage() {
                                 {/* Last sent notification information */}
                                 <Box sx={{ mt: 1, mb: 2, display: 'flex', flexDirection: 'column' }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
-                                    {guest.guestId && notificationHistory[guest.guestId] ? 
-                                      `Last notifications sent (${notificationHistory[guest.guestId].length}):` : 
-                                      'No notification history found'}
+                                    {loadingHistory ? (
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircularProgress size={14} thickness={4} />
+                                        <span>Loading notification history...</span>
+                                      </Box>
+                                    ) : (
+                                      guest.guestId && notificationHistory[guest.guestId] ? 
+                                        `Last notifications sent (${notificationHistory[guest.guestId].length}):` : 
+                                        'No notification history found'
+                                    )}
                                   </Typography>
                                   
                                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -2453,62 +2563,7 @@ function AdminPage() {
                                     )}
                                   </Box>
                                 </Box>
-                                
-                                {/* Debug information - will help diagnose if notifications are being received properly */}
-                                {(guest.guestId && notificationHistory[guest.guestId] && notificationHistory[guest.guestId].length > 0) ? (
-                                  <Box sx={{ 
-                                    mt: 1, 
-                                    mb: 1,
-                                    p: 1,
-                                    borderRadius: 1,
-                                    backgroundColor: 'rgba(0,0,0,0.03)', 
-                                    fontSize: '0.7rem',
-                                    display: 'block' // Always show for debugging
-                                  }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                                      Debug: {notificationHistory[guest.guestId].length} notification(s)
-                                    </Typography>
-                                    <Box component="pre" sx={{ 
-                                      fontSize: '0.65rem', 
-                                      overflowX: 'auto',
-                                      m: 0,
-                                      p: 0.5
-                                    }}>
-                                      {notificationHistory[guest.guestId].slice(0, 1).map((notification, idx) => 
-                                        JSON.stringify({
-                                          idx,
-                                          guestId: notification.guestId,
-                                          type: notification.campaignType,
-                                          timestamp: notification.timestamp,
-                                          status: notification.deliveryStatus,
-                                          keys: Object.keys(notification)
-                                        }, null, 1)
-                                      )}
-                                    </Box>
-                                  </Box>
-                                ) : (
-                                  <Box sx={{ 
-                                    mt: 1, 
-                                    mb: 1,
-                                    p: 1,
-                                    borderRadius: 1,
-                                    backgroundColor: 'rgba(255,0,0,0.03)', 
-                                    fontSize: '0.7rem'
-                                  }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-                                      No notification history found for guest {guest.guestId || 'unknown'}
-                                    </Typography>
-                                    <Box sx={{ mt: 0.5 }}>
-                                      <Typography variant="caption" color="text.secondary">
-                                        Available guest IDs in notification history: {Object.keys(notificationHistory).length > 0 ? 
-                                          Object.keys(notificationHistory).slice(0, 3).join(', ') + 
-                                          (Object.keys(notificationHistory).length > 3 ? '...' : '')
-                                          : 'none'}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                )}
-                                
+                                                                
                                 <Box sx={{ mt: 'auto' }}>
                                   {/* Campaign buttons */}
                                   <Box sx={{ 

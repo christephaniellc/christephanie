@@ -167,13 +167,17 @@ namespace Wedding.Common.Helpers
             string name,
             string email,
             bool guestInterested,
+            bool guestConfirmed,
             string invitationCode,
             CancellationToken cancellationToken = default)
         {
             Console.WriteLine($"Sending notification email using Amazon SES. Name: {name}. Email: {email}. Code: {invitationCode}. Previous interest? {guestInterested}");
             
-            var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending. " 
-                                                        : ".";
+            var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending" 
+                                                        : "";
+            var alreadyConfirmedBlurb = guestConfirmed ? "Already logged back in to confirm? You're awesome, and can ignore this email. Thank you!"
+                                                : "";
+
             var htmlBody = $@"
             <html>
             <head>
@@ -194,7 +198,7 @@ namespace Wedding.Common.Helpers
                 <div class=""content"">
                     <p>Dear {name},</p>
                     <p>Our RSVP phase has arrived! As we finalize our headcounts, we'd appreciate if
-                        you could take a moment to log in to our site and <b>confirm your RSVP</b>{interestedBlurb}
+                        you could take a moment to log in to our site and <b>confirm your RSVP</b>{interestedBlurb}. {alreadyConfirmedBlurb}
                     </p>
                     <p>
                         <b>Hit refresh</b> to see our new site content:
@@ -207,13 +211,13 @@ namespace Wedding.Common.Helpers
 
                     <hr/>
 
-                    <h2>Saturday, July 5 - Wedding</h2>
+                    <h2>[Saturday, July 5] - Wedding</h2>
                     <p>
                         Please RSVP here <b>by May 19, 2025:</b><br/>
                         <a href=""https://christephanie.com?inviteCode={invitationCode}"">https://christephanie.com?inviteCode={invitationCode}</a>
                     </p>
                            
-                    <h2>Friday, July 4 - 4th of July Potluck BBQ</h2>             
+                    <h2>[Friday, July 4] - 4th of July Potluck BBQ</h2>             
                     <p>
                         We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
                         know if you will attend, and what you can bring!<br/>
@@ -240,7 +244,12 @@ namespace Wedding.Common.Helpers
                             </tr>
                             <tr>
                                 <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
-                                    <b>Your Invitation Code is:</b> <h3>{invitationCode}</h3>
+                                    Your Invitation Code is:
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style=""padding: 10px; padding-left: 20px; border-bottom: 1px solid #eee; text-align: left;"">
+                                    <h3>{invitationCode}</h3>
                                 </td>
                             </tr>
                         </table>

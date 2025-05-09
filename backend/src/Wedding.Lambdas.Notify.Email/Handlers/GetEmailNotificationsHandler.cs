@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ using Wedding.Lambdas.Notify.Email.Validation;
 namespace Wedding.Lambdas.Notify.Email.Handlers
 {
     public class GetEmailNotificationsHandler :
-        IAsyncQueryHandler<GetEmailNotificationsQuery, Dictionary<CampaignTypeEnum, GuestEmailLogDto>>
+        IAsyncQueryHandler<GetEmailNotificationsQuery, Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>>
     {
         private readonly ILogger<GetEmailNotificationsHandler> _logger;
         private readonly IDynamoDBProvider _dynamoDBProvider;
@@ -29,27 +30,21 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
             _mapper = mapper;
         }
 
-        public async Task<Dictionary<CampaignTypeEnum, GuestEmailLogDto>> GetAsync(GetEmailNotificationsQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>> GetAsync(GetEmailNotificationsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             query.Validate(nameof(query));
-            var results = new Dictionary<CampaignTypeEnum, GuestEmailLogDto>();
-
+            var results = new Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>();
 
             try
             {
                 foreach (var campaign in Enum.GetValues(typeof(CampaignTypeEnum)))
                 {
-                    _logger.LogInformation($"Getting emails of campaign type: {campaign}");
+                    var campaignEnum = (CampaignTypeEnum)campaign;
+                    var resultLogs = await _dynamoDBProvider.GetEmailLogsByCampaignTypeAsync(query.AuthContext.Audience, campaignEnum);
 
-                    var resultLogs = await
-                        _dynamoDBProvider.GetEmailLogsByCampaignTypeAsync(query.AuthContext.Audience, (CampaignTypeEnum) campaign);
-
-                    _logger.LogInformation($"Found {resultLogs.Count} logs");
-
-                    foreach (var result in resultLogs)
+                    if (resultLogs.Any())
                     {
-                        _logger.LogInformation($"Log: {JsonSerializer.Serialize(result)}");
-                        results.Add((CampaignTypeEnum)campaign, result);
+                        results[campaignEnum] = resultLogs;
                     }
                 }
             }
