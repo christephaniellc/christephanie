@@ -101,7 +101,7 @@ namespace Wedding.Lambdas.UnitTests.Notifications
             {
                 var campaignEnum = (CampaignTypeEnum)campaign;
                 result.Should().ContainKey(campaignEnum);
-                result[campaignEnum].CampaignType.Should().Be(campaignEnum);
+                result[campaignEnum].FirstOrDefault().CampaignType.Should().Be(campaignEnum);
             }
         }
 

@@ -87,6 +87,8 @@ namespace Wedding.Lambdas.Notify.Email.Handlers
                                     guest.Email.Value,
                                     (guest.Rsvp != null && guest.Rsvp.InvitationResponse ==
                                         InvitationResponseEnum.Interested),
+                                    (guest.Rsvp != null && guest.Rsvp.Wedding ==
+                                        RsvpEnum.Attending),
                                     guest.InvitationCode,
                                     cancellationToken);
                                 break;
