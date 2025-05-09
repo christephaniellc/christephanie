@@ -1270,38 +1270,26 @@ function AdminPage() {
           setLoadingHistory(true);
           console.log('Fetching email notification history...');
           
-          // Since the notification history endpoint seems to be having issues,
-          // let's just use our locally stored notification records instead of making API calls
+          // Attempt to fetch notification history from the API
+          console.log('Attempting to fetch email notification history from API');
           
-          // NOTE: In a production app, we would fix the backend endpoint
-          // For now, we'll just use the notifications we've added to local state when sending emails
-          
-          console.log('Using local notification history only');
-          
-          /* Commenting out the actual API calls since they seem to be failing with 401/403 errors
-          let notificationsData;
+          // Initialize with a default empty object in case API call fails
+          let notificationsData: Record<string, GuestEmailLogDto[]> = {}; // Now expected as Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
           
           // Try to fetch from API
           try {
-            notificationsData = await apiContext.getEmailNotifications();
-            console.log('Raw notification data from API:', JSON.stringify(notificationsData, null, 2));
+            const apiResponse = await apiContext.getEmailNotifications();
+            console.log('Raw notification data from API:', JSON.stringify(apiResponse, null, 2));
+            
+            // The backend now returns Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
+            // So we need to handle this structure, where keys are campaign types and values are lists of notifications
+            if (apiResponse && typeof apiResponse === 'object') {
+              notificationsData = apiResponse;
+            }
           } catch (error) {
             console.warn('Could not fetch notification history, using local data only:', error);
+            // Keep using the initialized empty object
           }
-          */
-          
-          // Initialize notificationsData as empty object with proper shape since API call is commented out
-          const notificationsData: { [key: string]: any[] } & { 
-            guestId?: string; 
-            emailAddress?: string; 
-            to?: string;
-            items?: any[];
-            notifications?: any[];
-            logs?: any[];
-            emailLogs?: any[];
-            results?: any[];
-            data?: any[];
-          } = {};
           
           // No need to process API data since we're using local state
           
@@ -1309,7 +1297,7 @@ function AdminPage() {
           const groupedNotifications: Record<string, GuestEmailLogDto[]> = {};
           
           console.log('Type of notificationsData:', typeof notificationsData);
-          console.log('Is array?', Array.isArray(notificationsData));
+          console.log('Campaign types in response:', Object.keys(notificationsData));
           
           const processNotification = (notification: any) => {
             // Skip if notification is not an object
@@ -1363,50 +1351,32 @@ function AdminPage() {
             });
           };
           
-          if (Array.isArray(notificationsData)) {
-            // Process array of notification records
-            console.log('Processing as array with', notificationsData.length, 'items');
-            notificationsData.forEach(processNotification);
-          } else if (notificationsData && typeof notificationsData === 'object') {
-            // First check for common nested structures
-            const possibleArrayProps = ['items', 'notifications', 'logs', 'emailLogs', 'results', 'data'];
+          // New response format is Dictionary<CampaignTypeEnum, List<GuestEmailLogDto>>
+          // Process each campaign type and its notifications
+          if (notificationsData && typeof notificationsData === 'object') {
+            console.log('Processing notifications grouped by campaign type');
             
-            // Check if any of these properties exist and contain arrays
-            let foundArrayProp = false;
-            for (const prop of possibleArrayProps) {
-              if (notificationsData[prop] && Array.isArray(notificationsData[prop])) {
-                console.log(`Processing as object with ${prop} array containing`, notificationsData[prop].length, 'items');
-                notificationsData[prop].forEach(processNotification);
-                foundArrayProp = true;
-                break;
-              }
-            }
-            
-            if (!foundArrayProp) {
-              // Check if this is a single notification object
-              if (notificationsData.guestId || notificationsData.emailAddress || notificationsData.to) {
-                console.log('Processing as a single notification object');
-                processNotification(notificationsData);
-              } else {
-                // Try to process as a record object of guestId -> notifications
-                console.log('Processing as object with entries, keys:', Object.keys(notificationsData));
+            // Iterate through each campaign type
+            Object.entries(notificationsData).forEach(([campaignType, notifications]) => {
+              if (Array.isArray(notifications)) {
+                console.log(`Processing ${notifications.length} notifications for campaign type: ${campaignType}`);
                 
-                Object.entries(notificationsData).forEach(([key, value]) => {
-                  if (Array.isArray(value)) {
-                    // This could be a map of guestId -> notifications[]
-                    console.log(`Found array at key "${key}" with ${value.length} items`);
-                    value.forEach(processNotification);
-                  } else if (value && typeof value === 'object') {
-                    // This might be a single notification with the key as guestId
-                    console.log(`Found object at key "${key}", checking if it's a notification`);
-                    processNotification({
-                      ...(typeof value === 'object' ? value : {}),
-                      guestId: (value as any)?.guestId || key // Use the key as guestId if not in the object
-                    });
-                  }
+                // Process each notification in this campaign type group
+                notifications.forEach(notification => {
+                  // Ensure campaign type is set correctly from the dictionary key
+                  const notificationWithCampaignType = {
+                    ...notification,
+                    campaignType: notification.campaignType || campaignType
+                  };
+                  
+                  processNotification(notificationWithCampaignType);
                 });
+              } else {
+                console.warn(`Expected array for campaign type ${campaignType}, but got:`, typeof notifications);
               }
-            }
+            });
+          } else {
+            console.warn('Unexpected format for notifications data:', notificationsData);
           }
           
           // Sort notifications by timestamp (newest first) for each guest
@@ -1423,7 +1393,38 @@ function AdminPage() {
               : 'No notifications found'
           );
           
-          setNotificationHistory(groupedNotifications);
+          // Merge API notifications with the existing local notification history
+          // This ensures we don't lose any local notifications that haven't been synced to the backend
+          const mergedNotifications = { ...notificationHistory };
+          
+          // Add new notifications from the API
+          Object.entries(groupedNotifications).forEach(([guestId, notifications]) => {
+            if (!mergedNotifications[guestId]) {
+              mergedNotifications[guestId] = [];
+            }
+            
+            // Add only new notifications that don't exist in the local state
+            notifications.forEach(notification => {
+              const exists = mergedNotifications[guestId].some(
+                n => n.guestEmailLogId === notification.guestEmailLogId
+              );
+              
+              if (!exists) {
+                mergedNotifications[guestId].push(notification);
+              }
+            });
+            
+            // Sort by timestamp (newest first)
+            mergedNotifications[guestId].sort((a, b) => {
+              const dateA = new Date(a.timestamp);
+              const dateB = new Date(b.timestamp);
+              return dateB.getTime() - dateA.getTime();
+            });
+          });
+          
+          console.log('Merged API and local notification history:', mergedNotifications);
+          
+          setNotificationHistory(mergedNotifications);
         } catch (error) {
           console.error('Failed to fetch notification history:', error);
         } finally {
