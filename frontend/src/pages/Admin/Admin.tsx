@@ -1290,6 +1290,19 @@ function AdminPage() {
           }
           */
           
+          // Initialize notificationsData as empty object with proper shape since API call is commented out
+          const notificationsData: { [key: string]: any[] } & { 
+            guestId?: string; 
+            emailAddress?: string; 
+            to?: string;
+            items?: any[];
+            notifications?: any[];
+            logs?: any[];
+            emailLogs?: any[];
+            results?: any[];
+            data?: any[];
+          } = {};
+          
           // No need to process API data since we're using local state
           
           // Group notifications by guestId for easier lookup
@@ -1387,8 +1400,8 @@ function AdminPage() {
                     // This might be a single notification with the key as guestId
                     console.log(`Found object at key "${key}", checking if it's a notification`);
                     processNotification({
-                      ...value,
-                      guestId: (value as any).guestId || key // Use the key as guestId if not in the object
+                      ...(typeof value === 'object' ? value : {}),
+                      guestId: (value as any)?.guestId || key // Use the key as guestId if not in the object
                     });
                   }
                 });

@@ -234,13 +234,13 @@ namespace Wedding.Common.Helpers
                                 </td>
                             </tr>
                             <tr>       
-                                <td style=""padding: 10px; padding-left: 20px; border-bottom: 1px solid #eee; text-align: left;""> 
+                                <td style=""padding: 10px; padding-left: 30px; border-bottom: 1px solid #eee; text-align: left;""> 
                                     and enter your first name and your family's <b>Invitation Code</b>. 
                                 </td>
                             </tr>
                             <tr>
                                 <td style=""padding: 10px; border-bottom: 1px solid #eee; text-align: left;"">
-                                    <b>Your invitation code is:</b> {invitationCode}
+                                    <b>Your Invitation Code is:</b> <h3>{invitationCode}</h3>
                                 </td>
                             </tr>
                         </table>
