@@ -175,7 +175,7 @@ namespace Wedding.Common.Helpers
             
             var interestedBlurb = guestInterested ? ", even though you may have already expressed interest in attending" 
                                                         : "";
-            var alreadyConfirmedBlurb = guestConfirmed ? "Already confirmed? You're awesome and can ignore this email. Thank you!"
+            var alreadyConfirmedBlurb = guestConfirmed ? "Already logged back in to confirm? You're awesome, and can ignore this email. Thank you!"
                                                 : "";
 
             var htmlBody = $@"
