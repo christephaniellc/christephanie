@@ -506,24 +506,10 @@ namespace Wedding.Common.Helpers.AWS
         {
             entity.PartitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(entity.GuestId);
             entity.SortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.EmailType.Value);
-            entity.CampaignTypeIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.CampaignId);
+            entity.CampaignTypeIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.EmailType.Value);
             entity.CampaignTypeIndexSortKey = DynamoKeys.GetGuestSortKey(entity.GuestId);
 
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
         }
-
-        // public async Task UpdateNotificationAsync(string audience, NotificationDataEntity entity, string status, CancellationToken cancellationToken = default)
-        // {
-        //     entity.Status = status;
-        //
-        //     await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
-        // }
-
-        // public async Task DeleteNotificationAsync(string audience, string guestId, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default)
-        // {
-        //     var partitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(guestId);
-        //     var sortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.CampaignType.Value);
-        //     await _repository.DeleteAsync<WeddingEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
-        // }
     }
 }
