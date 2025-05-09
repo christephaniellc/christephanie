@@ -35,7 +35,8 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Chip
 } from '@mui/material';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
@@ -2241,18 +2242,43 @@ function AdminPage() {
               {familiesWithVerifiedEmails.map((family) => (
                 <Grid item xs={12} key={family.invitationCode}>
                   {(() => {
-                    // Determine if all family members have declined
+                    // Check for each of the four statuses
+                    const hasConfirmedAttending = family.guests?.some(g => 
+                      g.rsvp?.wedding === RsvpEnum.Attending
+                    );
+                    
+                    const hasInterested = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+                      g.rsvp?.wedding !== RsvpEnum.Declined
+                    );
+                    
+                    const hasDeclined = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+                      g.rsvp?.wedding === RsvpEnum.Declined
+                    );
+                    
                     const allDeclined = family.guests?.every(g => 
                       g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
                       g.rsvp?.wedding === RsvpEnum.Declined
                     );
                     
-                    // Determine border color
-                    let borderColor = 'text.disabled';
-                    if (allDeclined) {
-                      borderColor = 'error.main';
-                    } else if (family.guests?.some(g => g.email?.verified)) {
-                      borderColor = 'success.main';
+                    // Determine styling based on status priority
+                    // Default to pending (yellow/orange)
+                    let borderColor = 'warning.main';
+                    let isConfirmed = false;
+                    let isInterested = false;
+                    let isDeclined = false;
+                    
+                    // Status priority: Attending > Interested > Declined > Pending
+                    if (hasConfirmedAttending) {
+                      borderColor = 'success.main'; // Bright green for confirmed
+                      isConfirmed = true;
+                    } else if (hasInterested) {
+                      borderColor = 'success.main'; // Same green, but will use outline style
+                      isInterested = true;
+                    } else if (allDeclined) {
+                      borderColor = 'error.main'; // Red for declined
+                      isDeclined = true;
                     }
                     
                     return (
@@ -2260,22 +2286,90 @@ function AdminPage() {
                         variant="outlined" 
                         sx={{ 
                           p: 2,
-                          borderLeft: '4px solid',
+                          borderLeft: '8px solid', // Wider border for emphasis
                           borderLeftColor: borderColor,
-                          opacity: allDeclined ? 0.6 : (family.guests?.some(g => g.email?.verified) ? 1 : 0.7),
-                          backgroundColor: allDeclined ? 'rgba(211, 47, 47, 0.05)' : 'inherit'
+                          opacity: 1, // Full opacity for all cards
+                          boxShadow: isDeclined 
+                            ? `inset 0 0 15px rgba(211, 47, 47, 0.1)` // Light red shadow for declined
+                            : `inset 0 0 15px ${theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                          backgroundColor: isConfirmed 
+                            ? theme.palette.mode === 'dark' 
+                              ? 'rgba(46, 125, 50, 0.2)'   // Darker green background in dark mode
+                              : 'rgba(46, 125, 50, 0.05)'  // Light green background in light mode
+                            : 'inherit', // Keep default for others
+                          position: 'relative',
+                          
+                          // Top bar for all cards
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '4px',
+                            backgroundColor: borderColor,
+                            opacity: 0.7
+                          },
+                          
+                          // Dashed border for "Interested" to create outline style
+                          ...(isInterested && {
+                            border: '2px dashed',
+                            borderColor: 'success.main',
+                            borderLeft: '8px solid',
+                            borderLeftColor: 'success.main',
+                          })
                         }}
                       >
-                        <Typography variant="subtitle1" gutterBottom>
-                          {family.unitName}
-                          <Typography 
-                            component="span" 
-                            variant="caption" 
-                            sx={{ ml: 1, color: 'text.secondary' }}
-                          >
-                            ({family.invitationCode})
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                          <Typography variant="subtitle1">
+                            {family.unitName}
+                            <Typography 
+                              component="span" 
+                              variant="caption" 
+                              sx={{ ml: 1, color: 'text.secondary' }}
+                            >
+                              ({family.invitationCode})
+                            </Typography>
                           </Typography>
-                        </Typography>
+                          
+                          {isConfirmed && (
+                            <Chip 
+                              size="small" 
+                              label="Confirmed" 
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem',
+                                fontWeight: 'bold' 
+                              }}
+                            />
+                          )}
+                          
+                          {isInterested && (
+                            <Chip 
+                              size="small" 
+                              label="Interested" 
+                              variant="outlined"
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem' 
+                              }}
+                            />
+                          )}
+                          
+                          {isDeclined && (
+                            <Chip 
+                              size="small" 
+                              label="Declined" 
+                              color="error"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem'
+                              }}
+                            />
+                          )}
+                        </Box>
                         
                         <Divider sx={{ my: 1 }} />
                         
