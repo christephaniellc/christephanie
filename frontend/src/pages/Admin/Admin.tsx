@@ -35,7 +35,8 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Chip
 } from '@mui/material';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
@@ -1550,25 +1551,26 @@ function AdminPage() {
           return 'Just now'; // Fallback for invalid dates
         }
         
-        // Check if date is today
+        // Always show both date and time for clarity
+        // Format: "May 8, 2:30 PM" or "May 8 '25, 2:30 PM" for different years
         const today = new Date();
-        const isToday = date.getDate() === today.getDate() &&
-                        date.getMonth() === today.getMonth() &&
-                        date.getFullYear() === today.getFullYear();
+        const isCurrentYear = date.getFullYear() === today.getFullYear();
         
-        if (isToday) {
-          // Format as time only if today
-          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } else {
-          // Format as date and time if not today
-          return date.toLocaleDateString([], { 
-            month: 'short', 
-            day: 'numeric' 
-          }) + ' ' + date.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        // Create date part
+        const datePart = date.toLocaleDateString([], { 
+          month: 'short', 
+          day: 'numeric',
+          year: isCurrentYear ? undefined : '2-digit'
+        });
+        
+        // Create time part
+        const timePart = date.toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit'
           });
-        }
+          
+          // Return date and time together
+          return `${datePart}, ${timePart}`;
       } catch (error) {
         console.error('Error formatting date:', error, 'Original value:', dateString);
         return 'Recent'; // Fallback error case
@@ -2038,12 +2040,11 @@ function AdminPage() {
     
     // Manually refresh notification history
     const handleRefreshHistory = () => {
-      // Don't use actual refresh if it's failing
-      // Instead, just show success message for sent notifications
-      // setRefreshTrigger(prev => prev + 1);
+      // Trigger a refresh of the notification history
+      setRefreshTrigger(prev => prev + 1);
       
-      // Show feedback that we received the notification request
-      alert('Notification sent successfully! The backend may still be processing it.');
+      // The useEffect will handle fetching the data and updating the loading state
+      console.log('Refreshing notification history...');
     };
     
     return (
@@ -2063,6 +2064,14 @@ function AdminPage() {
             </Button>
           </Box>
           <Divider sx={{ mb: 3 }} />
+          
+          {/* Loading state for the entire section */}
+          {loadingHistory && Object.keys(notificationHistory).length === 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+              <CircularProgress size={40} sx={{ mb: 2 }} />
+              <Typography variant="body1">Loading notification history...</Typography>
+            </Box>
+          )}
           
           {/* Campaign section */}
           <Box sx={{ mb: 4 }}>
@@ -2233,18 +2242,43 @@ function AdminPage() {
               {familiesWithVerifiedEmails.map((family) => (
                 <Grid item xs={12} key={family.invitationCode}>
                   {(() => {
-                    // Determine if all family members have declined
+                    // Check for each of the four statuses
+                    const hasConfirmedAttending = family.guests?.some(g => 
+                      g.rsvp?.wedding === RsvpEnum.Attending
+                    );
+                    
+                    const hasInterested = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+                      g.rsvp?.wedding !== RsvpEnum.Declined
+                    );
+                    
+                    const hasDeclined = family.guests?.some(g => 
+                      g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
+                      g.rsvp?.wedding === RsvpEnum.Declined
+                    );
+                    
                     const allDeclined = family.guests?.every(g => 
                       g.rsvp?.invitationResponse === InvitationResponseEnum.Declined || 
                       g.rsvp?.wedding === RsvpEnum.Declined
                     );
                     
-                    // Determine border color
-                    let borderColor = 'text.disabled';
-                    if (allDeclined) {
-                      borderColor = 'error.main';
-                    } else if (family.guests?.some(g => g.email?.verified)) {
-                      borderColor = 'success.main';
+                    // Determine styling based on status priority
+                    // Default to pending (yellow/orange)
+                    let borderColor = 'warning.main';
+                    let isConfirmed = false;
+                    let isInterested = false;
+                    let isDeclined = false;
+                    
+                    // Status priority: Attending > Interested > Declined > Pending
+                    if (hasConfirmedAttending) {
+                      borderColor = 'success.main'; // Bright green for confirmed
+                      isConfirmed = true;
+                    } else if (hasInterested) {
+                      borderColor = 'success.main'; // Same green, but will use outline style
+                      isInterested = true;
+                    } else if (allDeclined) {
+                      borderColor = 'error.main'; // Red for declined
+                      isDeclined = true;
                     }
                     
                     return (
@@ -2252,22 +2286,90 @@ function AdminPage() {
                         variant="outlined" 
                         sx={{ 
                           p: 2,
-                          borderLeft: '4px solid',
+                          borderLeft: '8px solid', // Wider border for emphasis
                           borderLeftColor: borderColor,
-                          opacity: allDeclined ? 0.6 : (family.guests?.some(g => g.email?.verified) ? 1 : 0.7),
-                          backgroundColor: allDeclined ? 'rgba(211, 47, 47, 0.05)' : 'inherit'
+                          opacity: 1, // Full opacity for all cards
+                          boxShadow: isDeclined 
+                            ? `inset 0 0 15px rgba(211, 47, 47, 0.1)` // Light red shadow for declined
+                            : `inset 0 0 15px ${theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                          backgroundColor: isConfirmed 
+                            ? theme.palette.mode === 'dark' 
+                              ? 'rgba(46, 125, 50, 0.2)'   // Darker green background in dark mode
+                              : 'rgba(46, 125, 50, 0.05)'  // Light green background in light mode
+                            : 'inherit', // Keep default for others
+                          position: 'relative',
+                          
+                          // Top bar for all cards
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '4px',
+                            backgroundColor: borderColor,
+                            opacity: 0.7
+                          },
+                          
+                          // Dashed border for "Interested" to create outline style
+                          ...(isInterested && {
+                            border: '2px dashed',
+                            borderColor: 'success.main',
+                            borderLeft: '8px solid',
+                            borderLeftColor: 'success.main',
+                          })
                         }}
                       >
-                        <Typography variant="subtitle1" gutterBottom>
-                          {family.unitName}
-                          <Typography 
-                            component="span" 
-                            variant="caption" 
-                            sx={{ ml: 1, color: 'text.secondary' }}
-                          >
-                            ({family.invitationCode})
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                          <Typography variant="subtitle1">
+                            {family.unitName}
+                            <Typography 
+                              component="span" 
+                              variant="caption" 
+                              sx={{ ml: 1, color: 'text.secondary' }}
+                            >
+                              ({family.invitationCode})
+                            </Typography>
                           </Typography>
-                        </Typography>
+                          
+                          {isConfirmed && (
+                            <Chip 
+                              size="small" 
+                              label="Confirmed" 
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem',
+                                fontWeight: 'bold' 
+                              }}
+                            />
+                          )}
+                          
+                          {isInterested && (
+                            <Chip 
+                              size="small" 
+                              label="Interested" 
+                              variant="outlined"
+                              color="success"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem' 
+                              }}
+                            />
+                          )}
+                          
+                          {isDeclined && (
+                            <Chip 
+                              size="small" 
+                              label="Declined" 
+                              color="error"
+                              sx={{ 
+                                height: '20px', 
+                                fontSize: '0.7rem'
+                              }}
+                            />
+                          )}
+                        </Box>
                         
                         <Divider sx={{ my: 1 }} />
                         
@@ -2302,9 +2404,16 @@ function AdminPage() {
                                 {/* Last sent notification information */}
                                 <Box sx={{ mt: 1, mb: 2, display: 'flex', flexDirection: 'column' }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
-                                    {guest.guestId && notificationHistory[guest.guestId] ? 
-                                      `Last notifications sent (${notificationHistory[guest.guestId].length}):` : 
-                                      'No notification history found'}
+                                    {loadingHistory ? (
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircularProgress size={14} thickness={4} />
+                                        <span>Loading notification history...</span>
+                                      </Box>
+                                    ) : (
+                                      guest.guestId && notificationHistory[guest.guestId] ? 
+                                        `Last notifications sent (${notificationHistory[guest.guestId].length}):` : 
+                                        'No notification history found'
+                                    )}
                                   </Typography>
                                   
                                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -2454,62 +2563,7 @@ function AdminPage() {
                                     )}
                                   </Box>
                                 </Box>
-                                
-                                {/* Debug information - will help diagnose if notifications are being received properly */}
-                                {(guest.guestId && notificationHistory[guest.guestId] && notificationHistory[guest.guestId].length > 0) ? (
-                                  <Box sx={{ 
-                                    mt: 1, 
-                                    mb: 1,
-                                    p: 1,
-                                    borderRadius: 1,
-                                    backgroundColor: 'rgba(0,0,0,0.03)', 
-                                    fontSize: '0.7rem',
-                                    display: 'block' // Always show for debugging
-                                  }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                                      Debug: {notificationHistory[guest.guestId].length} notification(s)
-                                    </Typography>
-                                    <Box component="pre" sx={{ 
-                                      fontSize: '0.65rem', 
-                                      overflowX: 'auto',
-                                      m: 0,
-                                      p: 0.5
-                                    }}>
-                                      {notificationHistory[guest.guestId].slice(0, 1).map((notification, idx) => 
-                                        JSON.stringify({
-                                          idx,
-                                          guestId: notification.guestId,
-                                          type: notification.campaignType,
-                                          timestamp: notification.timestamp,
-                                          status: notification.deliveryStatus,
-                                          keys: Object.keys(notification)
-                                        }, null, 1)
-                                      )}
-                                    </Box>
-                                  </Box>
-                                ) : (
-                                  <Box sx={{ 
-                                    mt: 1, 
-                                    mb: 1,
-                                    p: 1,
-                                    borderRadius: 1,
-                                    backgroundColor: 'rgba(255,0,0,0.03)', 
-                                    fontSize: '0.7rem'
-                                  }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-                                      No notification history found for guest {guest.guestId || 'unknown'}
-                                    </Typography>
-                                    <Box sx={{ mt: 0.5 }}>
-                                      <Typography variant="caption" color="text.secondary">
-                                        Available guest IDs in notification history: {Object.keys(notificationHistory).length > 0 ? 
-                                          Object.keys(notificationHistory).slice(0, 3).join(', ') + 
-                                          (Object.keys(notificationHistory).length > 3 ? '...' : '')
-                                          : 'none'}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                )}
-                                
+                                                                
                                 <Box sx={{ mt: 'auto' }}>
                                   {/* Campaign buttons */}
                                   <Box sx={{ 
