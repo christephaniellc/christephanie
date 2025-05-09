@@ -118,15 +118,9 @@ const SummaryView: React.FC = () => {
           // Return a summary of guest attendance
         if (!family.guests || family.guests.length === 0) return "No attendance information";
         
-        const fourthAttendingCount = isRsvpFlow 
-          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Attending).length 
-          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Interested').length;
-        const fourthDecliningCount = isRsvpFlow 
-          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Declined).length
-          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Declined').length;
-          const fourthPendingCount = isRsvpFlow 
-          ? family.guests.filter(g => g.rsvp?.wedding === RsvpEnum.Pending || !g.rsvp?.wedding).length
-          : family.guests.filter(g => g.rsvp?.invitationResponse === 'Pending' || !g.rsvp?.invitationResponse).length;
+        const fourthAttendingCount = family.guests.filter(g => g.rsvp?.fourthOfJuly === RsvpEnum.Attending).length;
+        const fourthDecliningCount = family.guests.filter(g => g.rsvp?.fourthOfJuly === RsvpEnum.Declined).length;
+        const fourthPendingCount = family.guests.filter(g => g.rsvp?.fourthOfJuly === RsvpEnum.Pending || !g.rsvp?.fourthOfJuly).length;
         //console.log(`${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`)
         return `${fourthAttendingCount} attending, ${fourthDecliningCount} declining, ${fourthPendingCount} pending`;
       

@@ -396,6 +396,62 @@ namespace Wedding.Common.Helpers.AWS
         }
         #endregion
 
+        #region Notifications
+        public async Task<List<GuestEmailLogDto>> GetEmailLogsByGuestIdAsync(string audience, string guestId, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+
+            var results = await _repository.QueryAsync<NotificationDataEntity>(partitionKey, config)
+                .GetRemainingAsync(cancellationToken);
+
+            return results.Select(e => _mapper.Map<GuestEmailLogDto>(e)).ToList();
+        }
+
+        public async Task<List<GuestEmailLogDto>> GetEmailLogsByCampaignTypeAsync(
+            string audience,
+            CampaignTypeEnum campaignType,
+            CancellationToken cancellationToken = default)
+        {
+            var campaignTypeValue = DynamoKeys.NotificationKeys.GetCampaignType(campaignType); 
+            _logger.LogInformation("Querying GSI CampaignTypeIndex with partition key: {Key}", campaignTypeValue);
+
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+            config.IndexName = "CampaignTypeIndex";
+
+            var query = new QueryOperationConfig
+            {
+                IndexName = "CampaignTypeIndex",
+                KeyExpression = new Expression
+                {
+                    ExpressionStatement = "CampaignTypeIndexPartitionKey = :v_campaignType",
+                    ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
+                    {
+                        { ":v_campaignType", campaignTypeValue }
+                    }
+                }
+            };
+
+            var results = await _repository
+                .FromQueryAsync<NotificationDataEntity>(query, config)
+                .GetRemainingAsync(cancellationToken);
+
+            return results
+                .Select(e => _mapper.Map<GuestEmailLogDto>(e))
+                .ToList();
+        }
+
+        public async Task<GuestEmailLogDto?> GetEmailLogByGuestAndTimestampAsync(string audience, string guestId, string timestamp, CampaignTypeEnum campaignType, CancellationToken cancellationToken = default)
+        {
+            var partitionKey = NotificationKeys.GetPartitionKey(guestId);
+            var sortKey = NotificationKeys.GetSortKey(timestamp, campaignType);
+            var config = GetTableConfig(audience, DatabaseTableEnum.NotificationTracking);
+
+            var entity = await _repository.LoadAsync<NotificationDataEntity>(partitionKey, sortKey, config, cancellationToken);
+            return entity != null ? _mapper.Map<GuestEmailLogDto>(entity) : null;
+        }
+        #endregion
+
         public async Task SaveAsync(string audience, WeddingEntity entity, CancellationToken cancellationToken = default)
         {
             await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.GuestData), cancellationToken);
@@ -443,6 +499,17 @@ namespace Wedding.Common.Helpers.AWS
         {
             var partitionKey = DynamoKeys.GetPartitionKey(paymentId);
             await _repository.DeleteAsync<WeddingEntity>(partitionKey, GetTableConfig(audience, DatabaseTableEnum.PaymentData), cancellationToken);
+        }
+
+
+        public async Task SaveNotificationAsync(string audience, NotificationDataEntity entity, CancellationToken cancellationToken = default)
+        {
+            entity.PartitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(entity.GuestId);
+            entity.SortKey = DynamoKeys.NotificationKeys.GetSortKey(entity.Timestamp, entity.EmailType.Value);
+            entity.CampaignTypeIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignIdGSI(entity.EmailType.Value);
+            entity.CampaignTypeIndexSortKey = DynamoKeys.GetGuestSortKey(entity.GuestId);
+
+            await _repository.SaveAsync(entity, GetTableConfig(audience, DatabaseTableEnum.NotificationTracking), cancellationToken);
         }
     }
 }

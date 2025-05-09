@@ -234,6 +234,40 @@ export default class Api {
   deleteInvitationDesign(designId: string): Promise<void> {
     return this.delete(`/admin/configuration/invitation?designId=${encodeURIComponent(designId)}`);
   }
+  
+  async sendEmailNotification(campaignType: string = 'RsvpNotify', guestId?: string): Promise<any> {
+    try {
+      console.log(`Sending ${campaignType} notification for guestId:`, guestId || 'ALL');
+      let queryParams = '';
+      
+      // Build query params
+      if (guestId || campaignType) {
+        const params = [];
+        if (guestId) params.push(`guestId=${encodeURIComponent(guestId)}`);
+        if (campaignType) params.push(`campaignType=${encodeURIComponent(campaignType)}`);
+        queryParams = `?${params.join('&')}`;
+      }
+      
+      return await this.post(`/notify/email${queryParams}`, {});
+    } catch (error) {
+      console.error(`Error in sendEmailNotification (${campaignType}):`, error);
+      throw error;
+    }
+  }
+  
+  async sendRsvpNotification(guestId?: string): Promise<any> {
+    return this.sendEmailNotification('RsvpNotify', guestId);
+  }
+  
+  async getEmailNotifications(): Promise<any> {
+    try {
+      console.log('Fetching email notification history');
+      return await this.get('/notify/email');
+    } catch (error) {
+      console.error('Error in getEmailNotifications:', error);
+      throw error;
+    }
+  }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     switch (response.status) {

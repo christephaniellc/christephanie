@@ -66,6 +66,9 @@ interface ApiContextProps {
   adminGetAllFamilies: () => Promise<FamilyUnitDto[]>;
   updateClientInfo: () => Promise<void>;
   clearTokenCache: () => boolean; // Function to manually clear token cache
+  sendRsvpNotification: (guestId?: string) => Promise<any>; // Legacy function to send RSVP notifications
+  sendEmailNotification: (emailType?: string, guestId?: string) => Promise<any>; // Function to send email notifications by type
+  getEmailNotifications: () => Promise<any>; // Function to get email notification history
   apiInstance?: Api; // Expose the API instance for direct access
 }
 
@@ -430,6 +433,36 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     return false;
   };
 
+  // Function to send email notifications by type
+  const sendEmailNotification = async (campaignType?: string, guestId?: string): Promise<any> => {
+    try {
+      return await apiRef.current.sendEmailNotification(campaignType, guestId);
+    } catch (error) {
+      console.error(`Failed to send ${campaignType} notification:`, error);
+      throw error;
+    }
+  };
+  
+  // Function to get email notification history
+  const getEmailNotifications = async (): Promise<any> => {
+    try {
+      return await apiRef.current.getEmailNotifications();
+    } catch (error) {
+      console.error('Failed to get email notifications:', error);
+      throw error;
+    }
+  };
+  
+  // Legacy function to send RSVP notifications
+  const sendRsvpNotification = async (guestId?: string): Promise<any> => {
+    try {
+      return await sendEmailNotification('RsvpNotify', guestId);
+    } catch (error) {
+      console.error('Failed to send RSVP notification:', error);
+      throw error;
+    }
+  };
+
   return (
     <ApiContext.Provider
       value={{
@@ -446,6 +479,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         adminGetAllFamilies,
         updateClientInfo,
         clearTokenCache, // Add the clearTokenCache function
+        sendRsvpNotification, // Legacy function for backward compatibility
+        sendEmailNotification, // Add the new email notification function
+        getEmailNotifications, // Add function to get email notification history
         apiInstance: apiRef.current, // Expose the API instance
       }}
     >

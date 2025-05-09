@@ -72,6 +72,10 @@ namespace Wedding.Common.Multitenancy
                     {
                         databaseTable = $"christephanie-wedding-payments";
                     }
+                    else if (table == DatabaseTableEnum.NotificationTracking)
+                    {
+                        databaseTable = $"christephanie-wedding-sent-notification-tracking";
+                    }
                     else
                     {
                         databaseTable = $"christephanie-wedding-guests-prod";
@@ -96,6 +100,10 @@ namespace Wedding.Common.Multitenancy
                     else if (table == DatabaseTableEnum.PaymentData)
                     {
                         databaseTable = $"christephanie-wedding-payments";
+                    }
+                    else if (table == DatabaseTableEnum.NotificationTracking)
+                    {
+                        databaseTable = $"christephanie-wedding-sent-notification-tracking";
                     }
                     else
                     {

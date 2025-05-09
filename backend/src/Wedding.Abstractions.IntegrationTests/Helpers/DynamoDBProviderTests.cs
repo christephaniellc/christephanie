@@ -1,11 +1,13 @@
 ﻿using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Wedding.Abstractions.Entities;
 using Wedding.Abstractions.Enums;
+using Wedding.Abstractions.Keys;
 using Wedding.Abstractions.Mapping;
 using Wedding.Common.Helpers.AWS;
 using Wedding.Common.Multitenancy;
@@ -42,21 +44,22 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             _multitenancySettingsProviderMock.Setup(x => x.GetMappedTableName(Audience, DatabaseTableEnum.PaymentData))
                 .Returns(_testTableName);
 
-            var serviceCollection = new ServiceCollection();
-            var dynamoDbClient = new AmazonDynamoDBClient();
-            serviceCollection.AddSingleton<IAmazonDynamoDB>(dynamoDbClient);
-            serviceCollection.AddScoped<IDynamoDBContext, DynamoDBContext>();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            _dynamoDbContext = serviceProvider.GetRequiredService<IDynamoDBContext>();
+            // var serviceCollection = new ServiceCollection();
+            // var dynamoDbClient = new AmazonDynamoDBClient();
+            // serviceCollection.AddSingleton<IAmazonDynamoDB>(dynamoDbClient);
+            // serviceCollection.AddScoped<IDynamoDBContext, DynamoDBContext>();
+            // var serviceProvider = serviceCollection.BuildServiceProvider();
+            //_dynamoDbContext = serviceProvider.GetRequiredService<IDynamoDBContext>();
+            _dynamoDbContext = new Mock<IDynamoDBContext>().Object;
 
             Sut = new DynamoDBProvider(_loggerMock.Object, _dynamoDbContext, _mapper, _multitenancySettingsProviderMock.Object);
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            _dynamoDbContext.Dispose();
-        }
+        // [TearDown]
+        // public void TearDown()
+        // {
+        //     _dynamoDbContext.Dispose();
+        // }
 
         [Test]
         public async Task CheckRateLimit_ShouldLimitRequests_AfterThreshold()
@@ -106,7 +109,7 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
 
             var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
 
-            var result = await provider.GetPaymentByIdAsync(Audience, paymentId, timestamp);
+            var result = await provider.GetPaymentByIdAsync(Audience, paymentId);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(paymentId, result.PaymentIntentId);
@@ -161,12 +164,86 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
             Assert.That(results.First().GiftCategory, Is.EqualTo(category));
         }
 
+        [Test]
+        public async Task GetEmailLogsByGuestIdAsync_ShouldReturnMappedResults()
+        {
+            var guestId = "guest123";
+            var entity = CreateTestNotificationEntity(guestId: guestId);
+
+            var mockAsyncSearch = new Mock<AsyncSearch<NotificationDataEntity>>();
+            mockAsyncSearch.Setup(x => x.GetRemainingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<NotificationDataEntity> { entity });
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.QueryAsync<NotificationDataEntity>($"EMAIL#{guestId}", It.IsAny<DynamoDBOperationConfig>()))
+                .Returns(mockAsyncSearch.Object);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var results = await provider.GetEmailLogsByGuestIdAsync(Audience, guestId);
+
+            results.Should().NotBeNull().And.HaveCount(1);
+            results[0].GuestId.Should().Be(guestId);
+            results[0].EmailAddress.Should().Be(entity.EmailAddress);
+        }
+
+        [Test]
+        public async Task GetEmailLogsByCampaignTypeAsync_ShouldReturnMappedResults()
+        {
+            var campaignType = CampaignTypeEnum.RsvpReminder;
+            var gsiPartitionKey = DynamoKeys.NotificationKeys.GetCampaignType(campaignType);
+            var entity = CreateTestNotificationEntity(campaignType: campaignType);
+
+            var mockAsyncSearch = new Mock<AsyncSearch<NotificationDataEntity>>();
+            mockAsyncSearch.Setup(x => x.GetRemainingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<NotificationDataEntity> { entity });
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.QueryAsync<NotificationDataEntity>(gsiPartitionKey,
+                    It.Is<DynamoDBOperationConfig>(cfg => cfg.IndexName == "CampaignTypeIndex")))
+                .Returns(mockAsyncSearch.Object);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var results = await provider.GetEmailLogsByCampaignTypeAsync(Audience, campaignType);
+
+            results.Should().NotBeNull().And.HaveCount(1);
+            results[0].CampaignType.Should().Be(campaignType);
+        }
+
+        [Test]
+        public async Task GetEmailLogByGuestAndTimestampAsync_ShouldReturnSingleLog()
+        {
+            var guestId = "guest123";
+            var timestamp = "2025-05-01T15:00:00Z";
+            var campaignType = CampaignTypeEnum.ThankYou;
+
+            var partitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(guestId);
+            var sortKey = DynamoKeys.NotificationKeys.GetSortKey(timestamp, campaignType);
+            var entity = CreateTestNotificationEntity(guestId, campaignType, timestamp);
+
+            var mockContext = new Mock<IDynamoDBContext>();
+            mockContext.Setup(x => x.LoadAsync<NotificationDataEntity>(partitionKey, sortKey,
+                    It.IsAny<DynamoDBOperationConfig>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity);
+
+            var provider = new DynamoDBProvider(_loggerMock.Object, mockContext.Object, _mapper, _multitenancySettingsProviderMock.Object);
+
+            var result = await provider.GetEmailLogByGuestAndTimestampAsync(Audience, guestId, timestamp, campaignType);
+
+            result.Should().NotBeNull();
+            result!.GuestId.Should().Be(guestId);
+            result.CampaignType.Should().Be(campaignType);
+            result.Timestamp.Should().Be(timestamp);
+        }
+
 
         private PaymentIntentEntity CreateTestPaymentEntity(string guestId = "guest123", string category = "Registry", string timestamp = "2025-04-01T10:00:00Z")
         {
             return new PaymentIntentEntity
             {
                 PaymentIntentId = "pi_test_123",
+                InvitationCode = "ABCDE",
                 GuestId = guestId,
                 GuestName = "Test Guest",
                 Amount = 5000,
@@ -183,5 +260,28 @@ namespace Wedding.Abstractions.IntegrationTests.Helpers
                 CategorySortKey = timestamp
             };
         }
+        private NotificationDataEntity CreateTestNotificationEntity(
+            string guestId = "guest123",
+            CampaignTypeEnum campaignType = CampaignTypeEnum.RsvpReminder,
+            string timestamp = "2025-05-01T15:00:00Z")
+        {
+            return new NotificationDataEntity
+            {
+                GuestEmailLogId = "log-123",
+                GuestId = guestId,
+                EmailType = campaignType,
+                CampaignId = "campaign-xyz",
+                Timestamp = timestamp,
+                DeliveryStatus = "SUCCESS",
+                EmailAddress = "guest@example.com",
+                Verified = true,
+                Metadata = new Dictionary<string, string> { { "custom", "value" } },
+                PartitionKey = DynamoKeys.NotificationKeys.GetPartitionKey(guestId),
+                SortKey = DynamoKeys.NotificationKeys.GetSortKey(timestamp, campaignType),
+                CampaignTypeIndexPartitionKey = DynamoKeys.NotificationKeys.GetCampaignType(campaignType),
+                CampaignTypeIndexSortKey = DynamoKeys.GetGuestSortKey(guestId)
+            };
+        }
+
     }
 }

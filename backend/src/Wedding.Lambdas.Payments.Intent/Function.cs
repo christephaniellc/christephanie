@@ -115,7 +115,7 @@ public class Function
                     return result.OkResponse();
                         break;
                 }
-                case "GET:":
+                case "GET":
                 {
                     var handler = scope.ServiceProvider.GetRequiredService<GetPaymentStatusHandler>();
                     throw new NotImplementedException("GET method is not implemented yet.");

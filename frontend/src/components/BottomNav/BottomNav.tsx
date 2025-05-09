@@ -56,7 +56,10 @@ export const BottomNav = () => {
     if (path === routes[Pages.Registry].path) return 4;
     if (path === routes[Pages.Stats].path) return 5;
     if (path === routes[Pages.Bureaucracy].path) return 6;
-    if (path === routes[Pages.Admin].path) return 7;
+    
+    // Highlight Admin tab for any path that starts with /admin
+    if (path.startsWith('/admin')) return 7;
+    
     //if (path === routes[Pages.PrintedRsvp].path) return 8;
     return -1; // No tab selected
   };
