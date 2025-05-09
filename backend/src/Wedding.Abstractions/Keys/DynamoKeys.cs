@@ -99,8 +99,10 @@ namespace Wedding.Abstractions.Keys
                 return enumMember?.Value ?? campaignType.ToString();
             }
 
-            public static string GetCampaignIdGSI(string campaignId) => $"{DynamoKeys.NotificationCampaign}#{campaignId}";
-
+            public static string GetCampaignIdGSI(CampaignTypeEnum campaignType)
+            {
+                return GetCampaignType(campaignType); // e.g., "RSVP_NOTIFY"
+            }
         }
     }
 }
