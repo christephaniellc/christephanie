@@ -207,13 +207,13 @@ namespace Wedding.Common.Helpers
 
                     <hr/>
 
-                    <h2>Wedding (Saturday, July 5)</h2>
+                    <h2>Saturday, July 5 - Wedding</h2>
                     <p>
                         Please RSVP here <b>by May 19, 2025:</b><br/>
                         <a href=""https://christephanie.com?inviteCode={invitationCode}"">https://christephanie.com?inviteCode={invitationCode}</a>
                     </p>
                            
-                    <h2>4th of July Potluck BBQ (Friday, July 4)</h2>             
+                    <h2>Friday, July 4 - 4th of July Potluck BBQ</h2>             
                     <p>
                         We will also be hosting a potluck 4th of July BBQ at our venue the day before the wedding, so let us
                         know if you will attend, and what you can bring!<br/>
@@ -235,7 +235,7 @@ namespace Wedding.Common.Helpers
                             </tr>
                             <tr>       
                                 <td style=""padding: 10px; padding-left: 30px; border-bottom: 1px solid #eee; text-align: left;""> 
-                                    and enter your first name and your family's <b>Invitation Code</b>. 
+                                    and enter your <b>first name</b> and your family's <b>Invitation Code</b>. Then RSVP!
                                 </td>
                             </tr>
                             <tr>
