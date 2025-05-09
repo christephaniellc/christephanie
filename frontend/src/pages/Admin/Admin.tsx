@@ -1436,9 +1436,20 @@ function AdminPage() {
       fetchNotificationHistory();
     }, [apiContext, apiBaseUrl, directApi, getAccessTokenSilently, refreshTrigger]);
     
-    // Get families and guests with valid emails first and declined families last
+    // Get families sorted by status and verified emails
     const familiesWithVerifiedEmails = useMemo(() => {
-      // Check if all family members have declined
+      // Helper functions to determine family status
+      const hasConfirmedAttending = (family: FamilyUnitDto): boolean => {
+        return !!family.guests?.some(g => g.rsvp?.wedding === RsvpEnum.Attending);
+      };
+      
+      const hasInterested = (family: FamilyUnitDto): boolean => {
+        return !!family.guests?.some(g => 
+          g.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+          g.rsvp?.wedding !== RsvpEnum.Declined
+        );
+      };
+      
       const isAllDeclined = (family: FamilyUnitDto): boolean => {
         if (!family.guests || family.guests.length === 0) return false;
         
@@ -1448,31 +1459,61 @@ function AdminPage() {
         );
       };
       
-      // First filter families with verified emails (non-declined)
-      const verifiedNonDeclined = adminData.filter(family => 
-        family.guests?.some(guest => guest.email?.verified === true) && 
-        !isAllDeclined(family)
+      const hasVerifiedEmail = (family: FamilyUnitDto): boolean => {
+        return !!family.guests?.some(guest => guest.email?.verified === true);
+      };
+      
+      // Group 1: Confirmed with verified emails
+      const verifiedConfirmed = adminData.filter(family => 
+        hasVerifiedEmail(family) && hasConfirmedAttending(family)
       );
       
-      // Then get families without verified emails (non-declined)
-      const unverifiedNonDeclined = adminData.filter(family => 
-        !family.guests?.some(guest => guest.email?.verified === true) && 
-        !isAllDeclined(family)
+      // Group 2: Confirmed without verified emails
+      const unverifiedConfirmed = adminData.filter(family => 
+        !hasVerifiedEmail(family) && hasConfirmedAttending(family)
       );
       
-      // Then get families with all declined members (verified first)
+      // Group 3: Interested with verified emails
+      const verifiedInterested = adminData.filter(family => 
+        hasVerifiedEmail(family) && hasInterested(family) && !hasConfirmedAttending(family)
+      );
+      
+      // Group 4: Interested without verified emails
+      const unverifiedInterested = adminData.filter(family => 
+        !hasVerifiedEmail(family) && hasInterested(family) && !hasConfirmedAttending(family)
+      );
+      
+      // Group 5: Pending with verified emails
+      const verifiedPending = adminData.filter(family => 
+        hasVerifiedEmail(family) && !hasConfirmedAttending(family) && !hasInterested(family) && !isAllDeclined(family)
+      );
+      
+      // Group 6: Pending without verified emails
+      const unverifiedPending = adminData.filter(family => 
+        !hasVerifiedEmail(family) && !hasConfirmedAttending(family) && !hasInterested(family) && !isAllDeclined(family)
+      );
+      
+      // Group 7: Declined with verified emails
       const verifiedDeclined = adminData.filter(family => 
-        family.guests?.some(guest => guest.email?.verified === true) && 
-        isAllDeclined(family)
+        hasVerifiedEmail(family) && isAllDeclined(family)
       );
       
-      // Then families with all declined members and no verified emails
+      // Group 8: Declined without verified emails
       const unverifiedDeclined = adminData.filter(family => 
-        !family.guests?.some(guest => guest.email?.verified === true) && 
-        isAllDeclined(family)
+        !hasVerifiedEmail(family) && isAllDeclined(family)
       );
       
-      return [...verifiedNonDeclined, ...unverifiedNonDeclined, ...verifiedDeclined, ...unverifiedDeclined];
+      // Combine all groups in priority order
+      return [
+        ...verifiedConfirmed,
+        ...unverifiedConfirmed,
+        ...verifiedInterested,
+        ...unverifiedInterested,
+        ...verifiedPending,
+        ...unverifiedPending,
+        ...verifiedDeclined,
+        ...unverifiedDeclined
+      ];
     }, [adminData]);
     
     // Create a unique key for tracking sending status and results
