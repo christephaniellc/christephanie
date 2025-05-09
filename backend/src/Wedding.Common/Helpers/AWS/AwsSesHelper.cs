@@ -69,7 +69,8 @@ namespace Wedding.Common.Helpers.AWS
         public async Task<SendEmailResponse?> SendRsvpNotificationEmail(
             string name, 
             string email, 
-            bool familyInterested,
+            bool guestInterested,
+            bool guestConfirmed,
             string invitationCode,
             CancellationToken cancellationToken)
         {
@@ -78,7 +79,8 @@ namespace Wedding.Common.Helpers.AWS
                 _config,
                 name,
                 email,
-                familyInterested,
+                guestInterested,
+                guestConfirmed,
                 invitationCode,
                 cancellationToken);
 
