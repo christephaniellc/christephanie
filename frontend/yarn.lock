@@ -35,9 +35,9 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@auth0/auth0-react@^2.2.4":
+"@auth0/auth0-react@^2.3.0":
   version "2.3.0"
-  resolved "https://registry.npmjs.org/@auth0/auth0-react/-/auth0-react-2.3.0.tgz"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-react/-/auth0-react-2.3.0.tgz#59273aeafac8494ad87bfc8e5dfb9d72a8fbd80f"
   integrity sha512-YYTc/DWWigKC9fURufR/79h3+3DAnIzbfEzJLZ8Z4Q0BXE0azru3pKUbU+vYzS4lMAJkclwLuAbUnLjK81vCpA==
   dependencies:
     "@auth0/auth0-spa-js" "^2.1.3"
