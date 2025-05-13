@@ -22,7 +22,7 @@ import CampingIcon from '@mui/icons-material/EmojiFlags';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EditIcon from '@mui/icons-material/Edit';
-import { GuestDto, AgeGroupEnum } from '@/types/api';
+import { GuestDto, AgeGroupEnum, RsvpEnum } from '@/types/api';
 import { 
   getInvitationResponseDetails, 
   getRsvpStatusDetails, 
@@ -97,13 +97,34 @@ const GuestList: React.FC<GuestListProps> = ({
                 </Typography>
               </Box>
               
-              {guest.rsvp?.invitationResponse && (
-                <Chip 
-                  label={getInvitationResponseDetails(guest.rsvp.invitationResponse).label}
-                  color={getInvitationResponseDetails(guest.rsvp.invitationResponse).color}
-                  size="small"
-                />
-              )}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {/* Wedding response chip, no wedding response */}
+                {!guest.rsvp?.wedding && (
+                  <Chip 
+                    label={`RSVP: ${getRsvpStatusDetails(RsvpEnum.Pending).label}`}
+                    color={getRsvpStatusDetails(RsvpEnum.Pending).color}
+                    size="small"
+                  />
+                )}
+
+                {/* Wedding response chip */}
+                {guest.rsvp?.wedding && (
+                  <Chip 
+                    label={`RSVP: ${getRsvpStatusDetails(guest.rsvp.wedding).label}`}
+                    color={getRsvpStatusDetails(guest.rsvp.wedding).color}
+                    size="small"
+                  />
+                )}
+                
+                {/* Invitation response chip */}
+                {guest.rsvp?.invitationResponse && (
+                  <Chip 
+                    label={getInvitationResponseDetails(guest.rsvp.invitationResponse).label}
+                    color={getInvitationResponseDetails(guest.rsvp.invitationResponse).color}
+                    size="small"
+                  />
+                )}
+              </Box>
             </Box>
           </AccordionSummary>
           
