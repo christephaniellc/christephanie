@@ -13,6 +13,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PublicIcon from '@mui/icons-material/Public';
+import EmailIcon from '@mui/icons-material/Email';
 
 // Import flag SVGs
 import FlagUS from '@/assets/flags/us.svg';
@@ -22,7 +23,7 @@ import FlagNO from '@/assets/flags/no.svg';
 import FlagMX from '@/assets/flags/mx.svg';
 import FlagTH from '@/assets/flags/th.svg';
 
-import { FamilyUnitDto } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum, RsvpEnum } from '@/types/api';
 import { getFamilyStatusColor, getLatestActivityAndGuest, GuestPopperState } from '../../Stats/components/StatsHelpers';
 import GuestStatusItem from '../../Stats/components/GuestStatusItem';
 import TierSquare from '../../Stats/components/TierSquare';
@@ -60,6 +61,21 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
   const statusColor = getFamilyStatusColor(family);
   const lastGuestActivity = getLatestActivityAndGuest(family);
   
+  // Check if any guest in family has a verified email
+  const hasVerifiedEmail = family.guests?.some(guest => guest.email?.verified) || false;
+  
+  // Check if all guests in the family have declined
+  const isAllDeclined = ((family.guests || []).length > 0) 
+    && (family.guests || []).every(guest => 
+    guest.rsvp?.wedding === RsvpEnum.Declined
+    || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+
+  // Check if any guest is not confirmed (not attending or declined)
+  const hasPendingRsvps = !isAllDeclined && family.guests?.some(guest => 
+    !guest.rsvp?.wedding || 
+    guest.rsvp.wedding === 'Pending'
+  ) || false;
+  
   // Maximum number of avatars to show in the header
   const MAX_AVATARS = 4;
   const hasMoreGuests = family.guests && family.guests.length > MAX_AVATARS;
@@ -90,7 +106,10 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
         },
         display: 'flex',
         flexDirection: 'column',
-        mb: 2
+        mb: 2,
+        // Add dotted border for pending RSVPs
+        border: hasPendingRsvps ? '2px dotted' : 'none',
+        borderColor: hasPendingRsvps ? theme.palette.warning.main : 'transparent',
       }}
       data-testid="family-card"
     >
@@ -100,6 +119,21 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
             <TierSquare tier={family.tier} />
             <Typography variant="h6" component="div">
               {family.unitName}
+              {/* Email verification indicator */}
+              {hasVerifiedEmail && (
+                <Tooltip title="Has verified email">
+                  <EmailIcon 
+                    fontSize="small" 
+                    sx={{ 
+                      color: 'success.main', 
+                      verticalAlign: 'middle', 
+                      ml: 1,
+                      fontSize: '1rem'
+                    }} 
+                  />
+                </Tooltip>
+              )}
+              {/* Address indicator */}
               {(!family.mailingAddress || !family.mailingAddress.uspsVerified) && (
                 <Tooltip title={!family.mailingAddress ? "No address provided" : (family.mailingAddress.country ? `${family.mailingAddress.country} address` : "Address not verified")}>
                   {family.mailingAddress?.country ? (
