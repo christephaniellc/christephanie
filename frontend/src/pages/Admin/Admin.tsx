@@ -798,11 +798,18 @@ function AdminPage() {
                   const tierLower = (family.tier || "").toLowerCase();
                   const isRubellite = tierLower.includes('inner');
                   const isAmber = tierLower.includes('amber') || tierLower.includes('peridot');
-                  
-                  console.log('Family:', family.unitName, 'isRubellite', isRubellite, 'hasAddress', hasAddress);
+                  const isAllDeclined = ((family.guests || []).length > 0) 
+                    && (family.guests || []).every(guest => 
+                    guest.rsvp?.wedding === RsvpEnum.Declined
+                    || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+
+                  // Section 6: All guests Wedding = Declined
+                  if (isAllDeclined) {
+                    return 6;
+                  }
 
                   // Section 4: Rubellite families (exclusive category)
-                  if (isRubellite) {
+                  if (isRubellite && !isAllDeclined) {
                     return 4;
                   }
                   
@@ -810,7 +817,7 @@ function AdminPage() {
                   if (isAmber) {
                     return 7;
                   }
-                  
+
                   // Section 1: Interested but Wedding = Pending AND no address
                   const hasInterestedPendingNoAddress = 
                   (family.guests || []).some(guest => 
@@ -835,6 +842,17 @@ function AdminPage() {
                     return 2;
                   }
                   
+                  // Section 5: All guests Wedding = Attending or Declined (fully confirmed)
+                  const isFullyConfirmed = (family.guests || []).length > 0 && 
+                    (family.guests || []).every(guest => 
+                      guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined ||
+                      guest.rsvp?.wedding === RsvpEnum.Attending || 
+                      guest.rsvp?.wedding === RsvpEnum.Declined);
+                  
+                  if (isFullyConfirmed) {
+                    return 5;
+                  }
+                  
                   // Section 3: No InvitationResponse whatsoever
                   const hasNoResponse = (family.guests || []).length > 0 && 
                     (family.guests || []).every(guest => 
@@ -845,26 +863,6 @@ function AdminPage() {
                     return 3;
                   }
                   
-                  // Section 5: All guests Wedding = Attending or Declined (fully confirmed)
-                  const isFullyConfirmed = (family.guests || []).length > 0 && 
-                    (family.guests || []).every(guest => 
-                      guest.rsvp?.wedding === RsvpEnum.Attending || 
-                      guest.rsvp?.wedding === RsvpEnum.Declined);
-                  
-                  if (isFullyConfirmed) {
-                    return 5;
-                  }
-                  
-                  // Section 6: All guests Wedding = Declined
-                  const isAllDeclined = (family.guests || []).length > 0 && 
-                    (family.guests || []).every(guest => 
-                      guest.rsvp?.wedding === RsvpEnum.Declined
-                      || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
-                  
-                  if (isAllDeclined) {
-                    return 6;
-                  }
-                  
                   // Default: Any other case
                   return 99;
                 };
@@ -872,7 +870,12 @@ function AdminPage() {
                 // First separate out Rubellite families (inner circle or rubellite tier)
                 const rubelliteFamilies = sortedAdminData.filter(family => {
                   const tierLower = (family.tier || "").toLowerCase();
-                  return tierLower.includes('rubellite');
+                  const isRub = tierLower.includes('rubellite');
+                  const allDeclined = ((family.guests || []).length > 0) 
+                    && (family.guests || []).every(guest => 
+                    guest.rsvp?.wedding === RsvpEnum.Declined
+                    || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+                  return isRub && !allDeclined;
                 });
                 
                 // Then process all other families
