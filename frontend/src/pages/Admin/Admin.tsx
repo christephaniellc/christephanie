@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactElement, useCallback, useMemo } from 'react';
-import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum, GuestEmailLogDto, CampaignType } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum, GuestEmailLogDto, CampaignType, RoleEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
 import Api from '@/api/Api';
@@ -322,6 +322,118 @@ function AdminPage() {
     const filteredFamilies = [...families];
     
     switch(sortOption) {
+      case 'naggingOrder':
+        // Sort by nagging order with sections:
+        return filteredFamilies.sort((a, b) => {
+          // Helper function for tier priority
+          const getTierSortPriority = (tier: string | undefined | null): number => {
+            if (!tier) return 99;
+            
+            const tierLower = tier.toLowerCase();
+            if (tierLower.includes('platinum')) return 1;
+            if (tierLower.includes('gold')) return 2;
+            if (tierLower.includes('sapphire')) return 3;
+            if (tierLower.includes('ruby')) return 4;
+            if (tierLower.includes('rubellite')) return 5;
+            
+            return 6; // Other tiers
+          };
+          
+          // Define nagging order categories
+          const getNaggingCategory = (family: FamilyUnitDto): number => {
+            // Safely check address
+            const hasAddress = !!(family.mailingAddress && 
+              (family.mailingAddress.streetAddress || family.mailingAddress.city));
+            
+            // Safely check tier
+            const tierLower = (family.tier || "").toLowerCase();
+            const isRubellite = tierLower.includes('rubellite') || tierLower.includes('inner');
+            const isAmber = tierLower.includes('amber') || tierLower.includes('peridot');
+            
+            // Section 4: Rubellite families (exclusive category)
+            if (isRubellite) {
+              return 4;
+            }
+            
+            // Section 7: Amber/Tester tier
+            if (isAmber) {
+              return 7;
+            }
+            
+            // Section 1: Interested but Wedding = Pending AND no address
+            const hasInterestedPendingNoAddress = (family.guests || []).some(guest => 
+              guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+              guest.rsvp?.wedding === RsvpEnum.Pending) && !hasAddress;
+            
+            if (hasInterestedPendingNoAddress) {
+              return 1;
+            }
+            
+            // Section 2: Interested but Wedding = Pending WITH address
+            const hasInterestedPendingWithAddress = (family.guests || []).some(guest => 
+              guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested && 
+              guest.rsvp?.wedding === RsvpEnum.Pending) && hasAddress;
+            
+            if (hasInterestedPendingWithAddress) {
+              return 2;
+            }
+            
+            // Section 3: No InvitationResponse whatsoever
+            const hasNoResponse = (family.guests || []).length > 0 && 
+              (family.guests || []).every(guest => 
+                !guest.rsvp?.invitationResponse || 
+                guest.rsvp.invitationResponse === InvitationResponseEnum.Pending);
+            
+            if (hasNoResponse) {
+              return 3;
+            }
+            
+            // Section 5: All guests Wedding = Attending or Declined (fully confirmed)
+            const isFullyConfirmed = (family.guests || []).length > 0 && 
+              (family.guests || []).every(guest => 
+                guest.rsvp?.wedding === RsvpEnum.Attending || 
+                guest.rsvp?.wedding === RsvpEnum.Declined);
+            
+            if (isFullyConfirmed) {
+              return 5;
+            }
+            
+            // Section 6: All guests Wedding = Declined
+            const isAllDeclined = (family.guests || []).length > 0 && 
+              (family.guests || []).every(guest => 
+                guest.rsvp?.wedding === RsvpEnum.Declined ||
+                guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+            
+            if (isAllDeclined) {
+              return 6;
+            }
+            
+            // Default: Any other case
+            return 99;
+          };
+          
+          const aNaggingCategory = getNaggingCategory(a);
+          const bNaggingCategory = getNaggingCategory(b);
+          
+          // First sort by nagging category
+          if (aNaggingCategory !== bNaggingCategory) {
+            return aNaggingCategory - bNaggingCategory;
+          }
+          
+          // Within the same category, sort by specified tier priority
+          const aTierPriority = getTierSortPriority(a.tier);
+          const bTierPriority = getTierSortPriority(b.tier);
+          
+          if (aTierPriority !== bTierPriority) {
+            return aTierPriority - bTierPriority;
+          }
+          
+          // If same tier priority, sort by family name
+          const aName = a.unitName?.toLowerCase() || '';
+          const bName = b.unitName?.toLowerCase() || '';
+          return aName.localeCompare(bName);
+        });
+
       case 'lastUpdated':
         // Sort by last update date (most recent first), then tier, then last name
         return filteredFamilies.sort((a, b) => {
@@ -636,6 +748,7 @@ function AdminPage() {
             }}
           >
             <MenuItem value="lastUpdated">Last Updated (Recent First)</MenuItem>
+            <MenuItem value="naggingOrder">Nagging Order</MenuItem>
             <MenuItem value="invitationStatus">Interest Status (Declined First)</MenuItem>
             <MenuItem value="default">Tier (Tier, Name)</MenuItem>
           </Select>
@@ -658,16 +771,422 @@ function AdminPage() {
           }}
           data-testid="admin-family-grid"
         >
-          {sortedAdminData.map((family) => (
-            <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
-              <AdminFamilyCard 
-                family={family} 
-                onGuestClick={handleGuestClick}
-                expanded={expandedFamilyCodes.has(family.invitationCode)}
-                onToggleExpanded={() => toggleExpanded(family.invitationCode)}
-              />
-            </Grid>
-          ))}
+          {sortOption === 'naggingOrder' ? (
+            <>
+              {/* Create sections for Nagging Order */}
+              {(() => {
+                // Helper function for tier priority
+                const getTierSortPriority = (tier: string | undefined | null): number => {
+                  if (!tier) return 99;
+                  
+                  const tierLower = tier.toLowerCase();
+                  if (tierLower.includes('platinum')) return 1;
+                  if (tierLower.includes('gold')) return 2;
+                  if (tierLower.includes('sapphire')) return 3;
+                  if (tierLower.includes('ruby')) return 4;
+                  
+                  return 5; // Other tiers
+                };
+                
+                // Get the nagging category for each family
+                const getNaggingCategory = (family: FamilyUnitDto): number => {
+                  // Safely check address
+                  const hasAddress = !!(family.mailingAddress && 
+                    (family.mailingAddress.streetAddress || family.mailingAddress.city));
+                  
+                  // Safely check tier
+                  const tierLower = (family.tier || "").toLowerCase();
+                  const isRubellite = tierLower.includes('inner');
+                  const isAmber = tierLower.includes('amber') || tierLower.includes('peridot');
+                  
+                  console.log('Family:', family.unitName, 'isRubellite', isRubellite, 'hasAddress', hasAddress);
+
+                  // Section 4: Rubellite families (exclusive category)
+                  if (isRubellite) {
+                    return 4;
+                  }
+                  
+                  // Section 7: Amber/Tester tier
+                  if (isAmber) {
+                    return 7;
+                  }
+                  
+                  // Section 1: Interested but Wedding = Pending AND no address
+                  const hasInterestedPendingNoAddress = 
+                  (family.guests || []).some(guest => 
+                      guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested)
+                    && (family.guests || []).some(guest => 
+                      (!guest.rsvp.wedding || guest.rsvp?.wedding === RsvpEnum.Pending))
+                    && !hasAddress;
+
+                  if (hasInterestedPendingNoAddress) {
+                    return 1;
+                  }
+                  
+                  // Section 2: Interested but Wedding = Pending WITH address
+                  const hasInterestedPendingWithAddress = 
+                  (family.guests || []).some(guest => 
+                      guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested)
+                    && (family.guests || []).some(guest => 
+                      (!guest.rsvp.wedding || guest.rsvp?.wedding === RsvpEnum.Pending))
+                    && hasAddress;
+                  
+                  if (hasInterestedPendingWithAddress) {
+                    return 2;
+                  }
+                  
+                  // Section 3: No InvitationResponse whatsoever
+                  const hasNoResponse = (family.guests || []).length > 0 && 
+                    (family.guests || []).every(guest => 
+                      !guest.rsvp?.invitationResponse || 
+                      guest.rsvp.invitationResponse === InvitationResponseEnum.Pending);
+                  
+                  if (hasNoResponse) {
+                    return 3;
+                  }
+                  
+                  // Section 5: All guests Wedding = Attending or Declined (fully confirmed)
+                  const isFullyConfirmed = (family.guests || []).length > 0 && 
+                    (family.guests || []).every(guest => 
+                      guest.rsvp?.wedding === RsvpEnum.Attending || 
+                      guest.rsvp?.wedding === RsvpEnum.Declined);
+                  
+                  if (isFullyConfirmed) {
+                    return 5;
+                  }
+                  
+                  // Section 6: All guests Wedding = Declined
+                  const isAllDeclined = (family.guests || []).length > 0 && 
+                    (family.guests || []).every(guest => 
+                      guest.rsvp?.wedding === RsvpEnum.Declined
+                      || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+                  
+                  if (isAllDeclined) {
+                    return 6;
+                  }
+                  
+                  // Default: Any other case
+                  return 99;
+                };
+
+                // First separate out Rubellite families (inner circle or rubellite tier)
+                const rubelliteFamilies = sortedAdminData.filter(family => {
+                  const tierLower = (family.tier || "").toLowerCase();
+                  return tierLower.includes('rubellite');
+                });
+                
+                // Then process all other families
+                const nonRubelliteFamilies = sortedAdminData.filter(family => {
+                  const tierLower = (family.tier || "").toLowerCase();
+                  return !(tierLower.includes('rubellite'));
+                });
+                
+                // Group families by nagging category
+                const categoryMap = new Map<number, FamilyUnitDto[]>();
+                
+                // Add Rubellite families exclusively to Section 4
+                categoryMap.set(4, [...rubelliteFamilies]);
+                
+                // Process all other families
+                nonRubelliteFamilies.forEach(family => {
+                  const category = getNaggingCategory(family);
+                  // Skip category 4 since it's reserved exclusively for Rubellite
+                  if (category === 4) return;
+                  
+                  if (!categoryMap.has(category)) {
+                    categoryMap.set(category, []);
+                  }
+                  categoryMap.get(category)?.push(family);
+                });
+                
+                // Sort families within each category by tier priority
+                categoryMap.forEach((families, category) => {
+                  families.sort((a, b) => {
+                    // Sort by specified tier priority with null safety
+                    const aTier = a.tier || "";
+                    const bTier = b.tier || "";
+                    
+                    const aTierLower = aTier.toLowerCase();
+                    const bTierLower = bTier.toLowerCase();
+                    
+                    // Get tier priorities
+                    let aTierPriority = 99;
+                    let bTierPriority = 99;
+                    
+                    if (aTierLower.includes('platinum')) aTierPriority = 1;
+                    else if (aTierLower.includes('gold')) aTierPriority = 2;
+                    else if (aTierLower.includes('sapphire')) aTierPriority = 3;
+                    else if (aTierLower.includes('ruby')) aTierPriority = 4;
+                    else aTierPriority = 5;
+                    
+                    if (bTierLower.includes('platinum')) bTierPriority = 1;
+                    else if (bTierLower.includes('gold')) bTierPriority = 2;
+                    else if (bTierLower.includes('sapphire')) bTierPriority = 3;
+                    else if (bTierLower.includes('ruby')) bTierPriority = 4;
+                    else bTierPriority = 5;
+                    
+                    if (aTierPriority !== bTierPriority) {
+                      return aTierPriority - bTierPriority;
+                    }
+                    
+                    // If same tier priority, sort by family name
+                    const aName = a.unitName?.toLowerCase() || '';
+                    const bName = b.unitName?.toLowerCase() || '';
+                    return aName.localeCompare(bName);
+                  });
+                });
+
+                // Render sections in order
+                const sections = [];
+                
+                // Section 1: Interested, Pending, No Address
+                if (categoryMap.has(1) && categoryMap.get(1)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-1">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="1. Interested, No Paper Invite Sent (No Address)" 
+                            color="warning"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(1)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 2: Interested, Pending, Has Address
+                if (categoryMap.has(2) && categoryMap.get(2)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-2">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="2. Interested, Paper Invite Sent (Has Address)" 
+                            color="info"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(2)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 3: No Response
+                if (categoryMap.has(3) && categoryMap.get(3)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-3">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="3. No InvitationResponse At All" 
+                            color="default"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(3)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 4: Rubellite
+                if (categoryMap.has(4) && categoryMap.get(4)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-4">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="4. Rubellite Families: to Promote?" 
+                            color="secondary"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(4)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 5: Fully Confirmed
+                if (categoryMap.has(5) && categoryMap.get(5)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-5">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="5. Fully Confirmed Families" 
+                            color="success"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(5)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 6: All Declined
+                if (categoryMap.has(6) && categoryMap.get(6)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-6">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="6. All Declined Families" 
+                            color="error"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(6)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Section 7: Amber/Beta Tester tier
+                if (categoryMap.has(7) && categoryMap.get(7)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-7">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="7. Amber / Peridot (Tester) Families" 
+                            color="warning"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem', bgcolor: '#ffc107' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(7)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                // Other cases
+                if (categoryMap.has(99) && categoryMap.get(99)!.length > 0) {
+                  sections.push(
+                    <Grid item xs={12} key="section-99">
+                      <Box sx={{ mt: 4, mb: 2 }}>
+                        <Divider>
+                          <Chip 
+                            label="8. Other Families" 
+                            color="default"
+                            sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          />
+                        </Divider>
+                      </Box>
+                      <Grid container spacing={3}>
+                        {categoryMap.get(99)!.map(family => (
+                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                            <AdminFamilyCard 
+                              family={family} 
+                              onGuestClick={handleGuestClick}
+                              expanded={expandedFamilyCodes.has(family.invitationCode)}
+                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  );
+                }
+                
+                return sections;
+              })()}
+            </>
+          ) : (
+            // Default view without sections
+            sortedAdminData.map((family) => (
+              <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                <AdminFamilyCard 
+                  family={family} 
+                  onGuestClick={handleGuestClick}
+                  expanded={expandedFamilyCodes.has(family.invitationCode)}
+                  onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                />
+              </Grid>
+            ))
+          )}
         </Grid>
       )}
       
