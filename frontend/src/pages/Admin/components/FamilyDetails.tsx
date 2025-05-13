@@ -46,11 +46,16 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`family-tabpanel-${index}`}
       aria-labelledby={`family-tab-${index}`}
-      style={{ height: '100%' }}
+      style={{ height: '100%', display: value === index ? 'block' : 'none' }}
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 2, height: '100%', overflow: 'auto' }}>
+        <Box sx={{ 
+          p: 2, 
+          height: 'auto', 
+          minHeight: '100%',
+          overflow: 'visible' 
+        }}>
           {children}
         </Box>
       )}
@@ -234,7 +239,9 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: '100%' 
+      height: 'auto',
+      minHeight: '100%',
+      overflow: 'visible'
     }}>
       {/* Guest Editor Dialog */}
       <Dialog 
@@ -290,7 +297,7 @@ const FamilyDetails: React.FC<FamilyDetailsProps> = ({
         </Alert>
       )}
 
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="family details tabs">
             <Tab label="Overview" {...a11yProps(0)} />
