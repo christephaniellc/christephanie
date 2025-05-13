@@ -349,15 +349,15 @@ function AdminPage() {
             const tierLower = (family.tier || "").toLowerCase();
             const isRubellite = tierLower.includes('rubellite') || tierLower.includes('inner');
             const isAmber = tierLower.includes('amber') || tierLower.includes('peridot');
-            
-            // Section 4: Rubellite families (exclusive category)
-            if (isRubellite) {
-              return 4;
-            }
-            
+                        
             // Section 7: Amber/Tester tier
             if (isAmber) {
               return 7;
+            }
+
+            // Section 4: Rubellite families (exclusive category)
+            if (isRubellite) {
+              return 4;
             }
             
             // Section 1: Interested but Wedding = Pending AND no address
@@ -658,15 +658,17 @@ function AdminPage() {
         {/* Right Panel - Family Details */}
         <Grid item xs={12} md={8} lg={9} sx={{ 
           height: isMobile ? 'auto' : 'calc(100vh - 200px)', // Adjusted for tabs
-          overflow: 'hidden',
+          overflow: 'auto',  // Changed from 'hidden' to 'auto'
           display: 'flex',
           flexDirection: 'column'
         }}>
           <Paper elevation={3} sx={{ 
             p: 2, 
-            height: '100%',
+            height: 'auto', // Changed from '100%' to 'auto'
+            minHeight: '100%',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflow: 'visible' // Added to ensure content isn't cut off
           }}>
             {/* Family Details component */}
             <FamilyDetails 
@@ -802,6 +804,11 @@ function AdminPage() {
                     && (family.guests || []).every(guest => 
                     guest.rsvp?.wedding === RsvpEnum.Declined
                     || guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined);
+                  
+                  // Section 7: Amber/Tester tier
+                  if (isAmber) {
+                    return 7;
+                  }
 
                   // Section 6: All guests Wedding = Declined
                   if (isAllDeclined) {
@@ -811,11 +818,6 @@ function AdminPage() {
                   // Section 4: Rubellite families (exclusive category)
                   if (isRubellite && !isAllDeclined) {
                     return 4;
-                  }
-                  
-                  // Section 7: Amber/Tester tier
-                  if (isAmber) {
-                    return 7;
                   }
 
                   // Section 1: Interested but Wedding = Pending AND no address
