@@ -904,39 +904,86 @@ function AdminPage() {
                 
                 // Sort families within each category by tier priority
                 categoryMap.forEach((families, category) => {
-                  families.sort((a, b) => {
-                    // Sort by specified tier priority with null safety
-                    const aTier = a.tier || "";
-                    const bTier = b.tier || "";
-                    
-                    const aTierLower = aTier.toLowerCase();
-                    const bTierLower = bTier.toLowerCase();
-                    
-                    // Get tier priorities
-                    let aTierPriority = 99;
-                    let bTierPriority = 99;
-                    
-                    if (aTierLower.includes('platinum')) aTierPriority = 1;
-                    else if (aTierLower.includes('gold')) aTierPriority = 2;
-                    else if (aTierLower.includes('sapphire')) aTierPriority = 3;
-                    else if (aTierLower.includes('ruby')) aTierPriority = 4;
-                    else aTierPriority = 5;
-                    
-                    if (bTierLower.includes('platinum')) bTierPriority = 1;
-                    else if (bTierLower.includes('gold')) bTierPriority = 2;
-                    else if (bTierLower.includes('sapphire')) bTierPriority = 3;
-                    else if (bTierLower.includes('ruby')) bTierPriority = 4;
-                    else bTierPriority = 5;
-                    
-                    if (aTierPriority !== bTierPriority) {
-                      return aTierPriority - bTierPriority;
-                    }
-                    
-                    // If same tier priority, sort by family name
-                    const aName = a.unitName?.toLowerCase() || '';
-                    const bName = b.unitName?.toLowerCase() || '';
-                    return aName.localeCompare(bName);
-                  });
+                  // Special sorting for section 1 and 2 - non-verified emails first
+                  if (category === 1 || category === 2) {
+                    families.sort((a, b) => {
+                      // First check for verified email status
+                      const aHasVerifiedEmail = a.guests?.some(guest => guest.email?.verified) || false;
+                      const bHasVerifiedEmail = b.guests?.some(guest => guest.email?.verified) || false;
+                      
+                      // No verified email has priority
+                      if (aHasVerifiedEmail !== bHasVerifiedEmail) {
+                        return aHasVerifiedEmail ? 1 : -1; // Sort non-verified first
+                      }
+                      
+                      // If email status is the same, sort by tier
+                      const aTier = a.tier || "";
+                      const bTier = b.tier || "";
+                      
+                      const aTierLower = aTier.toLowerCase();
+                      const bTierLower = bTier.toLowerCase();
+                      
+                      // Get tier priorities
+                      let aTierPriority = 99;
+                      let bTierPriority = 99;
+                      
+                      if (aTierLower.includes('platinum')) aTierPriority = 1;
+                      else if (aTierLower.includes('gold')) aTierPriority = 2;
+                      else if (aTierLower.includes('sapphire')) aTierPriority = 3;
+                      else if (aTierLower.includes('ruby')) aTierPriority = 4;
+                      else aTierPriority = 5;
+                      
+                      if (bTierLower.includes('platinum')) bTierPriority = 1;
+                      else if (bTierLower.includes('gold')) bTierPriority = 2;
+                      else if (bTierLower.includes('sapphire')) bTierPriority = 3;
+                      else if (bTierLower.includes('ruby')) bTierPriority = 4;
+                      else bTierPriority = 5;
+                      
+                      if (aTierPriority !== bTierPriority) {
+                        return aTierPriority - bTierPriority;
+                      }
+                      
+                      // If same tier priority, sort by family name
+                      const aName = a.unitName?.toLowerCase() || '';
+                      const bName = b.unitName?.toLowerCase() || '';
+                      return aName.localeCompare(bName);
+                    });
+                  } else {
+                    // Regular sorting for other sections
+                    families.sort((a, b) => {
+                      // Sort by specified tier priority with null safety
+                      const aTier = a.tier || "";
+                      const bTier = b.tier || "";
+                      
+                      const aTierLower = aTier.toLowerCase();
+                      const bTierLower = bTier.toLowerCase();
+                      
+                      // Get tier priorities
+                      let aTierPriority = 99;
+                      let bTierPriority = 99;
+                      
+                      if (aTierLower.includes('platinum')) aTierPriority = 1;
+                      else if (aTierLower.includes('gold')) aTierPriority = 2;
+                      else if (aTierLower.includes('sapphire')) aTierPriority = 3;
+                      else if (aTierLower.includes('ruby')) aTierPriority = 4;
+                      else aTierPriority = 5;
+                      
+                      if (bTierLower.includes('platinum')) bTierPriority = 1;
+                      else if (bTierLower.includes('gold')) bTierPriority = 2;
+                      else if (bTierLower.includes('sapphire')) bTierPriority = 3;
+                      else if (bTierLower.includes('ruby')) bTierPriority = 4;
+                      else bTierPriority = 5;
+                      
+                      if (aTierPriority !== bTierPriority) {
+                        return aTierPriority - bTierPriority;
+                      }
+                      
+                      // If same tier priority, sort by family name
+                      const aName = a.unitName?.toLowerCase() || '';
+                      const bName = b.unitName?.toLowerCase() || '';
+                      return aName.localeCompare(bName);
+                    });
+                  }
                 });
 
                 // Render sections in order
@@ -956,16 +1003,62 @@ function AdminPage() {
                         </Divider>
                       </Box>
                       <Grid container spacing={3}>
-                        {categoryMap.get(1)!.map(family => (
-                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
-                            <AdminFamilyCard 
-                              family={family} 
-                              onGuestClick={handleGuestClick}
-                              expanded={expandedFamilyCodes.has(family.invitationCode)}
-                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
-                            />
-                          </Grid>
-                        ))}
+                        {(() => {
+                          const families = categoryMap.get(1)!;
+                          
+                          // Split families into two groups: without and with verified emails
+                          const familiesWithoutVerifiedEmail = families.filter(family => 
+                            !family.guests?.some(guest => guest.email?.verified)
+                          );
+                          
+                          const familiesWithVerifiedEmail = families.filter(family => 
+                            family.guests?.some(guest => guest.email?.verified)
+                          );
+                          
+                          return (
+                            <>
+                              {/* First render families without verified emails */}
+                              {familiesWithoutVerifiedEmail.map(family => (
+                                <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                                  <AdminFamilyCard 
+                                    family={family} 
+                                    onGuestClick={handleGuestClick}
+                                    expanded={expandedFamilyCodes.has(family.invitationCode)}
+                                    onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                                  />
+                                </Grid>
+                              ))}
+                              
+                              {/* Divider between the two groups if both exist */}
+                              {familiesWithoutVerifiedEmail.length > 0 && familiesWithVerifiedEmail.length > 0 && (
+                                <Grid item xs={12}>
+                                  <Box sx={{ my: 2 }}>
+                                    <Divider>
+                                      <Chip 
+                                        label="Families with verified emails" 
+                                        size="small"
+                                        color="primary"
+                                        sx={{ fontSize: '0.8rem' }}
+                                      />
+                                    </Divider>
+                                  </Box>
+                                </Grid>
+                              )}
+                              
+                              {/* Then render families with verified emails */}
+                              {familiesWithVerifiedEmail.map(family => (
+                                <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                                  <AdminFamilyCard 
+                                    family={family} 
+                                    onGuestClick={handleGuestClick}
+                                    expanded={expandedFamilyCodes.has(family.invitationCode)}
+                                    onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                                  />
+                                </Grid>
+                              ))}
+                            </>
+                          );
+                        })()}
                       </Grid>
                     </Grid>
                   );
@@ -985,16 +1078,62 @@ function AdminPage() {
                         </Divider>
                       </Box>
                       <Grid container spacing={3}>
-                        {categoryMap.get(2)!.map(family => (
-                          <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
-                            <AdminFamilyCard 
-                              family={family} 
-                              onGuestClick={handleGuestClick}
-                              expanded={expandedFamilyCodes.has(family.invitationCode)}
-                              onToggleExpanded={() => toggleExpanded(family.invitationCode)}
-                            />
-                          </Grid>
-                        ))}
+                        {(() => {
+                          const families = categoryMap.get(2)!;
+                          
+                          // Split families into two groups: without and with verified emails
+                          const familiesWithoutVerifiedEmail = families.filter(family => 
+                            !family.guests?.some(guest => guest.email?.verified)
+                          );
+                          
+                          const familiesWithVerifiedEmail = families.filter(family => 
+                            family.guests?.some(guest => guest.email?.verified)
+                          );
+                          
+                          return (
+                            <>
+                              {/* First render families without verified emails */}
+                              {familiesWithoutVerifiedEmail.map(family => (
+                                <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                                  <AdminFamilyCard 
+                                    family={family} 
+                                    onGuestClick={handleGuestClick}
+                                    expanded={expandedFamilyCodes.has(family.invitationCode)}
+                                    onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                                  />
+                                </Grid>
+                              ))}
+                              
+                              {/* Divider between the two groups if both exist */}
+                              {familiesWithoutVerifiedEmail.length > 0 && familiesWithVerifiedEmail.length > 0 && (
+                                <Grid item xs={12}>
+                                  <Box sx={{ my: 2 }}>
+                                    <Divider>
+                                      <Chip 
+                                        label="Families with verified emails" 
+                                        size="small"
+                                        color="primary"
+                                        sx={{ fontSize: '0.8rem' }}
+                                      />
+                                    </Divider>
+                                  </Box>
+                                </Grid>
+                              )}
+                              
+                              {/* Then render families with verified emails */}
+                              {familiesWithVerifiedEmail.map(family => (
+                                <Grid item xs={12} md={6} lg={4} key={family.invitationCode}>
+                                  <AdminFamilyCard 
+                                    family={family} 
+                                    onGuestClick={handleGuestClick}
+                                    expanded={expandedFamilyCodes.has(family.invitationCode)}
+                                    onToggleExpanded={() => toggleExpanded(family.invitationCode)}
+                                  />
+                                </Grid>
+                              ))}
+                            </>
+                          );
+                        })()}
                       </Grid>
                     </Grid>
                   );
