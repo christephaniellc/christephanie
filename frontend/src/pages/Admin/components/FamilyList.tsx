@@ -23,7 +23,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import { styled } from '@mui/material/styles';
 
 // Define sort options
-export type SortOption = 'lastUpdated' | 'invitationStatus' | 'default';
+export type SortOption = 'lastUpdated' | 'naggingOrder' | 'invitationStatus' | 'default';
 
 interface FamilyListProps {
   families: FamilyUnitDto[];
@@ -190,6 +190,7 @@ const FamilyList: React.FC<FamilyListProps> = ({
               }
             >
               <MenuItem value="lastUpdated">Last Updated</MenuItem>
+              <MenuItem value="naggingOrder">Nagging Order</MenuItem>
               <MenuItem value="invitationStatus">RSVP Status</MenuItem>
               <MenuItem value="default">Tier & Name</MenuItem>
             </Select>
