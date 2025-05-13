@@ -14,6 +14,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PublicIcon from '@mui/icons-material/Public';
 import EmailIcon from '@mui/icons-material/Email';
+import FlareIcon from '@mui/icons-material/Flare';
 
 // Import flag SVGs
 import FlagUS from '@/assets/flags/us.svg';
@@ -61,6 +62,11 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
   const statusColor = getFamilyStatusColor(family);
   const lastGuestActivity = getLatestActivityAndGuest(family);
   
+  // Check how many guests are attending the 4th
+  const numberFourthAttendees = family.guests?.filter(g => 
+      g.rsvp?.fourthOfJuly === RsvpEnum.Attending
+    ).length;
+
   // Check if any guest in family has a verified email
   const hasVerifiedEmail = family.guests?.some(guest => guest.email?.verified) || false;
   
@@ -168,6 +174,37 @@ const AdminFamilyCard = ({ family, onGuestClick, expanded, onToggleExpanded }: A
                       }} 
                     />
                   )}
+                </Tooltip>
+              )}
+              {/* 4th of July Count */}
+              {numberFourthAttendees > 0 && (
+                <Tooltip title={`${numberFourthAttendees} guest${numberFourthAttendees > 1 ? 's' : ''} attending July 4th`}>
+                  <Chip
+                    size="small"
+                    icon={<FlareIcon />}
+                    label={numberFourthAttendees}
+                    sx={{
+                      ml: 1,
+                      height: '22px',
+                      //background: 'linear-gradient(135deg, #e01f3d 0%, #e01f3d 30%, #ffffff 30%, #ffffff 70%, #004dbc 70%, #004dbc 100%)',
+                      color: ' #ffffff',
+                      border: '1px solid #004dbc',
+                      //textShadow: '0px 1px 2px rgba(0,0,0,0.75)',
+                      '& .MuiChip-label': {
+                        px: 0.5,
+                        fontWeight: 'bold',
+                        //backgroundColor: 'rgba(0,0,0,0.5)',
+                        borderRadius: '3px',
+                        mx: 0.25
+                      },
+                      '& .MuiChip-icon': {
+                        color: '#ffcc00',
+                        ml: 0.5,
+                        mr: '-4px',
+                        //filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.75))'
+                      }
+                    }}
+                  />
                 </Tooltip>
               )}
             </Typography>
