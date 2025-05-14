@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper, useMediaQuery } from '@mui/material';
 import { StatsViewModel } from '@/types/api';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
-import { rgba } from 'polished';
 import { 
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Sector, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
@@ -379,13 +378,7 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
             <AnimatedCounter 
               value={metrics.pendingGuests} 
               label="Pending" 
-              color={
-                metrics.pendingGuests + metrics.attendingMetric > 250 
-                  ? "#f2ab3a" // Red if pending + interested > 250
-                  : (metrics.pendingGuests + metrics.attendingMetric + 10) <= 250 
-                    ? "#4CAF50" // Green if (pending + interested + 10) <= 250
-                    : "#FFC107" // Yellow otherwise
-              }
+              color="#FFC107"
             />
           </Grid>
         </Grid>
