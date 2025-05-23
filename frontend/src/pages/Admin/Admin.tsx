@@ -1575,7 +1575,7 @@ function AdminPage() {
             entry.count++;
             // Create a properly formatted guest name (handle '+1' case)
             const fullName = guest.firstName === '+1' ? 
-              `+1 (${guest.familyUnitName})` : 
+              `+1 (${family.unitName || ''})` : 
               `${guest.firstName}${guest.lastName ? ' ' + guest.lastName : ''}`;
             entry.guests.push(fullName);
             entry.families.add(family.unitName || '');
@@ -1592,7 +1592,7 @@ function AdminPage() {
           entry.count++;
           // Create a properly formatted guest name (handle '+1' case)
           const fullName = guest.firstName === '+1' ? 
-            `+1 (${guest.familyUnitName})` : 
+            `+1 (${family.unitName || ''})` : 
             `${guest.firstName}${guest.lastName ? ' ' + guest.lastName : ''}`;
           entry.guests.push(fullName);
           entry.families.add(family.unitName || '');
@@ -1982,9 +1982,9 @@ function AdminPage() {
 
         {/* Age Groups Section */}
         <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-          <StephsActualFavoriteTypographyNoDrop variant="h5" component="h2" gutterBottom>
+          <Typography variant="h5" component="h2" gutterBottom>
             Age Groups
-          </StephsActualFavoriteTypographyNoDrop>
+          </Typography>
           <Divider sx={{ mb: 3 }} />
           
           <Grid container spacing={3}>
@@ -2027,7 +2027,7 @@ function AdminPage() {
                   ) : (
                     ageGroups.baby.map((guest, i) => (
                       <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
                       </Typography>
                     ))
                   )}
@@ -2074,7 +2074,7 @@ function AdminPage() {
                   ) : (
                     ageGroups.under13.map((guest, i) => (
                       <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
                       </Typography>
                     ))
                   )}
@@ -2121,7 +2121,7 @@ function AdminPage() {
                   ) : (
                     ageGroups.under21.map((guest, i) => (
                       <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
                       </Typography>
                     ))
                   )}
