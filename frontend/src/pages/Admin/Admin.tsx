@@ -1441,6 +1441,9 @@ function AdminPage() {
     // Collect food allergies and dietary restrictions
     const foodAllergies = new Map<string, {count: number, guests: string[], families: Set<string>}>();
     
+    // Collect food preferences
+    const foodPreferences = new Map<string, {count: number, guests: string[], families: Set<string>}>();
+    
     // Process all families and guests
     adminData.forEach(family => {
       const invitationCode = family.invitationCode || '';
@@ -1495,7 +1498,6 @@ function AdminPage() {
       //   || guest.rsvp?.wedding === RsvpEnum.Attending
       // ) || [];
       let attendingGuests = (family.guests?.filter(guest => 
-        guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested ||
         guest.rsvp?.wedding === RsvpEnum.Attending
       ) || []).map(guest => ({
         ...guest,
@@ -1550,6 +1552,22 @@ function AdminPage() {
             entry.families.add(family.unitName || '');
           });
         }
+        
+        // Food preferences
+        if (guest.preferences?.foodPreference) {
+          const preference = guest.preferences.foodPreference;
+          if (!foodPreferences.has(preference)) {
+            foodPreferences.set(preference, {count: 0, guests: [], families: new Set()});
+          }
+          const entry = foodPreferences.get(preference)!;
+          entry.count++;
+          // Create a properly formatted guest name (handle '+1' case)
+          const fullName = guest.firstName === '+1' ? 
+            `+1 (${guest.familyUnitName})` : 
+            `${guest.firstName}${guest.lastName ? ' ' + guest.lastName : ''}`;
+          entry.guests.push(fullName);
+          entry.families.add(family.unitName || '');
+        }
       });
     });
     
@@ -1562,6 +1580,10 @@ function AdminPage() {
     
     // Sort food allergies by count (descending)
     const sortedFoodAllergies = Array.from(foodAllergies.entries())
+      .sort((a, b) => b[1].count - a[1].count);
+      
+    // Sort food preferences by count (descending)
+    const sortedFoodPreferences = Array.from(foodPreferences.entries())
       .sort((a, b) => b[1].count - a[1].count);
     
     // Function to render a family card with guests grouped by accommodation type
@@ -1846,6 +1868,74 @@ function AdminPage() {
                     </Box>
                     <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
                       Families Affected:
+                    </Typography>
+                    <Box sx={{ ml: 2 }}>
+                      {Array.from(data.families).map((name, i) => (
+                        <Typography key={i} variant="body2">
+                          • {name}
+                        </Typography>
+                      ))}
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Paper>
+
+        {/* Food Preferences Section */}
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Food Preferences
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          
+          {sortedFoodPreferences.length === 0 ? (
+            <Typography color="text.secondary">
+              No guests have reported food preferences.
+            </Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {sortedFoodPreferences.map(([preference, data], index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Paper 
+                    elevation={1} 
+                    sx={{ 
+                      p: 3, 
+                      height: '100%',
+                      borderLeft: '4px solid',
+                      borderColor: 'info.main'
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {preference}
+                      <Typography 
+                        component="span" 
+                        variant="caption" 
+                        sx={{ 
+                          ml: 1,
+                          bgcolor: 'info.main', 
+                          color: 'white',
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                        }}
+                      >
+                        {data.count} {data.count === 1 ? 'guest' : 'guests'}
+                      </Typography>
+                    </Typography>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Guests:
+                    </Typography>
+                    <Box sx={{ ml: 2 }}>
+                      {data.guests.map((name, i) => (
+                        <Typography key={i} variant="body2">
+                          • {name}
+                        </Typography>
+                      ))}
+                    </Box>
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                      Families:
                     </Typography>
                     <Box sx={{ ml: 2 }}>
                       {Array.from(data.families).map((name, i) => (
@@ -2900,8 +2990,8 @@ function AdminPage() {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    border: '1px solid #4caf50',
-                    backgroundColor: '#4caf50',
+                    border: '1px solid #ffc107',
+                    backgroundColor: '#ffc107',
                     mr: 1
                   }}
                 />
