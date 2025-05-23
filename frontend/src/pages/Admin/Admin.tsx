@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactElement, useCallback, useMemo } from 'react';
-import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum, GuestEmailLogDto, CampaignType, RoleEnum } from '@/types/api';
+import { FamilyUnitDto, InvitationResponseEnum, GuestDto, RsvpEnum, GuestEmailLogDto, CampaignType, RoleEnum, AgeGroupEnum } from '@/types/api';
 import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useApiContext } from '@/context/ApiContext';
 import Api from '@/api/Api';
@@ -1444,6 +1444,14 @@ function AdminPage() {
     // Collect food preferences
     const foodPreferences = new Map<string, {count: number, guests: string[], families: Set<string>}>();
     
+    // Maps to store guests by age group
+    const ageGroups = {
+      baby: [] as Array<GuestDto & { familyUnitName?: string }>,
+      under13: [] as Array<GuestDto & { familyUnitName?: string }>,
+      under21: [] as Array<GuestDto & { familyUnitName?: string }>,
+      adult: [] as Array<GuestDto & { familyUnitName?: string }>
+    };
+    
     // Process all families and guests
     adminData.forEach(family => {
       const invitationCode = family.invitationCode || '';
@@ -1492,6 +1500,14 @@ function AdminPage() {
         });
       }
       
+      // Process all guests for age groups
+      (family.guests || []).forEach(guest => {
+        const guestWithFamily = {
+          ...guest,
+          familyUnitName: family.unitName
+        };
+        
+      
       // Process guest preferences
       // let attendingGuests = family.guests?.filter(guest => 
       //   guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
@@ -1506,6 +1522,19 @@ function AdminPage() {
       }));
 
       attendingGuests?.forEach(guest => {
+
+        // Add to appropriate age group
+          if (guest.ageGroup === AgeGroupEnum.Baby) {
+            ageGroups.baby.push(guestWithFamily);
+          } else if (guest.ageGroup === AgeGroupEnum.Under13) {
+            ageGroups.under13.push(guestWithFamily);
+          } else if (guest.ageGroup === AgeGroupEnum.Under21) {
+            ageGroups.under21.push(guestWithFamily);
+          } else if (guest.ageGroup === AgeGroupEnum.Adult) {
+            ageGroups.adult.push(guestWithFamily);
+          }
+        });
+
         const guestAccommodation = familyGuestsByAccommodation.get(invitationCode)!;
         
         // Accommodation preferences
@@ -1949,6 +1978,157 @@ function AdminPage() {
               ))}
             </Grid>
           )}
+        </Paper>
+
+        {/* Age Groups Section */}
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+          <StephsActualFavoriteTypographyNoDrop variant="h5" component="h2" gutterBottom>
+            Age Groups
+          </StephsActualFavoriteTypographyNoDrop>
+          <Divider sx={{ mb: 3 }} />
+          
+          <Grid container spacing={3}>
+            {/* Babies */}
+            <Grid item xs={12} md={4}>
+              <Paper 
+                elevation={1} 
+                sx={{ 
+                  p: 3, 
+                  height: '100%',
+                  borderLeft: '4px solid',
+                  borderColor: 'primary.light'
+                }}
+              >
+                <Typography variant="h6" gutterBottom>
+                  Babies
+                  <Typography 
+                    component="span" 
+                    variant="caption" 
+                    sx={{ 
+                      ml: 1,
+                      bgcolor: 'primary.light', 
+                      color: 'white',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                    }}
+                  >
+                    {ageGroups.baby.length} {ageGroups.baby.length === 1 ? 'guest' : 'guests'}
+                  </Typography>
+                </Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  Guests:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  {ageGroups.baby.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No attending baby guests.
+                    </Typography>
+                  ) : (
+                    ageGroups.baby.map((guest, i) => (
+                      <Typography key={i} variant="body2">
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                      </Typography>
+                    ))
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Under 13 */}
+            <Grid item xs={12} md={4}>
+              <Paper 
+                elevation={1} 
+                sx={{ 
+                  p: 3, 
+                  height: '100%',
+                  borderLeft: '4px solid',
+                  borderColor: 'secondary.light'
+                }}
+              >
+                <Typography variant="h6" gutterBottom>
+                  Under 13
+                  <Typography 
+                    component="span" 
+                    variant="caption" 
+                    sx={{ 
+                      ml: 1,
+                      bgcolor: 'secondary.light', 
+                      color: 'white',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                    }}
+                  >
+                    {ageGroups.under13.length} {ageGroups.under13.length === 1 ? 'guest' : 'guests'}
+                  </Typography>
+                </Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  Guests:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  {ageGroups.under13.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No attending under-13 guests.
+                    </Typography>
+                  ) : (
+                    ageGroups.under13.map((guest, i) => (
+                      <Typography key={i} variant="body2">
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                      </Typography>
+                    ))
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Under 21 */}
+            <Grid item xs={12} md={4}>
+              <Paper 
+                elevation={1} 
+                sx={{ 
+                  p: 3, 
+                  height: '100%',
+                  borderLeft: '4px solid',
+                  borderColor: 'warning.main'
+                }}
+              >
+                <Typography variant="h6" gutterBottom>
+                  Under 21
+                  <Typography 
+                    component="span" 
+                    variant="caption" 
+                    sx={{ 
+                      ml: 1,
+                      bgcolor: 'warning.main', 
+                      color: 'white',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                    }}
+                  >
+                    {ageGroups.under21.length} {ageGroups.under21.length === 1 ? 'guest' : 'guests'}
+                  </Typography>
+                </Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  Guests:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  {ageGroups.under21.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No attending under-21 guests.
+                    </Typography>
+                  ) : (
+                    ageGroups.under21.map((guest, i) => (
+                      <Typography key={i} variant="body2">
+                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName})
+                      </Typography>
+                    ))
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
         </Paper>
       </Box>
     );
