@@ -114,9 +114,8 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                             }
                         }
 
-                        // Only count statistics for guests who are not pending
-                        if (guest.Rsvp?.InvitationResponse == InvitationResponseEnum.Interested
-                            || guest.Rsvp.Wedding == RsvpEnum.Attending)
+                        // Only count statistics for guests who are attending
+                        if (guest.Rsvp.Wedding == RsvpEnum.Attending)
                         {
                             // Count by age group
                             if (guest.AgeGroup == AgeGroupEnum.Baby) stats.BabyGuests++;
@@ -142,8 +141,7 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                         }
 
                         // Count allergies (only if guest is not pending)
-                        if (guest.Rsvp?.InvitationResponse == InvitationResponseEnum.Interested
-                            || guest.Rsvp?.Wedding == RsvpEnum.Attending)
+                        if (guest.Rsvp?.Wedding == RsvpEnum.Attending)
                         {
                             foreach (var allergy in guest.Preferences?.FoodAllergies)
                             {
