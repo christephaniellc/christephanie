@@ -1500,40 +1500,27 @@ function AdminPage() {
         });
       }
       
-      // Process all guests for age groups
-      (family.guests || []).forEach(guest => {
-        const guestWithFamily = {
-          ...guest,
-          familyUnitName: family.unitName
-        };
-        
-      
-      // Process guest preferences
-      // let attendingGuests = family.guests?.filter(guest => 
-      //   guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested
-      //   || guest.rsvp?.wedding === RsvpEnum.Attending
-      // ) || [];
+      // Process guest preferences for attending guests only
       let attendingGuests = (family.guests?.filter(guest => 
         guest.rsvp?.wedding === RsvpEnum.Attending
       ) || []).map(guest => ({
         ...guest,
         familyUnitName: family.unitName,
-        attending: guest.rsvp?.wedding === RsvpEnum.Attending
+        attending: true
       }));
 
-      attendingGuests?.forEach(guest => {
-
+      // Add attending guests to appropriate age groups
+      attendingGuests.forEach(guest => {
         // Add to appropriate age group
-          if (guest.ageGroup === AgeGroupEnum.Baby) {
-            ageGroups.baby.push(guestWithFamily);
-          } else if (guest.ageGroup === AgeGroupEnum.Under13) {
-            ageGroups.under13.push(guestWithFamily);
-          } else if (guest.ageGroup === AgeGroupEnum.Under21) {
-            ageGroups.under21.push(guestWithFamily);
-          } else if (guest.ageGroup === AgeGroupEnum.Adult) {
-            ageGroups.adult.push(guestWithFamily);
-          }
-        });
+        if (guest.ageGroup === AgeGroupEnum.Baby) {
+          ageGroups.baby.push(guest);
+        } else if (guest.ageGroup === AgeGroupEnum.Under13) {
+          ageGroups.under13.push(guest);
+        } else if (guest.ageGroup === AgeGroupEnum.Under21) {
+          ageGroups.under21.push(guest);
+        } else if (guest.ageGroup === AgeGroupEnum.Adult) {
+          ageGroups.adult.push(guest);
+        }
 
         const guestAccommodation = familyGuestsByAccommodation.get(invitationCode)!;
         
@@ -1565,8 +1552,8 @@ function AdminPage() {
           familyAccommodationMap.unknown.set(invitationCode, family);
         }
         
-        // Food allergies and restrictions
-        if (guest.preferences?.foodAllergies && guest.preferences.foodAllergies.length > 0) {
+        // Food allergies and restrictions - only for attending guests
+        if (guest.rsvp?.wedding === RsvpEnum.Attending && guest.preferences?.foodAllergies && guest.preferences.foodAllergies.length > 0) {
           guest.preferences.foodAllergies.forEach(allergy => {
             if (!foodAllergies.has(allergy)) {
               foodAllergies.set(allergy, {count: 0, guests: [], families: new Set()});
@@ -1582,8 +1569,8 @@ function AdminPage() {
           });
         }
         
-        // Food preferences
-        if (guest.preferences?.foodPreference) {
+        // Food preferences - only for attending guests
+        if (guest.rsvp?.wedding === RsvpEnum.Attending && guest.preferences?.foodPreference) {
           const preference = guest.preferences.foodPreference;
           if (!foodPreferences.has(preference)) {
             foodPreferences.set(preference, {count: 0, guests: [], families: new Set()});
