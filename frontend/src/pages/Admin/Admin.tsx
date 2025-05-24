@@ -36,8 +36,12 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Chip
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 // Import custom components
@@ -1400,6 +1404,23 @@ function AdminPage() {
 
   // Summary tab content with comprehensive statistics, organized by family
   const SummaryTabContent = () => {
+    // Import necessary MUI components at the top level of the component
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+      accommodation: true,
+      fourthOfJuly: true,
+      familyComments: true,
+      foodAllergies: true,
+      foodPreferences: true,
+      ageGroups: true
+    });
+
+    const handleSectionToggle = (section: string) => {
+      setExpandedSections(prev => ({
+        ...prev,
+        [section]: !prev[section]
+      }));
+    };
+    
     // Group families by accommodation preferences
     type AccommodationMap = {
       camping: Map<string, FamilyUnitDto>;
@@ -1451,6 +1472,9 @@ function AdminPage() {
       under21: [] as Array<GuestDto & { familyUnitName?: string }>,
       adult: [] as Array<GuestDto & { familyUnitName?: string }>
     };
+
+    // Store 4th of July attending guests
+    const fourthOfJulyGuests = [] as Array<GuestDto & { familyUnitName?: string }>;
     
     // Process all families and guests
     adminData.forEach(family => {
@@ -1500,8 +1524,8 @@ function AdminPage() {
         });
       }
       
-      // Process guest preferences for attending guests only
-      let attendingGuests = (family.guests?.filter(guest => 
+      // Process wedding attendees
+      let weddingAttendingGuests = (family.guests?.filter(guest => 
         guest.rsvp?.wedding === RsvpEnum.Attending
       ) || []).map(guest => ({
         ...guest,
@@ -1509,8 +1533,20 @@ function AdminPage() {
         attending: true
       }));
 
-      // Add attending guests to appropriate age groups
-      attendingGuests.forEach(guest => {
+      // Process 4th of July attendees
+      const julyAttendingGuests = (family.guests?.filter(guest => 
+        guest.rsvp?.fourthOfJuly === RsvpEnum.Attending
+      ) || []).map(guest => ({
+        ...guest,
+        familyUnitName: family.unitName,
+        attending: true
+      }));
+
+      // Add 4th of July attending guests to the list
+      fourthOfJulyGuests.push(...julyAttendingGuests);
+
+      // Add wedding attending guests to appropriate age groups
+      weddingAttendingGuests.forEach(guest => {
         // Add to appropriate age group
         if (guest.ageGroup === AgeGroupEnum.Baby) {
           ageGroups.baby.push(guest);
@@ -1601,6 +1637,31 @@ function AdminPage() {
     // Sort food preferences by count (descending)
     const sortedFoodPreferences = Array.from(foodPreferences.entries())
       .sort((a, b) => b[1].count - a[1].count);
+
+    // Sort guests in each age group by name
+    const sortGuests = (guests: Array<GuestDto & { familyUnitName?: string }>) => {
+      return [...guests].sort((a, b) => {
+        const aName = `${a.firstName} ${a.lastName || ''}`.trim();
+        const bName = `${b.firstName} ${b.lastName || ''}`.trim();
+        return aName.localeCompare(bName);
+      });
+    };
+
+    // Sort 4th of July guests by age group and then name
+    const sortedFourthOfJulyGuests = {
+      baby: sortGuests(fourthOfJulyGuests.filter(guest => guest.ageGroup === AgeGroupEnum.Baby)),
+      under13: sortGuests(fourthOfJulyGuests.filter(guest => guest.ageGroup === AgeGroupEnum.Under13)),
+      under21: sortGuests(fourthOfJulyGuests.filter(guest => guest.ageGroup === AgeGroupEnum.Under21)),
+      adult: sortGuests(fourthOfJulyGuests.filter(guest => guest.ageGroup === AgeGroupEnum.Adult))
+    };
+
+    // Sort age groups
+    const sortedAgeGroups = {
+      baby: sortGuests(ageGroups.baby),
+      under13: sortGuests(ageGroups.under13),
+      under21: sortGuests(ageGroups.under21),
+      adult: sortGuests(ageGroups.adult)
+    };
     
     // Function to render a family card with guests grouped by accommodation type
     const renderFamilyCard = (family: FamilyUnitDto, accommodationType: keyof GuestAccommodation, color: string) => {
@@ -1651,6 +1712,21 @@ function AdminPage() {
         </Grid>
       );
     };
+
+    // Render guests by age category
+    const renderGuestsByAge = (guests: Array<GuestDto & { familyUnitName?: string }>, emptyMessage: string) => {
+      return guests.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          {emptyMessage}
+        </Typography>
+      ) : (
+        guests.map((guest, i) => (
+          <Typography key={i} variant="body2">
+            • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
+          </Typography>
+        ))
+      );
+    };
     
     return (
       <Box sx={{ 
@@ -1659,464 +1735,663 @@ function AdminPage() {
         overflow: 'visible',
         p: 0
       }}>
-        <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
-          <StephsActualFavoriteTypographyNoDrop variant="h5" gutterBottom>
-            Accommodation Preferences
-          </StephsActualFavoriteTypographyNoDrop>
-          <Divider sx={{ mb: 3 }} />
-          
-          {/* Camping section */}
-          <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
-          sx={{
-            color: 'primary.main',
-            mb: 2
-          }}>
-            Camping ({campingFamilies.length} families)
-          </StephsActualFavoriteTypographyNoDrop>
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {campingFamilies.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  No families have selected camping.
-                </Typography>
-              </Grid>
-            ) : (
-              campingFamilies.map(family => 
-                renderFamilyCard(family, 'camping', 'primary.main')
-              )
-            )}
-          </Grid>
-          
-          {/* Manor section */}
-          <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom
-          sx={{
-            color: 'secondary.main',
-            mb: 2
-          }}>
-            Manor ({manorFamilies.length} families)
-          </StephsActualFavoriteTypographyNoDrop>
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {manorFamilies.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  No families have selected manor.
-                </Typography>
-              </Grid>
-            ) : (
-              manorFamilies.map(family => 
-                renderFamilyCard(family, 'manor', 'secondary.main')
-              )
-            )}
-          </Grid>
-          
-          {/* Hotel section */}
-          <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
-          sx={{
-            color: 'info.main',
-            mb: 2
-          }}>
-            Hotel ({hotelFamilies.length} families)
-          </StephsActualFavoriteTypographyNoDrop>
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {hotelFamilies.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  No families have selected hotel.
-                </Typography>
-              </Grid>
-            ) : (
-              hotelFamilies.map(family => 
-                renderFamilyCard(family, 'hotel', 'info.main')
-              )
-            )}
-          </Grid>
-          
-          {/* Other section */}
-          <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
-          sx={{
-            color: 'warning.main',
-            mb: 2
-          }}>
-            Other ({otherFamilies.length} families)
-          </StephsActualFavoriteTypographyNoDrop>
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {otherFamilies.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  No families have selected other accommodations.
-                </Typography>
-              </Grid>
-            ) : (
-              otherFamilies.map(family => 
-                renderFamilyCard(family, 'other', 'warning.main')
-              )
-            )}
-          </Grid>
-          
-          {/* Unknown section */}
-          <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom
-          sx={{
-            color: 'text.secondary',
-            mb: 2
-          }}>
-            Unknown ({unknownFamilies.length} families)
-          </StephsActualFavoriteTypographyNoDrop>
-          <Grid container spacing={2}>
-            {unknownFamilies.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  All families have specified their accommodation preferences.
-                </Typography>
-              </Grid>
-            ) : (
-              unknownFamilies.map(family => 
-                renderFamilyCard(family, 'unknown', 'text.disabled')
-              )
-            )}
-          </Grid>
-        </Paper>
+        {/* Accommodation Preferences Section */}
+        <Accordion 
+          expanded={expandedSections.accommodation} 
+          onChange={() => handleSectionToggle('accommodation')}
+          elevation={3}
+          sx={{ mb: 3 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <StephsActualFavoriteTypographyNoDrop variant="h5">
+              Accommodation Preferences
+            </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
+            {/* Camping section */}
+            <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
+            sx={{
+              color: 'primary.main',
+              mb: 2
+            }}>
+              Camping ({campingFamilies.length} families)
+            </StephsActualFavoriteTypographyNoDrop>
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {campingFamilies.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    No families have selected camping.
+                  </Typography>
+                </Grid>
+              ) : (
+                campingFamilies.map(family => 
+                  renderFamilyCard(family, 'camping', 'primary.main')
+                )
+              )}
+            </Grid>
+            
+            {/* Manor section */}
+            <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom
+            sx={{
+              color: 'secondary.main',
+              mb: 2
+            }}>
+              Manor ({manorFamilies.length} families)
+            </StephsActualFavoriteTypographyNoDrop>
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {manorFamilies.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    No families have selected manor.
+                  </Typography>
+                </Grid>
+              ) : (
+                manorFamilies.map(family => 
+                  renderFamilyCard(family, 'manor', 'secondary.main')
+                )
+              )}
+            </Grid>
+            
+            {/* Hotel section */}
+            <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
+            sx={{
+              color: 'info.main',
+              mb: 2
+            }}>
+              Hotel ({hotelFamilies.length} families)
+            </StephsActualFavoriteTypographyNoDrop>
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {hotelFamilies.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    No families have selected hotel.
+                  </Typography>
+                </Grid>
+              ) : (
+                hotelFamilies.map(family => 
+                  renderFamilyCard(family, 'hotel', 'info.main')
+                )
+              )}
+            </Grid>
+            
+            {/* Other section */}
+            <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom 
+            sx={{
+              color: 'warning.main',
+              mb: 2
+            }}>
+              Other ({otherFamilies.length} families)
+            </StephsActualFavoriteTypographyNoDrop>
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {otherFamilies.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    No families have selected other accommodations.
+                  </Typography>
+                </Grid>
+              ) : (
+                otherFamilies.map(family => 
+                  renderFamilyCard(family, 'other', 'warning.main')
+                )
+              )}
+            </Grid>
+            
+            {/* Unknown section */}
+            <StephsActualFavoriteTypographyNoDrop variant="h6" gutterBottom
+            sx={{
+              color: 'text.secondary',
+              mb: 2
+            }}>
+              Unknown ({unknownFamilies.length} families)
+            </StephsActualFavoriteTypographyNoDrop>
+            <Grid container spacing={2}>
+              {unknownFamilies.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    All families have specified their accommodation preferences.
+                  </Typography>
+                </Grid>
+              ) : (
+                unknownFamilies.map(family => 
+                  renderFamilyCard(family, 'unknown', 'text.disabled')
+                )
+              )}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
         
-        {/* Family Comments Section */}
-        <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Family Comments
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-          
-          {familyComments.length === 0 ? (
-            <Typography color="text.secondary">
-              No families have provided comments.
-            </Typography>
-          ) : (
+        {/* 4th of July Attendees Section */}
+        <Accordion 
+          expanded={expandedSections.fourthOfJuly} 
+          onChange={() => handleSectionToggle('fourthOfJuly')}
+          elevation={3}
+          sx={{ mb: 3 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <StephsActualFavoriteTypographyNoDrop variant="h5">
+              4th of July Attendees ({fourthOfJulyGuests.length} guests)
+          </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
             <Grid container spacing={3}>
-              {familyComments.map((comment, index) => (
-                <Grid item xs={12} key={index}>
-                  <Paper 
-                    elevation={1} 
-                    sx={{ 
-                      p: 3, 
-                      borderLeft: '4px solid',
-                      borderColor: 'info.main',
-                      bgcolor: 'background.paper',
-                    }}
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      {comment.familyName}
-                      <Typography 
-                        component="span" 
-                        variant="caption" 
-                        sx={{ ml: 1, color: 'text.secondary' }}
-                      >
-                        ({comment.invitationCode})
-                      </Typography>
-                    </Typography>
+              {/* Babies */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'primary.light'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Babies
                     <Typography 
-                      variant="body1" 
+                      component="span" 
+                      variant="caption" 
                       sx={{ 
-                        whiteSpace: 'pre-wrap',
-                        mb: 2
+                        ml: 1,
+                        bgcolor: 'primary.light', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
                       }}
                     >
-                      "{comment.comment}"
+                      {sortedFourthOfJulyGuests.baby.length} {sortedFourthOfJulyGuests.baby.length === 1 ? 'guest' : 'guests'}
                     </Typography>
-                    {comment.lastUpdatedBy && (
-                      <Typography variant="caption" color="text.secondary">
-                        Last updated by: {comment.lastUpdatedBy}
-                      </Typography>
-                    )}
-                  </Paper>
-                </Grid>
-              ))}
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedFourthOfJulyGuests.baby, "No babies attending 4th of July.")}
+                  </Box>
+                </Paper>
+              </Grid>
+
+              {/* Under 13 */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'secondary.light'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Under 13
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'secondary.light', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedFourthOfJulyGuests.under13.length} {sortedFourthOfJulyGuests.under13.length === 1 ? 'guest' : 'guests'}
+                    </Typography>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedFourthOfJulyGuests.under13, "No under-13 guests attending 4th of July.")}
+                  </Box>
+                </Paper>
+              </Grid>
+
+              {/* Under 21 */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'warning.main'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Under 21
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'warning.main', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedFourthOfJulyGuests.under21.length} {sortedFourthOfJulyGuests.under21.length === 1 ? 'guest' : 'guests'}
+                    </Typography>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedFourthOfJulyGuests.under21, "No under-21 guests attending 4th of July.")}
+                  </Box>
+                </Paper>
+              </Grid>
+              
+              {/* Adults */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'success.main'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Adults
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'success.main', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedFourthOfJulyGuests.adult.length} {sortedFourthOfJulyGuests.adult.length === 1 ? 'guest' : 'guests'}
+                    </Typography>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedFourthOfJulyGuests.adult, "No adult guests attending 4th of July.")}
+                  </Box>
+                </Paper>
+              </Grid>
             </Grid>
-          )}
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
+        
+        {/* Family Comments Section */}
+        <Accordion 
+          expanded={expandedSections.familyComments} 
+          onChange={() => handleSectionToggle('familyComments')}
+          elevation={3}
+          sx={{ mb: 3 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>            
+          <StephsActualFavoriteTypographyNoDrop variant="h5">
+            Family Comments ({familyComments.length})
+          </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
+            {familyComments.length === 0 ? (
+              <Typography color="text.secondary">
+                No families have provided comments.
+              </Typography>
+            ) : (
+              <Grid container spacing={3}>
+                {familyComments.map((comment, index) => (
+                  <Grid item xs={12} key={index}>
+                    <Paper 
+                      elevation={1} 
+                      sx={{ 
+                        p: 3, 
+                        borderLeft: '4px solid',
+                        borderColor: 'info.main',
+                        bgcolor: 'background.paper',
+                      }}
+                    >
+                      <Typography variant="h6" gutterBottom>
+                        {comment.familyName}
+                        <Typography 
+                          component="span" 
+                          variant="caption" 
+                          sx={{ ml: 1, color: 'text.secondary' }}
+                        >
+                          ({comment.invitationCode})
+                        </Typography>
+                      </Typography>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          whiteSpace: 'pre-wrap',
+                          mb: 2
+                        }}
+                      >
+                        "{comment.comment}"
+                      </Typography>
+                      {comment.lastUpdatedBy && (
+                        <Typography variant="caption" color="text.secondary">
+                          Last updated by: {comment.lastUpdatedBy}
+                        </Typography>
+                      )}
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </AccordionDetails>
+        </Accordion>
         
         {/* Food Allergies Section */}
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Food Allergies & Dietary Restrictions
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-          
-          {sortedFoodAllergies.length === 0 ? (
-            <Typography color="text.secondary">
-              No guests have reported food allergies or dietary restrictions.
-            </Typography>
-          ) : (
-            <Grid container spacing={3}>
-              {sortedFoodAllergies.map(([allergy, data], index) => (
-                <Grid item xs={12} md={6} key={index}>
-                  <Paper 
-                    elevation={1} 
-                    sx={{ 
-                      p: 3, 
-                      height: '100%',
-                      borderLeft: '4px solid',
-                      borderColor: 'error.main'
-                    }}
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      {allergy}
-                      <Typography 
-                        component="span" 
-                        variant="caption" 
-                        sx={{ 
-                          ml: 1,
-                          bgcolor: 'error.main', 
-                          color: 'white',
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                        }}
-                      >
-                        {data.count} {data.count === 1 ? 'guest' : 'guests'}
+        <Accordion 
+          expanded={expandedSections.foodAllergies} 
+          onChange={() => handleSectionToggle('foodAllergies')}
+          elevation={3}
+          sx={{ mb: 3 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <StephsActualFavoriteTypographyNoDrop variant="h5">
+            Food Allergies & Dietary Restrictions ({sortedFoodAllergies.length})
+          </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
+            {sortedFoodAllergies.length === 0 ? (
+              <Typography color="text.secondary">
+                No guests have reported food allergies or dietary restrictions.
+              </Typography>
+            ) : (
+              <Grid container spacing={3}>
+                {sortedFoodAllergies.map(([allergy, data], index) => (
+                  <Grid item xs={12} md={6} key={index}>
+                    <Paper 
+                      elevation={1} 
+                      sx={{ 
+                        p: 3, 
+                        height: '100%',
+                        borderLeft: '4px solid',
+                        borderColor: 'error.main'
+                      }}
+                    >
+                      <Typography variant="h6" gutterBottom>
+                        {allergy}
+                        <Typography 
+                          component="span" 
+                          variant="caption" 
+                          sx={{ 
+                            ml: 1,
+                            bgcolor: 'error.main', 
+                            color: 'white',
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                          }}
+                        >
+                          {data.count} {data.count === 1 ? 'guest' : 'guests'}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Affected Guests:
-                    </Typography>
-                    <Box sx={{ ml: 2 }}>
-                      {data.guests.map((name, i) => (
-                        <Typography key={i} variant="body2">
-                          • {name}
-                        </Typography>
-                      ))}
-                    </Box>
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                      Families Affected:
-                    </Typography>
-                    <Box sx={{ ml: 2 }}>
-                      {Array.from(data.families).map((name, i) => (
-                        <Typography key={i} variant="body2">
-                          • {name}
-                        </Typography>
-                      ))}
-                    </Box>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Paper>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Affected Guests:
+                      </Typography>
+                      <Box sx={{ ml: 2 }}>
+                        {data.guests.map((name, i) => (
+                          <Typography key={i} variant="body2">
+                            • {name}
+                          </Typography>
+                        ))}
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </AccordionDetails>
+        </Accordion>
 
         {/* Food Preferences Section */}
-        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Food Preferences
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-          
-          {sortedFoodPreferences.length === 0 ? (
-            <Typography color="text.secondary">
-              No guests have reported food preferences.
-            </Typography>
-          ) : (
-            <Grid container spacing={3}>
-              {sortedFoodPreferences.map(([preference, data], index) => (
-                <Grid item xs={12} md={6} key={index}>
-                  <Paper 
-                    elevation={1} 
-                    sx={{ 
-                      p: 3, 
-                      height: '100%',
-                      borderLeft: '4px solid',
-                      borderColor: 'info.main'
-                    }}
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      {preference}
-                      <Typography 
-                        component="span" 
-                        variant="caption" 
-                        sx={{ 
-                          ml: 1,
-                          bgcolor: 'info.main', 
-                          color: 'white',
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                        }}
-                      >
-                        {data.count} {data.count === 1 ? 'guest' : 'guests'}
+        <Accordion 
+          expanded={expandedSections.foodPreferences} 
+          onChange={() => handleSectionToggle('foodPreferences')}
+          elevation={3}
+          sx={{ mb: 3 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <StephsActualFavoriteTypographyNoDrop variant="h5">
+            Food Preferences ({sortedFoodPreferences.length})
+          </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
+            {sortedFoodPreferences.length === 0 ? (
+              <Typography color="text.secondary">
+                No guests have reported food preferences.
+              </Typography>
+            ) : (
+              <Grid container spacing={3}>
+                {sortedFoodPreferences.map(([preference, data], index) => (
+                  <Grid item xs={12} md={6} key={index}>
+                    <Paper 
+                      elevation={1} 
+                      sx={{ 
+                        p: 3, 
+                        height: '100%',
+                        borderLeft: '4px solid',
+                        borderColor: 'info.main'
+                      }}
+                    >
+                      <Typography variant="h6" gutterBottom>
+                        {preference}
+                        <Typography 
+                          component="span" 
+                          variant="caption" 
+                          sx={{ 
+                            ml: 1,
+                            bgcolor: 'info.main', 
+                            color: 'white',
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                          }}
+                        >
+                          {data.count} {data.count === 1 ? 'guest' : 'guests'}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Guests:
-                    </Typography>
-                    <Box sx={{ ml: 2 }}>
-                      {data.guests.map((name, i) => (
-                        <Typography key={i} variant="body2">
-                          • {name}
-                        </Typography>
-                      ))}
-                    </Box>
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                      Families:
-                    </Typography>
-                    <Box sx={{ ml: 2 }}>
-                      {Array.from(data.families).map((name, i) => (
-                        <Typography key={i} variant="body2">
-                          • {name}
-                        </Typography>
-                      ))}
-                    </Box>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Paper>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Guests:
+                      </Typography>
+                      <Box sx={{ ml: 2 }}>
+                        {data.guests.map((name, i) => (
+                          <Typography key={i} variant="body2">
+                            • {name}
+                          </Typography>
+                        ))}
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </AccordionDetails>
+        </Accordion>
 
         {/* Age Groups Section */}
-        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Age Groups
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-          
-          <Grid container spacing={3}>
-            {/* Babies */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 3, 
-                  height: '100%',
-                  borderLeft: '4px solid',
-                  borderColor: 'primary.light'
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Babies
-                  <Typography 
-                    component="span" 
-                    variant="caption" 
-                    sx={{ 
-                      ml: 1,
-                      bgcolor: 'primary.light', 
-                      color: 'white',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {ageGroups.baby.length} {ageGroups.baby.length === 1 ? 'guest' : 'guests'}
-                  </Typography>
-                </Typography>
-                <Typography variant="subtitle2" gutterBottom>
-                  Guests:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  {ageGroups.baby.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
-                      No attending baby guests.
+        <Accordion 
+          expanded={expandedSections.ageGroups} 
+          onChange={() => handleSectionToggle('ageGroups')}
+          elevation={3}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <StephsActualFavoriteTypographyNoDrop variant="h5">
+            Wedding Attendees by Age
+          </StephsActualFavoriteTypographyNoDrop>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 3 }}>
+            <Divider sx={{ mb: 3 }} />
+            
+            <Grid container spacing={3}>
+              {/* Babies */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'primary.light'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Babies
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'primary.light', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedAgeGroups.baby.length} {sortedAgeGroups.baby.length === 1 ? 'guest' : 'guests'}
                     </Typography>
-                  ) : (
-                    ageGroups.baby.map((guest, i) => (
-                      <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
-                      </Typography>
-                    ))
-                  )}
-                </Box>
-              </Paper>
-            </Grid>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedAgeGroups.baby, "No attending baby guests.")}
+                  </Box>
+                </Paper>
+              </Grid>
 
-            {/* Under 13 */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 3, 
-                  height: '100%',
-                  borderLeft: '4px solid',
-                  borderColor: 'secondary.light'
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Under 13
-                  <Typography 
-                    component="span" 
-                    variant="caption" 
-                    sx={{ 
-                      ml: 1,
-                      bgcolor: 'secondary.light', 
-                      color: 'white',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {ageGroups.under13.length} {ageGroups.under13.length === 1 ? 'guest' : 'guests'}
-                  </Typography>
-                </Typography>
-                <Typography variant="subtitle2" gutterBottom>
-                  Guests:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  {ageGroups.under13.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
-                      No attending under-13 guests.
+              {/* Under 13 */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'secondary.light'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Under 13
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'secondary.light', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedAgeGroups.under13.length} {sortedAgeGroups.under13.length === 1 ? 'guest' : 'guests'}
                     </Typography>
-                  ) : (
-                    ageGroups.under13.map((guest, i) => (
-                      <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
-                      </Typography>
-                    ))
-                  )}
-                </Box>
-              </Paper>
-            </Grid>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedAgeGroups.under13, "No attending under-13 guests.")}
+                  </Box>
+                </Paper>
+              </Grid>
 
-            {/* Under 21 */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 3, 
-                  height: '100%',
-                  borderLeft: '4px solid',
-                  borderColor: 'warning.main'
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Under 21
-                  <Typography 
-                    component="span" 
-                    variant="caption" 
-                    sx={{ 
-                      ml: 1,
-                      bgcolor: 'warning.main', 
-                      color: 'white',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {ageGroups.under21.length} {ageGroups.under21.length === 1 ? 'guest' : 'guests'}
-                  </Typography>
-                </Typography>
-                <Typography variant="subtitle2" gutterBottom>
-                  Guests:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  {ageGroups.under21.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
-                      No attending under-21 guests.
+              {/* Under 21 */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'warning.main'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Under 21
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'warning.main', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedAgeGroups.under21.length} {sortedAgeGroups.under21.length === 1 ? 'guest' : 'guests'}
                     </Typography>
-                  ) : (
-                    ageGroups.under21.map((guest, i) => (
-                      <Typography key={i} variant="body2">
-                        • {guest.firstName} {guest.lastName} ({guest.familyUnitName || ''})
-                      </Typography>
-                    ))
-                  )}
-                </Box>
-              </Paper>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedAgeGroups.under21, "No attending under-21 guests.")}
+                  </Box>
+                </Paper>
+              </Grid>
+              
+              {/* Adults */}
+              <Grid item xs={12} md={6}>
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderLeft: '4px solid',
+                    borderColor: 'success.main'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Adults
+                    <Typography 
+                      component="span" 
+                      variant="caption" 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: 'success.main', 
+                        color: 'white',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {sortedAgeGroups.adult.length} {sortedAgeGroups.adult.length === 1 ? 'guest' : 'guests'}
+                    </Typography>
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Guests:
+                  </Typography>
+                  <Box sx={{ ml: 2 }}>
+                    {renderGuestsByAge(sortedAgeGroups.adult, "No attending adult guests.")}
+                  </Box>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
       </Box>
     );
   };
@@ -3709,7 +3984,8 @@ function AdminPage() {
             <Tabs
               value={tabIndex}
               onChange={handleTabChange}
-              variant="fullWidth"
+              variant="scrollable"
+              scrollButtons="auto"
               textColor="primary"
               indicatorColor="secondary"
               aria-label="Admin tabs"

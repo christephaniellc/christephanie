@@ -64,6 +64,7 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                         // Always count everyone in the totals for the pixel representation
                         stats.TotalGuests++;
                         var confirmedAttending = false;
+                        var confirmedDecline = false;
 
                         // Count by invitationResponse status
                         if (guest.Rsvp == null)
@@ -79,7 +80,15 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                                 confirmedAttending = true;
                             }
 
-                            if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Interested)
+                            if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Declined
+                                     || (guest.Rsvp!.Wedding != null && guest.Rsvp?.Wedding == RsvpEnum.Declined))
+                            {
+                                stats.DeclinedGuests++;
+                                familyDeclined = true;
+                                confirmedDecline = true;
+                            }
+
+                            if (!confirmedDecline && guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Interested)
                             {
                                 if (!confirmedAttending)
                                 {
@@ -87,14 +96,9 @@ namespace Wedding.Lambdas.Stats.Get.Handlers
                                     familyInterested = true;
                                 }
                             }
-                            else if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Declined
-                                     || (guest.Rsvp!.Wedding != null && guest.Rsvp?.Wedding == RsvpEnum.Declined))
-                            {
-                                stats.DeclinedGuests++;
-                                familyDeclined = true;
-                            }
-                            if (guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending
-                                     && (guest.Rsvp!.Wedding == null || guest.Rsvp!.Wedding == RsvpEnum.Pending))
+
+                            if (!confirmedDecline && guest.Rsvp!.InvitationResponse == InvitationResponseEnum.Pending
+                                && (guest.Rsvp!.Wedding == null || guest.Rsvp!.Wedding == RsvpEnum.Pending))
                             {
                                 stats.PendingWeddingGuests++;
                             }
