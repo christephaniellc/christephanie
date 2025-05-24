@@ -42,7 +42,7 @@ import {
   AccordionDetails
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 // Import custom components
 import FamilyList, { SortOption } from './components/FamilyList';
@@ -199,11 +199,19 @@ function AdminPage() {
   // Initial tab index based on the current URL path
   const initialTabIndex = pathToTabIndex[location.pathname] || 0;
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize sort option from URL query parameter or default to 'lastUpdated'
+  const sortFromUrl = searchParams.get('sort') as SortOption;
+  const validSortOptions: SortOption[] = ['lastUpdated', 'naggingOrder', 'invitationStatus', 'default'];
+  const initialSortOption: SortOption = validSortOptions.includes(sortFromUrl as SortOption) 
+    ? sortFromUrl as SortOption 
+    : 'lastUpdated';
   
   const [adminData, setAdminData] = useState<FamilyUnitDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortOption, setSortOption] = useState<SortOption>('lastUpdated');
+  const [sortOption, setSortOption] = useState<SortOption>(initialSortOption);
   const [selectedFamily, setSelectedFamily] = useState<FamilyUnitDto | null>(null);
   const [familyDetailsLoading, setFamilyDetailsLoading] = useState(false);
   
@@ -237,14 +245,24 @@ function AdminPage() {
       setTabIndex(newTabIndex);
     }
   }, [location.pathname, tabIndex, navigate]);
+  
+  // Sync sort option with URL query parameter
+  useEffect(() => {
+    const sortFromUrl = searchParams.get('sort') as SortOption;
+    if (sortFromUrl && validSortOptions.includes(sortFromUrl) && sortFromUrl !== sortOption) {
+      setSortOption(sortFromUrl);
+    }
+  }, [searchParams, sortOption]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
 
-    // Update URL when tab changes
+    // Update URL when tab changes, preserving query parameters if going to details
+    const sortParam = sortOption !== 'lastUpdated' && newValue === 0 ? `?sort=${sortOption}` : '';
+    
     switch(newValue) {
       case 0:
-        navigate('/admin/details');
+        navigate(`/admin/details${sortParam}`);
         break;
       case 1:
         navigate('/admin/edit');
@@ -552,7 +570,13 @@ function AdminPage() {
 
   // Handle sorting selector change - memoized to prevent recreating on each render
   const handleSortChange = (event: SelectChangeEvent) => {
-    setSortOption(event.target.value as SortOption);
+    const newSortOption = event.target.value as SortOption;
+    setSortOption(newSortOption);
+    
+    // Update URL query parameter
+    if (location.pathname.includes('/admin/details')) {
+      setSearchParams({ sort: newSortOption });
+    }
   };
 
   // Handle family selection

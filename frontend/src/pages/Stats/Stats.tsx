@@ -6,20 +6,26 @@ import {
 } from '@mui/material';
 
 import { StatsViewModel } from '@/types/api';
-import { useStatsQueries } from '@/hooks/useAdminQueries';
+import { useStatsQueries, useAdminQueries } from '@/hooks/useAdminQueries';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import StatsDashboardCharts from '@/components/StatsDashboardCharts';
+import { useRecoilValue } from 'recoil';
+import { userState } from '@/store/user';
+import { isAdmin } from '@/utils/roles';
 
 function Stats() {
   const [statsData, setStatsData] = useState<StatsViewModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
+  const currentUser = useRecoilValue(userState);
+  const userIsAdmin = isAdmin(currentUser);
   
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Use stats query
   const { getStatsQuery } = useStatsQueries();
+  const { getAllFamiliesQuery } = useAdminQueries();
   
   // Fetch stats data for all users (public endpoint)
   useEffect(() => {
@@ -76,7 +82,12 @@ function Stats() {
       ) : error ? (
         <Typography color="error" sx={{ mb: 4 }}>{error}</Typography>
       ) : (
-        <StatsDashboardCharts stats={statsData!} loading={false} />
+        <StatsDashboardCharts 
+          stats={statsData!} 
+          loading={false}
+          isAdmin={userIsAdmin} 
+          getAllFamiliesQuery={getAllFamiliesQuery}
+        />
       )}
     </Box>
   );
