@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper, useMediaQuery } from '@mui/material';
-import { StatsViewModel } from '@/types/api';
+import { 
+  Box, Grid, Typography, useTheme, CircularProgress, Tab, Tabs, Paper, useMediaQuery,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, List, ListItem, ListItemText,
+  Divider, Chip, IconButton
+} from '@mui/material';
+import { StatsViewModel, GuestDto, FamilyUnitDto, AgeGroupEnum, RsvpEnum, InvitationResponseEnum } from '@/types/api';
 import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
 import { 
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -8,6 +12,7 @@ import {
 } from 'recharts';
 import { animated, useSpring } from 'react-spring';
 import { FeatureFlags, isFeatureEnabled } from '@/config';
+import { UseQueryResult } from '@tanstack/react-query';
 
 
 // Custom themed tooltip with 8-bit style
@@ -135,7 +140,19 @@ const PixelGuestGrid = ({
 };
 
 // Custom animated counter
-const AnimatedCounter = ({ value, label, color }: { value: number, label: string, color: string }) => {
+const AnimatedCounter = ({ 
+  value, 
+  label, 
+  color, 
+  onClick, 
+  clickable 
+}: { 
+  value: number, 
+  label: string, 
+  color: string,
+  onClick?: () => void,
+  clickable?: boolean
+}) => {
   const { number } = useSpring({
     from: { number: 0 },
     number: value,
@@ -152,14 +169,24 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
         backgroundColor: 'rgba(0,0,0,0.7)',
         boxShadow: `4px 4px 0 ${color}`,
         borderRadius: '4px',
-        m: 1
+        m: 1,
+        cursor: clickable ? 'pointer' : 'default',
+        transition: 'all 0.2s ease',
+        '&:hover': clickable ? {
+          transform: 'scale(1.03)',
+          boxShadow: `6px 6px 0 ${color}`,
+        } : {}
       }}
+      onClick={clickable ? onClick : undefined}
     >
       <animated.div style={{ fontSize: '2rem', fontWeight: 'bold', color }}>
         {number.to(n => Math.floor(n))}
       </animated.div>
-      <Typography variant="body2" sx={{ color: 'white', mt: 1, fontFamily: 'monospace' }}>
+      <Typography variant="body2" sx={{ color: 'white', mt: 1, fontFamily: 'monospace', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {label}
+        {clickable && (
+          <Box component="span" sx={{ ml: 1, fontSize: '0.8rem', opacity: 0.7 }}>(Click for details)</Box>
+        )}
       </Typography>
     </Box>
   );
@@ -167,15 +194,177 @@ const AnimatedCounter = ({ value, label, color }: { value: number, label: string
 
 type AdminTab = 'overview' | 'july4' | 'food' | 'accommodation' | 'interest' | 'client-info';
 
+interface GuestListDialogProps {
+  open: boolean;
+  onClose: () => void;
+  guests: Array<GuestDto & { familyUnitName?: string }>;
+  title: string;
+}
+
+const GuestListDialog: React.FC<GuestListDialogProps> = ({ open, onClose, guests, title }) => {
+  // Sort guests by age group (youngest first) and then alphabetically by name
+  const sortedGuests = [...guests].sort((a, b) => {
+    // First sort by age group
+    const ageOrder = { 
+      [AgeGroupEnum.Baby]: 1, 
+      [AgeGroupEnum.Under13]: 2, 
+      [AgeGroupEnum.Under21]: 3, 
+      [AgeGroupEnum.Adult]: 4 
+    };
+    
+    const aOrder = ageOrder[a.ageGroup || AgeGroupEnum.Adult] || 4;
+    const bOrder = ageOrder[b.ageGroup || AgeGroupEnum.Adult] || 4;
+    
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    
+    // Then sort alphabetically
+    const aName = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+    const bName = `${b.firstName || ''} ${b.lastName || ''}`.trim();
+    return aName.localeCompare(bName);
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          border: '2px solid #E9950C',
+          boxShadow: '4px 4px 0 #E9950C',
+          borderRadius: '4px',
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h5">{title}</Typography>
+        <Typography variant="subtitle2" color="text.secondary">
+          {guests.length} {guests.length === 1 ? 'guest' : 'guests'}
+        </Typography>
+      </DialogTitle>
+      <DialogContent dividers>
+        <List>
+          {sortedGuests.map((guest) => (
+            <ListItem key={guest.guestId}>
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="body1">
+                      {guest.firstName} {guest.lastName}
+                    </Typography>
+                    {guest.ageGroup !== AgeGroupEnum.Adult && (
+                      <Chip 
+                        label={guest.ageGroup} 
+                        size="small" 
+                        sx={{ 
+                          ml: 1,
+                          bgcolor: 
+                            guest.ageGroup === AgeGroupEnum.Baby ? '#E91E63' : 
+                            guest.ageGroup === AgeGroupEnum.Under13 ? '#9C27B0' : 
+                            guest.ageGroup === AgeGroupEnum.Under21 ? '#3F51B5' : 'primary.main',
+                          color: 'white'
+                        }} 
+                      />
+                    )}
+                  </Box>
+                }
+                secondary={guest.familyUnitName}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 interface AdminDashboardChartsProps {
   stats: StatsViewModel;
   loading: boolean;
+  isAdmin?: boolean;
+  getAllFamiliesQuery?: UseQueryResult<FamilyUnitDto[], any>;
 }
 
-const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, loading }) => {
+const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ 
+  stats, 
+  loading,
+  isAdmin = false,
+  getAllFamiliesQuery
+}) => {
   const theme = useTheme();  
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  
+  // Guest list dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogGuests, setDialogGuests] = useState<Array<GuestDto & { familyUnitName?: string }>>([]);
+  const [dialogTitle, setDialogTitle] = useState('');
+  
+  // Handle opening guest dialog
+  const handleOpenGuestDialog = async (status: 'attending' | 'interested' | 'declined' | 'pending') => {
+    if (!isAdmin || !getAllFamiliesQuery) return;
+    
+    // Fetch data if not already loaded
+    if (!getAllFamiliesQuery.data) {
+      await getAllFamiliesQuery.refetch();
+    }
+    
+    if (getAllFamiliesQuery.data) {
+      const families = getAllFamiliesQuery.data;
+      let filteredGuests: Array<GuestDto & { familyUnitName?: string }> = [];
+      let title = '';
+      
+      // Process all guests from all families
+      families.forEach(family => {
+        const familyGuests = family.guests || [];
+        
+        // Filter based on status
+        const statusFiltered = familyGuests
+          .filter(guest => {
+            if (status === 'attending') {
+              return guest.rsvp?.wedding === RsvpEnum.Attending;
+            } else if (status === 'interested') {
+              return guest.rsvp?.invitationResponse === InvitationResponseEnum.Interested;
+            } else if (status === 'declined') {
+              return guest.rsvp?.invitationResponse === InvitationResponseEnum.Declined;
+            } else {
+              return guest.rsvp?.wedding === RsvpEnum.Pending;
+            }
+          })
+          .map(guest => ({
+            ...guest,
+            familyUnitName: family.unitName || ''
+          }));
+        
+        filteredGuests.push(...statusFiltered);
+      });
+      
+      // Set title based on status
+      if (status === 'attending') {
+        title = 'Attending (Confirmed)';
+      } else if (status === 'interested') {
+        title = 'Interested';
+      } else if (status === 'declined') {
+        title = 'Declined';
+      } else {
+        title = 'Pending';
+      }
+      
+      setDialogGuests(filteredGuests);
+      setDialogTitle(title);
+      setDialogOpen(true);
+    }
+  };
 
   // Prepare data for charts using the stats from backend
   const metrics = {
@@ -357,21 +546,27 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
                 value={metrics.attendingGuests} 
                 label="Attending (Confirmed)"
                 color="#63e368" 
+                clickable={isAdmin}
+                onClick={() => handleOpenGuestDialog('attending')}
               />
             </Grid>
           )}
           <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
             <AnimatedCounter 
               value={metrics.interestedGuests} 
-              label={ "Interested" }
+              label="Interested"
               color="#3c823f" 
+              clickable={isAdmin}
+              onClick={() => handleOpenGuestDialog('interested')}
             />
           </Grid>
           <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
             <AnimatedCounter 
               value={metrics.declinedGuests} 
               label="Declined" 
-              color="#F44336" 
+              color="#F44336"
+              clickable={isAdmin}
+              onClick={() => handleOpenGuestDialog('declined')}
             />
           </Grid>
           <Grid item xs={isMobile ? 6 : 3} sm={isMobile ? 6 : 3} md={isMobile ? 6 : 3}>
@@ -379,9 +574,19 @@ const AdminDashboardCharts: React.FC<AdminDashboardChartsProps> = ({ stats, load
               value={metrics.pendingGuests} 
               label="Pending" 
               color="#FFC107"
+              clickable={isAdmin}
+              onClick={() => handleOpenGuestDialog('pending')}
             />
           </Grid>
         </Grid>
+        
+        {/* Guest list dialog */}
+        <GuestListDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          guests={dialogGuests}
+          title={dialogTitle}
+        />
         
         {/* Pixel art visualization of guests */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
