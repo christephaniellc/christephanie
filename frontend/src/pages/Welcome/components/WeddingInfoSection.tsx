@@ -13,10 +13,12 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Paper,
+  alpha
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { CalendarMonth, LocationOn, Google, Apple, Event } from '@mui/icons-material';
+import { CalendarMonth, LocationOn, Google, Apple, Event, CardGiftcard, EventNote } from '@mui/icons-material';
 import isMobile from 'is-mobile';
 import { 
   WeddingInfoContainer, 
@@ -34,6 +36,7 @@ import Countdowns from '@/components/Countdowns';
 import { InvitationResponseEnum } from '@/types/api';
 import RollingRingsAnimation from './RollingRingsAnimation';
 import { BlockTextTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { useNavigate } from 'react-router-dom';
 
 interface WeddingInfoSectionProps {
   randomGettingMarriedQuote: string;
@@ -46,9 +49,15 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
 }) => {
   const theme = useTheme();
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate();
   
   // State for calendar dialog
   const [calendarDialogOpen, setCalendarDialogOpen] = useState(false);
+  
+  // Handler for navigation
+  const handleTabLink = (to: string) => {
+    navigate(to);
+  };
   
   // Function to generate a properly formatted .ics file calendar link
   const generateCalendarLink = () => {
@@ -104,154 +113,239 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
   return (
     <WeddingInfoContainer>
       <WeddingInfoLayout>
-        {/* Marriage announcement with rolling rings animation */}
-        <MarriageAnnouncementBox>
-          <BlockTextTypography variant="h6"
-          color="secondary"
-          sx={{
-            fontStyle: 'normal',
-            lineHeight: '1.4rem',
-          }} shadowcolor={'#000000'} maxpx={2}>
-            {randomGettingMarriedQuote}!
-            {/*<RollingRingsAnimation />*/}
-          </BlockTextTypography>
-          
-          {/* Wedding countdown */}
-          <Box sx={{ display: 'flex', alignItems: 'center', paddingBottom: '12px' }}>
-            <Typography
-              variant="subtitle2"
-              color="common.white"
-              sx={{ 
-                fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
-                opacity: 0.9,
-                backdropFilter: 'blur(3px)',
-                backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)'
-              }}
-            >
-              <Countdowns
-                event="Wedding"
-                interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
-              />
-            </Typography>
-          </Box>
-        </MarriageAnnouncementBox>
-
-        {/* Wedding details with date and location */}
-        <WeddingDetailsBox>
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {/* Date Section */}
-          <DateBox
-          sx={{
-            display: 'flex',
-            justifyContent: 'center', // Ensure content is centered
-            width: '100%',
-            maxWidth: '100%'
-          }}>
-            <CalendarMonth 
-              sx={{ 
-                mr: 1,
-                color: theme.palette.secondary.main
-              }} 
-            />
-            <Tooltip title="Click to add to calendar">
-              <Link 
-                href="#"
-                onClick={handleCalendarClick}
+        {/* Left Side: Marriage announcement, date, and location */}
+        <Box sx={{ 
+          width: { xs: '100%', md: 'auto' }, 
+          flexGrow: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          {/* Marriage announcement with rolling rings animation */}
+          <MarriageAnnouncementBox>
+            <BlockTextTypography variant="h6"
+            color="secondary"
+            sx={{
+              fontStyle: 'normal',
+              lineHeight: '1.4rem',
+            }} shadowcolor={'#000000'} maxpx={2}>
+              {randomGettingMarriedQuote}!
+              {/*<RollingRingsAnimation />*/}
+            </BlockTextTypography>
+            
+            {/* Wedding countdown */}
+            <Box sx={{ display: 'flex', alignItems: 'center', paddingBottom: '12px' }}>
+              <Typography
+                variant="subtitle2"
+                color="common.white"
                 sx={{ 
-                  textDecoration: 'none',
-                  position: 'relative',
-                  display: 'inline-block'
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
+                  opacity: 0.9,
+                  backdropFilter: 'blur(3px)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)'
                 }}
               >
-                <Box
-                  sx={{
+                <Countdowns
+                  event="Wedding"
+                  interested={user.rsvp?.invitationResponse || InvitationResponseEnum.Pending}
+                />
+              </Typography>
+            </Box>
+          </MarriageAnnouncementBox>
+
+          {/* Wedding details with date and location */}
+          <WeddingDetailsBox>
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Date Section */}
+              <DateBox
+              sx={{
+                display: 'flex',
+                justifyContent: 'center', // Ensure content is centered
+                width: '100%',
+                maxWidth: '100%'
+              }}>
+                <CalendarMonth 
+                  sx={{ 
+                    mr: 1,
+                    color: theme.palette.secondary.main
+                  }} 
+                />
+                <Tooltip title="Click to add to calendar">
+                  <Link 
+                    href="#"
+                    onClick={handleCalendarClick}
+                    sx={{ 
+                      textDecoration: 'none',
+                      position: 'relative',
+                      display: 'inline-block'
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        overflow: 'visible',
+                        // Add padding to create larger container area for sparkles
+                        padding: '20px',
+                        margin: '-20px', // Negative margin to keep the date in the same position
+                        // We now define the animation in the DateText component
+                        // Define keyframes for sparkle animation
+                        '@keyframes sparkle': {
+                          '0%': { opacity: 0, transform: 'scale(0) rotate(0deg)' },
+                          '50%': { opacity: 1, transform: 'scale(1) rotate(180deg)' },
+                          '100%': { opacity: 0, transform: 'scale(0) rotate(360deg)' }
+                        }
+                      }}
+                    >
+                      {/* Sparkle elements - increased from 6 to 10 */}
+                      {[...Array(10)].map((_, i) => (
+                        <Box
+                          key={i}
+                          sx={{
+                            position: 'absolute',
+                            width: '5px',
+                            height: '5px',
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.secondary.main,
+                            boxShadow: `0 0 6px 1px ${theme.palette.secondary.main}`,
+                            opacity: 0,
+                            // Better distribution around the container with extended area
+                            top: `${10 + Math.random() * 80}%`, // Slightly more concentrated around the text
+                            left: `${10 + Math.random() * 80}%`, 
+                            animation: `sparkle ${1 + Math.random() * 2}s ${Math.random() * 3}s infinite`,
+                            zIndex: -50
+                          }}
+                        />
+                      ))}
+                      
+                      {/* Star sparkles - increased from 3 to 6 */}
+                      {[...Array(6)].map((_, i) => (
+                        <Box
+                          key={`star-${i}`}
+                          sx={{
+                            position: 'absolute',
+                            width: '10px',
+                            height: '10px',
+                            opacity: 0,
+                            // Better distribution with extended area
+                            top: `${10 + Math.random() * 80}%`,
+                            left: `${10 + Math.random() * 80}%`,
+                            '&:before': {
+                              content: '""',
+                              position: 'absolute',
+                              width: '100%',
+                              height: '100%',
+                              transform: 'rotate(45deg)',
+                              backgroundColor: theme.palette.secondary.light,
+                              boxShadow: `0 0 10px 2px ${theme.palette.secondary.light}`
+                            },
+                            animation: `sparkle ${2 + Math.random() * 3}s ${Math.random() * 5}s infinite`,
+                            zIndex: -50
+                          }}
+                        />
+                      ))}
+                      
+                      <DateText 
+                        variant="h4"
+                        sx={{
+                          fontWeight: 'bold',  
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 1, // Ensure text stays in front of sparkles
+                          width: '100%',
+                          textAlign: 'center', // Explicitly center the text
+                          // Enhanced for better visibility
+                          backgroundColor: 'rgba(0,0,0,0.25)',
+                          backdropFilter: 'blur(2px)',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          boxShadow: '0 0 8px rgba(0,0,0,0.4)',
+                          // Define bounce animation keyframes
+                          '@keyframes dateBounce': {
+                            '0%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-4px)' },
+                            '100%': { transform: 'translateY(0)' }
+                          },
+                          // Apply bounce animation instead of color animation
+                          animation: 'dateBounce 2s infinite ease-in-out',
+                          '&:hover': {
+                            color: theme.palette.primary.light,
+                            backgroundColor: 'rgba(0,0,0,0.35)',
+                            boxShadow: `0 0 12px ${theme.palette.primary.light}`
+                          },
+                          '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            bottom: -2,
+                            left: 0,
+                            width: 0,
+                            height: '2px',
+                            backgroundColor: theme.palette.primary.light,
+                            transition: 'width 0.3s ease'
+                          },
+                          '&:hover::after': {
+                            width: '100%'
+                          }
+                        }}
+                      >
+                        July 5, 2025 at 6:00pm
+                      </DateText>
+                    </Box>
+                  </Link>
+                </Tooltip>
+              </DateBox>
+              
+              {/* Location Section */}
+              <LocationBox>
+                <LocationOn 
+                  sx={{ 
+                    mr: 1,
+                    color: theme.palette.secondary.main
+                  }} 
+                />
+                {/* Use Google Maps as the default for all platforms */}
+                <Link 
+                  // Show specific venue if user is logged in, otherwise general location
+                  href={user?.auth0Id 
+                    ? (
+                      // For mobile, try native apps with fallback to Google Maps website
+                      // On desktop, always use Google Maps website
+                      isMobile ? (
+                        navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
+                          ? "maps://maps.google.com/?q=Stone+Manor+Inn+Lovettsville+VA"
+                          : navigator.userAgent.includes('Android')
+                            ? "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                            : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                      ) : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
+                    )
+                    : (
+                      // Same structure for non-logged in users
+                      isMobile ? (
+                        navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
+                          ? "maps://maps.google.com/?q=Lovettsville+VA"
+                          : navigator.userAgent.includes('Android')
+                            ? "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                            : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                      ) : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
+                    )
+                  }
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  sx={{ 
+                    textDecoration: 'none',
                     position: 'relative',
-                    overflow: 'visible',
-                    // Add padding to create larger container area for sparkles
-                    padding: '20px',
-                    margin: '-20px', // Negative margin to keep the date in the same position
-                    // We now define the animation in the DateText component
-                    // Define keyframes for sparkle animation
-                    '@keyframes sparkle': {
-                      '0%': { opacity: 0, transform: 'scale(0) rotate(0deg)' },
-                      '50%': { opacity: 1, transform: 'scale(1) rotate(180deg)' },
-                      '100%': { opacity: 0, transform: 'scale(0) rotate(360deg)' }
-                    }
+                    display: 'inline-block'
                   }}
                 >
-                  {/* Sparkle elements - increased from 6 to 10 */}
-                  {[...Array(10)].map((_, i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        position: 'absolute',
-                        width: '5px',
-                        height: '5px',
-                        borderRadius: '50%',
-                        backgroundColor: theme.palette.secondary.main,
-                        boxShadow: `0 0 6px 1px ${theme.palette.secondary.main}`,
-                        opacity: 0,
-                        // Better distribution around the container with extended area
-                        top: `${10 + Math.random() * 80}%`, // Slightly more concentrated around the text
-                        left: `${10 + Math.random() * 80}%`, 
-                        animation: `sparkle ${1 + Math.random() * 2}s ${Math.random() * 3}s infinite`,
-                        zIndex: -50
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Star sparkles - increased from 3 to 6 */}
-                  {[...Array(6)].map((_, i) => (
-                    <Box
-                      key={`star-${i}`}
-                      sx={{
-                        position: 'absolute',
-                        width: '10px',
-                        height: '10px',
-                        opacity: 0,
-                        // Better distribution with extended area
-                        top: `${10 + Math.random() * 80}%`,
-                        left: `${10 + Math.random() * 80}%`,
-                        '&:before': {
-                          content: '""',
-                          position: 'absolute',
-                          width: '100%',
-                          height: '100%',
-                          transform: 'rotate(45deg)',
-                          backgroundColor: theme.palette.secondary.light,
-                          boxShadow: `0 0 10px 2px ${theme.palette.secondary.light}`
-                        },
-                        animation: `sparkle ${2 + Math.random() * 3}s ${Math.random() * 5}s infinite`,
-                        zIndex: -50
-                      }}
-                    />
-                  ))}
-                  
-                  <DateText 
-                    variant="h4"
-                    sx={{
-                      fontWeight: '1000',  
-                      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7), 2px 2px 2px #000000',
+                  <LocationText
+                    sx={{ 
                       transition: 'all 0.3s ease',
-                      cursor: 'pointer',
                       position: 'relative',
-                      zIndex: 1, // Ensure text stays in front of sparkles
-                      width: '100%',
-                      textAlign: 'center', // Explicitly center the text
-                      // Define bounce animation keyframes
-                      '@keyframes dateBounce': {
-                        '0%': { transform: 'translateY(0)' },
-                        '50%': { transform: 'translateY(-4px)' },
-                        '100%': { transform: 'translateY(0)' }
-                      },
-                      // Apply bounce animation instead of color animation
-                      animation: 'dateBounce 2s infinite ease-in-out',
                       '&:hover': {
-                        color: theme.palette.primary.light,
-                        textShadow: `1px 1px 2px rgba(0, 0, 0, 0.7), 2px 2px 2px #000000, 0 0 8px ${theme.palette.primary.light}`
+                        color: theme.palette.primary.light
                       },
                       '&::after': {
                         content: '""',
@@ -268,83 +362,99 @@ const WeddingInfoSection: React.FC<WeddingInfoSectionProps> = ({
                       }
                     }}
                   >
-                    July 5, 2025 at 6:00pm
-                  </DateText>
-                </Box>
-              </Link>
-            </Tooltip>
-          </DateBox>
-          
-          {/* Location Section */}
-          <LocationBox>
-            <LocationOn 
+                    {user?.auth0Id ? "Stone Manor, Lovettsville, VA" : "Lovettsville, VA"}
+                  </LocationText>
+                </Link>
+              </LocationBox>
+            </Box>
+          </WeddingDetailsBox>
+        </Box>
+
+        {/* Right Side: Wedding Info Links - Only show on medium screens and up */}
+        <Box 
+          sx={{ 
+            display: { xs: 'none', md: 'block' },
+            width: { md: '250px' },
+            alignSelf: 'center',
+            ml: { md: 2, lg: 3 }
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              backgroundColor: alpha(theme.palette.background.paper, 0.2),
+              backdropFilter: 'blur(10px)',
+              padding: theme.spacing(2),
+              borderRadius: theme.shape.borderRadius,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography 
+              variant="h6" 
               sx={{ 
-                mr: 1,
-                color: theme.palette.secondary.main
-              }} 
-            />
-            {/* Use Google Maps as the default for all platforms */}
-            <Link 
-              // Show specific venue if user is logged in, otherwise general location
-              href={user?.auth0Id 
-                ? (
-                  // For mobile, try native apps with fallback to Google Maps website
-                  // On desktop, always use Google Maps website
-                  isMobile ? (
-                    navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
-                      ? "maps://maps.google.com/?q=Stone+Manor+Inn+Lovettsville+VA"
-                      : navigator.userAgent.includes('Android')
-                        ? "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
-                        : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
-                  ) : "https://www.google.com/maps/search/?api=1&query=Stone+Manor+Inn+Lovettsville+VA"
-                )
-                : (
-                  // Same structure for non-logged in users
-                  isMobile ? (
-                    navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
-                      ? "maps://maps.google.com/?q=Lovettsville+VA"
-                      : navigator.userAgent.includes('Android')
-                        ? "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
-                        : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
-                  ) : "https://www.google.com/maps/search/?api=1&query=Lovettsville+VA"
-                )
-              }
-              target="_blank" 
-              rel="noopener noreferrer"
-              sx={{ 
-                textDecoration: 'none',
-                position: 'relative',
-                display: 'inline-block'
+                mb: 1.5,
+                fontWeight: 'bold',
+                color: theme.palette.secondary.main,
+                fontSize: '1rem'
               }}
             >
-              <LocationText
-                sx={{ 
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
+              More Wedding Information
+            </Typography>
+            
+            <Box sx={{ 
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5
+            }}>
+              <Button 
+                variant="contained" 
+                color="secondary"
+                size="small"
+                startIcon={<EventNote />}
+                onClick={() => handleTabLink('/details')}
+                sx={{
+                  py: 1,
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  boxShadow: `0 4px 8px ${alpha(theme.palette.secondary.main, 0.4)}`,
                   '&:hover': {
-                    color: theme.palette.primary.light
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 12px ${alpha(theme.palette.secondary.main, 0.5)}`,
                   },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: -2,
-                    left: 0,
-                    width: 0,
-                    height: '2px',
-                    backgroundColor: theme.palette.primary.light,
-                    transition: 'width 0.3s ease'
-                  },
-                  '&:hover::after': {
-                    width: '100%'
-                  }
+                  transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
               >
-                {user?.auth0Id ? "Stone Manor, Lovettsville, VA" : "Lovettsville, VA"}
-              </LocationText>
-            </Link>
-          </LocationBox>
-          </Box>
-        </WeddingDetailsBox>
+                Wedding Details
+              </Button>
+              
+              <Button 
+                variant="contained" 
+                color="secondary"
+                size="small"
+                startIcon={<CardGiftcard />}
+                onClick={() => handleTabLink('/registry')}
+                sx={{
+                  py: 1,
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  boxShadow: `0 4px 8px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 12px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                  },
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+              >
+                Registry
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
       </WeddingInfoLayout>
       
       {/* Calendar Dialog */}
