@@ -143,64 +143,70 @@ const Welcome: React.FC = () => {
           />
         </Box>
 
-        {/* Schedule Section Title */}
-        <Box 
-          sx={{ 
-            width: '100%', 
-            display: 'flex', 
-            justifyContent: 'center',
-            mb: 2,
-            mt: { xs: 1, sm: 2 },
-            px: { xs: 1, sm: 2 }
-          }}
-        >
-          <Paper
-            sx={{
-              backgroundColor: alpha(theme.palette.background.paper, 0.2),
-              backdropFilter: 'blur(10px)',
-              padding: theme.spacing(2),
-              textAlign: 'center',
-              borderRadius: theme.shape.borderRadius,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              width: '100%',
-              maxWidth: '800px',
-            }}
-          >
-            <StephsActualFavoriteTypography 
-              variant="h5" 
+        {/* Schedule Section - Only shown when user is logged in */}
+        {auth0User && (
+          <>
+            {/* Schedule Section Title */}
+            <Box 
               sx={{ 
-                textShadow: `0 0 10px ${theme.palette.primary.main}`,
+                width: '100%', 
+                display: 'flex', 
+                justifyContent: 'center',
+                mb: 2,
+                mt: { xs: 1, sm: 2 },
+                px: { xs: 1, sm: 2 }
               }}
             >
-              WEDDING WEEKEND SCHEDULE
-            </StephsActualFavoriteTypography>
-          </Paper>
-        </Box>
+              <Paper
+                sx={{
+                  backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                  backdropFilter: 'blur(10px)',
+                  padding: theme.spacing(2),
+                  textAlign: 'center',
+                  borderRadius: theme.shape.borderRadius,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                  width: '100%',
+                  maxWidth: '800px',
+                }}
+              >
+                <StephsActualFavoriteTypography 
+                  variant="h5" 
+                  sx={{ 
+                    textShadow: `0 0 10px ${theme.palette.primary.main}`,
+                  }}
+                >
+                  WEDDING WEEKEND SCHEDULE
+                </StephsActualFavoriteTypography>
+              </Paper>
+            </Box>
 
-        {/* Wedding Schedule Section */}
-        <Box 
-          data-section="schedule" 
-          sx={{ 
-            width: '100%',
-            mb: 4,
-            px: { xs: 1, sm: 2 },
-            maxWidth: '800px',
-            mx: 'auto'
-          }}
-        >
-          <HomePageSchedule handleTabLink={handleTabLink} />
-        </Box>
+            {/* Wedding Schedule Section */}
+            <Box 
+              data-section="schedule" 
+              sx={{ 
+                width: '100%',
+                mb: 4,
+                px: { xs: 1, sm: 2 },
+                maxWidth: '800px',
+                mx: 'auto'
+              }}
+            >
+              <HomePageSchedule handleTabLink={handleTabLink} />
+            </Box>
+          </>
+        )}
 
-        {/* Mobile Only: Links to Details and Registry */}
+        {/* Mobile Only: Links to Details and Registry - Always shown on mobile */}
         <Box 
           data-section="links" 
           sx={{ 
             width: '100%', 
             px: 2, 
             mb: 4,
-            display: { xs: 'flex', md: 'none' },
+            display: { xs: 'flex', md: auth0User ? 'none' : 'flex' }, // Show on desktop if user is not logged in
             flexDirection: 'column',
-            alignItems: 'center'
+            alignItems: 'center',
+            mt: !auth0User ? 3 : 0 // Add margin top if user is not logged in
           }}
         >
           <Box sx={{ 
