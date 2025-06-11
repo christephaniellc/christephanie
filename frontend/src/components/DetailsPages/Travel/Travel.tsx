@@ -845,8 +845,8 @@ function Travel({handleTabLink}: TravelProps) {
                   Departure Times from Hotels:
                 </Typography>
                 <Box component="ul" sx={{ pl: 3 }}>
-                  <Typography component="li" variant="body2">Holiday Inn Express Brunswick: 3:30pm and 4:00pm</Typography>
-                  <Typography component="li" variant="body2">Holiday Inn Express Charles Town: 3:15pm and 3:45pm</Typography>
+                  <Typography component="li" variant="body2">Holiday Inn Express Brunswick: 4:00pm and 5:00pm</Typography>
+                  <Typography component="li" variant="body2">Holiday Inn Express Charles Town: 4:00pm and 5:00pm</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -855,7 +855,6 @@ function Travel({handleTabLink}: TravelProps) {
                 </Typography>
                 <Box component="ul" sx={{ pl: 3 }}>
                   <Typography component="li" variant="body2">10:00pm</Typography>
-                  <Typography component="li" variant="body2">10:30pm</Typography>
                   <Typography component="li" variant="body2">11:00pm</Typography>
                 </Box>
               </Grid>
