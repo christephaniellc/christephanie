@@ -43,30 +43,34 @@ const WeddingInfoContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   width: '100%',
   paddingTop: '0px',
-  paddingBottom: theme.spacing(1.5),
-  marginBottom: theme.spacing(2),
+  paddingBottom: theme.spacing(0.5),
+  marginBottom: 0,
   [theme.breakpoints.up('md')]: {
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(1),
   },
   [theme.breakpoints.up('lg')]: {
-    marginBottom: theme.spacing(4),
+    marginBottom: theme.spacing(2),
   },
 }));
 
 const WeddingInfoLayout = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   width: '100%',
+  maxWidth: '800px',
+  margin: '0 auto',
   alignItems: 'center',
-  justifyContent: 'center', // Center content vertically
-  textAlign: 'center', // Center text within components
-  // [theme.breakpoints.up('md')]: {
-  //   flexDirection: 'row',
-  // },
+  justifyContent: 'center',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
 }));
 
 const MarriageAnnouncementBox = styled(Box)(({ theme }) => ({
   width: '100%',
+  maxWidth: '500px',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
@@ -95,11 +99,7 @@ const DateBox = styled(Box)(({ theme }) => ({
   width: '100%', // Take full width
   mx: 'auto',
   marginBottom: theme.spacing(0.8),
-  paddingTop: theme.spacing(1),
-  paddingBottom: theme.spacing(1),
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
-  //padding: theme.spacing(1, 2),
+  padding: theme.spacing(1, 2),
   borderRadius: theme.shape.borderRadius,
 }));
 
@@ -145,8 +145,7 @@ const LocationText = styled(Typography)(({ theme }) => ({
   fontFamily: 'Snowstorm, sans-serif',
   color: theme.palette.common.white,
   fontSize: '1rem',
-  //textShadow: `1px 1px 3px ${alpha('#000', 0.7)}`,
-   textShadow: '-2px -2px 0 #000000, -1px -1px 0 #000000',
+  textShadow: `1px 1px 3px ${alpha(theme.palette.common.black, 0.7)}`,
   [theme.breakpoints.up('md')]: {
     fontSize: '1.1rem',
   },
@@ -157,18 +156,22 @@ const LocationText = styled(Typography)(({ theme }) => ({
 
 const DateText = styled(Typography)(({ theme }) => ({
   color: theme.palette.common.white,
-  fontWeight: 'medium',
+  fontWeight: 'bold',
   fontSize: '1.1rem',
-  lineHeight: '1.2rem', // Only 0.1rem larger than font size
+  lineHeight: '1.2rem',
   textAlign: 'center', // Ensure text is centered
   width: '100%', // Take up full width
+  textShadow: `0 0 2px ${theme.palette.common.black}, 0 0 4px ${theme.palette.common.black}, 0 0 6px ${theme.palette.common.black}`,
+  backgroundColor: 'rgba(0,0,0,0.15)',
+  padding: '2px 8px',
+  borderRadius: '4px',
   [theme.breakpoints.up('md')]: {
     fontSize: '1.2rem',
-    lineHeight: '1.3rem', // Only 0.1rem larger than font size
+    lineHeight: '1.3rem',
   },
   [theme.breakpoints.up('lg')]: {
     fontSize: '1.5rem',
-    lineHeight: '1.6rem', // Only 0.1rem larger than font size
+    lineHeight: '1.6rem',
   },
 }));
 
@@ -187,8 +190,10 @@ const QuoteText = styled(Typography)(({ theme }) => ({
 }));
 
 const TitleContainer = styled(Box)(({ theme }) => ({
-  textAlign: 'center',
+  width: '100%',
   marginBottom: 0, // No margin to reduce space
+  paddingTop: theme.spacing(1),
+  paddingBottom: theme.spacing(1),
 }));
 
 const StepperContainer = styled(Box)(({ theme }) => ({
