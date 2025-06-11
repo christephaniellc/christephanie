@@ -234,12 +234,23 @@ function HomePageSchedule({ handleTabLink }: HomePageScheduleProps) {
         fontSize: { xs: '0.75rem', sm: '0.85rem' },
         position: 'relative',
         overflow: 'hidden',
+        // Add gray background for non-selected state
+        backgroundColor: selected 
+          ? theme.palette.secondary.main 
+          : alpha(theme.palette.common.black, 0.3),
+        color: selected 
+          ? theme.palette.secondary.contrastText 
+          : theme.palette.primary.main,
         boxShadow: selected 
           ? `0 3px 0 ${alpha(theme.palette.secondary.dark, 0.8)}`
           : `0 3px 0 ${alpha(theme.palette.primary.dark, 0.8)}`,
         transform: selected ? 'translateY(1px)' : 'translateY(0)',
-        transition: 'transform 0.1s, box-shadow 0.1s',
+        transition: 'transform 0.1s, box-shadow 0.1s, background-color 0.2s',
+        backdropFilter: 'blur(2px)',
         '&:hover': {
+          backgroundColor: selected 
+            ? theme.palette.secondary.main 
+            : alpha(theme.palette.common.black, 0.4),
           boxShadow: selected 
             ? `0 1px 0 ${alpha(theme.palette.secondary.dark, 0.8)}`
             : `0 1px 0 ${alpha(theme.palette.primary.dark, 0.8)}`,
