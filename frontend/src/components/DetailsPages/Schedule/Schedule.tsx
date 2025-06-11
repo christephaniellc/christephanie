@@ -279,7 +279,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
               }}>
                 {getIconComponent(event.icon)}
               </Box>
-              <Box sx={{ width: '100%' }}
+              <Box sx={{ width: '100%' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
                     {event.name}
