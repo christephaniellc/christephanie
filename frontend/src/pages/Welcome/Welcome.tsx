@@ -14,9 +14,15 @@ import BackgroundImage from './components/BackgroundImage';
 import TitleSection from './components/TitleSection';
 import WeddingInfoSection from './components/WeddingInfoSection';
 import StepperSection from './components/StepperSection';
-import { Box } from '@mui/material';
+import { Box, Button, Container, Typography, Paper, Divider } from '@mui/material';
 import { useRecoilValue } from 'recoil';
 import { randomWeddingEuphemismState } from '@/store/welcome';
+import HomePageSchedule from './components/HomePageSchedule';
+import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import { StephsActualFavoriteTypography } from '@/components/AttendanceButton/AttendanceButton';
+import { EventNote, CardGiftcard } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 // Utility functions for random selections
 const getRandomItem = (array: string[]) => 
@@ -32,6 +38,8 @@ const Welcome: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentNeedsModal, setContentNeedsModal] = useState(false);
   const randomWeddingEuphemism = useRecoilValue(randomWeddingEuphemismState);
+  const theme = useTheme();
+  const navigate = useNavigate();
   
   // Random background image
   const randomBgImage = useMemo(() => {
@@ -112,6 +120,11 @@ const Welcome: React.FC = () => {
       };
     }
   }, [isModalVisible, contentNeedsModal]);
+
+  // Handler for tab link navigation
+  const handleTabLink = (to: string) => {
+    navigate(to);
+  };
   
   return (
     <WelcomeContainer ref={containerRef} height={contentHeight}>
@@ -128,6 +141,120 @@ const Welcome: React.FC = () => {
             randomGettingMarriedQuote={randomWeddingEuphemism}
             user={user}
           />
+        </Box>
+
+        {/* Schedule Section Title */}
+        <Box 
+          sx={{ 
+            width: '100%', 
+            display: 'flex', 
+            justifyContent: 'center',
+            mb: 2,
+            mt: { xs: 1, sm: 2 },
+            px: { xs: 1, sm: 2 }
+          }}
+        >
+          <Paper
+            sx={{
+              backgroundColor: alpha(theme.palette.background.paper, 0.2),
+              backdropFilter: 'blur(10px)',
+              padding: theme.spacing(2),
+              textAlign: 'center',
+              borderRadius: theme.shape.borderRadius,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              width: '100%',
+              maxWidth: '800px',
+            }}
+          >
+            <StephsActualFavoriteTypography 
+              variant="h5" 
+              sx={{ 
+                textShadow: `0 0 10px ${theme.palette.primary.main}`,
+              }}
+            >
+              WEDDING WEEKEND SCHEDULE
+            </StephsActualFavoriteTypography>
+          </Paper>
+        </Box>
+
+        {/* Wedding Schedule Section */}
+        <Box 
+          data-section="schedule" 
+          sx={{ 
+            width: '100%',
+            mb: 4,
+            px: { xs: 1, sm: 2 },
+            maxWidth: '800px',
+            mx: 'auto'
+          }}
+        >
+          <HomePageSchedule handleTabLink={handleTabLink} />
+        </Box>
+
+        {/* Mobile Only: Links to Details and Registry */}
+        <Box 
+          data-section="links" 
+          sx={{ 
+            width: '100%', 
+            px: 2, 
+            mb: 4,
+            display: { xs: 'flex', md: 'none' },
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}
+        >
+          <Box sx={{ 
+            width: '100%',
+            maxWidth: '600px',
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'center',
+            gap: 2
+          }}>
+            <Button 
+              variant="contained" 
+              color="secondary"
+              size="large"
+              startIcon={<EventNote />}
+              onClick={() => handleTabLink('/details')}
+              sx={{
+                py: 1.5,
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                width: { xs: '100%', sm: 'auto' },
+                boxShadow: `0 4px 8px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 6px 12px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                },
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+            >
+              Wedding Details
+            </Button>
+            
+            <Button 
+              variant="contained" 
+              color="secondary"
+              size="large"
+              startIcon={<CardGiftcard />}
+              onClick={() => handleTabLink('/registry')}
+              sx={{
+                py: 1.5,
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                width: { xs: '100%', sm: 'auto' },
+                boxShadow: `0 4px 8px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 6px 12px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                },
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+            >
+              Registry
+            </Button>
+          </Box>
         </Box>
 
         {/* Always show stepper directly */}
