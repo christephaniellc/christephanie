@@ -28,13 +28,18 @@ import {
   Hive,
   Stream,
   BakeryDining,
+  Face4,
+  AirportShuttle,
   Hotel,
+  Liquor,
   Cake,
   FlightTakeoff,
   SupervisorAccount,
   CleaningServices,
   Forest,
-  CircleNotifications
+  CircleNotifications,
+  Restaurant,
+  Nightlife
 } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
@@ -189,10 +194,10 @@ function Schedule({handleTabLink}: ScheduleProps) {
         {
           id: 'camper-checkin',
           name: 'Camper Check-In',
-          time: '3:30 PM',
+          time: '12:00 PM',
           location: 'Stone Manor Inn, Lovettsville, VA',
           description: 'Earliest check-in for guests camping at the venue grounds.',
-          details: ['Set up your gear as early as 3:30 PM'],
+          details: ['Set up your gear as early as 12:00 PM'],
           icon: <Forest />,
           restricted: true,
           visible: hasRole(RoleEnum.Camper, currentUser)
@@ -200,7 +205,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
         {
           id: 'manor-checkin',
           name: 'Manor Check-In',
-          time: '4:00 PM',
+          time: '3:00 PM',
           location: 'Stone Manor Inn, Lovettsville, VA',
           description: 'Earliest check-in for guests staying at the manor.',
           details: ['Manor guests only'],
@@ -252,19 +257,60 @@ function Schedule({handleTabLink}: ScheduleProps) {
         },
         {
           id: 'getting-ready',
-          name: 'Wedding Party: Getting Ready',
-          time: '2:00 PM - 5:00 PM',
-          location: 'Stone Manor Inn',
-          description: 'Get ready with the bride and groom!',
+          name: 'Bridal Party: Getting Ready',
+          time: '10:15 AM - 4:00 PM',
+          location: 'Stone Manor Inn (Manor Suite)',
+          description: 'Get ready with the bride!',
           details: [
-            'Bridal party in the Manor Suite', 
-            'Groomsmen in the Turret Suite',
+            'Professional hair and makeup services', 
+            'Photographer arrives at 4:00 PM'
+          ],
+          icon: <Face4 />,
+          restricted: true,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+            && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
+        },
+        {
+          id: 'getting-ready-groomsmen',
+          name: 'Groomsmen: Getting Ready',
+          time: '1:00 PM - 4:00 PM',
+          location: 'Stone Manor Inn (Turret Suite)',
+          description: 'Get ready with the groom!',
+          details: [
+            'Throw on your tuxedos and help Topher get ready',
             'Photographer arrives at 4:00 PM'
           ],
           icon: <DryCleaning />,
           restricted: true,
           visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
             && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
+        },
+        {
+          id: 'shuttle1',
+          name: 'Hotel Shuttles Leave for Ceremony (Round 1)',
+          time: '4:00 PM',
+          location: 'Holiday Inn Express Brunswick & Holiday Inn Express Charles Town',
+          description: '56 passenger shuttles will depart for the ceremony. One shuttle per hotel. Please arrive at the shuttle 10 minutes early.',
+          details: ['First of two shuttle runs', '18 minute drive from Holiday Inn Express Brunswick', '23 minute drive from Holiday Inn Express Charles Town'],
+          icon: <AirportShuttle />
+        },
+        {
+          id: 'shuttle2',
+          name: 'Hotel Shuttles Leave for Ceremony (Round 2)',
+          time: '5:00 PM',
+          location: 'Holiday Inn Express Brunswick & Holiday Inn Express Charles Town',
+          description: 'Final shuttle run before the ceremony. One shuttle per hotel. Please arrive at the shuttle 10 minutes early.',
+          details: ['Second of two shuttle runs', '18 minute drive from Holiday Inn Express Brunswick', '23 minute drive from Holiday Inn Express Charles Town'],
+          icon: <AirportShuttle />
+        },
+        {
+          id: 'barstart',
+          name: 'Open Bar Begins',
+          time: '5:00 PM',
+          location: 'Stone Manor Inn',
+          description: 'Open bar begins for all guests.',
+          details: ['Beer, wine, and cocktails available'],
+          icon: <Liquor />
         },
         {
           id: 'ceremony',
@@ -279,7 +325,7 @@ function Schedule({handleTabLink}: ScheduleProps) {
           id: 'cocktail',
           name: 'Cocktail Hour',
           time: '6:30 PM - 7:30 PM',
-          location: 'Stone Manor Inn (Patio & Lower Level)',
+          location: 'Stone Manor Inn (Patio & Butterfly Garden)',
           description: 'Enjoy drinks while mingling with other guests.',
           details: ['Open bar'],
           icon: <LocalBar />,
@@ -288,23 +334,60 @@ function Schedule({handleTabLink}: ScheduleProps) {
         {
           id: 'reception',
           name: 'Dinner Reception',
-          time: '6:30 PM - 8:30 PM',
-          location: 'Stone Manor Inn (Patio & Lower Level)',
-          description: 'Dinner, speeches, toasts, and cake cutting.',
-          details: ['Buffet dinner service', 'Cake', 'Toasts and speeches'],
-          icon: <Cake />,
+          time: '7:30 PM',
+          location: 'Stone Manor Inn (Solarium and Tent)',
+          description: 'Dinner, speeches, toasts, and dessert cutting.',
+          details: ['Buffet dinner service', 'Dessert', 'Toasts and speeches'],
+          icon: <Restaurant />,
           visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
         },
         {
           id: 'dancing',
           name: 'Dancing & Celebration',
-          time: '8:30 PM - 11:00 PM',
+          time: '8:50 PM - 11:00 PM',
           location: 'Stone Manor Inn (Main Hall)',
           description: 'Dance the night away! Topher and Steph will change into more comfortable attire for this portion.',
           details: ['DJ and dancing', 'Fire spinners'],
           icon: <MusicNote />,
           visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
-        }
+        },
+        {
+          id: 'shuttle3',
+          name: 'Hotel Shuttles Leaves Venue for Hotels (Round 1)',
+          time: '10:00 PM',
+          location: 'Stone Manor Inn',
+          description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel.',
+          details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town'],
+          icon: <AirportShuttle />
+        },
+        {
+          id: 'shuttle4',
+          name: 'Hotel Shuttles Leaves Venue for After Party and Hotels (Round 2)',
+          time: '11:00 PM',
+          location: 'Stone Manor Inn',
+          description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel. One shuttle will make a stop at the Hollywood Casino after party.',
+          details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town', '24 minute drive to after party at Hollywood Casino in Charles Town'],
+          icon: <AirportShuttle />
+        },
+        {
+          id: 'afterparty',
+          name: 'After Party - DJ and Dancing Continues',
+          time: '11:00 PM - 3:00 AM',
+          location: 'Hollywood Casino at Charles Town Races',
+          description: 'Join us for an after party in a private room at the casino! We will have a private room reserved as our DJ continues into the night.',
+          details: ['Shuttle available from venue to after party', 'DJ and dance floor', 'Cash bar', 'Casino games', 'Late night snacks in the casino'],
+          icon: <Nightlife />,
+          visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+        },
+        {
+          id: 'shuttle5',
+          name: 'Casino Shuttles to Hampton Inn',
+          time: 'Every 15 minutes from 11:00 PM - 3:00 AM',
+          location: 'Hollywood Casino at Charles Town Races',
+          description: 'No direct shuttles to the Holiday Inn Express Charles Town unfortunately, but casino shuttles run every 15 minutes to the Hampton Inn in Charles Town, which is an 8 minute walk from Holiday Inn Express Charles Town.',
+          details: ['18 minute drive from Holiday Inn Express Brunswick', '23 minute drive from Holiday Inn Express Charles Town'],
+          icon: <AirportShuttle />
+        },
       ]
     },
     sunday: {
@@ -313,11 +396,11 @@ function Schedule({handleTabLink}: ScheduleProps) {
       events: [
         {
           id: 'brunch2',
-          name: 'Manor Guests: Breakfast',
+          name: 'Manor Guests: Continental Breakfast',
           time: '09:00 AM - 10:00 AM',
           location: 'Stone Manor Inn: Dining Hall',
-          description: 'Breakfast for manor guests.',
-          details: ['Coffee and tea', 'Breakfast', 'Final Farewells'],
+          description: 'Continental breakfast for manor guests.',
+          details: ['Coffee and tea', 'Bagels, baked goods, and spreads', 'Final Farewells'],
           icon: <BakeryDining />,
           restricted: true,
           visible: hasRole(RoleEnum.Manor, currentUser)
@@ -789,10 +872,10 @@ function Schedule({handleTabLink}: ScheduleProps) {
           ))}
         
         {/* Transportation card - show only on main wedding day */}
-        {selectedDay === 'saturday' && 
-          <ComingSoonCard />
+        {/* {selectedDay === 'saturday' && 
+          // <ComingSoonCard />
           // <TransportationCard />
-        }
+        } */}
         
         {/* Wedding Support Section */}
         <Grow in={true} timeout={1000}>
