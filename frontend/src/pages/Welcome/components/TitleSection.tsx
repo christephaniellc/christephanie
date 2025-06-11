@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTheme } from '@mui/material';
+import { useTheme, Box } from '@mui/material';
 import NeonTitle from '@/components/NeonTitle';
-import { TitleContainer, QuoteText } from '../styled';
+import { TitleContainer } from '../styled';
 import { useAppLayout } from '@/context/Providers/AppState/useAppLayout';
 
 interface TitleSectionProps {}
@@ -19,12 +19,15 @@ const TitleSection: React.FC<TitleSectionProps> = () => {
   
   return (
     <TitleContainer>
-      <NeonTitle 
-        text="Steph & Topher" 
-        fontSize={getFontSize()}
-        pulsate={true}
-        flicker={false}
-      />
+      {/* Title Section - Centered */}
+      <Box sx={{ textAlign: 'center' }}>
+        <NeonTitle 
+          text="Steph & Topher" 
+          fontSize={getFontSize()}
+          pulsate={true}
+          flicker={false}
+        />
+      </Box>
     </TitleContainer>
   );
 };
