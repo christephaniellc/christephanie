@@ -273,7 +273,7 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
       },
       {
         id: 'shuttle4',
-        name: 'Hotel Shuttles Leaves Venue for After Party and Hotels (Round 2)',
+        name: 'Hotel Shuttles Leaves Venue for Hotels (Round 2)',
         time: '11:00 PM',
         location: 'Stone Manor Inn',
         description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel.',
@@ -285,7 +285,7 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
         name: 'After Party - DJ and Dancing Continues',
         time: '11:00 PM - ?',
         location: 'Stone Manor Inn - Solarium',
-        description: 'Loudon county enforces 11pm quiet hours, but hang with us at the manor! We will move the music indoors to continue the dance party.',
+        description: 'Hang with us at the manor! Firepit and leftover drinks. Loudoun county enforces 11pm quiet hours, so DJ music will move indoors indoors to continue the dance party in the Solarium.',
         details: ['DJ in the Solarium', 'Hang out by the fire or on the patio'],
         icon: 'NIGHTLIFE',
         visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
