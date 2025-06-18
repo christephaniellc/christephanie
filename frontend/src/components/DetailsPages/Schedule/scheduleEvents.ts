@@ -10,6 +10,7 @@ export type IconType =
   | 'BAKERY_DINING' 
   | 'FACE4' 
   | 'DRY_CLEANING' 
+  | 'PHOTOGRAPHY'
   | 'AIRPORT_SHUTTLE' 
   | 'LIQUOR' 
   | 'CELEBRATION' 
@@ -168,6 +169,20 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
           && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
       },
       {
+        id: 'photo-shoot',
+        name: 'Wedding Party & Family: Photo Shoot',
+        time: '4:00 PM - 5:30 PM',
+        location: 'Stone Manor Inn (TBD)',
+        description: 'Photo shoot with the wedding party and family members. Schedule TBD',
+        details: [
+          'Photographer arrives at 4:00 PM'
+        ],
+        icon: 'PHOTOGRAPHY',
+        restricted: true,
+        visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+          && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
+      },
+      {
         id: 'shuttle1',
         name: 'Hotel Shuttles Leave for Ceremony (Round 1)',
         time: '4:00 PM',
@@ -202,6 +217,20 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
         description: 'Topher and Steph exchange vows. Please arrive 15-30 minutes early.',
         details: ['Outdoor ceremony (weather permitting)', 'Seating provided'],
         icon: 'CELEBRATION'
+      },
+      {
+        id: 'cocktail-hour-photo-shoot',
+        name: 'Wedding Party & Family: Cocktail Hour Photo Shoot',
+        time: '6:30 PM - 7:00 PM',
+        location: 'Stone Manor Inn (TBD)',
+        description: 'Photo shoot with the bride, groom, wedding party, and family members. Schedule TBD',
+        details: [
+          'Photo shoot during cocktail hour',
+        ],
+        icon: 'PHOTOGRAPHY',
+        restricted: true,
+        visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+          && (hasRole(RoleEnum.Party, currentUser) || hasRole(RoleEnum.Manor, currentUser))
       },
       {
         id: 'cocktail',
@@ -247,28 +276,19 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
         name: 'Hotel Shuttles Leaves Venue for After Party and Hotels (Round 2)',
         time: '11:00 PM',
         location: 'Stone Manor Inn',
-        description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel. One shuttle will make a stop at the Hollywood Casino after party.',
-        details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town', '24 minute drive to after party at Hollywood Casino in Charles Town'],
+        description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel.',
+        details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town'],
         icon: 'AIRPORT_SHUTTLE'
       },
       {
         id: 'afterparty',
         name: 'After Party - DJ and Dancing Continues',
-        time: '11:00 PM - 3:00 AM',
-        location: 'Hollywood Casino at Charles Town Races',
-        description: 'Join us for an after party in a private room at the casino! We will have a private room reserved as our DJ continues into the night.',
-        details: ['Shuttle available from venue to after party', 'DJ and dance floor', 'Cash bar', 'Casino games', 'Late night snacks in the casino'],
+        time: '11:00 PM - ?',
+        location: 'Stone Manor Inn - Solarium',
+        description: 'Loudon county enforces 11pm quiet hours, but hang with us at the manor! We will move the music indoors to continue the dance party.',
+        details: ['DJ in the Solarium', 'Hang out by the fire or on the patio'],
         icon: 'NIGHTLIFE',
         visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
-      },
-      {
-        id: 'shuttle5',
-        name: 'Casino Shuttles to Hampton Inn',
-        time: 'Every 15 minutes from 11:00 PM - 3:00 AM',
-        location: 'Hollywood Casino at Charles Town Races',
-        description: 'No direct shuttles to the Holiday Inn Express Charles Town unfortunately, but casino shuttles run every 15 minutes to the Hampton Inn in Charles Town, which is an 8 minute walk from Holiday Inn Express Charles Town.',
-        details: ['18 minute drive from Holiday Inn Express Brunswick', '23 minute drive from Holiday Inn Express Charles Town'],
-        icon: 'AIRPORT_SHUTTLE'
       },
     ]
   },
