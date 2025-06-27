@@ -244,11 +244,21 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
       },
       {
         id: 'reception',
-        name: 'Dinner Reception',
+        name: 'Reception',
         time: '7:30 PM',
+        location: 'Stone Manor Inn (Tent)',
+        description: 'Speeches, toasts, reception-y things.',
+        details: ['Toasts and speeches', 'Bouquet and garter toss', 'German cup ceremony'],
+        icon: 'RESTAURANT',
+        visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
+      },
+      {
+        id: 'dinner',
+        name: 'Dinner',
+        time: '8:00 PM',
         location: 'Stone Manor Inn (Solarium and Tent)',
-        description: 'Dinner, speeches, toasts, and dessert cutting.',
-        details: ['Buffet dinner service', 'Dessert', 'Toasts and speeches'],
+        description: 'Dinner and dessert cutting.',
+        details: ['Buffet dinner service', 'Dessert'],
         icon: 'RESTAURANT',
         visible: isFeatureEnabled('ENABLE_DETAILS_SCHEDULE_WEDDINGDAY') 
       },
@@ -265,7 +275,7 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
       {
         id: 'shuttle3',
         name: 'Hotel Shuttles Leaves Venue for Hotels (Round 1)',
-        time: '10:00 PM',
+        time: '10:30 PM',
         location: 'Stone Manor Inn',
         description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel.',
         details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town'],
@@ -274,7 +284,7 @@ export const getScheduleEvents = (currentUser: any): EventsData => ({
       {
         id: 'shuttle4',
         name: 'Hotel Shuttles Leaves Venue for Hotels (Round 2)',
-        time: '11:00 PM',
+        time: '11:30 PM',
         location: 'Stone Manor Inn',
         description: '56 passenger shuttles will depart for the hotels. One shuttle per hotel.',
         details: ['18 minute drive to Holiday Inn Express Brunswick', '23 minute drive to Holiday Inn Express Charles Town'],

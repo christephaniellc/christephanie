@@ -36,7 +36,8 @@ import {
   Nightlife,
   CleaningServices,
   CircleNotifications,
-  DirectionsBus
+  DirectionsBus,
+  PhotoCamera
 } from '@mui/icons-material';
 import { getScheduleEvents, EventItem, IconType } from '@/components/DetailsPages/Schedule/scheduleEvents';
 
@@ -137,6 +138,8 @@ const getIconComponent = (iconType: IconType) => {
       return <Face4 />;
     case 'DRY_CLEANING':
       return <DryCleaning />;
+    case 'PHOTOGRAPHY':
+      return <PhotoCamera />
     case 'AIRPORT_SHUTTLE':
       return <AirportShuttle />;
     case 'LIQUOR':
@@ -165,7 +168,7 @@ const getIconComponent = (iconType: IconType) => {
 function HomePageSchedule({ handleTabLink }: HomePageScheduleProps) {
   const theme = useTheme();
   
-  // Get day parameter from URL if it exists
+  // Get day parameter from URL if it exists, or default to today's day if it's during the wedding weekend
   const getInitialDayFromUrl = (): string => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -175,19 +178,52 @@ function HomePageSchedule({ handleTabLink }: HomePageScheduleProps) {
       if (dayParam && ['friday', 'saturday', 'sunday'].includes(dayParam)) {
         return dayParam;
       }
+      
+      // If no valid day parameter, check if today is one of the wedding days
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth(); // 0-based (6 = July)
+      const date = today.getDate();
+      
+      // Wedding dates: July 4-6, 2025
+      if (year === 2025 && month === 6) {
+        if (date === 4) return 'friday';
+        if (date === 5) return 'saturday';
+        if (date === 6) return 'sunday';
+      }
     }
-    // Default to Friday (friday) if no valid param
+    
+    // Default to Friday if not wedding weekend and no valid param
     return 'friday';
   };
   
   const [selectedDay, setSelectedDay] = useState(getInitialDayFromUrl());
   const currentUser = useRecoilValue(userState);
   
-  // Update URL when selected day changes
+  // Update URL when selected day changes (but only during wedding weekend)
   const updateDayInUrl = (day: string) => {
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
-      url.searchParams.set('day', day);
+      
+      // Only set the day parameter if we're during the wedding weekend
+      // or if there was already a day parameter
+      const shouldSetDayParam = (() => {
+        // If there's already a day parameter, always update it
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('day')) return true;
+        
+        // Check if today is during the wedding weekend
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth(); // 0-based (6 = July)
+        const date = today.getDate();
+        
+        return (year === 2025 && month === 6 && [4, 5, 6].includes(date));
+      })();
+      
+      if (shouldSetDayParam) {
+        url.searchParams.set('day', day);
+      }
       
       // Update URL without reloading the page
       window.history.pushState({}, '', url.toString());
