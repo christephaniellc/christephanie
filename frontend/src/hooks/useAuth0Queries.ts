@@ -200,24 +200,10 @@ export const useAuth0Queries = () => {
     } catch (error) {
       console.error('Failed to get access token silently:', error);
 
-      // If silent refresh fails, try redirect login
-      if (
-        error instanceof Error &&
-        (error.message.includes('login_required') ||
-          error.message.includes('consent_required') ||
-          error.message.includes('interaction_required') ||
-          error.message === 'User is not authenticated')
-      ) {
-        console.log('Silent refresh failed, redirecting to login');
-        await loginWithRedirect({
-          authorizationParams: {
-            audience: config.audience,
-            // Ensure we're requesting all needed scopes
-            scope: 'openid profile email',
-          },
-        });
-      }
-
+      // Don't automatically redirect to login on token refresh failures
+      // This prevents login/logout loops caused by temporary Auth0 issues
+      console.log('Token refresh failed, but not automatically redirecting to login to prevent loops');
+      
       throw error; // Propagate the error for handling upstream
     }
   };
