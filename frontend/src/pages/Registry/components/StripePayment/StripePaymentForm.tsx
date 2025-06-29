@@ -20,11 +20,13 @@ import {
   Elements
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { useAuth0 } from '@auth0/auth0-react';
 import { getConfig } from '@/auth_config';
 import { useRecoilValue } from 'recoil';
 import { apiState } from '@/context/ApiContext';
 import theme from '@/store/theme';
 import { StephsActualFavoriteTypography, StephsActualFavoriteTypographyBackNext, StephsActualFavoriteTypographyNoDrop, StephsActualFavoriteTypographyNoDropWhite } from '@/components/AttendanceButton/AttendanceButton';
+import { useAuth0Queries } from '@/hooks/useAuth0Queries';
 
 // Stripe styled components
 const CardElementContainer = styled(Paper)(({ theme }) => ({
@@ -583,10 +585,25 @@ function StripePaymentForm({
   onSuccess: (details: { paymentIntentId: string; email: string; notes?: string; timestamp: string }) => void;
   onError: (message: string, errorCode?: string, errorType?: string) => void;
 }) {
+  // Authentication hooks
+  const { isAuthenticated, isLoading } = useAuth0();
+  const { signInWithAuth0 } = useAuth0Queries();
+  
   // Reset Elements when component re-renders to avoid stale state issues
   // Adding a unique key forces React to recreate the Elements component
   const elementsKey = React.useMemo(() => `stripe-elements-${Date.now()}`, [open]);
   const theme = useTheme();
+  
+  // Handle login button click
+  const handleLogin = useCallback(async () => {
+    try {
+      // For the registry payment, we'll use a generic guest ID or let the auth flow handle it
+      await signInWithAuth0('registry-payment');
+    } catch (error) {
+      console.error('Login failed:', error);
+      onError('Login failed. Please try again.');
+    }
+  }, [signInWithAuth0, onError]);
   
   // Options for Stripe Elements that match the expected StripeElementsOptions type
   // Simplified options to avoid potential theme-related errors
@@ -646,15 +663,76 @@ function StripePaymentForm({
         maxWidth: { sm: '90%', md: '85%' },
         margin: '0 auto'
       }}>
-        <Elements stripe={stripePromise} options={options} key={elementsKey}>
-          <PaymentForm 
-            amount={amount}
-            category={category}
-            onSuccess={onSuccess}
-            onError={onError}
-            onCancel={onClose}
-          />
-        </Elements>
+        {isLoading ? (
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <CircularProgress color="secondary" size={40} />
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Checking authentication...
+            </Typography>
+          </Box>
+        ) : !isAuthenticated ? (
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            py: 4,
+            textAlign: 'center'
+          }}>
+            <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+              Please log in to continue
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+              We don't take money from strangers! <br />You need to be logged in to make a contribution to our registry.
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 2,
+              width: '100%',
+              maxWidth: '300px'
+            }}>
+              <Button 
+                onClick={handleLogin}
+                variant="contained" 
+                color="secondary"
+                size="large"
+                fullWidth
+                sx={{ 
+                  fontWeight: 'bold',
+                  boxShadow: 2,
+                  py: 1.5
+                }}
+              >
+                Log In
+              </Button>
+              <Button 
+                onClick={onClose}
+                variant="outlined"
+                color="primary"
+                size="large"
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Elements stripe={stripePromise} options={options} key={elementsKey}>
+            <PaymentForm 
+              amount={amount}
+              category={category}
+              onSuccess={onSuccess}
+              onError={onError}
+              onCancel={onClose}
+            />
+          </Elements>
+        )}
       </DialogContent>
     </Dialog>
   );
