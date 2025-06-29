@@ -136,13 +136,20 @@ export const BottomNav = () => {
         if (auth0User) {
           logOutFromAuth0();
         } else {
-          localStorage.removeItem('user');
+          // Set auth flag to prevent service worker conflicts
+          sessionStorage.setItem('auth_in_progress', 'true');
+          
+          // Use standard login without forcing fresh authentication
           loginWithRedirect({
             authorizationParams: {
-              prompt: 'login',
-              screen_hint: 'login',
               redirect_uri: window.location.origin,
             },
+            appState: {
+              returnTo: window.location.pathname + window.location.search
+            }
+          }).catch(() => {
+            // Clear auth flag on error
+            sessionStorage.removeItem('auth_in_progress');
           });
         }
         break;
