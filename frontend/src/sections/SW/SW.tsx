@@ -11,7 +11,7 @@ import { Box } from '@mui/material';
 
 // Force clear cache after deployment
 const LAST_FORCE_REFRESH_KEY = 'last_force_refresh';
-const VERSION_CHECK_INTERVAL = 30 * 1000; // 30 seconds
+const VERSION_CHECK_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
 const BYPASS_CACHE_PARAM = 'nocache';
 
 // Function to fetch the current version from version.txt
@@ -83,6 +83,13 @@ function SW() {
     let lastKnownVersion: string | null = null;
     
     const checkVersionAndRefresh = async () => {
+      // Don't check for updates during authentication flows to prevent refresh loops
+      const authInProgress = sessionStorage.getItem('auth_in_progress');
+      if (authInProgress) {
+        console.log('Skipping version check - authentication in progress');
+        return;
+      }
+      
       const currentVersion = await fetchCurrentVersion();
       //console.log('Current version:', currentVersion);
       
@@ -91,9 +98,17 @@ function SW() {
           // First check, just store the version
           lastKnownVersion = currentVersion;
         } else if (lastKnownVersion !== currentVersion) {
-          // Version changed, set needRefresh to true
-          console.log(`Application version changed from ${lastKnownVersion} to ${currentVersion}. Refreshing...`);
-          setNeedRefresh(true);
+          // Version changed, but check if we should delay the refresh
+          console.log(`Application version changed from ${lastKnownVersion} to ${currentVersion}`);
+          
+          // If auth just completed, give it a moment to settle
+          const authJustCompleted = Date.now() - parseInt(sessionStorage.getItem('auth_completed_time') || '0') < 10000;
+          if (authJustCompleted) {
+            console.log('Delaying refresh - authentication recently completed');
+            setTimeout(() => setNeedRefresh(true), 5000);
+          } else {
+            setNeedRefresh(true);
+          }
         }
       }
     };
