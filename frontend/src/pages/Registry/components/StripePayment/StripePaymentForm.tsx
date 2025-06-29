@@ -586,24 +586,37 @@ function StripePaymentForm({
   onError: (message: string, errorCode?: string, errorType?: string) => void;
 }) {
   // Authentication hooks
-  const { isAuthenticated, isLoading } = useAuth0();
-  const { signInWithAuth0 } = useAuth0Queries();
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
   
   // Reset Elements when component re-renders to avoid stale state issues
   // Adding a unique key forces React to recreate the Elements component
   const elementsKey = React.useMemo(() => `stripe-elements-${Date.now()}`, [open]);
   const theme = useTheme();
   
-  // Handle login button click
+  // Handle login button click - use standard Auth0 login without forcing fresh session
   const handleLogin = useCallback(async () => {
     try {
-      // For the registry payment, we'll use a generic guest ID or let the auth flow handle it
-      await signInWithAuth0('registry-payment');
+      // Temporarily disable service worker version checking during auth flow
+      // This prevents the refresh loop caused by version checks during authentication
+      sessionStorage.setItem('auth_in_progress', 'true');
+      
+      // Use standard Auth0 login without the aggressive cleanup that causes refresh loops
+      await loginWithRedirect({
+        authorizationParams: {
+          redirect_uri: window.location.origin + window.location.pathname,
+          screen_hint: 'login',
+        },
+        appState: {
+          returnTo: window.location.pathname + window.location.search
+        }
+      });
     } catch (error) {
       console.error('Login failed:', error);
+      // Clear the auth flag on error
+      sessionStorage.removeItem('auth_in_progress');
       onError('Login failed. Please try again.');
     }
-  }, [signInWithAuth0, onError]);
+  }, [loginWithRedirect, onError]);
   
   // Options for Stripe Elements that match the expected StripeElementsOptions type
   // Simplified options to avoid potential theme-related errors
