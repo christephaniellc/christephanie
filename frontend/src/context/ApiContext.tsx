@@ -138,10 +138,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
               console.error('Failed to refresh token:', refreshError);
               tokenRefreshInProgress.current = false;
               
-              // If refresh fails and we've tried multiple times, log out
-              if (failureCount > 1) {
-                logout();
-              }
+              // Don't automatically logout on token refresh failures to prevent loops
+              // Let the user manually logout if needed
+              console.log('Token refresh failed, but not forcing logout to prevent auth loops');
               return null;
             });
         } else {
@@ -150,9 +149,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         
         return true; // Retry the request after token refresh
       } else {
-        // After multiple failures, log out the user
-        console.error('Multiple authentication failures, logging out');
-        logout();
+        // After multiple failures, stop retrying but don't force logout
+        console.error('Multiple authentication failures, stopping retries but not forcing logout');
         return false; // Stop retrying
       }
     }
