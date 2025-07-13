@@ -98,6 +98,15 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     setApi(newApi);
     console.log('API initialized or updated');
   }, [getTokenFunc, setApi]);
+  
+  // Track successful authentication when auth0User is present
+  useEffect(() => {
+    if (auth0User) {
+      console.log('Auth0 user detected, marking successful authentication');
+      lastSuccessfulAuth.current = Date.now();
+      consecutive403Count.current = 0; // Reset any previous error counts
+    }
+  }, [auth0User]);
 
   const queryKey = `invitationCode=${user?.invitationCode.trim()}&firstName=${user?.firstName.trim()}`;
   const findUserIdQuery = useQuery<FindUserResponse | undefined, ApiError>({
@@ -116,6 +125,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   // Track consecutive 403 errors to detect expired refresh tokens
   const consecutive403Count = useRef(0);
   const lastTokenRefreshFailure = useRef(0);
+  const lastSuccessfulAuth = useRef(0);
 
   // Helper function to handle token expiration with retry logic
   const handleTokenExpiration = useCallback((failureCount: number, error: any) => {
@@ -125,28 +135,37 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     if (error.status === 401 || error.status === 403) {
       console.log(`${error.status} error detected, attempting to refresh token...`);
       
-      // Track consecutive 403 errors
+      // Track consecutive 403 errors, but be much more conservative
       if (error.status === 403) {
-        consecutive403Count.current += 1;
-        console.log(`Consecutive 403 errors: ${consecutive403Count.current}`);
+        // Only count 403s if we've recently had a token refresh failure
+        // AND enough time has passed since last successful auth (avoid counting authorization issues)
+        const timeSinceLastAuth = Date.now() - lastSuccessfulAuth.current;
+        const timeSinceRefreshFailure = Date.now() - lastTokenRefreshFailure.current;
         
-        // If we've had 3+ consecutive 403s and the last token refresh failed,
-        // this strongly indicates expired refresh token
-        if (consecutive403Count.current >= 3 && 
-            (Date.now() - lastTokenRefreshFailure.current) < 60000) { // Within last minute
-          console.log('Multiple consecutive 403s after recent token refresh failure - refresh token likely expired');
+        if (lastTokenRefreshFailure.current > 0 && 
+            timeSinceRefreshFailure < 120000 && // Within 2 minutes of refresh failure
+            timeSinceLastAuth > 30000) { // At least 30 seconds since last successful auth
+          consecutive403Count.current += 1;
+          console.log(`Consecutive 403 errors after token refresh failure: ${consecutive403Count.current}`);
           
-          // Force logout and redirect to login
-          logout({
-            logoutParams: {
-              returnTo: window.location.origin + window.location.pathname
-            }
-          }).catch(logoutError => {
-            console.error('Error during forced logout:', logoutError);
-            window.location.reload();
-          });
-          
-          return false; // Stop retrying
+          // Be much more conservative - only logout after many more failures
+          if (consecutive403Count.current >= 5) {
+            console.log('Many consecutive 403s after token refresh failure - refresh token likely expired');
+            
+            // Force logout and redirect to login
+            logout({
+              logoutParams: {
+                returnTo: window.location.origin + window.location.pathname
+              }
+            }).catch(logoutError => {
+              console.error('Error during forced logout:', logoutError);
+              window.location.reload();
+            });
+            
+            return false; // Stop retrying
+          }
+        } else {
+          console.log('403 error, but not counting towards consecutive failures (recent auth or no recent refresh failure)');
         }
       } else {
         // Reset 403 count on successful auth or different error
@@ -166,6 +185,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
             .then(token => {
               console.log('Token refresh completed successfully with exponential backoff');
               tokenRefreshInProgress.current = false;
+              
+              // Track successful authentication
+              lastSuccessfulAuth.current = Date.now();
+              consecutive403Count.current = 0; // Reset error count on successful token refresh
+              
               // Clear API token cache to force fresh token usage
               if (apiRef.current && apiRef.current.clearTokenCache) {
                 apiRef.current.clearTokenCache();
@@ -244,8 +268,9 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         // Add detailed logging for this particular endpoint
         const result = await apiRef.current!.getFamilyUnit();
         
-        // Reset 403 count on successful API call
+        // Reset 403 count on successful API call and track successful auth
         consecutive403Count.current = 0;
+        lastSuccessfulAuth.current = Date.now();
         
         return result;
       } catch (error: any) {
@@ -253,27 +278,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         
         // If we get a 403, we should try to refresh the token and retry once
         if (error.status === 403 && !tokenRefreshInProgress.current) {
-          // Track consecutive 403 errors
-          consecutive403Count.current += 1;
-          console.log(`Got 403 from getFamilyUnit (consecutive: ${consecutive403Count.current}), attempting token refresh with exponential backoff`);
-          
-          // If we've had too many consecutive 403s, force logout immediately
-          if (consecutive403Count.current >= 3) {
-            console.log('Too many consecutive 403s - forcing logout and login');
-            
-            try {
-              await logout({
-                logoutParams: {
-                  returnTo: window.location.origin + window.location.pathname
-                }
-              });
-            } catch (logoutError) {
-              console.error('Error during forced logout:', logoutError);
-              window.location.reload();
-            }
-            
-            throw error;
-          }
+          console.log(`Got 403 from getFamilyUnit, attempting token refresh with exponential backoff`);
           
           try {
             // Force a token refresh (now includes exponential backoff retry logic)
@@ -286,6 +291,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
             
             // After refresh, retry the request once
             console.log('Token refreshed successfully, retrying getFamilyUnit request');
+            
+            // Track successful auth and reset counters
+            lastSuccessfulAuth.current = Date.now();
+            consecutive403Count.current = 0;
+            
             return await apiRef.current!.getFamilyUnit();
           } catch (refreshError) {
             console.error('Token refresh failed after all retry attempts, cannot retry getFamilyUnit:', refreshError);
