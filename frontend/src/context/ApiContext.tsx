@@ -116,7 +116,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     enabled: false,
   }) as UseQueryResult<FindUserResponse | undefined, ApiError>;
 
-  const { getAccessTokenPleasePleasePlease } = useAuth0Queries();
+  const { getAccessTokenPleasePleasePlease, handleRefreshTokenExpiry } = useAuth0Queries();
 
   // Reference to track if token refresh is in progress
   const tokenRefreshInProgress = useRef(false);
@@ -299,21 +299,55 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
             return await apiRef.current!.getFamilyUnit();
           } catch (refreshError) {
             console.error('Token refresh failed after all retry attempts, cannot retry getFamilyUnit:', refreshError);
+            
+            // Log additional error details for debugging
+            console.error('Refresh error details:', {
+              error: refreshError?.error,
+              message: refreshError?.message,
+              error_description: refreshError?.error_description,
+              name: refreshError?.name,
+              status: refreshError?.status
+            });
 
             // Check if the specific error indicates an expired refresh token
+            // Be more aggressive since we're getting 403s and token refresh is failing
             const isRefreshTokenExpired = refreshError?.error === 'invalid_grant' || 
                 refreshError?.message?.includes('invalid_grant') ||
                 refreshError?.error_description?.includes('invalid_grant') ||
                 refreshError?.error === 'invalid_request' ||
                 refreshError?.error === 'unauthorized_client' ||
+                refreshError?.error === 'login_required' ||
                 refreshError?.message?.includes('refresh token') ||
                 refreshError?.message?.includes('expired') ||
-                refreshError?.message?.includes('invalid token');
+                refreshError?.message?.includes('invalid token') ||
+                refreshError?.message?.includes('Forbidden') ||
+                refreshError?.message?.includes('unauthorized') ||
+                // If token refresh consistently fails with 403s from API, likely expired refresh token
+                (error.status === 403 && refreshError) ||
+                // If we get 403 and ANY token refresh failure, be aggressive about re-auth
+                (error.status === 403);
             
             if (isRefreshTokenExpired) {
-              console.log('Refresh token has expired, redirecting to login');
+              console.log('Refresh token has expired, attempting graceful re-authentication');
 
-              // Clear all Auth0 data to ensure clean state
+              // Instead of forcing logout, try the graceful re-authentication flow
+              try {
+                const newToken = await handleRefreshTokenExpiry();
+                if (newToken) {
+                  console.log('Graceful re-authentication successful, retrying API call');
+                  // Clear API token cache to use new token
+                  if (apiRef.current && apiRef.current.clearTokenCache) {
+                    apiRef.current.clearTokenCache();
+                  }
+                  // Retry the API call with new token
+                  return await apiRef.current!.getFamilyUnit();
+                }
+              } catch (reAuthError) {
+                console.error('Graceful re-authentication failed:', reAuthError);
+              }
+              
+              // If graceful re-auth fails, fall back to logout
+              console.log('Graceful re-auth failed, falling back to logout');
               try {
                 await logout({
                   logoutParams: {
@@ -322,7 +356,6 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
                 });
               } catch (logoutError) {
                 console.error('Error during logout after refresh token expiry:', logoutError);
-                // Force refresh if logout fails
                 window.location.reload();
               }
             } else {

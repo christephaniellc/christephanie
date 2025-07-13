@@ -307,6 +307,17 @@ export const useAuth0Queries = () => {
       } catch (error) {
         lastError = error;
         console.error(`Token refresh attempt ${attempt} failed:`, error);
+        
+        // Log detailed error information for debugging
+        if (error && typeof error === 'object') {
+          console.error('Error details:', {
+            error: (error as any).error,
+            error_description: (error as any).error_description,
+            message: (error as any).message,
+            name: (error as any).name,
+            code: (error as any).code
+          });
+        }
 
         // Check if we should retry
         if (attempt < RETRY_CONFIG.maxAttempts && isRetryableError(error)) {
@@ -328,14 +339,24 @@ export const useAuth0Queries = () => {
     console.error('All token refresh attempts failed. Last error:', lastError);
     
     // Check if this looks like a refresh token expiry
+    // Be more aggressive in detecting expired refresh tokens
     const isRefreshTokenExpired = lastError?.error === 'invalid_grant' || 
         lastError?.message?.includes('invalid_grant') ||
         lastError?.error_description?.includes('invalid_grant') ||
         lastError?.error === 'invalid_request' ||
         lastError?.error === 'unauthorized_client' ||
+        lastError?.error === 'login_required' ||
         lastError?.message?.includes('refresh token') ||
         lastError?.message?.includes('expired') ||
-        lastError?.message?.includes('invalid token');
+        lastError?.message?.includes('invalid token') ||
+        lastError?.message?.includes('Forbidden') ||
+        lastError?.message?.includes('unauthorized') ||
+        lastError?.message?.includes('Authentication failed') ||
+        // If Auth0 getAccessTokenSilently consistently fails, likely expired refresh token
+        (lastError?.name === 'TimeoutError') ||
+        // Generic fallback - if all retry attempts failed and it's not a clear network issue
+        (!lastError?.message?.includes('network') && !lastError?.message?.includes('Network') && 
+         !lastError?.message?.includes('timeout') && !lastError?.message?.includes('Timeout'));
     
     if (isRefreshTokenExpired) {
       console.log('Refresh token appears to be expired, attempting graceful re-authentication');
