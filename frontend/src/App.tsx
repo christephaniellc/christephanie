@@ -11,6 +11,7 @@ import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
+import AuthDiagnostics from '@/utils/AuthDiagnostics';
 import './assets/styles/fonts.css';
 import './assets/styles/export-utils.css';
 import './assets/styles/allow-screenshots.css';
@@ -43,6 +44,7 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
+      <AuthDiagnostics />
       <Suspense fallback={<Loading />}>
         <Pages />
       </Suspense>
