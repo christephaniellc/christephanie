@@ -112,6 +112,10 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   // Reference to track if token refresh is in progress
   const tokenRefreshInProgress = useRef(false);
   const tokenRefreshPromise = useRef<Promise<string | null> | null>(null);
+  
+  // Track consecutive 403 errors to detect expired refresh tokens
+  const consecutive403Count = useRef(0);
+  const lastTokenRefreshFailure = useRef(0);
 
   // Helper function to handle token expiration with retry logic
   const handleTokenExpiration = useCallback((failureCount: number, error: any) => {
@@ -120,6 +124,34 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
     // Check if it's an authentication or authorization error (401 or 403)
     if (error.status === 401 || error.status === 403) {
       console.log(`${error.status} error detected, attempting to refresh token...`);
+      
+      // Track consecutive 403 errors
+      if (error.status === 403) {
+        consecutive403Count.current += 1;
+        console.log(`Consecutive 403 errors: ${consecutive403Count.current}`);
+        
+        // If we've had 3+ consecutive 403s and the last token refresh failed,
+        // this strongly indicates expired refresh token
+        if (consecutive403Count.current >= 3 && 
+            (Date.now() - lastTokenRefreshFailure.current) < 60000) { // Within last minute
+          console.log('Multiple consecutive 403s after recent token refresh failure - refresh token likely expired');
+          
+          // Force logout and redirect to login
+          logout({
+            logoutParams: {
+              returnTo: window.location.origin + window.location.pathname
+            }
+          }).catch(logoutError => {
+            console.error('Error during forced logout:', logoutError);
+            window.location.reload();
+          });
+          
+          return false; // Stop retrying
+        }
+      } else {
+        // Reset 403 count on successful auth or different error
+        consecutive403Count.current = 0;
+      }
       
       // On first retry, try to refresh the token
       // Allow up to 2 retries for auth errors since the new token refresh has its own retry logic
@@ -144,10 +176,20 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
               console.error('Token refresh failed after all retry attempts:', refreshError);
               tokenRefreshInProgress.current = false;
               
+              // Track the timestamp of token refresh failure
+              lastTokenRefreshFailure.current = Date.now();
+              
               // Check if the error indicates an expired refresh token
-              if (refreshError?.error === 'invalid_grant' || 
+              const isRefreshTokenExpired = refreshError?.error === 'invalid_grant' || 
                   refreshError?.message?.includes('invalid_grant') ||
-                  refreshError?.error_description?.includes('invalid_grant')) {
+                  refreshError?.error_description?.includes('invalid_grant') ||
+                  refreshError?.error === 'invalid_request' ||
+                  refreshError?.error === 'unauthorized_client' ||
+                  refreshError?.message?.includes('refresh token') ||
+                  refreshError?.message?.includes('expired') ||
+                  refreshError?.message?.includes('invalid token');
+              
+              if (isRefreshTokenExpired) {
                 console.log('Refresh token has expired, user needs to log in again');
                 
                 // Clear all cached tokens
@@ -201,13 +243,38 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       try {
         // Add detailed logging for this particular endpoint
         const result = await apiRef.current!.getFamilyUnit();
+        
+        // Reset 403 count on successful API call
+        consecutive403Count.current = 0;
+        
         return result;
       } catch (error: any) {
         console.error('getFamilyUnit request failed:', error);
         
         // If we get a 403, we should try to refresh the token and retry once
         if (error.status === 403 && !tokenRefreshInProgress.current) {
-          console.log('Got 403 from getFamilyUnit, attempting token refresh with exponential backoff');
+          // Track consecutive 403 errors
+          consecutive403Count.current += 1;
+          console.log(`Got 403 from getFamilyUnit (consecutive: ${consecutive403Count.current}), attempting token refresh with exponential backoff`);
+          
+          // If we've had too many consecutive 403s, force logout immediately
+          if (consecutive403Count.current >= 3) {
+            console.log('Too many consecutive 403s - forcing logout and login');
+            
+            try {
+              await logout({
+                logoutParams: {
+                  returnTo: window.location.origin + window.location.pathname
+                }
+              });
+            } catch (logoutError) {
+              console.error('Error during forced logout:', logoutError);
+              window.location.reload();
+            }
+            
+            throw error;
+          }
+          
           try {
             // Force a token refresh (now includes exponential backoff retry logic)
             await getAccessTokenPleasePleasePlease();
@@ -224,9 +291,16 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
             console.error('Token refresh failed after all retry attempts, cannot retry getFamilyUnit:', refreshError);
 
             // Check if the specific error indicates an expired refresh token
-            if (refreshError?.error === 'invalid_grant' || 
+            const isRefreshTokenExpired = refreshError?.error === 'invalid_grant' || 
                 refreshError?.message?.includes('invalid_grant') ||
-                refreshError?.error_description?.includes('invalid_grant')) {
+                refreshError?.error_description?.includes('invalid_grant') ||
+                refreshError?.error === 'invalid_request' ||
+                refreshError?.error === 'unauthorized_client' ||
+                refreshError?.message?.includes('refresh token') ||
+                refreshError?.message?.includes('expired') ||
+                refreshError?.message?.includes('invalid token');
+            
+            if (isRefreshTokenExpired) {
               console.log('Refresh token has expired, redirecting to login');
 
               // Clear all Auth0 data to ensure clean state
