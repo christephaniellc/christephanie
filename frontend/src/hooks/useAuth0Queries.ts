@@ -253,7 +253,24 @@ export const useAuth0Queries = () => {
   const getAccessTokenPleasePleasePlease = async (): Promise<string | null> => {
     if (!isAuthenticated) {
       console.log('User not authenticated, cannot refresh token');
-      throw new Error('User is not authenticated');
+      
+      // Check if user exists but isAuthenticated is still false (Auth0 race condition)
+      if (auth0User) {
+        console.log('Auth0 user exists but isAuthenticated is false, waiting for Auth0 state to sync...');
+        
+        // Wait a bit for Auth0 state to synchronize
+        await sleep(2000);
+        
+        // Check again after waiting
+        if (!isAuthenticated) {
+          console.log('Still not authenticated after waiting, throwing error');
+          throw new Error('User is not authenticated');
+        } else {
+          console.log('Authentication state synchronized, proceeding with token refresh');
+        }
+      } else {
+        throw new Error('User is not authenticated');
+      }
     }
 
     // Add rate limiting to prevent excessive token refreshes
