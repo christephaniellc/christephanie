@@ -77,7 +77,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const user = useRecoilValue(userState);
   const [family, setFamily] = useRecoilState(familyState);
   const address = useRecoilValue(addressState);
-  const { getAccessTokenSilently, user: auth0User, logout } = useAuth0();
+  const { getAccessTokenSilently, user: auth0User, logout, isAuthenticated } = useAuth0();
 
   // Function to get access token - keeping it simple and letting Auth0 handle token management
   const getTokenFunc = React.useCallback(async () => {
@@ -264,6 +264,12 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
   const getFamilyUnitQuery = useQuery<FamilyUnitViewModel, ApiError>({
     queryKey: [`getFamilyUnit`],
     queryFn: async () => {
+      // Add a small delay if user just logged in to avoid race conditions
+      const timeSinceLastAuth = Date.now() - lastSuccessfulAuth.current;
+      if (lastSuccessfulAuth.current > 0 && timeSinceLastAuth < 5000) {
+        console.log(`Delaying API call for ${5000 - timeSinceLastAuth}ms to allow Auth0 state to sync`);
+        await new Promise(resolve => setTimeout(resolve, 5000 - timeSinceLastAuth));
+      }
       try {
         // Add detailed logging for this particular endpoint
         const result = await apiRef.current!.getFamilyUnit();
@@ -310,25 +316,27 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
             });
 
             // Check if the specific error indicates an expired refresh token
-            // Be more aggressive since we're getting 403s and token refresh is failing
+            // Be more conservative - only trigger re-auth for genuine token expiry scenarios
             const isRefreshTokenExpired = refreshError?.error === 'invalid_grant' || 
                 refreshError?.message?.includes('invalid_grant') ||
                 refreshError?.error_description?.includes('invalid_grant') ||
                 refreshError?.error === 'invalid_request' ||
                 refreshError?.error === 'unauthorized_client' ||
-                refreshError?.error === 'login_required' ||
                 refreshError?.message?.includes('refresh token') ||
                 refreshError?.message?.includes('expired') ||
-                refreshError?.message?.includes('invalid token') ||
-                refreshError?.message?.includes('Forbidden') ||
-                refreshError?.message?.includes('unauthorized') ||
-                // If token refresh consistently fails with 403s from API, likely expired refresh token
-                (error.status === 403 && refreshError) ||
-                // If we get 403 and ANY token refresh failure, be aggressive about re-auth
-                (error.status === 403);
+                refreshError?.message?.includes('invalid token');
             
-            if (isRefreshTokenExpired) {
-              console.log('Refresh token has expired, attempting graceful re-authentication');
+            // Additional check: Only consider re-auth if:
+            // 1. It's a genuine token expiry error (not "User is not authenticated")
+            // 2. User was previously authenticated and enough time has passed since login
+            const timeSinceLastAuth = Date.now() - lastSuccessfulAuth.current;
+            const isUserNotAuthenticatedError = refreshError?.message?.includes('User is not authenticated');
+            const shouldAttemptReAuth = isRefreshTokenExpired && 
+                !isUserNotAuthenticatedError &&
+                (lastSuccessfulAuth.current === 0 || timeSinceLastAuth > 60000); // At least 1 minute since last auth
+            
+            if (shouldAttemptReAuth) {
+              console.log('Refresh token has expired and sufficient time passed, attempting graceful re-authentication');
 
               // Instead of forcing logout, try the graceful re-authentication flow
               try {
@@ -360,7 +368,11 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
               }
             } else {
               // For temporary errors (network issues, Auth0 downtime), don't force logout
-              console.log('Token refresh failed due to temporary issue, not forcing logout to prevent auth loops');
+              if (isUserNotAuthenticatedError) {
+                console.log('Token refresh failed because user is not authenticated - likely Auth0 state sync issue, not forcing logout');
+              } else {
+                console.log('Token refresh failed due to temporary issue, not forcing logout to prevent auth loops');
+              }
             }
 
             throw error; // Still throw for any remaining error handling
@@ -371,7 +383,7 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       }
     },
     retry: handleTokenExpiration,
-    enabled: !!auth0User,
+    enabled: !!auth0User && isAuthenticated, // Wait for both user and authentication state
     // Add a small staleTime to prevent excessive refetching
     staleTime: 30000, // 30 seconds
   }) as UseQueryResult<FamilyUnitViewModel, ApiError>;
