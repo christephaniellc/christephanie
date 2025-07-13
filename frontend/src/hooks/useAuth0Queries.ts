@@ -193,6 +193,62 @@ export const useAuth0Queries = () => {
   const sleep = (ms: number): Promise<void> => 
     new Promise(resolve => setTimeout(resolve, ms));
 
+  // Helper function to handle refresh token expiry with silent re-authentication
+  const handleRefreshTokenExpiry = async (): Promise<string | null> => {
+    console.log('Refresh token expired, attempting silent re-authentication');
+    
+    try {
+      // Try to get a token using a popup (doesn't interrupt the user's flow)
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: config.audience,
+          scope: 'openid profile email',
+          prompt: 'none', // Don't show login UI
+        },
+        cacheMode: 'off', // Force fresh request
+        timeoutInSeconds: 10,
+      });
+      
+      console.log('Silent re-authentication successful');
+      return typeof token === 'string' ? token : (token as any)?.access_token || null;
+      
+    } catch (silentError) {
+      console.log('Silent re-authentication failed, checking if interactive auth is needed:', silentError);
+      
+      // If silent auth fails, we need interactive authentication
+      // Try redirect-based authentication (preserves current page state)
+      try {
+        console.log('Attempting redirect-based re-authentication');
+        
+        // Store current page info for return after auth
+        sessionStorage.setItem('auth_in_progress', 'true');
+        sessionStorage.setItem('pre_auth_path', window.location.pathname + window.location.search);
+        
+        // Trigger redirect-based authentication
+        await loginWithRedirect({
+          authorizationParams: {
+            audience: config.audience,
+            scope: 'openid profile email',
+            prompt: 'login',
+            redirect_uri: window.location.origin,
+          },
+          appState: {
+            returnTo: window.location.pathname + window.location.search
+          }
+        });
+        
+        // This will redirect away, so we won't reach here
+        return null;
+        
+      } catch (redirectError) {
+        console.error('Redirect-based authentication failed:', redirectError);
+        
+        // If even redirect fails, we have a serious issue
+        throw new Error('All re-authentication methods failed');
+      }
+    }
+  };
+
   // Improved token refresh function with exponential backoff retry logic
   const getAccessTokenPleasePleasePlease = async (): Promise<string | null> => {
     if (!isAuthenticated) {
@@ -271,9 +327,36 @@ export const useAuth0Queries = () => {
     // If we get here, all retry attempts failed
     console.error('All token refresh attempts failed. Last error:', lastError);
     
-    // Don't automatically redirect to login on token refresh failures
-    // This prevents login/logout loops caused by temporary Auth0 issues
-    console.log('Token refresh failed after all retries, but not automatically redirecting to login to prevent loops');
+    // Check if this looks like a refresh token expiry
+    const isRefreshTokenExpired = lastError?.error === 'invalid_grant' || 
+        lastError?.message?.includes('invalid_grant') ||
+        lastError?.error_description?.includes('invalid_grant') ||
+        lastError?.error === 'invalid_request' ||
+        lastError?.error === 'unauthorized_client' ||
+        lastError?.message?.includes('refresh token') ||
+        lastError?.message?.includes('expired') ||
+        lastError?.message?.includes('invalid token');
+    
+    if (isRefreshTokenExpired) {
+      console.log('Refresh token appears to be expired, attempting graceful re-authentication');
+      
+      try {
+        // Try graceful re-authentication instead of forcing logout
+        const newToken = await handleRefreshTokenExpiry();
+        if (newToken) {
+          console.log('Graceful re-authentication successful, got new token');
+          return newToken;
+        }
+      } catch (reAuthError) {
+        console.error('Graceful re-authentication failed:', reAuthError);
+      }
+      
+      // If graceful re-auth fails, the handleRefreshTokenExpiry function will handle redirect
+      throw lastError || new Error('Refresh token expired and re-authentication failed');
+    }
+    
+    // For non-refresh-token errors, don't force login to prevent loops
+    console.log('Token refresh failed due to temporary issue, not forcing logout to prevent auth loops');
     
     throw lastError || new Error('Token refresh failed after all retry attempts');
   };
@@ -309,8 +392,55 @@ export const useAuth0Queries = () => {
     }
   }, [auth0User, userActions.setUser, user]);
 
+  // Proactive token renewal - check and renew tokens before they expire
+  const proactiveTokenRenewal = useCallback(async () => {
+    if (!isAuthenticated || !auth0User) {
+      return;
+    }
+
+    try {
+      // Try to get a fresh token silently
+      // This will work as long as the refresh token is valid
+      await getAccessTokenSilently({
+        authorizationParams: {
+          audience: config.audience,
+          scope: 'openid profile email',
+        },
+        cacheMode: 'off', // Force fresh request
+        timeoutInSeconds: 10,
+      });
+      
+      console.log('Proactive token renewal successful');
+    } catch (error) {
+      console.log('Proactive token renewal failed, will handle on-demand:', error);
+      // Don't throw - this is just proactive, will handle on-demand later
+    }
+  }, [isAuthenticated, auth0User, getAccessTokenSilently, config.audience]);
+
+  // Set up proactive token renewal (every 30 minutes)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      console.log('Running proactive token renewal...');
+      proactiveTokenRenewal();
+    }, 30 * 60 * 1000); // 30 minutes
+
+    // Also run once on initial auth
+    const timeout = setTimeout(() => {
+      proactiveTokenRenewal();
+    }, 5000); // 5 seconds after auth
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isAuthenticated, proactiveTokenRenewal]);
+
   return {
     getAccessTokenPleasePleasePlease,
+    handleRefreshTokenExpiry,
+    proactiveTokenRenewal,
     logOutFromAuth0,
     signInWithAuth0,
     updateClientInfo,
