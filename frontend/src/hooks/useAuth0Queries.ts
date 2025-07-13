@@ -159,7 +159,20 @@ export const useAuth0Queries = () => {
 
   // Helper function to determine if an error is retryable
   const isRetryableError = (error: any): boolean => {
-    // Retry on network errors, timeouts, and certain Auth0 errors
+    // Don't retry on authentication errors that indicate expired refresh tokens
+    if (error.error === 'invalid_grant' || 
+        error.message?.includes('invalid_grant') ||
+        error.error_description?.includes('invalid_grant') ||
+        error.error === 'invalid_request' ||
+        error.error === 'unauthorized_client' ||
+        error.message?.includes('refresh token') ||
+        error.message?.includes('expired') ||
+        error.message?.includes('invalid token')) {
+      console.log('Refresh token expired or invalid, not retrying');
+      return false;
+    }
+    
+    // Retry on network errors, timeouts, and certain temporary Auth0 errors
     if (error.message?.includes('Timeout') || 
         error.message?.includes('timeout') ||
         error.message?.includes('Network') ||
@@ -167,16 +180,10 @@ export const useAuth0Queries = () => {
         error.error === 'login_required' || // This might be temporary
         error.error === 'consent_required' || // This might be temporary
         error.error_description?.includes('timeout') ||
-        error.error_description?.includes('network')) {
+        error.error_description?.includes('network') ||
+        error.name === 'TimeoutError' ||
+        error.code === 'NETWORK_ERROR') {
       return true;
-    }
-    
-    // Don't retry on authentication errors that indicate expired refresh tokens
-    if (error.error === 'invalid_grant' || 
-        error.message?.includes('invalid_grant') ||
-        error.error_description?.includes('invalid_grant')) {
-      console.log('Refresh token expired, not retrying');
-      return false;
     }
     
     return false;
