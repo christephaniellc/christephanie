@@ -86,11 +86,25 @@ export function Profile() {
         <Button 
           variant="contained" 
           color="primary"
-          onClick={() => loginWithRedirect({ 
-            authorizationParams: {
-              state: JSON.stringify({guest_id: guest?.guestId })
-            }
-          })}
+          onClick={() => {
+            // Clear any existing auth flags first
+            sessionStorage.removeItem('auth_in_progress');
+            sessionStorage.removeItem('auth_completed_time');
+            
+            // Set fresh auth flag to prevent service worker conflicts
+            sessionStorage.setItem('auth_in_progress', 'true');
+            
+            // Force fresh authentication
+            loginWithRedirect({ 
+              authorizationParams: {
+                prompt: 'login', // Force Auth0 to show login page
+                state: JSON.stringify({guest_id: guest?.guestId })
+              }
+            }).catch(() => {
+              // Clear auth flag on error
+              sessionStorage.removeItem('auth_in_progress');
+            });
+          }}
         >
           Log In
         </Button>
