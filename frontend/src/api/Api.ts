@@ -394,7 +394,7 @@ export default class Api {
   }
 
   // Helper to decode JWT and get expiration time
-  private decodeJwt(token: string): { exp?: number } {
+  private decodeJwt(token: string): { exp?: number; aud?: string | string[]; iss?: string; sub?: string; scope?: string; azp?: string; gty?: string; [key: string]: any } {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
