@@ -136,18 +136,24 @@ export const BottomNav = () => {
         if (auth0User) {
           logOutFromAuth0();
         } else {
-          // Set auth flag to prevent service worker conflicts
+          // Clear any existing auth flags first
+          sessionStorage.removeItem('auth_in_progress');
+          sessionStorage.removeItem('auth_completed_time');
+          
+          // Set fresh auth flag to prevent service worker conflicts
           sessionStorage.setItem('auth_in_progress', 'true');
           
-          // Use standard login without forcing fresh authentication
+          // Force fresh authentication to ensure we get to Auth0 login page
           loginWithRedirect({
             authorizationParams: {
               redirect_uri: window.location.origin,
+              prompt: 'login', // Force Auth0 to show login page
             },
             appState: {
               returnTo: window.location.pathname + window.location.search
             }
-          }).catch(() => {
+          }).catch((error) => {
+            console.error('Login redirect failed:', error);
             // Clear auth flag on error
             sessionStorage.removeItem('auth_in_progress');
           });
