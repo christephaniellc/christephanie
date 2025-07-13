@@ -145,67 +145,132 @@ export const useAuth0Queries = () => {
   const lastTokenRefresh = useRef<number>(0);
   const MIN_REFRESH_INTERVAL = 10000; // Minimum 10 seconds between refreshes
 
-  // Improved token refresh function with better error handling and rate limiting
-  const getAccessTokenPleasePleasePlease = async () => {
-    try {
-      if (!isAuthenticated) {
-        console.log('User not authenticated, redirecting to login');
-        throw new Error('User is not authenticated');
-      }
+  // Retry configuration for exponential backoff
+  const RETRY_CONFIG = {
+    maxAttempts: 4, // Maximum number of retry attempts
+    baseDelay: 1000, // Base delay in milliseconds (1 second)
+    maxDelay: 30000, // Maximum delay cap (30 seconds)
+    backoffMultiplier: 2, // Exponential backoff multipliplier
+  };
 
-      // Add rate limiting to prevent excessive token refreshes
-      const now = Date.now();
-      const timeSinceLastRefresh = now - lastTokenRefresh.current;
-      
-      if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
-        console.log(`Token refresh requested too soon (${timeSinceLastRefresh}ms since last refresh), throttling`);
-        // Wait a bit before allowing another refresh
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+  // Helper function to calculate delay with exponential backoff
+  const calculateRetryDelay = (attempt: number): number => {
+    const delay = RETRY_CONFIG.baseDelay * Math.pow(RETRY_CONFIG.backoffMultiplier, attempt - 1);
+    return Math.min(delay, RETRY_CONFIG.maxDelay);
+  };
 
-      // Update timestamp before making the request
-      lastTokenRefresh.current = Date.now();
-      
-      console.log('Attempting to refresh access token silently');
-      // Include specific scope and audience to ensure correct claims
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: config.audience,
-          scope: 'openid profile email',
-        },
-        // Set timeoutInSeconds to a reasonable value
-        timeoutInSeconds: 15,
-        // Using 'on' for more reliable caching
-        cacheMode: 'on',
-        // Add detailed timestamp for debugging
-        detailedResponse: true
-      });
-      
-      // Log token details (without exposing the actual token)
-      if (token) {
-        if (token['id_token']) {
-          console.log('Successfully refreshed access token with expiry:', 
-            token['expires_at']
-              ? new Date(token['expires_at'] * 1000).toISOString()
-              : 'unknown');
-          return token['access_token'] ? token['access_token'] : token.toString();
-        } else {
-          console.log('Successfully refreshed access token');
-          return token.toString();
-        }
-      } else {
-        console.log('Token refresh completed but no token returned');
-        throw new Error('No token returned from refresh');
-      }
-    } catch (error) {
-      console.error('Failed to get access token silently:', error);
-
-      // Don't automatically redirect to login on token refresh failures
-      // This prevents login/logout loops caused by temporary Auth0 issues
-      console.log('Token refresh failed, but not automatically redirecting to login to prevent loops');
-      
-      throw error; // Propagate the error for handling upstream
+  // Helper function to determine if an error is retryable
+  const isRetryableError = (error: any): boolean => {
+    // Retry on network errors, timeouts, and certain Auth0 errors
+    if (error.message?.includes('Timeout') || 
+        error.message?.includes('timeout') ||
+        error.message?.includes('Network') ||
+        error.message?.includes('network') ||
+        error.error === 'login_required' || // This might be temporary
+        error.error === 'consent_required' || // This might be temporary
+        error.error_description?.includes('timeout') ||
+        error.error_description?.includes('network')) {
+      return true;
     }
+    
+    // Don't retry on authentication errors that indicate expired refresh tokens
+    if (error.error === 'invalid_grant' || 
+        error.message?.includes('invalid_grant') ||
+        error.error_description?.includes('invalid_grant')) {
+      console.log('Refresh token expired, not retrying');
+      return false;
+    }
+    
+    return false;
+  };
+
+  // Sleep utility for delays
+  const sleep = (ms: number): Promise<void> => 
+    new Promise(resolve => setTimeout(resolve, ms));
+
+  // Improved token refresh function with exponential backoff retry logic
+  const getAccessTokenPleasePleasePlease = async (): Promise<string | null> => {
+    if (!isAuthenticated) {
+      console.log('User not authenticated, cannot refresh token');
+      throw new Error('User is not authenticated');
+    }
+
+    // Add rate limiting to prevent excessive token refreshes
+    const now = Date.now();
+    const timeSinceLastRefresh = now - lastTokenRefresh.current;
+    
+    if (timeSinceLastRefresh < MIN_REFRESH_INTERVAL) {
+      console.log(`Token refresh requested too soon (${timeSinceLastRefresh}ms since last refresh), throttling`);
+      // Wait a bit before allowing another refresh
+      await sleep(1000);
+    }
+
+    // Update timestamp before making the request
+    lastTokenRefresh.current = Date.now();
+
+    let lastError: any = null;
+    
+    for (let attempt = 1; attempt <= RETRY_CONFIG.maxAttempts; attempt++) {
+      try {
+        console.log(`Attempting to refresh access token silently (attempt ${attempt}/${RETRY_CONFIG.maxAttempts})`);
+        
+        // Include specific scope and audience to ensure correct claims
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: config.audience,
+            scope: 'openid profile email',
+          },
+          // Increase timeout for retry attempts
+          timeoutInSeconds: 15 + (attempt * 5), // Progressive timeout increase
+          // Using 'on' for more reliable caching
+          cacheMode: 'on',
+          // Add detailed timestamp for debugging
+          detailedResponse: true
+        });
+        
+        // Log token details (without exposing the actual token)
+        if (token) {
+          if (token['id_token']) {
+            console.log(`Successfully refreshed access token on attempt ${attempt} with expiry:`, 
+              token['expires_at']
+                ? new Date(token['expires_at'] * 1000).toISOString()
+                : 'unknown');
+            return token['access_token'] ? token['access_token'] : token.toString();
+          } else {
+            console.log(`Successfully refreshed access token on attempt ${attempt}`);
+            return token.toString();
+          }
+        } else {
+          throw new Error('No token returned from refresh');
+        }
+      } catch (error) {
+        lastError = error;
+        console.error(`Token refresh attempt ${attempt} failed:`, error);
+
+        // Check if we should retry
+        if (attempt < RETRY_CONFIG.maxAttempts && isRetryableError(error)) {
+          const delay = calculateRetryDelay(attempt);
+          console.log(`Retrying token refresh in ${delay}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxAttempts})`);
+          await sleep(delay);
+          continue;
+        } else if (!isRetryableError(error)) {
+          console.log('Error is not retryable, stopping retry attempts');
+          break;
+        } else {
+          console.log('Max retry attempts reached, giving up');
+          break;
+        }
+      }
+    }
+
+    // If we get here, all retry attempts failed
+    console.error('All token refresh attempts failed. Last error:', lastError);
+    
+    // Don't automatically redirect to login on token refresh failures
+    // This prevents login/logout loops caused by temporary Auth0 issues
+    console.log('Token refresh failed after all retries, but not automatically redirecting to login to prevent loops');
+    
+    throw lastError || new Error('Token refresh failed after all retry attempts');
   };
 
   // Helper function specifically for testing token expiry scenarios

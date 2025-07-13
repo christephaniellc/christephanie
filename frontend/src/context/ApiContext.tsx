@@ -122,25 +122,54 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
       console.log(`${error.status} error detected, attempting to refresh token...`);
       
       // On first retry, try to refresh the token
-      if (failureCount <= 1) {
+      // Allow up to 2 retries for auth errors since the new token refresh has its own retry logic
+      if (failureCount <= 2) {
         // Implement a single refresh promise pattern to avoid multiple refreshes
         if (!tokenRefreshInProgress.current) {
           tokenRefreshInProgress.current = true;
           
           // Create a token refresh promise that can be reused by concurrent requests
+          // The new getAccessTokenPleasePleasePlease function already has exponential backoff built-in
           tokenRefreshPromise.current = getAccessTokenPleasePleasePlease()
             .then(token => {
-              console.log('Token refresh completed successfully');
+              console.log('Token refresh completed successfully with exponential backoff');
               tokenRefreshInProgress.current = false;
+              // Clear API token cache to force fresh token usage
+              if (apiRef.current && apiRef.current.clearTokenCache) {
+                apiRef.current.clearTokenCache();
+              }
               return token;
             })
             .catch(refreshError => {
-              console.error('Failed to refresh token:', refreshError);
+              console.error('Token refresh failed after all retry attempts:', refreshError);
               tokenRefreshInProgress.current = false;
               
-              // Don't automatically logout on token refresh failures to prevent loops
-              // Let the user manually logout if needed
-              console.log('Token refresh failed, but not forcing logout to prevent auth loops');
+              // Check if the error indicates an expired refresh token
+              if (refreshError?.error === 'invalid_grant' || 
+                  refreshError?.message?.includes('invalid_grant') ||
+                  refreshError?.error_description?.includes('invalid_grant')) {
+                console.log('Refresh token has expired, user needs to log in again');
+                
+                // Clear all cached tokens
+                if (apiRef.current && apiRef.current.clearTokenCache) {
+                  apiRef.current.clearTokenCache();
+                }
+                
+                // For expired refresh tokens, we should redirect to login
+                // This is different from temporary network errors
+                logout({
+                  logoutParams: {
+                    returnTo: window.location.origin + window.location.pathname
+                  }
+                }).catch(logoutError => {
+                  console.error('Error during logout after refresh token expiry:', logoutError);
+                  window.location.reload();
+                });
+              } else {
+                // For other errors (network issues, temporary Auth0 problems), don't force logout
+                console.log('Token refresh failed due to temporary issue, not forcing logout to prevent auth loops');
+              }
+              
               return null;
             });
         } else {
@@ -149,8 +178,8 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         
         return true; // Retry the request after token refresh
       } else {
-        // After multiple failures, stop retrying but don't force logout
-        console.error('Multiple authentication failures, stopping retries but not forcing logout');
+        // After multiple failures, stop retrying
+        console.error('Multiple authentication failures after token refresh attempts, stopping retries');
         return false; // Stop retrying
       }
     }
@@ -178,16 +207,46 @@ export const ApiContextProvider = (props: { children: JSX.Element }) => {
         
         // If we get a 403, we should try to refresh the token and retry once
         if (error.status === 403 && !tokenRefreshInProgress.current) {
-          console.log('Got 403 from getFamilyUnit, attempting token refresh');
+          console.log('Got 403 from getFamilyUnit, attempting token refresh with exponential backoff');
           try {
-            // Force a token refresh
+            // Force a token refresh (now includes exponential backoff retry logic)
             await getAccessTokenPleasePleasePlease();
+            
+            // Clear API token cache after successful refresh
+            if (apiRef.current && apiRef.current.clearTokenCache) {
+              apiRef.current.clearTokenCache();
+            }
+            
             // After refresh, retry the request once
-            console.log('Token refreshed, retrying getFamilyUnit request');
+            console.log('Token refreshed successfully, retrying getFamilyUnit request');
             return await apiRef.current!.getFamilyUnit();
           } catch (refreshError) {
-            console.error('Token refresh failed, cannot retry getFamilyUnit:', refreshError);
-            throw error; // Throw the original error
+            console.error('Token refresh failed after all retry attempts, cannot retry getFamilyUnit:', refreshError);
+
+            // Check if the specific error indicates an expired refresh token
+            if (refreshError?.error === 'invalid_grant' || 
+                refreshError?.message?.includes('invalid_grant') ||
+                refreshError?.error_description?.includes('invalid_grant')) {
+              console.log('Refresh token has expired, redirecting to login');
+
+              // Clear all Auth0 data to ensure clean state
+              try {
+                await logout({
+                  logoutParams: {
+                    returnTo: window.location.origin + window.location.pathname
+                  }
+                });
+              } catch (logoutError) {
+                console.error('Error during logout after refresh token expiry:', logoutError);
+                // Force refresh if logout fails
+                window.location.reload();
+              }
+            } else {
+              // For temporary errors (network issues, Auth0 downtime), don't force logout
+              console.log('Token refresh failed due to temporary issue, not forcing logout to prevent auth loops');
+            }
+
+            throw error; // Still throw for any remaining error handling
           }
         }
         
