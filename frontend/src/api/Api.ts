@@ -437,12 +437,19 @@ export default class Api {
           // Add authorization header
           headers['Authorization'] = `Bearer ${token}`;
           
-          // Log token expiry for debugging (not the token itself)
-          if (decodedToken.exp) {
-            const expiryDate = new Date(decodedToken.exp * 1000).toISOString();
-            //console.log(`Using token with expiry: ${expiryDate}`);
+          // Debug token claims for troubleshooting 403 issues
+          if (decodedToken) {
+            console.log('JWT Token Claims:', {
+              exp: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : 'unknown',
+              aud: decodedToken.aud,
+              iss: decodedToken.iss,
+              sub: decodedToken.sub,
+              scope: decodedToken.scope,
+              azp: decodedToken.azp,
+              gty: decodedToken.gty
+            });
           } else {
-            console.log('Token expiry time not found, using default 1hr');
+            console.log('Could not decode JWT token for debugging');
           }
         } else {
           console.error('getAccessTokenSilently returned null token');
