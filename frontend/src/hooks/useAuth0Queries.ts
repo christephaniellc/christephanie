@@ -29,71 +29,69 @@ export const useAuth0Queries = () => {
       apiContext.clearTokenCache();
     }
 
-    // Use our dedicated utility to clear ALL Auth0 data
-    clearAllAuth0Data(config.clientId);
+    // Clear auth flags first to prevent interference
+    sessionStorage.removeItem('auth_in_progress');
+    sessionStorage.removeItem('auth_completed_time');
+    sessionStorage.removeItem('auth_redirect_to');
     
-    // Clear application state
+    // Preserve visited pages before any clearing
+    const visitedPages = localStorage.getItem('christephanie_visited_pages');
+    
+    // Clear application state (but not Auth0 storage yet)
     localStorage.removeItem('user');
     localStorage.removeItem('family');
-    sessionStorage.removeItem('auth_redirect_to');
-
-    // Retain visited pages
-    let visitedPages = localStorage.getItem('christephanie_visited_pages');
-
-    // NEW: Perform nuclear cleanup
-    localStorage.clear();
-    sessionStorage.clear();    
-
-    // Restore visited pages
-    localStorage.setItem('christephanie_visited_pages', visitedPages);
-
-    // Navigate directly to Auth0 logout endpoint
-    forceAuth0Logout();
     
-    // Ensure returnTo is set to the home page
+    // Set the return URL
     const homeUrl = window.location.origin + '/';
     
-    // Then call Auth0 logout with all cleanup options
     try {
-      // Set strongest possible logout options
-      const logoutOptions: LogoutOptions = {
-        returnTo: homeUrl, // Always return to home page
-        clientID: config.clientId,
-        federated: true, // Log out from Identity Provider session
-        openUrl: true,   // Let Auth0 handle the redirect
-      };
+      console.log('Initiating Auth0 logout with SDK');
       
-      console.log('Calling Auth0 logout with options:', logoutOptions);
+      // Use Auth0 SDK logout with proper configuration
+      await logout({
+        logoutParams: {
+          returnTo: homeUrl,
+          client_id: config.clientId,
+          federated: true, // Log out from Identity Provider session
+        }
+      });
       
-      // First attempt with openUrl:false to try to handle it programmatically
-      try {
-        await logout({
-          ...logoutOptions,
-          openUrl: false
-        } as LogoutOptions);
-        
-        // If we reach here, logout succeeded but we need to redirect manually
-        window.location.href = homeUrl + '?logout=' + Date.now();
-      } catch (err) {
-        console.log('First logout attempt failed, trying with openUrl:true', err);
-        // This will automatically redirect to returnTo
-        await logout(logoutOptions);
-      }
-    } catch (error) {
-      console.error('Error during Auth0 logout:', error);
+      // The above should redirect to Auth0 logout and then back to homeUrl
+      // If we somehow reach here, do manual cleanup and redirect
+      console.log('Auth0 logout completed, performing manual redirect');
       
-      // If Auth0 logout fails, perform manual cleanup and redirect
-      // As a final precaution, clear ALL localStorage and sessionStorage
-      console.log('Final storage cleanup after failed logout');
+      // Only now clear Auth0 data since logout completed
+      clearAllAuth0Data(config.clientId);
+      
+      // Clear remaining storage but restore visited pages
       localStorage.clear();
       sessionStorage.clear();
+      if (visitedPages) {
+        localStorage.setItem('christephanie_visited_pages', visitedPages);
+      }
       
-      // Last resort: Use the direct Auth0 logout URL
-      console.log('Using direct Auth0 logout URL as final fallback');
+      // Force redirect
+      window.location.href = homeUrl;
+      
+    } catch (error) {
+      console.error('Auth0 SDK logout failed:', error);
+      
+      // If Auth0 SDK logout fails, fall back to direct logout URL
+      console.log('Falling back to direct Auth0 logout URL');
+      
+      // Clear all data before redirect
+      clearAllAuth0Data(config.clientId);
+      localStorage.clear();
+      sessionStorage.clear();
+      if (visitedPages) {
+        localStorage.setItem('christephanie_visited_pages', visitedPages);
+      }
+      
+      // Use direct Auth0 logout URL as fallback
       forceAuth0Logout();
     }
     
-    return Promise.resolve(); // Resolve the promise to indicate logout completion
+    return Promise.resolve();
   };
 
   const signInWithAuth0 = useCallback(

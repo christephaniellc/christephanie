@@ -593,18 +593,22 @@ function StripePaymentForm({
   const elementsKey = React.useMemo(() => `stripe-elements-${Date.now()}`, [open]);
   const theme = useTheme();
   
-  // Handle login button click - use standard Auth0 login without forcing fresh session
+  // Handle login button click - force fresh authentication
   const handleLogin = useCallback(async () => {
     try {
-      // Temporarily disable service worker version checking during auth flow
-      // This prevents the refresh loop caused by version checks during authentication
+      // Clear any existing auth flags first
+      sessionStorage.removeItem('auth_in_progress');
+      sessionStorage.removeItem('auth_completed_time');
+      
+      // Set fresh auth flag to prevent service worker conflicts
       sessionStorage.setItem('auth_in_progress', 'true');
       
-      // Use standard Auth0 login without the aggressive cleanup that causes refresh loops
+      // Force fresh authentication to ensure we get to Auth0 login page
       await loginWithRedirect({
         authorizationParams: {
           redirect_uri: window.location.origin + window.location.pathname,
           screen_hint: 'login',
+          prompt: 'login', // Force Auth0 to show login page
         },
         appState: {
           returnTo: window.location.pathname + window.location.search
