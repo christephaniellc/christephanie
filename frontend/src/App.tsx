@@ -44,7 +44,6 @@ function App() {
       <Notifications />
       <HotKeys />
       <SW />
-      <AuthDiagnostics />
       <Suspense fallback={<Loading />}>
         <Pages />
       </Suspense>
