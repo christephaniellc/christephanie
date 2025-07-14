@@ -606,12 +606,11 @@ function StripePaymentForm({
       // Force fresh authentication to ensure we get to Auth0 login page
       await loginWithRedirect({
         authorizationParams: {
-          redirect_uri: window.location.origin + window.location.pathname,
-          screen_hint: 'login',
+          redirect_uri: window.location.origin,
           prompt: 'login', // Force Auth0 to show login page
         },
         appState: {
-          returnTo: window.location.pathname + window.location.search
+          returnTo: window.location.pathname // Don't include search params that might confuse Auth0 Action
         }
       });
     } catch (error) {

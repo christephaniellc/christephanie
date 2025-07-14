@@ -150,7 +150,7 @@ export const BottomNav = () => {
               prompt: 'login', // Force Auth0 to show login page
             },
             appState: {
-              returnTo: window.location.pathname + window.location.search
+              returnTo: window.location.pathname // Don't include search params that might confuse Auth0 Action
             }
           }).catch((error) => {
             console.error('Login redirect failed:', error);

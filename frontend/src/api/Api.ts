@@ -436,21 +436,8 @@ export default class Api {
           
           // Add authorization header
           headers['Authorization'] = `Bearer ${token}`;
+          console.log('Access token obtained and cached, expires at:', new Date(this.tokenCache.expiresAt * 1000).toISOString());
           
-          // Debug token claims for troubleshooting 403 issues
-          if (decodedToken) {
-            console.log('JWT Token Claims:', {
-              exp: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : 'unknown',
-              aud: decodedToken.aud,
-              iss: decodedToken.iss,
-              sub: decodedToken.sub,
-              scope: decodedToken.scope,
-              azp: decodedToken.azp,
-              gty: decodedToken.gty
-            });
-          } else {
-            console.log('Could not decode JWT token for debugging');
-          }
         } else {
           console.error('getAccessTokenSilently returned null token');
         }
