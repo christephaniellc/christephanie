@@ -31,6 +31,10 @@ What started as a wedding website became a production-grade SaaS-style system: m
 
 **AWS Services:** Lambda, API Gateway, DynamoDB, S3, CloudFront, Route 53, ACM, CloudWatch, SES, SNS, SSM Parameter Store, Secrets Manager
 
+[Click for detailed Architectural Diagrams](./architectural-diagrams/README.md)
+
+![Architecture Overview](./architectural-diagrams/arch-overview.png)
+
 ## Tech Stack
 
 ### Backend — C# / .NET 8.0
@@ -83,7 +87,7 @@ christephanie/
 
 ## Architecture Documentation
 
-Detailed architectural documentation is available in [`/architectural-diagrams`](./architectural-diagrams/index.md), including system overview diagrams, AWS infrastructure details, data flow diagrams, and design decision rationale.
+Detailed architectural documentation is available in [`/architectural-diagrams`](./architectural-diagrams/README.md), including system overview diagrams, AWS infrastructure details, data flow diagrams, and design decision rationale.
 
 ## Local Development
 
