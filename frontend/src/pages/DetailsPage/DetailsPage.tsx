@@ -69,7 +69,7 @@ function TabPanel(props: TabPanelProps) {
               }}
             />
           )}
-          {index === 1 && (
+          {index === 1 && ( // Accommodations tab background
             <Box
               sx={{
                 position: 'absolute',
@@ -86,7 +86,7 @@ function TabPanel(props: TabPanelProps) {
               }}
             />
           )}
-          {index === 3 && (
+          {index === 3 && ( // Attire tab background
             <Box
               sx={{
                 position: 'absolute',
