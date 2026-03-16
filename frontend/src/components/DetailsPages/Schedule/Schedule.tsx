@@ -35,7 +35,8 @@ import {
   MusicNote,
   Nightlife,
   CleaningServices,
-  CircleNotifications
+  CircleNotifications,
+  PhotoCamera
 } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/store/user';
@@ -130,6 +131,8 @@ const getIconComponent = (iconType: IconType) => {
       return <Face4 />;
     case 'DRY_CLEANING':
       return <DryCleaning />;
+    case 'PHOTOGRAPHY':
+      return <PhotoCamera />
     case 'AIRPORT_SHUTTLE':
       return <AirportShuttle />;
     case 'LIQUOR':
