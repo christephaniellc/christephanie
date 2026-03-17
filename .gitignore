@@ -10,6 +10,7 @@ node_modules/
 *.user
 *.userosscache
 *.sln.docstates
+*appsettings.Development.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -374,7 +375,6 @@ FodyWeavers.xsd
 appsettings.*.json
 # Allow normal appsettings.json and appsettings.Development.json
 !**/appsettings.json
-!**/appsettings.Development.json
 !**/appsettings.Staging.json
 !**/appsettings.Production.json
 
